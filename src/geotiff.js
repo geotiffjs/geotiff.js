@@ -120,8 +120,9 @@ var GeoTIFF = (function() {
     0x87B1: 'GeoAsciiParams'
   };
 
+  var key;
   var fieldTags = {};
-  for (var key in fieldTagNames) {
+  for (key in fieldTagNames) {
     fieldTags[fieldTagNames[key]] = parseInt(key);
   }
 
@@ -153,17 +154,17 @@ var GeoTIFF = (function() {
   };
 
   var fieldTypes = {};
-  for (var key in fieldTypeNames) {
+  for (key in fieldTypeNames) {
     fieldTypes[fieldTypeNames[key]] = parseInt(key);
   }
 
   var parse = function(data) {
     var rawData;
     if (typeof data === "string" || data instanceof String) {
-      rawData = new ArrayBuffer(str.length*2); // 2 bytes for each char
+      rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
       var view = new Uint16Array(rawData);
-      for (var i=0, strLen=str.length; i<strLen; i++) {
-        view[i] = str.charCodeAt(i);
+      for (var i=0, strLen=data.length; i<strLen; i++) {
+        view[i] = data.charCodeAt(i);
       }
     }
     else if (data instanceof ArrayBuffer) {
@@ -186,16 +187,16 @@ var GeoTIFF = (function() {
       this.littleEndian = false;
     }
     else {
-      throw TypeError("Invalid byte order value.");
+      throw new TypeError("Invalid byte order value.");
     }
 
     if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
-      throw TypeError("Invalid magic number.")
+      throw new TypeError("Invalid magic number.");
     }
 
     this.fileDirectories = this.parseFileDirectories(
       this.dataView.getUint32(4, this.littleEndian)
-    )
+    );
   };
 
   Parser.prototype = {
@@ -210,7 +211,7 @@ var GeoTIFF = (function() {
         case fieldTypes.RATIONAL: case fieldTypes.SRATIONAL: case fieldTypes.DOUBLE:
           return 8;
         default:
-          throw new RangeError("Invalid field type: " + fieldType)
+          throw new RangeError("Invalid field type: " + fieldType);
       }
     },
 
@@ -218,6 +219,8 @@ var GeoTIFF = (function() {
       var values = null;
       var readMethod = null;
       var fieldTypeLength = this.getFieldTypeLength(fieldType);
+      var i;
+
       switch (fieldType) {
         case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.UNDEFINED:
           values = new Uint8Array(count); readMethod = this.dataView.getUint8;
@@ -250,12 +253,12 @@ var GeoTIFF = (function() {
           values = new Float64Array(count); readMethod = this.dataView.getFloat64;
           break;
         default:
-          throw new RangeError("Invalid field type: " + fieldType)
+          throw new RangeError("Invalid field type: " + fieldType);
       }
 
       // normal fields
       if (!(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
-        for (var i=0; i < count; ++i) {
+        for (i=0; i < count; ++i) {
           values[i] = readMethod.call(
             this.dataView, offset + (i*fieldTypeLength), this.littleEndian
           );
@@ -263,7 +266,7 @@ var GeoTIFF = (function() {
       }
       // RATIONAL or SRATIONAL
       else {
-        for (var i=0; i < (count*2); i+=2) {
+        for (i=0; i < (count*2); i+=2) {
           values[i] = readMethod.call(
             this.dataView, offset + (i*fieldTypeLength), this.littleEndian
           );
@@ -325,7 +328,7 @@ var GeoTIFF = (function() {
     getImage: function(index) {
       var fileDirectory = this.fileDirectories[index];
       if (!fileDirectory) {
-        throw RangeError("Invalid image index");
+        throw new RangeError("Invalid image index");
       }
       return new ImageFile(fileDirectory, this.dataView, this.littleEndian);
     },
@@ -338,7 +341,7 @@ var GeoTIFF = (function() {
     this.littleEndian = littleEndian;
     this.tiles = {};
     this.isTiled = (fileDirectory.StripOffsets) ? false : true;
-  }
+  };
 
   ImageFile.prototype = {
     getWidth: function() {
@@ -364,8 +367,8 @@ var GeoTIFF = (function() {
         if ((bits % 8) !== 0) {
           throw new Error("Sample bit-width of " + bits + " is not supported.");
         }
-        else if (bits != this.fileDirectory.BitsPerSample[0]) {
-          throw new Error("Differing size of samples in a pixel are not supported.")
+        else if (bits !== this.fileDirectory.BitsPerSample[0]) {
+          throw new Error("Differing size of samples in a pixel are not supported.");
         }
         bitsPerSample += bits;
       }
@@ -379,10 +382,12 @@ var GeoTIFF = (function() {
         case 1:  // no compression
           return new DataView(slice);
         case 5: // LZW
-          var decompressed = LZW.decompressBuffer(slice);
-          return new DataView(decompressed);
+          //var decompressed = LZW.decompressBuffer(slice);
+          //return new DataView(decompressed);
+          break;
         case 8:
-          return new DataView(pako.inflate(new Uint8Array(slice), {}).buffer);
+          //return new DataView(pako.inflate(new Uint8Array(slice), {}).buffer);
+          break;
         case 6: // JPEG
           throw new Error("JPEG compression not supported.");
         //case 32946: // deflate ??
@@ -550,15 +555,16 @@ var GeoTIFF = (function() {
       var imageWindowWidth = imageWindow[2] - imageWindow[0];
       var imageWindowHeight = imageWindow[3] - imageWindow[1];
       var numPixels = imageWindowWidth * imageWindowHeight;
+      var i;
 
       if (!samples) {
         samples = [];
-        for (var i=0; i < this.fileDirectory.SamplesPerPixel; ++i) {
+        for (i=0; i < this.fileDirectory.SamplesPerPixel; ++i) {
           samples.push(i);
         }
       }
       var valueArrays = [];
-      for (var i = 0; i < samples.length; ++i) {
+      for (i = 0; i < samples.length; ++i) {
         valueArrays.push(this.getArrayForSample(samples[i], numPixels));
       }
       this._readRaster(imageWindow, samples, valueArrays);
@@ -599,11 +605,11 @@ var GeoTIFF = (function() {
         }
         else {
           phrase = new Array(oldPhrase);
-          phrase.push(currChar)
+          phrase.push(currChar);
         }
         phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
       }
-      for (var i = 0; i < phrase.length; ++i) {
+      for (var j = 0; j < phrase.length; ++i) {
         writer.setUint16(writeIndex, phrase[i], littleEndian);
         writeIndex += 2;
       }
