@@ -1,0 +1,77 @@
+<html>
+<head>
+
+</head>
+<body>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+<select id="bands">
+</select>
+
+
+<script src="../src/geotiff.js"></script>
+<script src="../src/plotty2.js"></script>
+<script src="rawinflate.js"></script>
+<script src="lzw.js"></script>
+<script src="pako.js"></script>
+<script src="pako_inflate.js"></script>
+<script>
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'data/stripped.tiff', true);
+//xhr.open('GET', 'http://localhost:8001/ows?service=WCS&version=2.0.1&request=GetCoverage&coverageid=ASA_WSM_1PNDPA20050331_075939_000000552036_00035_16121_0775&format=image/tiff&outputcrs=EPSG:4326', true);
+xhr.responseType = 'arraybuffer';
+
+var canvas = document.getElementById("canvas");
+
+xhr.onload = function(e) {
+  var parser = GeoTIFF.parse(this.response);
+  console.log(parser.fileDirectories[0]);
+  var image = parser.getImage(0);
+  console.log(image);
+
+
+  var bandsSelect = document.getElementById("bands");
+  var imageWindow = [0, 0, 500, 500];
+
+  for (var i = 0; i < image.getSamplesPerPixel(); ++i) {
+    var option = document.createElement("option");
+    option.value = i;
+    option.text = i+1;
+    bandsSelect.appendChild(option);
+  }
+
+  bandsSelect.onchange = function(e) {
+    var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [bandsSelect.options[bandsSelect.selectedIndex].value]);
+    plot.setData(raster[0],
+      image.getWidth(),
+      image.getHeight()
+      //imageWindow[2] - imageWindow[0],
+      //imageWindow[3] - imageWindow[1]
+    );
+    plot.render();
+  }
+
+  //var raster = image.readRaster(imageWindow , [0]);
+  var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [0]);
+
+  var plot = new plotty2.plot(canvas);
+  plot.setData(raster[0],
+    image.getWidth(),
+    image.getHeight()
+    //imageWindow[2] - imageWindow[0],
+    //imageWindow[3] - imageWindow[1]
+  );
+  plot.setScale(
+    ['#440154', '#472b7a', '#3b518a', '#2c718e', '#218e8c', '#26ac81', '#59c764', '#a7db33', '#fde724'],
+    [0, .125, .25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
+  )
+  plot.setDomain([0000, 10000]);
+  plot.render();
+};
+
+xhr.send();
+
+</script>
+</body>
+</html>
