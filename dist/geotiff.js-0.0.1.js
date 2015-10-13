@@ -1,5 +1,5 @@
 /**
- * geotiff.js v0.0.1 - 2015-10-07
+ * geotiff.js v0.0.1 - 2015-10-13
  * 
  *
  * Copyright (c) 2015 
@@ -136,7 +136,6 @@ var GeoTIFF = (function() {
   var arrayFields = [
     fieldTags.BitsPerSample,
     fieldTags.ExtraSamples,
-    fieldTags.RowsPerStrip,
     fieldTags.SampleFormat,
     fieldTags.StripByteCounts,
     fieldTags.StripOffsets,
@@ -348,6 +347,11 @@ var GeoTIFF = (function() {
     this.littleEndian = littleEndian;
     this.tiles = {};
     this.isTiled = (fileDirectory.StripOffsets) ? false : true;
+    var planarConfiguration = fileDirectory.PlanarConfiguration;
+    this.planarConfiguration = (typeof planarConfiguration === "undefined") ? 1 : planarConfiguration;
+    if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
+      throw new Error("Invalid planar configuration.");
+    }
   };
 
   ImageFile.prototype = {
@@ -382,8 +386,18 @@ var GeoTIFF = (function() {
       return bitsPerSample / 8;
     },
 
+    getSampleByteSize: function(i) {
+      if (i >= this.fileDirectory.BitsPerSample.length) {
+        throw new RangeError("Sample index " + i + " is out of range.");
+      }
+      var bits = this.fileDirectory.BitsPerSample[i];
+      if ((bits % 8) !== 0) {
+        throw new Error("Sample bit-width of " + bits + " is not supported.");
+      }
+      return (bits / 8);
+    },
+
     _getBlock: function(offset, byteCount, outSize) {
-      //byteCount = (byteCount % 2) ? byteCount + 1 : byteCount;
       var slice = this.dataView.buffer.slice(offset, offset + byteCount);
       switch (this.fileDirectory.Compression) {
         case 1:  // no compression
@@ -478,25 +492,32 @@ var GeoTIFF = (function() {
     },
 
     // Get the Tile or Strip by coordinates/index
-    getTileOrStrip: function(x, y) {
+    getTileOrStrip: function(x, y, plane) {
       var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
-      var index = y * numTilesPerRow + x;
-      var offset, byteCount;
-      if (index in this.tiles) {
-        return this.tiles[index];
+      var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
+      var index;
+      if (this.planarConfiguration === 1) {
+        index = y * numTilesPerRow + x;
       }
-      else {
-        if (this.isTiled) {
-          offset = this.fileDirectory.TileOffsets[index];
-          byteCount = this.fileDirectory.TileByteCounts[index];
+      else if (this.planarConfiguration === 2) {
+        index = plane * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
+      }
+      
+      if (index in this.tiles && false) {
+          return this.tiles[index];
         }
         else {
-          offset = this.fileDirectory.StripOffsets[index];
-          byteCount = this.fileDirectory.StripByteCounts[index];
+          var offset, byteCount;
+          if (this.isTiled) {
+            offset = this.fileDirectory.TileOffsets[index];
+            byteCount = this.fileDirectory.TileByteCounts[index];
+          }
+          else {
+            offset = this.fileDirectory.StripOffsets[index];
+            byteCount = this.fileDirectory.StripByteCounts[index];
+          }
+          return this.tiles[index] = this._getBlock(offset, byteCount);
         }
-        return this.tiles[index] = this._getBlock(offset, byteCount);
-      }
-
     },
 
     _readRaster: function(imageWindow, samples, valueArrays) {
@@ -519,27 +540,36 @@ var GeoTIFF = (function() {
       var srcSampleOffsets = [];
       var sampleReaders = []; 
       for (var i = 0; i < samples.length; ++i) {
-        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        if (this.planarConfiguration === 1) {
+          srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        }
+        else {
+          srcSampleOffsets.push(0);
+        }
         sampleReaders.push(this.getReaderForSample(samples[i]));
       }
 
       for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
         for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
-          var tile = this.getTileOrStrip(xTile, yTile);
+          
           var firstLine = yTile * tileHeight;
           var firstCol = xTile * tileWidth;
           var lastLine = (yTile + 1) * tileHeight;
           var lastCol = (xTile + 1) * tileWidth;
 
-          for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
-            for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
-              var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-              var windowCoordinate = (
-                y + firstLine - imageWindow[1]
-              ) * windowWidth + x + firstCol - imageWindow[0];
-              
-              for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
-                var sample = samples[sampleIndex];
+          for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+            var sample = samples[sampleIndex];
+            if (this.planarConfiguration === 2) {
+              bytesPerPixel = this.getSampleByteSize(sample);
+            }
+            var tile = this.getTileOrStrip(xTile, yTile, sample);
+
+            for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+              for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+                var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+                var windowCoordinate = (
+                  y + firstLine - imageWindow[1]
+                ) * windowWidth + x + firstCol - imageWindow[0];
                 valueArrays[sampleIndex][windowCoordinate] = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
               }
             }
@@ -574,6 +604,7 @@ var GeoTIFF = (function() {
       for (i = 0; i < samples.length; ++i) {
         valueArrays.push(this.getArrayForSample(samples[i], numPixels));
       }
+
       this._readRaster(imageWindow, samples, valueArrays);
       return valueArrays;
     },
