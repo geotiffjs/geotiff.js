@@ -22,12 +22,14 @@ module.exports = function(grunt) {
             'src/geotiff.js',
         ],
         pkg: pkg,
-        uglifyFiles: {}
+        uglifyFiles: {},
+        browserifyFiles: {}
     };
 
     // setup dynamic filenames
     config.versioned = [config.pkg.name, config.pkg.version].join('-');
     config.dist = ['dist/', '.js'].join(config.versioned);
+    config.browserifyFiles[['dist/', '.js'].join(config.versioned)] = ["src/main.js"];
     config.uglifyFiles[['dist/', '.min.js'].join(config.versioned)] = config.dist;
 
     // Project configuration.
@@ -37,7 +39,7 @@ module.exports = function(grunt) {
             files: ['gruntfile.js', 'test/*.js', 'src/*']
         },
         clean: {
-            dist : ['dist/']
+            dist: ['dist/']
         },
         concat: {
             options: {
@@ -94,9 +96,7 @@ module.exports = function(grunt) {
         },
         browserify: {
             dist: {
-                files: {
-                  'build/module.js': ["src/main.js"]//['src/**/*.js', 'lib/**/*.js']
-                },
+                files: config.browserifyFiles
             },
         }
     });
@@ -112,7 +112,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-browserify');
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'browserify', 'clean', 'concat', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'clean', 'browserify', 'uglify']);
 
     grunt.registerTask('serve', ['jshint', 'browserify', 'connect:livereload', 'watch']);
 
