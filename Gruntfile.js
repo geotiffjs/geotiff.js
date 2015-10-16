@@ -68,7 +68,7 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: 'jshint.json'
             },
-            all: ["src/geotiff.js"]//config.sources
+            all: ["src/*.js"]
         },
         connect: {
             livereload: true,
@@ -84,12 +84,20 @@ module.exports = function(grunt) {
                 options: {
                     livereload: '<%= connect.options.livereload %>'
                 },
+                tasks: ['jshint', 'browserify'],
                 files: [
                     'test/*.html',
-                    'src/*.js',
-                    //'<%= yeoman.app %>/images/{,*/}*.{gif,jpeg,jpg,png,svg,webp}'
+                    'src/*.js'
                 ]
-            }
+            },
+
+        },
+        browserify: {
+            dist: {
+                files: {
+                  'build/module.js': ["src/main.js"]//['src/**/*.js', 'lib/**/*.js']
+                },
+            },
         }
     });
 
@@ -101,11 +109,12 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-browserify');
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'clean', 'concat', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'browserify', 'clean', 'concat', 'uglify']);
 
-    grunt.registerTask('serve', ['jshint', 'clean', 'concat', 'uglify', 'connect:livereload', 'watch']);
+    grunt.registerTask('serve', ['jshint', 'browserify', 'connect:livereload', 'watch']);
 
     // grunt.registerTask('serve', 
     //         'clean:server',
