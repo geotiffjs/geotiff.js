@@ -1,4 +1,4 @@
-var GeoTIFF = (function() {
+window.GeoTIFF = (function() {
 
   var fieldTagNames = {
     // TIFF Baseline
@@ -390,20 +390,17 @@ var GeoTIFF = (function() {
       return (bits / 8);
     },
 
-    _getBlock: function(offset, byteCount, outSize) {
+    decodeBlock: function(offset, byteCount, outSize) {
       var slice = this.dataView.buffer.slice(offset, offset + byteCount);
       switch (this.fileDirectory.Compression) {
         case 1:  // no compression
-          return new DataView(slice);
+          return slice;
         case 5: // LZW
-          //var decompressed = LZW.decompressBuffer(slice);
-          //return new DataView(decompressed);
-          break;
-        case 8:
-          //return new DataView(pako.inflate(new Uint8Array(slice), {}).buffer);
-          break;
+          throw new Error("LZW compression not supported.");
         case 6: // JPEG
           throw new Error("JPEG compression not supported.");
+        case 8: // Deflate
+          throw new Error("Deflate compression not supported.");
         //case 32946: // deflate ??
         //  throw new Error("Deflate compression not supported.");
         case 32773: // packbits
@@ -509,7 +506,7 @@ var GeoTIFF = (function() {
             offset = this.fileDirectory.StripOffsets[index];
             byteCount = this.fileDirectory.StripByteCounts[index];
           }
-          return this.tiles[index] = this._getBlock(offset, byteCount);
+          return this.tiles[index] = this.decodeBlock(offset, byteCount);
         }
     },
 
@@ -555,7 +552,7 @@ var GeoTIFF = (function() {
             if (this.planarConfiguration === 2) {
               bytesPerPixel = this.getSampleByteSize(sample);
             }
-            var tile = this.getTileOrStrip(xTile, yTile, sample);
+            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
             for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
