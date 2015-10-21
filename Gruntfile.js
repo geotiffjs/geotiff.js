@@ -27,7 +27,7 @@ module.exports = function(grunt) {
     };
 
     // setup dynamic filenames
-    config.versioned = [config.pkg.name, config.pkg.version].join('-');
+    config.versioned = config.pkg.name;//[config.pkg.name, config.pkg.version].join('-');
     config.dist = ['dist/', '.js'].join(config.versioned);
     config.browserifyFiles[['dist/', '.js'].join(config.versioned)] = ["src/main.js"];
     config.uglifyFiles[['dist/', '.min.js'].join(config.versioned)] = config.dist;
