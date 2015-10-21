@@ -29,6 +29,12 @@ var GeoTIFFImage = function(fileDirectory, geoKeys, dataView, littleEndian) {
 };
 
 GeoTIFFImage.prototype = {
+  getFileDirectory: function() {
+    return this.fileDirectory;
+  },
+  getGeoKeys: function() {
+    return this.geoKeys;
+  },
   getWidth: function() {
     return this.fileDirectory.ImageWidth;
   },
@@ -270,6 +276,13 @@ GeoTIFFImage.prototype = {
         samples.push(i);
       }
     }
+    else {
+      for (i = 0; i < samples.length; ++i) {
+        if (samples[i] >= this.fileDirectory.SamplesPerPixel) {
+          throw new RangeError("Invalid sample index '" + samples[i] + "'.");
+        }
+      }
+    }
     var valueArrays = [];
     for (i = 0; i < samples.length; ++i) {
       valueArrays.push(this.getArrayForSample(samples[i], numPixels));
@@ -278,6 +291,26 @@ GeoTIFFImage.prototype = {
     this._readRaster(imageWindow, samples, valueArrays);
     return valueArrays;
   },
+  // Geo related stuff:
+
+  getTiePoints: function() {
+    if (!this.fileDirectory.ModelTiepoint) {
+      return [];
+    }
+
+    var tiePoints = [];
+    for (var i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
+      tiePoints.push({
+        i: this.fileDirectory.ModelTiepoint[i],
+        j: this.fileDirectory.ModelTiepoint[i+1],
+        k: this.fileDirectory.ModelTiepoint[i+2],
+        x: this.fileDirectory.ModelTiepoint[i+3],
+        y: this.fileDirectory.ModelTiepoint[i+4],
+        z: this.fileDirectory.ModelTiepoint[i+5]
+      });
+    }
+    return tiePoints;
+  }
 };
 
 

@@ -145,7 +145,7 @@ GeoTIFF.prototype = {
       var key = geoKeyNames[rawGeoKeyDirectory[i]],
         location = (rawGeoKeyDirectory[i+1]) ? (fieldTagNames[rawGeoKeyDirectory[i+1]]) : null,
         count = rawGeoKeyDirectory[i+2],
-        offset = rawGeoKeyDirectory[i+2];
+        offset = rawGeoKeyDirectory[i+3];
 
       var value = null;
       if (!location) {
@@ -153,9 +153,17 @@ GeoTIFF.prototype = {
       }
       else {
         value = fileDirectory[location];
+        if (typeof value === "undefined" || value === null) {
+          throw new Error("Could not get value of geoKey '" + key + "'.");
+        }
+        else if (typeof value === "string") {
+          value = value.substring(offset, offset + count - 1);
+        }
+        else if (value.subarray) {
+          value = value.subarray(offset, offset + count - 1);
+        }
       }
       geoKeyDirectory[key] = value;
-      window.console.log(key, location, count, offset, value);
     }
     return geoKeyDirectory;
   },
@@ -177,7 +185,9 @@ GeoTIFF.prototype = {
           fieldTag, fieldType, typeCount, i + 8
         );
       }
-      fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
+      fileDirectories.push([
+        fileDirectory, this.parseGeoKeyDirectory(fileDirectory)
+      ]);
 
       nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
     }
