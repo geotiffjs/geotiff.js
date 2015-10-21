@@ -14,8 +14,9 @@ var sum = function(array, start, end) {
   return s;
 };
 
-var GeoTIFFImage = function(fileDirectory, dataView, littleEndian) {
+var GeoTIFFImage = function(fileDirectory, geoKeys, dataView, littleEndian) {
   this.fileDirectory = fileDirectory;
+  this.geoKeys = geoKeys;
   this.dataView = dataView;
   this.littleEndian = littleEndian;
   this.tiles = {};

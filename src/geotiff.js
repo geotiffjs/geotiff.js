@@ -4,6 +4,8 @@ var globals = require("./globals.js"),
   arrayFields = globals.arrayFields,
   fieldTypes = globals.fieldTypes,
   fieldTypeNames = globals.fieldTypeNames,
+  geoKeys = globals.geoKeys,
+  geoKeyNames = globals.geoKeyNames,
   GeoTIFFImage = require("./geotiffimage.js");
 
 
@@ -113,7 +115,7 @@ GeoTIFF.prototype = {
     return values;
   },
 
-  getFieldValues: function (fieldTag, fieldType, typeCount, valueOffset) {
+  getFieldValues: function(fieldTag, fieldType, typeCount, valueOffset) {
     var fieldValues;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
 
@@ -132,7 +134,33 @@ GeoTIFF.prototype = {
     return fieldValues;
   },
 
-  parseFileDirectories: function (byteOffset) {
+  parseGeoKeyDirectory: function(fileDirectory) {
+    var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
+    if (!rawGeoKeyDirectory) {
+      return null;
+    }
+
+    var geoKeyDirectory = {};
+    for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
+      var key = geoKeyNames[rawGeoKeyDirectory[i]],
+        location = (rawGeoKeyDirectory[i+1]) ? (fieldTagNames[rawGeoKeyDirectory[i+1]]) : null,
+        count = rawGeoKeyDirectory[i+2],
+        offset = rawGeoKeyDirectory[i+2];
+
+      var value = null;
+      if (!location) {
+        value = offset;
+      }
+      else {
+        value = fileDirectory[location];
+      }
+      geoKeyDirectory[key] = value;
+      window.console.log(key, location, count, offset, value);
+    }
+    return geoKeyDirectory;
+  },
+
+  parseFileDirectories: function(byteOffset) {
     var nextIFDByteOffset = byteOffset;
     var fileDirectories = [];
 
@@ -149,7 +177,7 @@ GeoTIFF.prototype = {
           fieldTag, fieldType, typeCount, i + 8
         );
       }
-      fileDirectories.push(fileDirectory);
+      fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
 
       nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
     }
@@ -157,11 +185,12 @@ GeoTIFF.prototype = {
   },
 
   getImage: function(index) {
-    var fileDirectory = this.fileDirectories[index];
-    if (!fileDirectory) {
+    index = index || 0;
+    var fileDirectoryAndGeoKey = this.fileDirectories[index];
+    if (!fileDirectoryAndGeoKey) {
       throw new RangeError("Invalid image index");
     }
-    return new GeoTIFFImage(fileDirectory, this.dataView, this.littleEndian);
+    return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
   },
 };
 
