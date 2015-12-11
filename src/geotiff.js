@@ -202,6 +202,10 @@ GeoTIFF.prototype = {
     }
     return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
   },
+
+  getImageCount: function() {
+    return this.fileDirectories.length;
+  }
 };
 
 module.exports = GeoTIFF;
