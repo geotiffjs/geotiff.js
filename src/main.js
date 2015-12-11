@@ -1,6 +1,6 @@
 
-(function(exports) {
-  exports.parse = function(data) {
+(function() {
+  var parse = function(data) {
     var rawData;
     if (typeof data === "string" || data instanceof String) {
       rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
@@ -19,4 +19,10 @@
     return new GeoTIFF(rawData);
   };
 
-})((typeof window !== "undefined") ? window["GeoTIFF"] = {} : exports);
+  if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+    module.exports.parse = parse;
+  }
+  else if (typeof window !== "undefined") {
+    window["GeoTIFF"] = {parse:parse};
+  }
+})();

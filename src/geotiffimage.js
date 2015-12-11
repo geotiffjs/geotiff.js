@@ -216,7 +216,7 @@ GeoTIFFImage.prototype = {
 
     var srcSampleOffsets = [];
     var sampleReaders = []; 
-    for (var i = 0; i < samples.length; ++i) {
+    for (var i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
         srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
       }
