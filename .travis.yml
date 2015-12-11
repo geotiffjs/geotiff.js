@@ -7,8 +7,25 @@ before_install:
     - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
     - sudo rm -rf /usr/local/phantomjs/bin/phantomjs
     - sudo mv phantomjs /usr/local/phantomjs/bin/phantomjs
+    - sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable 
+    - sudo apt-get update
+    - sudo apt-get install gdal-bin
 before_script:
     - npm install -g grunt-cli
+    - mkdir -p test/data
+    - pushd test/data
+    - wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/MER_FRS_1P_reduced/ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_uint16_reduced_compressed.tif -o stripped.tiff
+    - gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 stripped.tiff tiled.tiff
+    - gdal_translate -of GTiff -ot Int32 stripped.tiff int32.tiff
+    - gdal_translate -of GTiff -ot UInt32 stripped.tiff uint32.tiff
+    - gdal_translate -of GTiff -ot Float32 stripped.tiff float32.tiff
+    - gdal_translate -of GTiff -ot Float64 stripped.tiff float64.tiff
+    - gdal_translate -of GTiff -co COMPRESS=LZW stripped.tiff lzw.tiff
+    - gdal_translate -of GTiff -co COMPRESS=DEFLATE stripped.tiff deflate.tiff
+    - gdal_translate -ot Byte -of GTiff -co COMPRESS=JPEG stripped.tiff jpeg.tiff
+    - gdal_translate -of GTiff -co INTERLEAVE=BAND stripped.tiff interleave.tiff
+    - gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND stripped.tiff tiledplanar.tiff
+    - popd
 script:
     - grunt test
 notifications:
