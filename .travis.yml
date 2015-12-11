@@ -1,5 +1,7 @@
 language: node_js
-before_script:
+install:
     - npm install -g grunt-cli
+    - npm install
 script:
+    - export PATH=/usr/local/phantomjs-2.0.0/bin/:$PATH
     - grunt test
