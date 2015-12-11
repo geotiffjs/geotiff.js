@@ -22,7 +22,7 @@
   if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports.parse = parse;
   }
-  else if (typeof window !== "undefined") {
+  if (typeof window !== "undefined") {
     window["GeoTIFF"] = {parse:parse};
   }
 })();
