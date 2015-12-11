@@ -22,7 +22,6 @@ before_script:
     - gdal_translate -of GTiff -ot Float64 stripped.tiff float64.tiff
     - gdal_translate -of GTiff -co COMPRESS=LZW stripped.tiff lzw.tiff
     - gdal_translate -of GTiff -co COMPRESS=DEFLATE stripped.tiff deflate.tiff
-    - gdal_translate -ot Byte -of GTiff -co COMPRESS=JPEG stripped.tiff jpeg.tiff
     - gdal_translate -of GTiff -co INTERLEAVE=BAND stripped.tiff interleave.tiff
     - gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND stripped.tiff tiledplanar.tiff
     - popd
