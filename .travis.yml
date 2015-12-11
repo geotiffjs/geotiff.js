@@ -1,7 +1,12 @@
 language: node_js
-install:
+before_install:
+    - export PHANTOMJS_BIN=/usr/local/phantomjs/bin/phantomjs
+    - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
+    - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
+    - sudo rm -rf /usr/local/phantomjs/bin/phantomjs
+    - sudo mv phantomjs /usr/local/phantomjs/bin/phantomjs
+before_script:
     - npm install -g grunt-cli
-    - npm install
 script:
     - export PATH=/usr/local/phantomjs-2.0.0/bin/:$PATH
     - export PHANTOMJS_BIN=/usr/local/phantomjs-2.0.0/bin/phantomjs
