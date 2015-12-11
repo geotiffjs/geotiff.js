@@ -4,6 +4,7 @@ install:
     - npm install
 script:
     - export PATH=/usr/local/phantomjs-2.0.0/bin/:$PATH
+    - export PHANTOMJS_BIN=/usr/local/phantomjs-2.0.0/bin/phantomjs
     - grunt test
 notifications:
     email: false
