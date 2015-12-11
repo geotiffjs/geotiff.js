@@ -24,14 +24,12 @@ describe("mainTests", function() {
 
   it("Test stripped", function(done) {
     retrieve("stripped.tiff", function(tiff) {
-
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(540);
-      expect(image.getHeight()).to.equal(571);
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-
       done();
     });
   });
