@@ -27,8 +27,7 @@
     "karma-browserify": "^4.4.2",
     "karma-mocha": "^0.2.1",
     "karma-phantomjs2-launcher": "^0.3.2",
-    "load-grunt-tasks": "^3.3.0",
-    "phantomjs2.0": "^1.0.2"
+    "load-grunt-tasks": "^3.3.0"
   },
   "scripts": {
     "test": "grunt test"
