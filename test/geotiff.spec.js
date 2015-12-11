@@ -22,7 +22,7 @@ describe("mainTests", function() {
     xhr.send();
   };
 
-  it("Test stripped", function(done) {
+  it("should work on stripped tiffs", function(done) {
     retrieve("stripped.tiff", function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
@@ -30,8 +30,126 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Uint16Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
       done();
     });
   });
+
+  it("should work on tiled tiffs", function(done) {
+    retrieve("tiled.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Uint16Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on band interleaved tiffs", function(done) {
+    retrieve("interleave.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Uint16Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on band interleaved and tiled tiffs", function(done) {
+    retrieve("interleave.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Uint16Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on Int32 tiffs", function(done) {
+    retrieve("int32.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Int32Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on UInt32 tiffs", function(done) {
+    retrieve("uint32.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Uint32Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on Float32 tiffs", function(done) {
+    retrieve("float32.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Float32Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  it("should work on Float64 tiffs", function(done) {
+    retrieve("float64.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+      var allData = image.readRasters([200, 200, 210, 210]);
+      expect(allData).to.have.length(15);
+      expect(allData[0]).to.be.an.instanceof(Float64Array);
+      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
+      done();
+    });
+  });
+
+  // TODO: include compressed tiffs, when ready
 });
 
