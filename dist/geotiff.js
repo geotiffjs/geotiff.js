@@ -426,7 +426,7 @@ GeoTIFFImage.prototype = {
 
     var srcSampleOffsets = [];
     var sampleReaders = []; 
-    for (var i = 0; i < samples.length; ++i) {
+    for (var i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
         srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
       }
@@ -750,8 +750,8 @@ module.exports = {
 
 },{}],4:[function(require,module,exports){
 
-(function(exports) {
-  exports.parse = function(data) {
+(function() {
+  var parse = function(data) {
     var rawData;
     if (typeof data === "string" || data instanceof String) {
       rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
@@ -770,6 +770,12 @@ module.exports = {
     return new GeoTIFF(rawData);
   };
 
-})((typeof window !== "undefined") ? window["GeoTIFF"] = {} : exports);
+  if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+    module.exports.parse = parse;
+  }
+  else if (typeof window !== "undefined") {
+    window["GeoTIFF"] = {parse:parse};
+  }
+})();
 
 },{"./geotiff.js":1}]},{},[4]);
