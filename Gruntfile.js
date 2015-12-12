@@ -100,7 +100,9 @@ module.exports = function(grunt) {
             },
         },
         bump: {
-            pushTo: 'origin'
+            options: {
+                pushTo: 'origin'
+            }
         },
 
         karma: {
