@@ -4,22 +4,121 @@
 </head>
 <body>
 
-<canvas id="canvas" width="500" height="500"></canvas>
+<div id="canvases"></div>
 <select id="bands">
 </select>
 
 
-<script src="../src/geotiff.js"></script>
+<!--<script src="../src/geotiff.js"></script>
 <script src="../src/plotty2.js"></script>
-<script src="rawinflate.js"></script>
-<script src="lzw.js"></script>
+<script src="../lib/lzw.js"></script>
+<script src="../lib/lz-string.js"></script>-->
+
+<script src="../dist/geotiff.js"></script>
+<script src="../lib/plotty2.js"></script>
+
+<!--<script src="rawinflate.js"></script>
+
 <script src="pako.js"></script>
-<script src="pako_inflate.js"></script>
+<script src="pako_inflate.js"></script>-->
 <script>
 
+
+//var GeoTIFF = require("src/geotiff.js")
+
+var imageWindow = [0, 0, 500, 500];
+
+var tiffs = [
+  "stripped.tiff",
+  "tiled.tiff",
+  "planar.tiff",
+  "tiledplanar.tiff",
+  "float.tiff",
+  "uint32.tiff",
+  "int32.tiff",
+  "Float64.tiff",
+  "lzw.tiff",
+  "ASA_WSM_1PNDPA20050331_075939_000000552036_00035_16121_0775.tiff"
+];
+
+tiffs = [
+  //"lzw.tiff"
+  //"deflate.tiff"
+  "ASA_WSM_1PNDPA20050331_075939_000000552036_00035_16121_0775.tiff"
+]
+
+
+var bandsSelect = document.getElementById("bands");
+
+for (var i = 0; i < 15; ++i) {
+  var option = document.createElement("option");
+  option.value = i;
+  option.text = i+1;
+  bandsSelect.appendChild(option);
+}
+
+tiffs.forEach(function(filename) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'data/' + filename, true);
+  xhr.responseType = 'arraybuffer';
+
+  var div = document.createElement("div");
+  div.style.float = "left";
+  var header = document.createElement("p");
+  header.innerHTML = filename;
+
+  var canvas = document.createElement("canvas");
+  canvas.id = filename;
+  canvas.width = 500;
+  canvas.height = 500;
+  
+  div.appendChild(header);
+  div.appendChild(canvas);
+
+  document.getElementById("canvases").appendChild(div);
+
+  xhr.onload = function(e) {
+    var parser = GeoTIFF.parse(this.response);
+    var image = parser.getImage();
+    console.log(image);
+    console.log(image.getTiePoints());
+
+    bandsSelect.addEventListener("change", function(e) {
+      var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]);
+      plot.setData(raster[0],
+        image.getWidth(),
+        image.getHeight()
+        //imageWindow[2] - imageWindow[0],
+        //imageWindow[3] - imageWindow[1]
+      );
+      plot.render();
+    });
+
+    //var raster = image.readRaster(imageWindow , [0]);
+    var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [0]);
+
+    var canvas = document.getElementById(filename);
+    var plot = new plotty2.plot(canvas);
+    plot.setData(raster[0],
+      image.getWidth(),
+      image.getHeight()
+      //imageWindow[2] - imageWindow[0],
+      //imageWindow[3] - imageWindow[1]
+    );
+    plot.setScale(
+      ['#440154', '#472b7a', '#3b518a', '#2c718e', '#218e8c', '#26ac81', '#59c764', '#a7db33', '#fde724'],
+      [0, .125, .25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
+    )
+    plot.setDomain([0000, 10000]);
+    plot.render();
+  };
+
+  xhr.send();
+});
+/*
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'data/stripped.tiff', true);
-//xhr.open('GET', 'http://localhost:8001/ows?service=WCS&version=2.0.1&request=GetCoverage&coverageid=ASA_WSM_1PNDPA20050331_075939_000000552036_00035_16121_0775&format=image/tiff&outputcrs=EPSG:4326', true);
+xhr.open('GET', 'data/tiledplanar.tiff', true);
+//xhr.open('GET', 'http://localhost:8001/ows?service=WCS&version=2.0.1&request=GetCoverage&coverageid=ASA_WSM_1PNDPA20050331_075939_000000552036_00035_16121_0775&format=image/tiff&outputcrs=EPSG:4326&subset=x(16,21)&subset=y(-35,-32)&subsettingcrs=EPSG:4326', true);
 xhr.responseType = 'arraybuffer';
 
 var canvas = document.getElementById("canvas");
@@ -42,7 +141,7 @@ xhr.onload = function(e) {
   }
 
   bandsSelect.onchange = function(e) {
-    var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [bandsSelect.options[bandsSelect.selectedIndex].value]);
+    var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]);
     plot.setData(raster[0],
       image.getWidth(),
       image.getHeight()
@@ -53,7 +152,7 @@ xhr.onload = function(e) {
   }
 
   //var raster = image.readRaster(imageWindow , [0]);
-  var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [0]);
+  var raster = image.readRasters([0, 0, image.getWidth(), image.getHeight()], [1]);
 
   var plot = new plotty2.plot(canvas);
   plot.setData(raster[0],
@@ -71,7 +170,7 @@ xhr.onload = function(e) {
 };
 
 xhr.send();
-
+*/
 </script>
 </body>
 </html>
