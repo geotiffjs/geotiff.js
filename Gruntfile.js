@@ -107,6 +107,14 @@ module.exports = function(grunt) {
             all: {
                 configFile: 'karma.conf.js'
             }
+        },
+        jsdoc: {
+            dist: {
+                src: ['src/*.js', 'test/*.js'],
+                options: {
+                    destination: 'docs'
+                }
+            }
         }
     });
 
@@ -116,6 +124,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
