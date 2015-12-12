@@ -55,15 +55,22 @@ or:
 ```html
 <script src="geotiff.js"></script>
 <script>
-    console.log(GeoTIFF);
+  console.log(GeoTIFF);
 </script>
 ```
 
 To actually open a GeoTIFF image use the `parse` function. It works with both 
-strings and `ArrayBuffers`:
+strings and `ArrayBuffer`:
 
 ```javascript
-var tiff = GeoTIFF.parse(data);
+var xhr = new XMLHttpRequest();
+xhr.open('GET', url, true);
+xhr.responseType = 'arraybuffer';
+xhr.onload = function(e) {
+  var tiff = GeoTIFF.parse(this.response);
+  // ...
+}
+xhr.send();
 ```
 
 Each TIFF file can be comprised of multiple "subfiles", containing the actual
@@ -89,7 +96,7 @@ var rasters = image.readRasters(rasterWindow, samples);
 // var rasters = image.readRasters();
 
 for (var i = 0; i < rasters.length; ++i) {
-    console.log(rasters[i]);
+  console.log(rasters[i]);
 }
 ```
 
@@ -105,6 +112,22 @@ console.log(image.getFileDirectory(), image.getGeoKeys());
 There is a nice HTML 5/WebGL based rendering library called
 [plotty](https://github.com/santilland/plotty), that allows for some really nice
 on the fly rendering of the data contained in a GeoTIFF.
+
+```html
+<canvas id="plot"></canvas>
+<script>
+  // ...
+  var tiff = GeoTIFF.parse(data);
+  var image = tiff.getImage();
+  var raster = image.readRasters()[0];
+  var canvas = document.getElementById("plot");
+  var plot = new plotty.plot(
+    canvas, raster, image.getWidth(), image.getHeight(),
+    [0, 256], "viridis"
+  );
+  plot.render();
+</script>
+```
 
 ## TODO
 
