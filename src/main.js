@@ -1,11 +1,11 @@
 
 (function() {
   var parse = function(data) {
-    var rawData;
+    var rawData, i;
     if (typeof data === "string" || data instanceof String) {
       rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
       var view = new Uint16Array(rawData);
-      for (var i=0, strLen=data.length; i<strLen; i++) {
+      for (i=0, strLen=data.length; i<strLen; i++) {
         view[i] = data.charCodeAt(i);
       }
     }
@@ -13,9 +13,9 @@
       rawData = data;
     }
     else if (typeof Buffer !== "undefined" && data instanceof Buffer) {
-      var rawData = new ArrayBuffer(data.length);
+      rawData = new ArrayBuffer(data.length);
       var view = new Uint8Array(rawData);
-      for (var i = 0; i < data.length; ++i) {
+      for (i=0; i<data.length; ++i) {
         view[i] = data[i];
       }
     }
