@@ -14,6 +14,15 @@ var sum = function(array, start, end) {
   return s;
 };
 
+/**
+ * GeoTIFF sub-file image.
+ * @constructor
+ * @param {Object} fileDirectory The parsed file directory
+ * @param {Object} geoKeys The parsed geo-keys
+ * @param {DataView} dataView The DataView for the underlying file.
+ * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+ */
+
 var GeoTIFFImage = function(fileDirectory, geoKeys, dataView, littleEndian) {
   this.fileDirectory = fileDirectory;
   this.geoKeys = geoKeys;
@@ -29,24 +38,52 @@ var GeoTIFFImage = function(fileDirectory, geoKeys, dataView, littleEndian) {
 };
 
 GeoTIFFImage.prototype = {
+  /**
+   * Returns the associated parsed file directory.
+   * @returns {Object} the parsed file directory
+   */
   getFileDirectory: function() {
     return this.fileDirectory;
   },
+  /**
+   * Returns the associated parsed geo keys.
+   * @returns {Object} the parsed geo keys
+   */
   getGeoKeys: function() {
     return this.geoKeys;
   },
+  /**
+   * Returns the width of the image.
+   * @returns {Number} the width of the image
+   */
   getWidth: function() {
     return this.fileDirectory.ImageWidth;
   },
+  /**
+   * Returns the height of the image.
+   * @returns {Number} the height of the image
+   */
   getHeight: function() {
     return this.fileDirectory.ImageLength;
   },
+  /**
+   * Returns the number of samples per pixel.
+   * @returns {Number} the number of samples per pixel
+   */
   getSamplesPerPixel: function() {
     return this.fileDirectory.SamplesPerPixel;
   },
+  /**
+   * Returns the width of each tile.
+   * @returns {Number} the width of each tile
+   */
   getTileWidth: function() {
     return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
   },
+  /**
+   * Returns the height of each tile.
+   * @returns {Number} the height of each tile
+   */
   getTileHeight: function() {
     return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
   },
@@ -168,7 +205,13 @@ GeoTIFFImage.prototype = {
     throw Error("Unsupported data format/bitsPerSample");
   },
 
-  // Get the Tile or Strip by coordinates/index
+  /**
+   * Returns the decoded strip or tile.
+   * @param {Number} x the strip or tile x-offset
+   * @param {Number} y the tile y-offset (0 for stripped images)
+   * @param {Number} plane the planar configuration (1: "chunky", 2: "separate samples")
+   * @returns {(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)}
+   */
   getTileOrStrip: function(x, y, plane) {
     var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
@@ -255,6 +298,15 @@ GeoTIFFImage.prototype = {
     }
   },
 
+  /**
+   * Reads raster data from the image. This function reads all selected samples
+   * into separate arrays of the correct type for that sample. When provided,
+   * only a subset of the raster is read for each sample.
+   *
+   * @param {Array} [imageWindow=whole image] the subset to read data from.
+   * @param {Array} [samples=all samples]
+   * @returns {TypedArray[]} the requested data as a summary array, one TypedArray for each requested sample
+   */
   readRasters: function(imageWindow, samples) {
     imageWindow = imageWindow || [0, 0, this.getWidth(), this.getHeight()];
 
@@ -291,8 +343,11 @@ GeoTIFFImage.prototype = {
     this._readRaster(imageWindow, samples, valueArrays);
     return valueArrays;
   },
-  // Geo related stuff:
 
+  /**
+   * Returns an array of tiepoints.
+   * @returns {Object[]}
+   */
   getTiePoints: function() {
     if (!this.fileDirectory.ModelTiepoint) {
       return [];

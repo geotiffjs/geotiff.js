@@ -9,6 +9,12 @@ var globals = require("./globals.js"),
   GeoTIFFImage = require("./geotiffimage.js");
 
 
+/**
+ * The abstraction for a whole GeoTIFF file.
+ * @constructor
+ * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+ */
+
 var GeoTIFF = function(rawData) {
   this.dataView = new DataView(rawData);
 
@@ -194,6 +200,12 @@ GeoTIFF.prototype = {
     return fileDirectories;
   },
 
+  /**
+   * Get the n-th internal subfile a an image. By default, the first is returned.
+   *
+   * @param {Number} [index=0] the index of the image to return.
+   * @returns {GeoTIFFImage} the image at the given index
+   */
   getImage: function(index) {
     index = index || 0;
     var fileDirectoryAndGeoKey = this.fileDirectories[index];
@@ -203,6 +215,11 @@ GeoTIFF.prototype = {
     return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
   },
 
+  /**
+   * Returns the count of the internal subfiles.
+   * 
+   * @returns {Number} the number of internal subfile images
+   */
   getImageCount: function() {
     return this.fileDirectories.length;
   }
