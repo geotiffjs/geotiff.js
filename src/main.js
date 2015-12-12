@@ -12,6 +12,13 @@
     else if (data instanceof ArrayBuffer) {
       rawData = data;
     }
+    else if (typeof Buffer !== "undefined" && data instanceof Buffer) {
+      var rawData = new ArrayBuffer(data.length);
+      var view = new Uint8Array(rawData);
+      for (var i = 0; i < data.length; ++i) {
+        view[i] = data[i];
+      }
+    }
     else {
       throw new Error("Invalid input data given.");
     }

@@ -60,7 +60,7 @@ or:
 ```
 
 To actually open a GeoTIFF image use the `parse` function. It works with both 
-strings and `ArrayBuffer`:
+strings and `ArrayBuffer` and nodes `Buffer`:
 
 ```javascript
 var xhr = new XMLHttpRequest();
@@ -71,6 +71,20 @@ xhr.onload = function(e) {
   // ...
 }
 xhr.send();
+```
+
+The same for node:
+
+```javascript
+var GeoTIFF = require("geotiff");
+var fs = require("fs");
+
+fs.readFile(path, function(err, data) {
+  if (err) throw err;
+  var tiff=GeoTIFF.parse(data);
+  // ...
+});
+
 ```
 
 Each TIFF file can be comprised of multiple "subfiles", containing the actual

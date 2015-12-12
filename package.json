@@ -4,7 +4,7 @@
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": "https://github.com/constantinius/geotiff.js",
   "keywords": "TIFF GeoTIFF Image",
-  "main": "dist/geotiff.js",
+  "main": "src/main.js",
   "devDependencies": {
     "chai": "^3.4.1",
     "grunt": "^0.4.5",
