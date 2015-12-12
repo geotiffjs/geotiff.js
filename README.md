@@ -81,9 +81,9 @@ an `Array` of `TypedArrays` for each of the requested samples of the requested
 region:
 
 ```javascript
-var window = [50, 50, 100, 100]; // left, top, right, bottom
+var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
 var samples = [0, 1, 2, 3];
-var rasters = image.readRasters(window, samples);
+var rasters = image.readRasters(rasterWindow, samples);
 
 // to read all the complete rasters 
 // var rasters = image.readRasters();
