@@ -81,7 +81,7 @@ var fs = require("fs");
 
 fs.readFile(path, function(err, data) {
   if (err) throw err;
-  var tiff=GeoTIFF.parse(data);
+  var tiff = GeoTIFF.parse(data);
   // ...
 });
 
