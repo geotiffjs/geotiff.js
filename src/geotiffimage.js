@@ -4,7 +4,8 @@ var globals = require("./globals.js"),
   fieldTagNames = globals.fieldTagNames,
   arrayFields = globals.arrayFields,
   fieldTypes = globals.fieldTypes,
-  fieldTypeNames = globals.fieldTypeNames;
+  fieldTypeNames = globals.fieldTypeNames,
+  parseXml = globals.parseXml;
 
 var sum = function(array, start, end) {
   var s = 0;
@@ -365,6 +366,28 @@ GeoTIFFImage.prototype = {
       });
     }
     return tiePoints;
+  },
+
+  /**
+   * Returns the parsed GDAL metadata items.
+   * @returns {Object}
+   */
+  getGDALMetadata: function() {
+    var metadata = {};
+    if (!this.fileDirectory.GDAL_METADATA) {
+      return null;
+    }
+
+    var xmlDom = parseXml(this.fileDirectory.GDAL_METADATA);
+    var result = xmlDom.evaluate(
+      "GDALMetadata/Item", xmlDom, null,
+      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null
+    );
+    for (var i=0; i < result.snapshotLength; ++i) {
+      var node = result.snapshotItem(i);
+      metadata[node.getAttribute("name")] = node.textContent;
+    }
+    return metadata;
   }
 };
 

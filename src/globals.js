@@ -210,6 +210,22 @@ for (key in geoKeyNames) {
   geoKeys[geoKeyNames[key]] = parseInt(key);
 }
 
+// TODO: same for node.js
+var parseXml;
+if (typeof window.DOMParser !== "undefined") {
+  parseXml = function(xmlStr) {
+    return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+  };
+}
+else if (typeof window.ActiveXObject !== "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
+  parseXml = function(xmlStr) {
+    var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+    xmlDoc.async = "false";
+    xmlDoc.loadXML(xmlStr);
+    return xmlDoc;
+  };
+}
+
 module.exports = {
   fieldTags: fieldTags,
   fieldTagNames: fieldTagNames,
@@ -217,5 +233,6 @@ module.exports = {
   fieldTypes: fieldTypes,
   fieldTypeNames: fieldTypeNames,
   geoKeys: geoKeys,
-  geoKeyNames: geoKeyNames
+  geoKeyNames: geoKeyNames,
+  parseXml: parseXml
 };
