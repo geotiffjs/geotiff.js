@@ -1,4 +1,4 @@
-var globals = require("./globals.js"),
+var globals = require("./globals"),
   fieldTags = globals.fieldTags,
   fieldTagNames = globals.fieldTagNames,
   arrayFields = globals.arrayFields,

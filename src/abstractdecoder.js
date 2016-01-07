@@ -1,0 +1,13 @@
+var AbstractDecoder = function() {};
+
+AbstractDecoder.prototype = {
+  isAsync: function() {
+    // TODO: check if async reading func is enabled or not.
+    return (!this.decodeBlock);
+  },
+  decodeBlock: null,
+  decodeBlockAsync: null
+};
+
+
+module.exports = AbstractDecoder;
