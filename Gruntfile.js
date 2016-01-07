@@ -85,7 +85,7 @@ module.exports = function(grunt) {
                 options: {
                     livereload: '<%= connect.options.livereload %>'
                 },
-                tasks: ['jshint', 'browserify', 'mocha'],
+                tasks: ['jshint', 'browserify'],
                 files: [
                     'test/*.html',
                     'src/*.js',
