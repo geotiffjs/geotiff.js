@@ -15,5 +15,8 @@
         "_" : true,
         "module" : true,
         "exports" : true
-    }
+    },
+    "devel": true,
+    "loopfunc": true,
+    "predef":  ["Promise"]
 }
