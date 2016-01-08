@@ -1,36 +1,36 @@
 var AbstractDecoder = require("../abstractdecoder.js");
 
 
-var Decoder = function() {}
+var PackbitsDecoder = function() {}
 
-Decoder.prototype = Object.create(AbstractDecoder.prototype, {
-  decodeBlock: function(buffer) {
-    var dataView = new DataView(buffer);
-    var out = [];
-    //
-    for (var i=0; i < buffer.byteLength; ++i) {
-      var header = dataView.getInt8(i);
-      if (header < 0) {
-        var next = dataView.getUint8(i+1);
-        header = -header;
-        for (var j=0; j < header; ++j) {
-          out.push(next);
-        }
-        i += 1;
+PackbitsDecoder.prototype = Object.create(AbstractDecoder.prototype);
+
+PackbitsDecoder.prototype.decodeBlock = function(buffer) {
+  var dataView = new DataView(buffer);
+  var out = [];
+  //
+  for (var i=0; i < buffer.byteLength; ++i) {
+    var header = dataView.getInt8(i);
+    if (header < 0) {
+      var next = dataView.getUint8(i+1);
+      header = -header;
+      for (var j=0; j<=header; ++j) {
+        out.push(next);
       }
-      else {
-        for (var j=0; j<header; ++j) {
-          out.push(dataView.getUint8(i+j+1));
-        }
-        i += header;
-      }
+      i += 1;
     }
-
-    return new Uint8Array(out).buffer;
+    else {
+      for (var j=0; j<=header; ++j) {
+        out.push(dataView.getUint8(i+j+1));
+      }
+      i += header + 1;
+    }
   }
-});
 
-Decoder.prototype.constructor = Decoder;
+  return new Uint8Array(out).buffer;
+}
+
+PackbitsDecoder.prototype.constructor = PackbitsDecoder;
 
 
-module.exports = Decoder;
+module.exports = PackbitsDecoder;

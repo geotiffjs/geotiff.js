@@ -9,7 +9,7 @@ var DeflateDecoder = function() {}
 
 DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype);
 
-DeflateDecoder.prototype.decodeBlockAsync = function(buffer) {
+DeflateDecoder.prototype.decodeBlockAsync = function(buffer, callback) {
   return new Promise(function(resolve, reject) {
     through(function (data) {
       this.queue(new Buffer(new Uint8Array(buffer)));
@@ -31,9 +31,11 @@ DeflateDecoder.prototype.decodeBlockAsync = function(buffer) {
       for (var i = 0; i < buffer.length; ++i) {
           view[i] = buffer[i];
       }
-      resolve(arrayBuffer);
+      callback(null, arrayBuffer);
     })
-    .on("error", reject);
+    .on("error", function(error) {
+      callback(error, null)
+    });
 
     // TODO: FIXME
   });

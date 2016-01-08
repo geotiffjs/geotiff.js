@@ -14,7 +14,6 @@
     "globals" : {
         "_" : true,
         "module" : true,
-        "exports" : true,
-        "Promise": true
+        "exports" : true
     }
 }
