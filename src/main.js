@@ -1,3 +1,5 @@
+var isBuffer = require('is-buffer');
+
 /** 
  * Main parsing function for GeoTIFF files.
  * @param {(string|ArrayBuffer|Buffer)} data Raw data to parse the GeoTIFF from.
@@ -15,7 +17,7 @@ var parse = function(data) {
   else if (data instanceof ArrayBuffer) {
     rawData = data;
   }
-  else if (typeof Buffer !== "undefined" && data instanceof Buffer) {
+  else if (isBuffer(data)) {
     rawData = new ArrayBuffer(data.length);
     view = new Uint8Array(rawData);
     for (i=0; i<data.length; ++i) {
