@@ -1,6 +1,7 @@
 {
     "curly" : true,
     "eqeqeq" : true,
+    "esnext": true,
     "immed" : true,
     "latedef" : true,
     "newcap" : true,

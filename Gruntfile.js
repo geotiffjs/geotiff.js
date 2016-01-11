@@ -96,7 +96,15 @@ module.exports = function(grunt) {
         },
         browserify: {
             dist: {
-                files: config.browserifyFiles
+                files: config.browserifyFiles,
+                options: {
+                    transform: [
+                        ["babelify", {
+                            "presets": ["es2015"]
+                            //loose: "all"
+                        }]
+                    ]
+                },
             },
         },
         bump: {

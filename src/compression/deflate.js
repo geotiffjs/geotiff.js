@@ -1,16 +1,11 @@
-var AbstractDecoder = require("../abstractdecoder.js");
+import AbstractDecoder from "../abstractdecoder.js"
 
 var Buffer = require('buffer');
 var inflate = require('inflate');
 var through = require('through');
 
-
-var DeflateDecoder = function() {}
-
-DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype);
-
-DeflateDecoder.prototype.decodeBlockAsync = function(buffer, callback) {
-  return new Promise(function(resolve, reject) {
+export default class DeflateDecoder extends AbstractDecoder {
+  decodeBlockAsync(buffer, callback) {
     through(function (data) {
       this.queue(new Buffer(new Uint8Array(buffer)));
     },
@@ -36,12 +31,5 @@ DeflateDecoder.prototype.decodeBlockAsync = function(buffer, callback) {
     .on("error", function(error) {
       callback(error, null)
     });
-
-    // TODO: FIXME
-  });
-};
-
-DeflateDecoder.prototype.constructor = DeflateDecoder;
-
-
-module.exports = DeflateDecoder;
+  }
+}

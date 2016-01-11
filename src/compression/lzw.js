@@ -1,18 +1,9 @@
-var AbstractDecoder = require("../abstractdecoder.js");
+import AbstractDecoder from "../abstractdecoder.js"
+var lzwCompress = require("lzwcompress");
 
 
-var Decoder = function() {}
-
-Decoder.prototype = Object.create(AbstractDecoder.prototype);
-
-Decoder.prototype.decodeBlock = function(buffer) {
-    var lzwCompress = require("lzwcompress");
-
-    //Array.prototype.slice.call(new Uint16Array(buffer));
+export default class LZWDecoder extends AbstractDecoder {
+  decodeBlock(buffer) {
     return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
-  };
-
-Decoder.prototype.constructor = Decoder;
-
-
-module.exports = Decoder;
+  }
+}
