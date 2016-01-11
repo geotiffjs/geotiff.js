@@ -1,3 +1,5 @@
+import GeoTIFF from "./geotiff.js";
+
 /** 
  * Main parsing function for GeoTIFF files.
  * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
@@ -18,7 +20,6 @@ var parse = function(data) {
   else {
     throw new Error("Invalid input data given.");
   }
-  var GeoTIFF = require("./geotiff.js");
   return new GeoTIFF(rawData);
 };
 

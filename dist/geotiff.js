@@ -1338,6 +1338,12 @@ module.exports = {
 },{}],9:[function(require,module,exports){
 "use strict";
 
+var _geotiff = require("./geotiff.js");
+
+var _geotiff2 = _interopRequireDefault(_geotiff);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /** 
  * Main parsing function for GeoTIFF files.
  * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
@@ -1356,8 +1362,7 @@ var parse = function parse(data) {
   } else {
     throw new Error("Invalid input data given.");
   }
-  var GeoTIFF = require("./geotiff.js");
-  return new GeoTIFF(rawData);
+  return new _geotiff2.default(rawData);
 };
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
