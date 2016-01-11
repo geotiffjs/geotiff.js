@@ -1,6 +1,7 @@
 {
     "curly" : true,
     "eqeqeq" : true,
+    "esnext": true,
     "immed" : true,
     "latedef" : true,
     "newcap" : true,
@@ -15,8 +16,5 @@
         "_" : true,
         "module" : true,
         "exports" : true
-    },
-    "devel": true,
-    "loopfunc": true,
-    "predef":  ["Promise"]
+    }
 }

@@ -1,6 +1,6 @@
 /** 
  * Main parsing function for GeoTIFF files.
- * @param {(string|ArrayBuffer|Buffer)} data Raw data to parse the GeoTIFF from.
+ * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
  * @returns {GeoTIFF} the parsed geotiff file.
  */
 var parse = function(data) {
@@ -14,13 +14,6 @@ var parse = function(data) {
   }
   else if (data instanceof ArrayBuffer) {
     rawData = data;
-  }
-  else if (typeof Buffer !== "undefined" && data instanceof Buffer) {
-    rawData = new ArrayBuffer(data.length);
-    view = new Uint8Array(rawData);
-    for (i=0; i<data.length; ++i) {
-      view[i] = data[i];
-    }
   }
   else {
     throw new Error("Invalid input data given.");

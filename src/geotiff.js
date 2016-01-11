@@ -1,45 +1,37 @@
-var globals = require("./globals.js"),
-  fieldTags = globals.fieldTags,
-  fieldTagNames = globals.fieldTagNames,
-  arrayFields = globals.arrayFields,
-  fieldTypes = globals.fieldTypes,
-  fieldTypeNames = globals.fieldTypeNames,
-  geoKeys = globals.geoKeys,
-  geoKeyNames = globals.geoKeyNames,
-  GeoTIFFImage = require("./geotiffimage.js");
+import {fieldTags, fieldTagNames, arrayFields, fieldTypes, fieldTypeNames, geoKeys, geoKeyNames} from "./globals";
+import GeoTIFFImage from "./geotiffimage.js";
 
 
-/**
- * The abstraction for a whole GeoTIFF file.
- * @constructor
- * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
- */
+export default class GeoTIFF {
+  /**
+   * The abstraction for a whole GeoTIFF file.
+   * @constructor
+   * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+   */
+  constructor(rawData) {
+    this.dataView = new DataView(rawData);
 
-var GeoTIFF = function(rawData) {
-  this.dataView = new DataView(rawData);
+    var BOM = this.dataView.getUint16(0, 0);
+    if (BOM === 0x4949) {
+      this.littleEndian = true;
+    }
+    else if (BOM === 0x4D4D) {
+      this.littleEndian = false;
+    }
+    else {
+      throw new TypeError("Invalid byte order value.");
+    }
 
-  var BOM = this.dataView.getUint16(0, 0);
-  if (BOM === 0x4949) {
-    this.littleEndian = true;
-  }
-  else if (BOM === 0x4D4D) {
-    this.littleEndian = false;
-  }
-  else {
-    throw new TypeError("Invalid byte order value.");
-  }
+    if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
+      throw new TypeError("Invalid magic number.");
+    }
 
-  if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
-    throw new TypeError("Invalid magic number.");
+    this.fileDirectories = this.parseFileDirectories(
+      this.dataView.getUint32(4, this.littleEndian)
+    );
   }
 
-  this.fileDirectories = this.parseFileDirectories(
-    this.dataView.getUint32(4, this.littleEndian)
-  );
-};
-
-GeoTIFF.prototype = {
-  getFieldTypeLength: function (fieldType) {
+  getFieldTypeLength (fieldType) {
     switch (fieldType) {
       case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
         return 1;
@@ -52,9 +44,9 @@ GeoTIFF.prototype = {
       default:
         throw new RangeError("Invalid field type: " + fieldType);
     }
-  },
+  }
 
-  getValues: function(fieldType, count, offset) {
+  getValues(fieldType, count, offset) {
     var values = null;
     var readMethod = null;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
@@ -119,9 +111,9 @@ GeoTIFF.prototype = {
       return String.fromCharCode.apply(null, values);
     }
     return values;
-  },
+  }
 
-  getFieldValues: function(fieldTag, fieldType, typeCount, valueOffset) {
+  getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
     var fieldValues;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
 
@@ -138,9 +130,9 @@ GeoTIFF.prototype = {
     }
 
     return fieldValues;
-  },
+  }
 
-  parseGeoKeyDirectory: function(fileDirectory) {
+  parseGeoKeyDirectory(fileDirectory) {
     var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
     if (!rawGeoKeyDirectory) {
       return null;
@@ -172,9 +164,9 @@ GeoTIFF.prototype = {
       geoKeyDirectory[key] = value;
     }
     return geoKeyDirectory;
-  },
+  }
 
-  parseFileDirectories: function(byteOffset) {
+  parseFileDirectories(byteOffset) {
     var nextIFDByteOffset = byteOffset;
     var fileDirectories = [];
 
@@ -198,7 +190,7 @@ GeoTIFF.prototype = {
       nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
     }
     return fileDirectories;
-  },
+  }
 
   /**
    * Get the n-th internal subfile a an image. By default, the first is returned.
@@ -206,23 +198,21 @@ GeoTIFF.prototype = {
    * @param {Number} [index=0] the index of the image to return.
    * @returns {GeoTIFFImage} the image at the given index
    */
-  getImage: function(index) {
+  getImage(index) {
     index = index || 0;
     var fileDirectoryAndGeoKey = this.fileDirectories[index];
     if (!fileDirectoryAndGeoKey) {
       throw new RangeError("Invalid image index");
     }
     return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
-  },
+  }
 
   /**
    * Returns the count of the internal subfiles.
    * 
    * @returns {Number} the number of internal subfile images
    */
-  getImageCount: function() {
+  getImageCount() {
     return this.fileDirectories.length;
   }
-};
-
-module.exports = GeoTIFF;
+}
