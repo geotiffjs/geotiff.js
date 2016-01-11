@@ -33,7 +33,14 @@ module.exports = function(config) {
       'test/*spec.js': [ 'browserify' ]
     },
 
-
+    browserify: {
+        debug: true,
+        transform: [
+            ["babelify", {
+                "presets": ["es2015"]
+            }]
+        ]
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

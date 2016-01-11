@@ -1,6 +1,5 @@
-var GeoTIFF = require("../src/main.js");
 var expect = require("chai").expect;
-
+import GeoTIFF from "../src/main.js"
 
 describe("mainTests", function() {
   it("geotiff.js module available", function() {
@@ -30,11 +29,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Uint16Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -46,11 +53,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Uint16Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -62,11 +77,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Uint16Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -78,11 +101,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Uint16Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -94,11 +125,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Int32Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Int32Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -110,11 +149,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Uint32Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint32Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -126,11 +173,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Float32Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Float32Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
@@ -142,11 +197,19 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
-      var allData = image.readRasters([200, 200, 210, 210]);
-      expect(allData).to.have.length(15);
-      expect(allData[0]).to.be.an.instanceof(Float64Array);
-      expect(image.readRasters([200, 200, 210, 210], [5])[0]).to.deep.equal(allData[5])
-      done();
+
+      image.readRasters([200, 200, 210, 210], null, function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Float64Array);
+        image.readRasters([200, 200, 210, 210], [5], function(data) {
+          expect(data[0]).to.deep.equal(allData[5]);
+          done();
+        }, function(error) {
+          done(error);
+        });
+      }, function(error) {
+        done(error);
+      });
     });
   });
 
