@@ -212,7 +212,7 @@ for (key in geoKeyNames) {
 
 var parseXml;
 //node.js version
-if (typeof window == "undefined") {
+if (typeof window === "undefined") {
   parseXml = function(xmlStr) {
     //requires xlmdom module
     var DOMParser = require('xmldom').DOMParser;
