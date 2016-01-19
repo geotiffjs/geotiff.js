@@ -210,11 +210,11 @@ for (key in geoKeyNames) {
   geoKeys[geoKeyNames[key]] = parseInt(key);
 }
 
-// TODO: same for node.js
 var parseXml;
 //node.js version
 if (typeof window == "undefined") {
   parseXml = function(xmlStr) {
+    //requires xlmdom module
     var DOMParser = require('xmldom').DOMParser;
     return ( new DOMParser() ).parseFromString(xmlStr, "text/xml");
   };
