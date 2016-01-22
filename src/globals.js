@@ -211,10 +211,10 @@ for (key in geoKeyNames) {
 }
 
 var parseXml;
-//node.js version
+// node.js version
 if (typeof window === "undefined") {
   parseXml = function(xmlStr) {
-    //requires xlmdom module
+    // requires xmldom module
     var DOMParser = require('xmldom').DOMParser;
     return ( new DOMParser() ).parseFromString(xmlStr, "text/xml");
   };

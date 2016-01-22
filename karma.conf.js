@@ -39,6 +39,9 @@ module.exports = function(config) {
             ["babelify", {
                 "presets": ["es2015"]
             }]
+        ],
+        external: [
+            "xmldom"
         ]
     },
 
