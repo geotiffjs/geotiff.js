@@ -156,7 +156,7 @@ for (key in fieldTypeNames) {
 }
 
 var geoKeyNames = {
-  1024: 'GTModelTypeGeoKey', 
+  1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
   1026: 'GTCitationGeoKey',
   2048: 'GeographicTypeGeoKey',
@@ -210,9 +210,16 @@ for (key in geoKeyNames) {
   geoKeys[geoKeyNames[key]] = parseInt(key);
 }
 
-// TODO: same for node.js
 var parseXml;
-if (typeof window.DOMParser !== "undefined") {
+//node.js version
+if (typeof window === "undefined") {
+  parseXml = function(xmlStr) {
+    //requires xlmdom module
+    var DOMParser = require('xmldom').DOMParser;
+    return ( new DOMParser() ).parseFromString(xmlStr, "text/xml");
+  };
+}
+else if (typeof window.DOMParser !== "undefined") {
   parseXml = function(xmlStr) {
     return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
   };
