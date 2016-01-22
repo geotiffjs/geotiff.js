@@ -1309,9 +1309,15 @@ for (key in geoKeyNames) {
   geoKeys[geoKeyNames[key]] = parseInt(key);
 }
 
-// TODO: same for node.js
 var parseXml;
-if (typeof window.DOMParser !== "undefined") {
+// node.js version
+if (typeof window === "undefined") {
+  parseXml = function parseXml(xmlStr) {
+    // requires xmldom module
+    var DOMParser = require('xmldom').DOMParser;
+    return new DOMParser().parseFromString(xmlStr, "text/xml");
+  };
+} else if (typeof window.DOMParser !== "undefined") {
   parseXml = function parseXml(xmlStr) {
     return new window.DOMParser().parseFromString(xmlStr, "text/xml");
   };
@@ -1335,7 +1341,7 @@ module.exports = {
   parseXml: parseXml
 };
 
-},{}],9:[function(require,module,exports){
+},{"xmldom":"xmldom"}],9:[function(require,module,exports){
 "use strict";
 
 var _geotiff = require("./geotiff.js");
