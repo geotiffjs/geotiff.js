@@ -464,7 +464,43 @@ export default class GeoTIFFImage {
    * @param {GeoTIFFImage~readCallback} callback the success callback
    * @param {GeoTIFFImage~readErrorCallback} callbackError the error callback
    */
-  readRasters(imageWindow, samples, callback, callbackError) {
+  readRasters() {
+    var imageWindow, samples, callback, callbackError;
+
+    var argCount = arguments.length;
+    if (argCount > 4 || argCount === 0) {
+      throw new Error("Invalid number of arguments passed.");
+    }
+
+    var last = arguments[argCount-1],
+      prevLast = arguments[argCount-2];
+
+    if (typeof prevLast === "function") {
+      callback = prevLast;
+      callbackError = last;
+      switch (argCount) {
+        case 3:
+          imageWindow = arguments[0];
+          break;
+        case 4:
+          imageWindow = arguments[0];
+          samples = arguments[1];
+          break;
+      }
+    }
+    else {
+      callback = last;
+      switch (argCount) {
+        case 2:
+          imageWindow = arguments[0];
+          break;
+        case 3:
+          imageWindow = arguments[0];
+          samples = arguments[1];
+          break;
+      }
+    }
+
     imageWindow = imageWindow || [0, 0, this.getWidth(), this.getHeight()];
 
     if (imageWindow[0] < 0 ||

@@ -60,7 +60,7 @@ or:
 ```
 
 To actually open a GeoTIFF image use the `parse` function. It works with both 
-strings and `ArrayBuffer` and nodes `Buffer`:
+strings and `ArrayBuffer` and `String`s:
 
 ```javascript
 var xhr = new XMLHttpRequest();
@@ -104,14 +104,13 @@ region:
 ```javascript
 var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
 var samples = [0, 1, 2, 3];
-var rasters = image.readRasters(rasterWindow, samples);
-
+image.readRasters(rasterWindow, samples, function(rasters) {
+  for (var i = 0; i < rasters.length; ++i) {
+    console.log(rasters[i]);
+  }  
+});
 // to read all the complete rasters 
-// var rasters = image.readRasters();
-
-for (var i = 0; i < rasters.length; ++i) {
-  console.log(rasters[i]);
-}
+// var rasters = image.readRasters(null, null, function(rasters) { ... });
 ```
 
 To read TIFF or geo-spatial metadata, the methods `.getFileDirectory()` and
@@ -133,13 +132,15 @@ on the fly rendering of the data contained in a GeoTIFF.
   // ...
   var tiff = GeoTIFF.parse(data);
   var image = tiff.getImage();
-  var raster = image.readRasters()[0];
-  var canvas = document.getElementById("plot");
-  var plot = new plotty.plot(
-    canvas, raster, image.getWidth(), image.getHeight(),
-    [0, 256], "viridis"
-  );
-  plot.render();
+  var raster = image.readRasters(null, null, function(rasters) {
+    var canvas = document.getElementById("plot");
+    var plot = new plotty.plot({
+      canvas: canvas, data: rasters[0],
+      width: image.getWidth(), height: image.getHeight(),
+      domain: [0, 256], colorScale: "viridis"
+    });
+    plot.render();  
+  });
 </script>
 ```
 

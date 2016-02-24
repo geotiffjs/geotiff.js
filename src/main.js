@@ -10,7 +10,7 @@ var parse = function(data) {
   if (typeof data === "string" || data instanceof String) {
     rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
     view = new Uint16Array(rawData);
-    for (i=0, strLen=data.length; i<strLen; i++) {
+    for (i=0, strLen=data.length; i<strLen; ++i) {
       view[i] = data.charCodeAt(i);
     }
   }

@@ -30,7 +30,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint16Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -54,7 +54,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint16Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -78,7 +78,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint16Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -102,7 +102,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint16Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -126,7 +126,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Int32Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -150,7 +150,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint32Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -174,7 +174,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Float32Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -198,7 +198,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Float64Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -222,7 +222,7 @@ describe("mainTests", function() {
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
 
-      image.readRasters([200, 200, 210, 210], null, function(allData){
+      image.readRasters([200, 200, 210, 210], function(allData){
         expect(allData).to.have.length(15);
         expect(allData[0]).to.be.an.instanceof(Uint16Array);
         image.readRasters([200, 200, 210, 210], [5], function(data) {
@@ -231,6 +231,84 @@ describe("mainTests", function() {
         }, function(error) {
           done(error);
         });
+      }, function(error) {
+        done(error);
+      });
+    });
+  });
+
+  it("should work with no options other than a callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters(function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0].length).to.equal(539*448);
+        done();
+      });
+    });
+  });
+
+  it("should work with callback and error callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters(function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0].length).to.equal(539*448);
+        done();
+      }, function(error) {
+        done(error);
+      });
+    });
+  });
+
+  it("should work with imageWindow and callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters([200, 200, 210, 210], function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0].length).to.equal(10*10);
+        done();
+      });
+    });
+  });
+
+  it("should work with imageWindow, callback and error callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters([200, 200, 210, 210], function(allData){
+        expect(allData).to.have.length(15);
+        expect(allData[0].length).to.equal(10*10);
+        done();
+      }, function(error) {
+        done(error);
+      });
+    });
+  });
+
+  it("should work with imageWindow, samples and callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters([200, 200, 210, 210], [0], function(allData){
+        expect(allData).to.have.length(1);
+        expect(allData[0].length).to.equal(10*10);
+        done();
+      });
+    });
+  });
+
+  it("should work with imageWindow, samples, callback and error callback", function(done) {
+    retrieve("packbits.tiff", function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      image.readRasters([200, 200, 210, 210], [0], function(allData){
+        expect(allData).to.have.length(1);
+        expect(allData[0].length).to.equal(10*10);
+        done();
       }, function(error) {
         done(error);
       });

@@ -1007,7 +1007,42 @@ var GeoTIFFImage = function () {
 
   }, {
     key: "readRasters",
-    value: function readRasters(imageWindow, samples, callback, callbackError) {
+    value: function readRasters() {
+      var imageWindow, samples, callback, callbackError;
+
+      var argCount = arguments.length;
+      if (argCount > 4 || argCount === 0) {
+        throw new Error("Invalid number of arguments passed.");
+      }
+
+      var last = arguments[argCount - 1],
+          prevLast = arguments[argCount - 2];
+
+      if (typeof prevLast === "function") {
+        callback = prevLast;
+        callbackError = last;
+        switch (argCount) {
+          case 3:
+            imageWindow = arguments[0];
+            break;
+          case 4:
+            imageWindow = arguments[0];
+            samples = arguments[1];
+            break;
+        }
+      } else {
+        callback = last;
+        switch (argCount) {
+          case 2:
+            imageWindow = arguments[0];
+            break;
+          case 3:
+            imageWindow = arguments[0];
+            samples = arguments[1];
+            break;
+        }
+      }
+
       imageWindow = imageWindow || [0, 0, this.getWidth(), this.getHeight()];
 
       if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
@@ -1354,7 +1389,7 @@ var parse = function parse(data) {
   if (typeof data === "string" || data instanceof String) {
     rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
     view = new Uint16Array(rawData);
-    for (i = 0, strLen = data.length; i < strLen; i++) {
+    for (i = 0, strLen = data.length; i < strLen; ++i) {
       view[i] = data.charCodeAt(i);
     }
   } else if (data instanceof ArrayBuffer) {
