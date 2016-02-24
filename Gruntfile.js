@@ -103,6 +103,9 @@ module.exports = function(grunt) {
                             "presets": ["es2015"]
                             //loose: "all"
                         }]
+                    ],
+                    external: [
+                        "xmldom"
                     ]
                 },
             },
