@@ -151,3 +151,10 @@ on the fly rendering of the data contained in a GeoTIFF.
 * Automatic reading of RGB(A) data
 * Automatic reading of "Overviews", i.e: subfiles with reduced resolution
 * Better support for geokeys
+
+## Acknowledgements
+
+This library was inspired by
+[GeotiffParser](https://github.com/xlhomme/GeotiffParser.js). It provided a
+great starting point, but lacked the capabilities to read the raw raster data
+which is the aim of geotiff.js.
