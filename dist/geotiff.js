@@ -272,12 +272,16 @@ var GeoTIFF = function () {
    * The abstraction for a whole GeoTIFF file.
    * @constructor
    * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+   * @param {Object} [options] further options.
+   * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
    */
 
-  function GeoTIFF(rawData) {
+  function GeoTIFF(rawData, options) {
     _classCallCheck(this, GeoTIFF);
 
     this.dataView = new DataView(rawData);
+    options = options || {};
+    this.cache = options.cache || false;
 
     var BOM = this.dataView.getUint16(0, 0);
     if (BOM === 0x4949) {
@@ -463,7 +467,7 @@ var GeoTIFF = function () {
       if (!fileDirectoryAndGeoKey) {
         throw new RangeError("Invalid image index");
       }
-      return new _geotiffimage2.default(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
+      return new _geotiffimage2.default(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
     }
 
     /**
@@ -523,6 +527,43 @@ var sum = function sum(array, start, end) {
   return s;
 };
 
+var arrayForType = function arrayForType(format, bitsPerSample, size) {
+  switch (format) {
+    case 1:
+      // unsigned integer data
+      switch (bitsPerSample) {
+        case 8:
+          return new Uint8Array(size);
+        case 16:
+          return new Uint16Array(size);
+        case 32:
+          return new Uint32Array(size);
+      }
+      break;
+    case 2:
+      // twos complement signed integer data
+      switch (bitsPerSample) {
+        case 8:
+          return new Int8Array(size);
+        case 16:
+          return new Int16Array(size);
+        case 32:
+          return new Int32Array(size);
+      }
+      break;
+    case 3:
+      // floating point data
+      switch (bitsPerSample) {
+        case 32:
+          return new Float32Array(size);
+        case 64:
+          return new Float64Array(size);
+      }
+      break;
+  }
+  throw Error("Unsupported data format/bitsPerSample");
+};
+
 var GeoTIFFImage = function () {
   /**
    * GeoTIFF sub-file image.
@@ -531,16 +572,17 @@ var GeoTIFFImage = function () {
    * @param {Object} geoKeys The parsed geo-keys
    * @param {DataView} dataView The DataView for the underlying file.
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+   * @param {Boolean} cache Whether or not decoded tiles shall be cached
    */
 
-  function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian) {
+  function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
     _classCallCheck(this, GeoTIFFImage);
 
     this.fileDirectory = fileDirectory;
     this.geoKeys = geoKeys;
     this.dataView = dataView;
     this.littleEndian = littleEndian;
-    this.tiles = {};
+    this.tiles = cache ? {} : null;
     this.isTiled = fileDirectory.StripOffsets ? false : true;
     var planarConfiguration = fileDirectory.PlanarConfiguration;
     this.planarConfiguration = typeof planarConfiguration === "undefined" ? 1 : planarConfiguration;
@@ -721,40 +763,7 @@ var GeoTIFFImage = function () {
     value: function getArrayForSample(sampleIndex, size) {
       var format = this.fileDirectory.SampleFormat[sampleIndex];
       var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
-      switch (format) {
-        case 1:
-          // unsigned integer data
-          switch (bitsPerSample) {
-            case 8:
-              return new Uint8Array(size);
-            case 16:
-              return new Uint16Array(size);
-            case 32:
-              return new Uint32Array(size);
-          }
-          break;
-        case 2:
-          // twos complement signed integer data
-          switch (bitsPerSample) {
-            case 8:
-              return new Int8Array(size);
-            case 16:
-              return new Int16Array(size);
-            case 32:
-              return new Int32Array(size);
-          }
-          break;
-        case 3:
-          // floating point data
-          switch (bitsPerSample) {
-            case 32:
-              return new Float32Array(size);
-            case 64:
-              return new Float64Array(size);
-          }
-          break;
-      }
-      throw Error("Unsupported data format/bitsPerSample");
+      return arrayForType(format, bitsPerSample, size);
     }
   }, {
     key: "getDecoder",
@@ -771,8 +780,8 @@ var GeoTIFFImage = function () {
      */
 
   }, {
-    key: "getTileOrStripAsync",
-    value: function getTileOrStripAsync(x, y, sample, callback) {
+    key: "getTileOrStrip",
+    value: function getTileOrStrip(x, y, sample, callback) {
       var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
       var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
       var index;
@@ -783,10 +792,11 @@ var GeoTIFFImage = function () {
         index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
       }
 
-      if (index in this.tiles && false) {
-        return callback(null, {
-          x: x, y: y, sample: sample, data: tiles[index]
-        });
+      if (tiles !== null && index in tiles) {
+        if (callback) {
+          return callback(null, { x: x, y: y, sample: sample, data: tiles[index] });
+        }
+        return tiles[index];
       } else {
         var offset, byteCount;
         if (this.isTiled) {
@@ -797,44 +807,24 @@ var GeoTIFFImage = function () {
           byteCount = this.fileDirectory.StripByteCounts[index];
         }
         var slice = this.dataView.buffer.slice(offset, offset + byteCount);
-        return this.getDecoder().decodeBlockAsync(slice, function (error, data) {
-          if (!error) {
-            tiles[index] = data;
-          }
-          callback(error, { x: x, y: y, sample: sample, data: data });
-        });
-      }
-    }
-  }, {
-    key: "getTileOrStrip",
-    value: function getTileOrStrip(x, y, sample) {
-      var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
-      var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
-      var index;
-      if (this.planarConfiguration === 1) {
-        index = y * numTilesPerRow + x;
-      } else if (this.planarConfiguration === 2) {
-        index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
-      }
-
-      if (index in this.tiles) {
-        return this.tiles[index];
-      } else {
-        var offset, byteCount;
-        if (this.isTiled) {
-          offset = this.fileDirectory.TileOffsets[index];
-          byteCount = this.fileDirectory.TileByteCounts[index];
-        } else {
-          offset = this.fileDirectory.StripOffsets[index];
-          byteCount = this.fileDirectory.StripByteCounts[index];
+        if (callback) {
+          return this.getDecoder().decodeBlockAsync(slice, function (error, data) {
+            if (!error && tiles !== null) {
+              tiles[index] = data;
+            }
+            callback(error, { x: x, y: y, sample: sample, data: data });
+          });
         }
-        var slice = this.dataView.buffer.slice(offset, offset + byteCount);
-        return this.tiles[index] = this.getDecoder().decodeBlock(slice);
+        var block = this.getDecoder().decodeBlock(slice);
+        if (tiles !== null) {
+          tiles[index] = block;
+        }
+        return block;
       }
     }
   }, {
     key: "_readRasterAsync",
-    value: function _readRasterAsync(imageWindow, samples, valueArrays, callback, callbackError) {
+    value: function _readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
       var tileWidth = this.getTileWidth();
       var tileHeight = this.getTileHeight();
 
@@ -880,8 +870,15 @@ var GeoTIFFImage = function () {
           for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
             for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
               var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-              var windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-              valueArrays[_sampleIndex][windowCoordinate] = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+              var value = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+              var windowCoordinate;
+              if (interleave) {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + _sampleIndex;
+                valueArrays[windowCoordinate] = value;
+              } else {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+                valueArrays[_sampleIndex][windowCoordinate] = value;
+              }
             }
           }
         } else {
@@ -921,7 +918,7 @@ var GeoTIFFImage = function () {
     }
   }, {
     key: "_readRaster",
-    value: function _readRaster(imageWindow, samples, valueArrays, callback, callbackError) {
+    value: function _readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
       try {
         var tileWidth = this.getTileWidth();
         var tileHeight = this.getTileHeight();
@@ -950,8 +947,8 @@ var GeoTIFFImage = function () {
           sampleReaders.push(this.getReaderForSample(samples[i]));
         }
 
-        for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
-          for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
+        for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
+          for (var xTile = minXTile; xTile < maxXTile; ++xTile) {
             var firstLine = yTile * tileHeight;
             var firstCol = xTile * tileWidth;
             var lastLine = (yTile + 1) * tileHeight;
@@ -967,14 +964,22 @@ var GeoTIFFImage = function () {
               for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
                 for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
                   var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-                  var windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-                  valueArrays[sampleIndex][windowCoordinate] = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                  var value = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                  var windowCoordinate;
+                  if (interleave) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+                    valueArrays[windowCoordinate] = value;
+                  } else {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+                    valueArrays[sampleIndex][windowCoordinate] = value;
+                  }
                 }
               }
             }
           }
         }
-        return callback(valueArrays);
+        callback(valueArrays);
+        return valueArrays;
       } catch (error) {
         return callbackError(error);
       }
@@ -984,7 +989,10 @@ var GeoTIFFImage = function () {
      * This callback is called upon successful reading of a GeoTIFF image. The
      * resulting arrays are passed as a single argument. 
      * @callback GeoTIFFImage~readCallback
-     * @param {TypedArray[]} array the requested data as a summary array, one TypedArray for each requested sample
+     * @param {(TypedArray|TypedArray[])} array the requested data as a either a 
+     *                                          single typed array or a list of
+     *                                          typed arrays, depending on the 
+     *                                          'interleave' option.
      */
 
     /**
@@ -999,60 +1007,66 @@ var GeoTIFFImage = function () {
      * into separate arrays of the correct type for that sample. When provided,
      * only a subset of the raster is read for each sample.
      *
-     * @param {Array} [imageWindow=whole image] the subset to read data from.
-     * @param {Array} [samples=all samples] the selection of samples to read from.
-     * @param {GeoTIFFImage~readCallback} callback the success callback
-     * @param {GeoTIFFImage~readErrorCallback} callbackError the error callback
+     * @param {Object} [options] optional parameters
+     * @param {Array} [options.window=whole image] the subset to read data from.
+     * @param {Array} [options.samples=all samples] the selection of samples to read from.
+     * @param {Boolean} [options.interleave=false] whether the data shall be read 
+     *                                             in one single array or separate 
+     *                                             arrays.
+     * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
+     *                                               parameter is mandatory for
+     *                                               asynchronous decoders (some 
+     *                                               compression mechanisms).
+     * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+     * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
+     *                                           array(s) is/are returned. In
+     *                                           asynchronous cases, nothing is
+     *                                           returned.
      */
 
   }, {
     key: "readRasters",
-    value: function readRasters() {
-      var imageWindow, samples, callback, callbackError;
-
-      var argCount = arguments.length;
-      if (argCount > 4 || argCount === 0) {
-        throw new Error("Invalid number of arguments passed.");
+    value: function readRasters() /* arguments are read via the 'arguments' object */{
+      var options, callback, callbackError;
+      switch (arguments.length) {
+        case 0:
+          break;
+        case 1:
+          if (typeof arguments[0] === "function") {
+            callback = arguments[0];
+          } else {
+            options = arguments[0];
+          }
+          break;
+        case 2:
+          if (typeof arguments[0] === "function") {
+            callback = arguments[0];
+            callbackError = arguments[1];
+          } else {
+            options = arguments[0];
+            callback = arguments[1];
+          }
+          break;
+        case 3:
+          options = arguments[0];
+          callback = arguments[1];
+          callbackError = arguments[2];
+          break;
+        default:
+          throw new Error("Invalid number of arguments passed.");
       }
+      options = options || {};
+      callbackError = callbackError || function () {};
 
-      var last = arguments[argCount - 1],
-          prevLast = arguments[argCount - 2];
-
-      if (typeof prevLast === "function") {
-        callback = prevLast;
-        callbackError = last;
-        switch (argCount) {
-          case 3:
-            imageWindow = arguments[0];
-            break;
-          case 4:
-            imageWindow = arguments[0];
-            samples = arguments[1];
-            break;
-        }
-      } else {
-        callback = last;
-        switch (argCount) {
-          case 2:
-            imageWindow = arguments[0];
-            break;
-          case 3:
-            imageWindow = arguments[0];
-            samples = arguments[1];
-            break;
-        }
-      }
-
-      imageWindow = imageWindow || [0, 0, this.getWidth(), this.getHeight()];
+      var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()],
+          samples = options.samples,
+          interleave = options.interleave;
 
       if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
         throw new Error("Select window is out of image bounds.");
       } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
         throw new Error("Invalid subsets");
       }
-
-      callback = callback || function () {};
-      callbackError = callbackError || function () {};
 
       var imageWindowWidth = imageWindow[2] - imageWindow[0];
       var imageWindowHeight = imageWindow[3] - imageWindow[1];
@@ -1071,16 +1085,27 @@ var GeoTIFFImage = function () {
           }
         }
       }
-      var valueArrays = [];
-      for (i = 0; i < samples.length; ++i) {
-        valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+      var valueArrays;
+      if (interleave) {
+        var format = Math.max.apply(null, this.fileDirectory.SampleFormat),
+            bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
+        valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
+      } else {
+        valueArrays = [];
+        for (i = 0; i < samples.length; ++i) {
+          valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+        }
       }
 
       var decoder = this.getDecoder();
       if (decoder.isAsync()) {
-        return this._readRasterAsync(imageWindow, samples, valueArrays, callback, callbackError);
+        if (!callback) {
+          throw new Error("No callback specified for asynchronous raster reading.");
+        }
+        return this._readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError);
       } else {
-        return this._readRaster(imageWindow, samples, valueArrays, callback, callbackError);
+        callback = callback || function () {};
+        return this._readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError);
       }
     }
 
@@ -1388,9 +1413,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /** 
  * Main parsing function for GeoTIFF files.
  * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
+ * @param {Object} [options] further options.
+ * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
  * @returns {GeoTIFF} the parsed geotiff file.
  */
-var parse = function parse(data) {
+var parse = function parse(data, options) {
   var rawData, i, strLen, view;
   if (typeof data === "string" || data instanceof String) {
     rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
@@ -1403,7 +1430,7 @@ var parse = function parse(data) {
   } else {
     throw new Error("Invalid input data given.");
   }
-  return new _geotiff2.default(rawData);
+  return new _geotiff2.default(rawData, options);
 };
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
