@@ -14,7 +14,7 @@ before_script:
     - npm install -g grunt-cli
     - mkdir -p test/data
     - pushd test/data
-    - setup_data.sh
+    - sh setup_data.sh
     - popd
 script:
     - grunt test
