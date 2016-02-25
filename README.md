@@ -1,7 +1,44 @@
 # geotiff.js
 [![Build Status](https://travis-ci.org/constantinius/geotiff.js.svg)](https://travis-ci.org/constantinius/geotiff.js) [![Dependency Status](https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat)](https://www.versioneye.com/user/projects/566af91d4e049b0041000083) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff)
 
-Read raw data from GeoTIFF files.
+Read (geospatial) metadata and raw array data from a wide variety of different
+(Geo)TIFF files types.
+
+## Features
+
+Currently available functionality:
+
+  * Parsing the headers of all possible TIFF files
+  * Rudimentary extraction of geospatial metadata
+  * Reading raster data from:
+    * stripped images
+    * tiled images
+    * band interleaved images
+    * pixel interleaved images
+  * Supported data-types:
+    * (U)Int8/16/32
+    * Float32/64
+  * Enabled compressions:
+    * no compression
+    * Packbits
+    * ... (more soon to follow)
+  * Subsetting via an image window and selected bands
+  * Reading of samples into separate arrays or a single pixel-interleaved array
+  * Configurable tile/strip cache
+  * Automated testing via PhantomJS
+
+Planned stuff:
+
+  * Automated extraction of RGB images when possible:
+    * CMYK, YCbCr or CieLAB conversion to RGB
+    * Color lookup tables
+  * Better support of geospatial parameters:
+    * Parsing of EPSG identifiers
+    * WKT representation
+    * Specifying of window in CRS coordinates
+  * Support of "overview images" (i.e: images with reduced resolution)
+
+Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
 
 ## Setup
 
@@ -18,6 +55,13 @@ npm install
 ```
 
 ## Testing and Building
+
+In order to run the tests you first have to set up the test data:
+```bash
+cd test/data
+sh setup_data.sh
+cd -
+```
 
 To test the library (using PhantomJS, karma, mocha and chai) do the following:
 

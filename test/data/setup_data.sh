@@ -12,3 +12,7 @@ gdal_translate -of GTiff -co COMPRESS=PACKBITS stripped.tiff packbits.tiff
 gdal_translate -of GTiff -co INTERLEAVE=BAND stripped.tiff interleave.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND stripped.tiff tiledplanar.tiff
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
+
+# overviews
+cp stripped.tiff overviews.tiff
+gdaladdo overviews.tiff 2 4 8 16
