@@ -40,7 +40,7 @@
 
     
 
-    <h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>new GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>new GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian, cache)</span><span class="type-signature"></span></h4>
 
     
 
@@ -172,6 +172,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>cache</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not decoded tiles shall be cached</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -209,7 +232,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line26">line 26</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -310,7 +333,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line115">line 115</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -414,7 +437,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line64">line 64</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line99">line 99</a>
     </li></ul></dd>
     
 
@@ -518,7 +541,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line542">line 542</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line611">line 611</a>
     </li></ul></dd>
     
 
@@ -618,7 +641,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line71">line 71</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -722,7 +745,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line85">line 85</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -826,7 +849,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line92">line 92</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line127">line 127</a>
     </li></ul></dd>
     
 
@@ -930,7 +953,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line519">line 519</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line588">line 588</a>
     </li></ul></dd>
     
 
@@ -1030,7 +1053,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line106">line 106</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line141">line 141</a>
     </li></ul></dd>
     
 
@@ -1083,7 +1106,7 @@ bytes are supported, an exception is thrown when this is not the case.
 
     
 
-    <h4 class="name" id="getTileOrStripAsync"><span class="type-signature"></span>getTileOrStripAsync<span class="signature">(x, y, plane)</span><span class="type-signature"> &rarr; {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array}</span></h4>
+    <h4 class="name" id="getTileOrStrip"><span class="type-signature"></span>getTileOrStrip<span class="signature">(x, y, plane)</span><span class="type-signature"> &rarr; {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array}</span></h4>
 
     
 
@@ -1229,7 +1252,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line223">line 223</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line228">line 228</a>
     </li></ul></dd>
     
 
@@ -1350,7 +1373,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line99">line 99</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line134">line 134</a>
     </li></ul></dd>
     
 
@@ -1454,7 +1477,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line78">line 78</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -1507,7 +1530,7 @@ bytes are supported, an exception is thrown when this is not the case.
 
     
 
-    <h4 class="name" id="readRasters"><span class="type-signature"></span>readRasters<span class="signature">(imageWindow<span class="signature-attributes">opt</span>, samples<span class="signature-attributes">opt</span>, callback, callbackError)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="readRasters"><span class="type-signature"></span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {TypedArray|Array.&lt;TypedArray>|null}</span></h4>
 
     
 
@@ -1544,6 +1567,60 @@ only a subset of the raster is read for each sample.
         
 
         
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">optional parameters
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
         <th>Default</th>
         
 
@@ -1556,7 +1633,7 @@ only a subset of the raster is read for each sample.
 
         <tr>
             
-                <td class="name"><code>imageWindow</code></td>
+                <td class="name"><code>window</code></td>
             
 
             <td class="type">
@@ -1634,6 +1711,54 @@ only a subset of the raster is read for each sample.
 
         <tr>
             
+                <td class="name"><code>interleave</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">whether the data shall be read 
+                                            in one single array or separate 
+                                            arrays.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>callback</code></td>
             
 
@@ -1649,20 +1774,21 @@ only a subset of the raster is read for each sample.
             
                 <td class="attributes">
                 
-
+                    &lt;optional><br>
                 
 
                 
-                </td>
-            
 
-            
-                <td class="default">
                 
                 </td>
             
 
-            <td class="description last">the success callback</td>
+            
+
+            <td class="description last">the success callback. this
+                                              parameter is mandatory for
+                                              asynchronous decoders (some 
+                                              compression mechanisms).</td>
         </tr>
 
     
@@ -1684,6 +1810,8 @@ only a subset of the raster is read for each sample.
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -1691,10 +1819,6 @@ only a subset of the raster is read for each sample.
                 </td>
             
 
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">the error callback</td>
@@ -1738,7 +1862,7 @@ only a subset of the raster is read for each sample.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line467">line 467</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line488">line 488</a>
     </li></ul></dd>
     
 
@@ -1761,6 +1885,37 @@ only a subset of the raster is read for each sample.
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    in synchonous cases, the decoded
+                                          array(s) is/are returned. In
+                                          asynchronous cases, nothing is
+                                          returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TypedArray</span>
+|
+
+<span class="param-type">Array.&lt;TypedArray></span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1825,6 +1980,9 @@ resulting arrays are passed as a single argument.
             <td class="type">
             
                 
+<span class="param-type">TypedArray</span>
+|
+
 <span class="param-type">Array.&lt;TypedArray></span>
 
 
@@ -1835,7 +1993,10 @@ resulting arrays are passed as a single argument.
 
             
 
-            <td class="description last">the requested data as a summary array, one TypedArray for each requested sample</td>
+            <td class="description last">the requested data as a either a 
+                                         single typed array or a list of
+                                         typed arrays, depending on the 
+                                         'interleave' option.</td>
         </tr>
 
     
@@ -1876,7 +2037,7 @@ resulting arrays are passed as a single argument.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line443">line 443</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line450">line 450</a>
     </li></ul></dd>
     
 
@@ -2008,7 +2169,7 @@ GeoTIFF image
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line450">line 450</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line460">line 460</a>
     </li></ul></dd>
     
 
@@ -2054,7 +2215,7 @@ GeoTIFF image
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Jan 11 2016 12:21:20 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Feb 25 2016 10:34:46 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

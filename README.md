@@ -104,13 +104,15 @@ region:
 ```javascript
 var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
 var samples = [0, 1, 2, 3];
-image.readRasters(rasterWindow, samples, function(rasters) {
-  for (var i = 0; i < rasters.length; ++i) {
-    console.log(rasters[i]);
-  }  
-});
-// to read all the complete rasters 
-// var rasters = image.readRasters(null, null, function(rasters) { ... });
+var rasters = image.readRasters({window: rasterWindow, samples: samples});
+for (var i = 0; i < rasters.length; ++i) {
+  console.log(rasters[i]);
+}
+// to read all samples with no subsets:
+rasters = image.readRasters();
+
+// to read the data in a single interleaved array:
+var array = image.readRasters({interleave: true});
 ```
 
 To read TIFF or geo-spatial metadata, the methods `.getFileDirectory()` and
@@ -132,15 +134,14 @@ on the fly rendering of the data contained in a GeoTIFF.
   // ...
   var tiff = GeoTIFF.parse(data);
   var image = tiff.getImage();
-  var raster = image.readRasters(null, null, function(rasters) {
-    var canvas = document.getElementById("plot");
-    var plot = new plotty.plot({
-      canvas: canvas, data: rasters[0],
-      width: image.getWidth(), height: image.getHeight(),
-      domain: [0, 256], colorScale: "viridis"
-    });
-    plot.render();  
+  var rasters = image.readRasters();
+  var canvas = document.getElementById("plot");
+  var plot = new plotty.plot({
+    canvas: canvas, data: rasters[0],
+    width: image.getWidth(), height: image.getHeight(),
+    domain: [0, 256], colorScale: "viridis"
   });
+  plot.render();
 </script>
 ```
 
