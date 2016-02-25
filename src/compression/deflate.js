@@ -1,3 +1,5 @@
+"use strict";
+
 import AbstractDecoder from "../abstractdecoder.js"
 
 /*

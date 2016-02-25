@@ -1,3 +1,5 @@
+"use strict";
+
 var fieldTagNames = {
   // TIFF Baseline
   0x013B: 'Artist',

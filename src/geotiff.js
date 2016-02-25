@@ -1,3 +1,5 @@
+"use strict";
+
 import {fieldTags, fieldTagNames, arrayFields, fieldTypes, fieldTypeNames, geoKeys, geoKeyNames} from "./globals";
 import GeoTIFFImage from "./geotiffimage.js";
 

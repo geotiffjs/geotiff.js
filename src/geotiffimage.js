@@ -1,3 +1,5 @@
+"use strict";
+
 import {fieldTags, fieldTagNames, arrayFields, fieldTypes, fieldTypeNames, parseXml} from "./globals";
 
 import RawDecoder from "./compression/raw.js";
