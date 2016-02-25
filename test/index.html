@@ -27,6 +27,9 @@ var tiffs = [
   "lzw.tiff",
 ];
 
+var rgbtiffs = ["rgb.tiff"]
+
+
 
 var bandsSelect = document.getElementById("bands");
 
@@ -66,7 +69,7 @@ tiffs.forEach(function(filename) {
     var plot;
 
     bandsSelect.addEventListener("change", function(e) {
-      image.readRasters([0, 0, image.getWidth(), image.getHeight()], [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)], function(rasters) {
+      image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]}, function(rasters) {
         if (plot) {
           plot.setData(rasters[0], image.getWidth(), image.getHeight());
           plot.render();
@@ -74,16 +77,62 @@ tiffs.forEach(function(filename) {
       });
     });
 
-    image.readRasters([0, 0, image.getWidth(), image.getHeight()], [0], function(rasters) {
+    image.readRasters({samples: [0]}, function(rasters) {
       var canvas = document.getElementById(filename);
       plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
       plot.render();
     });
-    
   };
 
   xhr.send();
 });
+
+
+rgbtiffs.forEach(function(filename) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'data/' + filename, true);
+  xhr.responseType = 'arraybuffer';
+
+  var div = document.createElement("div");
+  div.style.float = "left";
+  var header = document.createElement("p");
+  header.innerHTML = filename;
+
+  var canvas = document.createElement("canvas");
+  canvas.id = filename;
+  
+  div.appendChild(header);
+  div.appendChild(canvas);
+
+  document.getElementById("canvases").appendChild(div);
+
+  xhr.onload = function(e) {
+    var parser = GeoTIFF.parse(this.response);
+    var image = parser.getImage();
+
+    var plot;
+
+    image.readRasters({interleave: true}, function(raster) {
+      canvas.width = image.getWidth();
+      canvas.height = image.getHeight();
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
+      var data = imageData.data;
+      var o = 0;
+      for (var i = 0; i < raster.length; i+=3) {
+        data[o] = raster[i];
+        data[o+1] = raster[i+1];
+        data[o+2] = raster[i+2];
+        data[o+3] = 255;
+        o += 4;
+      }
+      ctx.putImageData(imageData, 0, 0);
+    });
+  };
+
+  xhr.send();
+});
+
 
 </script>
 </body>
