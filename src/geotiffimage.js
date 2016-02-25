@@ -486,6 +486,7 @@ export default class GeoTIFFImage {
    *                                           returned.
    */
   readRasters(/* arguments are read via the 'arguments' object */) {
+    // parse the arguments
     var options, callback, callbackError;
     switch (arguments.length) {
       case 0:
@@ -516,13 +517,16 @@ export default class GeoTIFFImage {
       default:
         throw new Error("Invalid number of arguments passed.");
     }
+
+    // set up default arguments
     options = options || {};
-    callbackError = callbackError || function() {};
+    callbackError = callbackError || function(error) { console.error(error); };
 
     var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()],
         samples = options.samples,
         interleave = options.interleave;
 
+    // check parameters
     if (imageWindow[0] < 0 ||
         imageWindow[1] < 0 ||
         imageWindow[2] > this.getWidth() ||
@@ -564,6 +568,7 @@ export default class GeoTIFFImage {
       }
     }
 
+    // start reading data, sync or async
     var decoder = this.getDecoder();
     if (decoder.isAsync()) {
       if (!callback) {
