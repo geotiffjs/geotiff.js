@@ -27,17 +27,6 @@ Currently available functionality:
   * Configurable tile/strip cache
   * Automated testing via PhantomJS
 
-Planned stuff:
-
-  * Automated extraction of RGB images when possible:
-    * CMYK, YCbCr or CieLAB conversion to RGB
-    * Color lookup tables
-  * Better support of geospatial parameters:
-    * Parsing of EPSG identifiers
-    * WKT representation
-    * Specifying of window in CRS coordinates
-  * Support of "overview images" (i.e: images with reduced resolution)
-
 Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
 
 ## Setup
@@ -189,13 +178,16 @@ on the fly rendering of the data contained in a GeoTIFF.
 </script>
 ```
 
-## TODO
+## Planned stuff:
 
-* Implementation of various compression methods, like `Deflate`, `LZW` or
-  `Packbits`
-* Automatic reading of RGB(A) data
-* Automatic reading of "Overviews", i.e: subfiles with reduced resolution
-* Better support for geokeys
+  * Automated extraction of RGB images when possible:
+    * CMYK, YCbCr or CieLAB conversion to RGB
+    * Color lookup tables
+  * Better support of geospatial parameters:
+    * Parsing of EPSG identifiers
+    * WKT representation
+    * Specifying of window in CRS coordinates
+  * Support of "overview images" (i.e: images with reduced resolution)
 
 ## Acknowledgements
 
