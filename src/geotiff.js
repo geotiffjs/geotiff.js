@@ -7,9 +7,13 @@ export default class GeoTIFF {
    * The abstraction for a whole GeoTIFF file.
    * @constructor
    * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+   * @param {Object} [options] further options.
+   * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
    */
-  constructor(rawData) {
+  constructor(rawData, options) {
     this.dataView = new DataView(rawData);
+    options = options || {};
+    this.cache = options.cache || false;
 
     var BOM = this.dataView.getUint16(0, 0);
     if (BOM === 0x4949) {
@@ -204,7 +208,7 @@ export default class GeoTIFF {
     if (!fileDirectoryAndGeoKey) {
       throw new RangeError("Invalid image index");
     }
-    return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian);
+    return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
   }
 
   /**
