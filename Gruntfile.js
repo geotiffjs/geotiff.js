@@ -69,7 +69,7 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: 'jshint.json'
             },
-            all: ["src/*.js"]
+            all: ["src/**/*.js"]
         },
         connect: {
             livereload: true,
