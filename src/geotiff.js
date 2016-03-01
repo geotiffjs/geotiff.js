@@ -1,18 +1,21 @@
 "use strict";
 
-import {fieldTags, fieldTagNames, arrayFields, fieldTypes, fieldTypeNames, geoKeys, geoKeyNames} from "./globals";
-import GeoTIFFImage from "./geotiffimage.js";
+var globals = require("./globals.js");
+var GeoTIFFImage = require("./geotiffimage.js");
 
+var fieldTypes = globals.fieldTypes,
+    fieldTagNames = globals.fieldTagNames,
+    arrayFields = globals.arrayFields,
+    geoKeyNames = globals.geoKeyNames;
 
-export default class GeoTIFF {
-  /**
-   * The abstraction for a whole GeoTIFF file.
-   * @constructor
-   * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
-   * @param {Object} [options] further options.
-   * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
-   */
-  constructor(rawData, options) {
+/**
+ * The abstraction for a whole GeoTIFF file.
+ * @constructor
+ * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+ * @param {Object} [options] further options.
+ * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
+ */
+function GeoTIFF(rawData, options) {
     this.dataView = new DataView(rawData);
     options = options || {};
     this.cache = options.cache || false;
@@ -37,7 +40,8 @@ export default class GeoTIFF {
     );
   }
 
-  getFieldTypeLength (fieldType) {
+GeoTIFF.prototype = {
+  getFieldTypeLength: function(fieldType) {
     switch (fieldType) {
       case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
         return 1;
@@ -50,9 +54,9 @@ export default class GeoTIFF {
       default:
         throw new RangeError("Invalid field type: " + fieldType);
     }
-  }
+  },
 
-  getValues(fieldType, count, offset) {
+  getValues: function(fieldType, count, offset) {
     var values = null;
     var readMethod = null;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
@@ -117,9 +121,9 @@ export default class GeoTIFF {
       return String.fromCharCode.apply(null, values);
     }
     return values;
-  }
+  },
 
-  getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
+  getFieldValues: function(fieldTag, fieldType, typeCount, valueOffset) {
     var fieldValues;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
 
@@ -136,9 +140,9 @@ export default class GeoTIFF {
     }
 
     return fieldValues;
-  }
+  },
 
-  parseGeoKeyDirectory(fileDirectory) {
+  parseGeoKeyDirectory: function(fileDirectory) {
     var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
     if (!rawGeoKeyDirectory) {
       return null;
@@ -170,9 +174,9 @@ export default class GeoTIFF {
       geoKeyDirectory[key] = value;
     }
     return geoKeyDirectory;
-  }
+  },
 
-  parseFileDirectories(byteOffset) {
+  parseFileDirectories: function(byteOffset) {
     var nextIFDByteOffset = byteOffset;
     var fileDirectories = [];
 
@@ -196,7 +200,7 @@ export default class GeoTIFF {
       nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
     }
     return fileDirectories;
-  }
+  },
 
   /**
    * Get the n-th internal subfile a an image. By default, the first is returned.
@@ -204,21 +208,23 @@ export default class GeoTIFF {
    * @param {Number} [index=0] the index of the image to return.
    * @returns {GeoTIFFImage} the image at the given index
    */
-  getImage(index) {
+  getImage: function(index) {
     index = index || 0;
     var fileDirectoryAndGeoKey = this.fileDirectories[index];
     if (!fileDirectoryAndGeoKey) {
       throw new RangeError("Invalid image index");
     }
     return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
-  }
+  },
 
   /**
    * Returns the count of the internal subfiles.
    * 
    * @returns {Number} the number of internal subfile images
    */
-  getImageCount() {
+  getImageCount: function() {
     return this.fileDirectories.length;
   }
-}
+};
+
+module.exports = GeoTIFF;

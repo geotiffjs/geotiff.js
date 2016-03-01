@@ -1,11 +1,10 @@
 "use strict";
 
-import {fieldTags, fieldTagNames, arrayFields, fieldTypes, fieldTypeNames, parseXml} from "./globals";
-
-import RawDecoder from "./compression/raw.js";
-import LZWDecoder from "./compression/lzw.js";
-import DeflateDecoder from "./compression/deflate.js";
-import PackbitsDecoder from "./compression/packbits.js";
+var globals = require("./globals.js");
+var RawDecoder = require("./compression/raw.js");
+var LZWDecoder = require("./compression/lzw.js");
+var DeflateDecoder = require("./compression/deflate.js");
+var PackbitsDecoder = require("./compression/packbits.js");
 
 
 var sum = function(array, start, end) {
@@ -50,106 +49,107 @@ var arrayForType = function(format, bitsPerSample, size) {
   throw Error("Unsupported data format/bitsPerSample");
 };
 
-export default class GeoTIFFImage {
-  /**
-   * GeoTIFF sub-file image.
-   * @constructor
-   * @param {Object} fileDirectory The parsed file directory
-   * @param {Object} geoKeys The parsed geo-keys
-   * @param {DataView} dataView The DataView for the underlying file.
-   * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
-   * @param {Boolean} cache Whether or not decoded tiles shall be cached
-   */
-  constructor(fileDirectory, geoKeys, dataView, littleEndian, cache) {
-    this.fileDirectory = fileDirectory;
-    this.geoKeys = geoKeys;
-    this.dataView = dataView;
-    this.littleEndian = littleEndian;
-    this.tiles = cache ? {} : null;
-    this.isTiled = (fileDirectory.StripOffsets) ? false : true;
-    var planarConfiguration = fileDirectory.PlanarConfiguration;
-    this.planarConfiguration = (typeof planarConfiguration === "undefined") ? 1 : planarConfiguration;
-    if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
-      throw new Error("Invalid planar configuration.");
-    }
-
-    switch (this.fileDirectory.Compression) {
-      case 1:  // no compression
-        this.decoder = new RawDecoder();
-        break;
-      case 5: // LZW
-        this.decoder = new LZWDecoder();
-        break;
-      case 6: // JPEG
-        throw new Error("JPEG compression not supported.");
-      case 8: // Deflate
-        this.decoder = new DeflateDecoder();
-        break;
-      //case 32946: // deflate ??
-      //  throw new Error("Deflate compression not supported.");
-      case 32773: // packbits
-        this.decoder = new PackbitsDecoder();
-        break;
-      default:
-        throw new Error("Unknown compresseion method identifier: " + this.fileDirectory.Compression);
-    }
+/**
+ * GeoTIFF sub-file image.
+ * @constructor
+ * @param {Object} fileDirectory The parsed file directory
+ * @param {Object} geoKeys The parsed geo-keys
+ * @param {DataView} dataView The DataView for the underlying file.
+ * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+ * @param {Boolean} cache Whether or not decoded tiles shall be cached
+ */
+function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
+  this.fileDirectory = fileDirectory;
+  this.geoKeys = geoKeys;
+  this.dataView = dataView;
+  this.littleEndian = littleEndian;
+  this.tiles = cache ? {} : null;
+  this.isTiled = (fileDirectory.StripOffsets) ? false : true;
+  var planarConfiguration = fileDirectory.PlanarConfiguration;
+  this.planarConfiguration = (typeof planarConfiguration === "undefined") ? 1 : planarConfiguration;
+  if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
+    throw new Error("Invalid planar configuration.");
   }
+
+  switch (this.fileDirectory.Compression) {
+    case 1:  // no compression
+      this.decoder = new RawDecoder();
+      break;
+    case 5: // LZW
+      this.decoder = new LZWDecoder();
+      break;
+    case 6: // JPEG
+      throw new Error("JPEG compression not supported.");
+    case 8: // Deflate
+      this.decoder = new DeflateDecoder();
+      break;
+    //case 32946: // deflate ??
+    //  throw new Error("Deflate compression not supported.");
+    case 32773: // packbits
+      this.decoder = new PackbitsDecoder();
+      break;
+    default:
+      throw new Error("Unknown compresseion method identifier: " + this.fileDirectory.Compression);
+  }
+}
+
+GeoTIFFImage.prototype = {
   /**
    * Returns the associated parsed file directory.
    * @returns {Object} the parsed file directory
    */
-  getFileDirectory() {
+  getFileDirectory: function() {
     return this.fileDirectory;
-  }
+  },
    /**
    * Returns the associated parsed geo keys.
    * @returns {Object} the parsed geo keys
    */
-  getGeoKeys() {
+  getGeoKeys: function() {
     return this.geoKeys;
-  }
+  },
   /**
    * Returns the width of the image.
    * @returns {Number} the width of the image
    */
-  getWidth() {
+  getWidth: function() {
     return this.fileDirectory.ImageWidth;
-  }
+  },
   /**
    * Returns the height of the image.
    * @returns {Number} the height of the image
    */
-  getHeight() {
+  getHeight: function() {
     return this.fileDirectory.ImageLength;
-  }
+  },
   /**
    * Returns the number of samples per pixel.
    * @returns {Number} the number of samples per pixel
    */
-  getSamplesPerPixel() {
+  getSamplesPerPixel: function() {
     return this.fileDirectory.SamplesPerPixel;
-  }
+  },
   /**
    * Returns the width of each tile.
    * @returns {Number} the width of each tile
    */
-  getTileWidth() {
+  getTileWidth: function() {
     return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
-  }
+  },
   /**
    * Returns the height of each tile.
    * @returns {Number} the height of each tile
    */
-  getTileHeight() {
+  getTileHeight: function() {
     return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
-  }
+  },
 
   /**
    * Calculates the number of bytes for each pixel across all samples. Only full
    * bytes are supported, an exception is thrown when this is not the case.
    * @returns {Number} the bytes per pixel
    */
-  getBytesPerPixel() {
+  getBytesPerPixel: function() {
     var bitsPerSample = 0;
     for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
       var bits = this.fileDirectory.BitsPerSample[i];
@@ -162,9 +162,9 @@ export default class GeoTIFFImage {
       bitsPerSample += bits;
     }
     return bitsPerSample / 8;
-  }
+  },
 
-  getSampleByteSize(i) {
+  getSampleByteSize: function(i) {
     if (i >= this.fileDirectory.BitsPerSample.length) {
       throw new RangeError("Sample index " + i + " is out of range.");
     }
@@ -173,9 +173,9 @@ export default class GeoTIFFImage {
       throw new Error("Sample bit-width of " + bits + " is not supported.");
     }
     return (bits / 8);
-  }
+  },
 
-  getReaderForSample(sampleIndex) {
+  getReaderForSample: function(sampleIndex) {
     var format = this.fileDirectory.SampleFormat[sampleIndex];
     var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
@@ -208,17 +208,17 @@ export default class GeoTIFFImage {
         }
         break;
     }
-  }
+  },
 
-  getArrayForSample(sampleIndex, size) {
+  getArrayForSample: function(sampleIndex, size) {
     var format = this.fileDirectory.SampleFormat[sampleIndex];
     var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     return arrayForType(format, bitsPerSample, size);
-  }
+  },
 
-  getDecoder() {
+  getDecoder: function() {
     return this.decoder;
-  }
+  },
 
   /**
    * Returns the decoded strip or tile.
@@ -227,7 +227,7 @@ export default class GeoTIFFImage {
    * @param {Number} plane the planar configuration (1: "chunky", 2: "separate samples")
    * @returns {(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)}
    */
-  getTileOrStrip(x, y, sample, callback) {
+  getTileOrStrip: function(x, y, sample, callback) {
     var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     var index;
@@ -270,9 +270,9 @@ export default class GeoTIFFImage {
       }
       return block;
     }
-  }
+  },
 
-  _readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+  _readRasterAsync: function(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
     var tileWidth = this.getTileWidth();
     var tileHeight = this.getTileHeight();
 
@@ -366,15 +366,15 @@ export default class GeoTIFFImage {
           }
           var _sampleIndex = sampleIndex;
           unfinishedTiles += 1;
-          this.getTileOrStripAsync(xTile, yTile, sample, onTileGot);
+          this.getTileOrStrip(xTile, yTile, sample, onTileGot);
         }
       }
     }
     allStacked = true;
     checkFinished();
-  }
+  },
 
-  _readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+  _readRaster: function(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
     try {
       var tileWidth = this.getTileWidth();
       var tileHeight = this.getTileHeight();
@@ -447,7 +447,7 @@ export default class GeoTIFFImage {
     catch (error) {
       return callbackError(error);
     }
-  }
+  },
 
   /**
    * This callback is called upon successful reading of a GeoTIFF image. The
@@ -487,7 +487,7 @@ export default class GeoTIFFImage {
    *                                           asynchronous cases, nothing is
    *                                           returned.
    */
-  readRasters(/* arguments are read via the 'arguments' object */) {
+  readRasters: function(/* arguments are read via the 'arguments' object */) {
     // parse the arguments
     var options, callback, callbackError;
     switch (arguments.length) {
@@ -586,13 +586,13 @@ export default class GeoTIFFImage {
         imageWindow, samples, valueArrays, interleave, callback, callbackError
       );
     }
-  }
+  },
 
   /**
    * Returns an array of tiepoints.
    * @returns {Object[]}
    */
-  getTiePoints() {
+  getTiePoints: function() {
     if (!this.fileDirectory.ModelTiepoint) {
       return [];
     }
@@ -609,19 +609,19 @@ export default class GeoTIFFImage {
       });
     }
     return tiePoints;
-  }
+  },
 
   /**
    * Returns the parsed GDAL metadata items.
    * @returns {Object}
    */
-  getGDALMetadata() {
+  getGDALMetadata: function() {
     var metadata = {};
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
     }
 
-    var xmlDom = parseXml(this.fileDirectory.GDAL_METADATA);
+    var xmlDom = globals.parseXml(this.fileDirectory.GDAL_METADATA);
     var result = xmlDom.evaluate(
       "GDALMetadata/Item", xmlDom, null,
       XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null
@@ -632,4 +632,6 @@ export default class GeoTIFFImage {
     }
     return metadata;
   }
-}
+};
+
+module.exports = GeoTIFFImage;

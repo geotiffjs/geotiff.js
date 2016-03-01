@@ -1,8 +1,12 @@
 "use strict";
 
-export default class AbstractDecoder {
-  isAsync() {
+function AbstractDecoder() { }
+
+AbstractDecoder.prototype = {
+  isAsync: function() {
     // TODO: check if async reading func is enabled or not.
-    return (!this.decodeBlock);
+    return (typeof this.decodeBlock === "undefined");
   }
-}
+};
+
+module.exports = AbstractDecoder;
