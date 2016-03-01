@@ -69,19 +69,15 @@ tiffs.forEach(function(filename) {
     var plot;
 
     bandsSelect.addEventListener("change", function(e) {
-      image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]}, function(rasters) {
-        if (plot) {
-          plot.setData(rasters[0], image.getWidth(), image.getHeight());
-          plot.render();
-        }
-      });
-    });
-
-    image.readRasters({samples: [0]}, function(rasters) {
-      var canvas = document.getElementById(filename);
-      plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+      var rasters = image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]});
+      plot.setData(rasters[0], image.getWidth(), image.getHeight());
       plot.render();
     });
+
+    var rasters = image.readRasters({samples: [0]});
+    var canvas = document.getElementById(filename);
+    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+    plot.render();
   };
 
   xhr.send();
