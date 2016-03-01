@@ -56,15 +56,6 @@ module.exports = function(grunt) {
                 files: config.uglifyFiles
             }
         },
-        jasmine : {
-            tests : {
-                src : ['dist/', '.js'].join(config.pkg.name),
-                options : {
-                    specs : 'test/*.spec.js',
-                    //template : 'test/grunt.tmpl'
-                }
-            }
-        },
         jshint: {
             options: {
                 jshintrc: 'jshint.json'
@@ -150,4 +141,6 @@ module.exports = function(grunt) {
     grunt.registerTask('serve', ['jshint', 'browserify', 'connect:livereload', 'watch']);
 
     grunt.registerTask('test', ['jshint', 'karma']);
+
+    grunt.registerTask('docs', ['jsdoc']);
 };

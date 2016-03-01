@@ -31,7 +31,6 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jsdoc": "^1.1.0",
     "grunt-karma": "^0.12.1",
-    "grunt-mocha": "^0.4.15",
     "grunt-release": "^0.13.0",
     "jshint-stylish": "^2.0.1",
     "karma": "^0.13.15",
