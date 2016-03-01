@@ -1,52 +1,21 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+function AbstractDecoder() {}
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var AbstractDecoder = function () {
-  function AbstractDecoder() {
-    _classCallCheck(this, AbstractDecoder);
+AbstractDecoder.prototype = {
+  isAsync: function isAsync() {
+    // TODO: check if async reading func is enabled or not.
+    return typeof this.decodeBlock === "undefined";
   }
+};
 
-  _createClass(AbstractDecoder, [{
-    key: "isAsync",
-    value: function isAsync() {
-      // TODO: check if async reading func is enabled or not.
-      return !this.decodeBlock;
-    }
-  }]);
-
-  return AbstractDecoder;
-}();
-
-exports.default = AbstractDecoder;
+module.exports = AbstractDecoder;
 
 },{}],2:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _abstractdecoder = require("../abstractdecoder.js");
-
-var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var AbstractDecoder = require("../abstractdecoder.js");
 
 /*
 var Buffer = require('buffer');
@@ -54,470 +23,338 @@ var inflate = require('inflate');
 var through = require('through');
 */
 
-var DeflateDecoder = function (_AbstractDecoder) {
-  _inherits(DeflateDecoder, _AbstractDecoder);
+function DeflateDecoder() {}
 
-  function DeflateDecoder() {
-    _classCallCheck(this, DeflateDecoder);
-
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(DeflateDecoder).apply(this, arguments));
+DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype, {
+  decodeBlockAsync: function decodeBlockAsync(buffer, callback) {
+    // through(function (data) {
+    //   this.queue(new Buffer(new Uint8Array(buffer)));
+    // },
+    // function() {
+    //   this.queue(null);
+    // })
+    // .pipe(inflate())
+    // /*.pipe(function() {
+    //   alert(arguments);
+    // })*/
+    // .on("data", function(data) {
+    //   buffers.push(data);
+    // })
+    // .on("end", function() {
+    //   var buffer = Buffer.concat(buffers);
+    //   var arrayBuffer = new ArrayBuffer(buffer.length);
+    //   var view = new Uint8Array(ab);
+    //   for (var i = 0; i < buffer.length; ++i) {
+    //       view[i] = buffer[i];
+    //   }
+    //   callback(null, arrayBuffer);
+    // })
+    // .on("error", function(error) {
+    //   callback(error, null)
+    // });
+    throw new Error("DeflateDecoder is not yet implemented.");
   }
+});
+DeflateDecoder.prototype.constructor = DeflateDecoder;
 
-  _createClass(DeflateDecoder, [{
-    key: "decodeBlockAsync",
-    value: function decodeBlockAsync(buffer, callback) {
-      // through(function (data) {
-      //   this.queue(new Buffer(new Uint8Array(buffer)));
-      // },
-      // function() {
-      //   this.queue(null);
-      // })
-      // .pipe(inflate())
-      // /*.pipe(function() {
-      //   alert(arguments);
-      // })*/
-      // .on("data", function(data) {
-      //   buffers.push(data);
-      // })
-      // .on("end", function() {
-      //   var buffer = Buffer.concat(buffers);
-      //   var arrayBuffer = new ArrayBuffer(buffer.length);
-      //   var view = new Uint8Array(ab);
-      //   for (var i = 0; i < buffer.length; ++i) {
-      //       view[i] = buffer[i];
-      //   }
-      //   callback(null, arrayBuffer);
-      // })
-      // .on("error", function(error) {
-      //   callback(error, null)
-      // });
-      throw new Error("DeflateDecoder is not yet implemented.");
-    }
-  }]);
-
-  return DeflateDecoder;
-}(_abstractdecoder2.default);
-
-exports.default = DeflateDecoder;
+module.exports = DeflateDecoder;
 
 },{"../abstractdecoder.js":1}],3:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _abstractdecoder = require("../abstractdecoder.js");
-
-var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
 //var lzwCompress = require("lzwcompress");
 
-var LZWDecoder = function (_AbstractDecoder) {
-  _inherits(LZWDecoder, _AbstractDecoder);
+var AbstractDecoder = require("../abstractdecoder.js");
 
-  function LZWDecoder() {
-    _classCallCheck(this, LZWDecoder);
+function LZWDecoder() {}
 
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(LZWDecoder).apply(this, arguments));
+LZWDecoder.prototype = Object.create(AbstractDecoder.prototype, {
+  decodeBlock: function decodeBlock(buffer) {
+    throw new Error("LZWDecoder is not yet implemented");
+    //return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
   }
+});
+LZWDecoder.prototype.constructor = LZWDecoder;
 
-  _createClass(LZWDecoder, [{
-    key: "decodeBlock",
-    value: function decodeBlock(buffer) {
-      throw new Error("LZWDecoder is not yet implemented");
-      //return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
-    }
-  }]);
-
-  return LZWDecoder;
-}(_abstractdecoder2.default);
-
-exports.default = LZWDecoder;
+module.exports = LZWDecoder;
 
 },{"../abstractdecoder.js":1}],4:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var AbstractDecoder = require("../abstractdecoder.js");
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+function PackbitsDecoder() {}
 
-var _abstractdecoder = require("../abstractdecoder.js");
+PackbitsDecoder.prototype = Object.create(AbstractDecoder.prototype, {
+  decodeBlock: function decodeBlock(buffer) {
+    var dataView = new DataView(buffer);
+    var out = [];
+    var i, j;
 
-var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var PackbitsDecoder = function (_AbstractDecoder) {
-  _inherits(PackbitsDecoder, _AbstractDecoder);
-
-  function PackbitsDecoder() {
-    _classCallCheck(this, PackbitsDecoder);
-
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(PackbitsDecoder).apply(this, arguments));
-  }
-
-  _createClass(PackbitsDecoder, [{
-    key: "decodeBlock",
-    value: function decodeBlock(buffer) {
-      var dataView = new DataView(buffer);
-      var out = [];
-
-      for (var i = 0; i < buffer.byteLength; ++i) {
-        var header = dataView.getInt8(i);
-        if (header < 0) {
-          var next = dataView.getUint8(i + 1);
-          header = -header;
-          for (var j = 0; j <= header; ++j) {
-            out.push(next);
-          }
-          i += 1;
-        } else {
-          for (var j = 0; j <= header; ++j) {
-            out.push(dataView.getUint8(i + j + 1));
-          }
-          i += header + 1;
+    for (i = 0; i < buffer.byteLength; ++i) {
+      var header = dataView.getInt8(i);
+      if (header < 0) {
+        var next = dataView.getUint8(i + 1);
+        header = -header;
+        for (j = 0; j <= header; ++j) {
+          out.push(next);
         }
+        i += 1;
+      } else {
+        for (j = 0; j <= header; ++j) {
+          out.push(dataView.getUint8(i + j + 1));
+        }
+        i += header + 1;
       }
-      return new Uint8Array(out).buffer;
     }
-  }]);
+    return new Uint8Array(out).buffer;
+  }
+});
+PackbitsDecoder.prototype.constructor = PackbitsDecoder;
 
-  return PackbitsDecoder;
-}(_abstractdecoder2.default);
-
-exports.default = PackbitsDecoder;
+module.exports = PackbitsDecoder;
 
 },{"../abstractdecoder.js":1}],5:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var AbstractDecoder = require("../abstractdecoder.js");
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+function RawDecoder() {}
 
-var _abstractdecoder = require("../abstractdecoder.js");
+RawDecoder.prototype = Object.create(AbstractDecoder.prototype);
+//, {
 
-var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
+//});
+RawDecoder.prototype.constructor = RawDecoder;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+RawDecoder.prototype.decodeBlock = function (buffer) {
+  return buffer;
+};
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var RawDecoder = function (_AbstractDecoder) {
-  _inherits(RawDecoder, _AbstractDecoder);
-
-  function RawDecoder() {
-    _classCallCheck(this, RawDecoder);
-
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(RawDecoder).apply(this, arguments));
-  }
-
-  _createClass(RawDecoder, [{
-    key: "decodeBlock",
-    value: function decodeBlock(buffer) {
-      return buffer;
-    }
-  }]);
-
-  return RawDecoder;
-}(_abstractdecoder2.default);
-
-exports.default = RawDecoder;
+module.exports = RawDecoder;
 
 },{"../abstractdecoder.js":1}],6:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var globals = require("./globals.js");
+var GeoTIFFImage = require("./geotiffimage.js");
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+var fieldTypes = globals.fieldTypes,
+    fieldTagNames = globals.fieldTagNames,
+    arrayFields = globals.arrayFields,
+    geoKeyNames = globals.geoKeyNames;
 
-var _globals = require("./globals");
+/**
+ * The abstraction for a whole GeoTIFF file.
+ * @constructor
+ * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+ * @param {Object} [options] further options.
+ * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
+ */
+function GeoTIFF(rawData, options) {
+  this.dataView = new DataView(rawData);
+  options = options || {};
+  this.cache = options.cache || false;
 
-var _geotiffimage = require("./geotiffimage.js");
-
-var _geotiffimage2 = _interopRequireDefault(_geotiffimage);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var GeoTIFF = function () {
-  /**
-   * The abstraction for a whole GeoTIFF file.
-   * @constructor
-   * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
-   * @param {Object} [options] further options.
-   * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
-   */
-
-  function GeoTIFF(rawData, options) {
-    _classCallCheck(this, GeoTIFF);
-
-    this.dataView = new DataView(rawData);
-    options = options || {};
-    this.cache = options.cache || false;
-
-    var BOM = this.dataView.getUint16(0, 0);
-    if (BOM === 0x4949) {
-      this.littleEndian = true;
-    } else if (BOM === 0x4D4D) {
-      this.littleEndian = false;
-    } else {
-      throw new TypeError("Invalid byte order value.");
-    }
-
-    if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
-      throw new TypeError("Invalid magic number.");
-    }
-
-    this.fileDirectories = this.parseFileDirectories(this.dataView.getUint32(4, this.littleEndian));
+  var BOM = this.dataView.getUint16(0, 0);
+  if (BOM === 0x4949) {
+    this.littleEndian = true;
+  } else if (BOM === 0x4D4D) {
+    this.littleEndian = false;
+  } else {
+    throw new TypeError("Invalid byte order value.");
   }
 
-  _createClass(GeoTIFF, [{
-    key: "getFieldTypeLength",
-    value: function getFieldTypeLength(fieldType) {
-      switch (fieldType) {
-        case _globals.fieldTypes.BYTE:case _globals.fieldTypes.ASCII:case _globals.fieldTypes.SBYTE:case _globals.fieldTypes.UNDEFINED:
-          return 1;
-        case _globals.fieldTypes.SHORT:case _globals.fieldTypes.SSHORT:
-          return 2;
-        case _globals.fieldTypes.LONG:case _globals.fieldTypes.SLONG:case _globals.fieldTypes.FLOAT:
-          return 4;
-        case _globals.fieldTypes.RATIONAL:case _globals.fieldTypes.SRATIONAL:case _globals.fieldTypes.DOUBLE:
-          return 8;
-        default:
-          throw new RangeError("Invalid field type: " + fieldType);
+  if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
+    throw new TypeError("Invalid magic number.");
+  }
+
+  this.fileDirectories = this.parseFileDirectories(this.dataView.getUint32(4, this.littleEndian));
+}
+
+GeoTIFF.prototype = {
+  getFieldTypeLength: function getFieldTypeLength(fieldType) {
+    switch (fieldType) {
+      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.SBYTE:case fieldTypes.UNDEFINED:
+        return 1;
+      case fieldTypes.SHORT:case fieldTypes.SSHORT:
+        return 2;
+      case fieldTypes.LONG:case fieldTypes.SLONG:case fieldTypes.FLOAT:
+        return 4;
+      case fieldTypes.RATIONAL:case fieldTypes.SRATIONAL:case fieldTypes.DOUBLE:
+        return 8;
+      default:
+        throw new RangeError("Invalid field type: " + fieldType);
+    }
+  },
+
+  getValues: function getValues(fieldType, count, offset) {
+    var values = null;
+    var readMethod = null;
+    var fieldTypeLength = this.getFieldTypeLength(fieldType);
+    var i;
+
+    switch (fieldType) {
+      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.UNDEFINED:
+        values = new Uint8Array(count);readMethod = this.dataView.getUint8;
+        break;
+      case fieldTypes.SBYTE:
+        values = new Int8Array(count);readMethod = this.dataView.getInt8;
+        break;
+      case fieldTypes.SHORT:
+        values = new Uint16Array(count);readMethod = this.dataView.getUint16;
+        break;
+      case fieldTypes.SSHORT:
+        values = new Int16Array(count);readMethod = this.dataView.getInt16;
+        break;
+      case fieldTypes.LONG:
+        values = new Uint32Array(count);readMethod = this.dataView.getUint32;
+        break;
+      case fieldTypes.SLONG:
+        values = new Int32Array(count);readMethod = this.dataView.getInt32;
+        break;
+      case fieldTypes.RATIONAL:
+        values = new Uint32Array(count * 2);readMethod = this.dataView.getUint32;
+        break;
+      case fieldTypes.SRATIONAL:
+        values = new Int32Array(count * 2);readMethod = this.dataView.getInt32;
+        break;
+      case fieldTypes.FLOAT:
+        values = new Float32Array(count);readMethod = this.dataView.getFloat32;
+        break;
+      case fieldTypes.DOUBLE:
+        values = new Float64Array(count);readMethod = this.dataView.getFloat64;
+        break;
+      default:
+        throw new RangeError("Invalid field type: " + fieldType);
+    }
+
+    // normal fields
+    if (!(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+      for (i = 0; i < count; ++i) {
+        values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
       }
     }
-  }, {
-    key: "getValues",
-    value: function getValues(fieldType, count, offset) {
-      var values = null;
-      var readMethod = null;
-      var fieldTypeLength = this.getFieldTypeLength(fieldType);
-      var i;
-
-      switch (fieldType) {
-        case _globals.fieldTypes.BYTE:case _globals.fieldTypes.ASCII:case _globals.fieldTypes.UNDEFINED:
-          values = new Uint8Array(count);readMethod = this.dataView.getUint8;
-          break;
-        case _globals.fieldTypes.SBYTE:
-          values = new Int8Array(count);readMethod = this.dataView.getInt8;
-          break;
-        case _globals.fieldTypes.SHORT:
-          values = new Uint16Array(count);readMethod = this.dataView.getUint16;
-          break;
-        case _globals.fieldTypes.SSHORT:
-          values = new Int16Array(count);readMethod = this.dataView.getInt16;
-          break;
-        case _globals.fieldTypes.LONG:
-          values = new Uint32Array(count);readMethod = this.dataView.getUint32;
-          break;
-        case _globals.fieldTypes.SLONG:
-          values = new Int32Array(count);readMethod = this.dataView.getInt32;
-          break;
-        case _globals.fieldTypes.RATIONAL:
-          values = new Uint32Array(count * 2);readMethod = this.dataView.getUint32;
-          break;
-        case _globals.fieldTypes.SRATIONAL:
-          values = new Int32Array(count * 2);readMethod = this.dataView.getInt32;
-          break;
-        case _globals.fieldTypes.FLOAT:
-          values = new Float32Array(count);readMethod = this.dataView.getFloat32;
-          break;
-        case _globals.fieldTypes.DOUBLE:
-          values = new Float64Array(count);readMethod = this.dataView.getFloat64;
-          break;
-        default:
-          throw new RangeError("Invalid field type: " + fieldType);
-      }
-
-      // normal fields
-      if (!(fieldType === _globals.fieldTypes.RATIONAL || fieldType === _globals.fieldTypes.SRATIONAL)) {
-        for (i = 0; i < count; ++i) {
+    // RATIONAL or SRATIONAL
+    else {
+        for (i = 0; i < count * 2; i += 2) {
           values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
+          values[i + 1] = readMethod.call(this.dataView, offset + (i + 1) * fieldTypeLength, this.littleEndian);
         }
       }
-      // RATIONAL or SRATIONAL
-      else {
-          for (i = 0; i < count * 2; i += 2) {
-            values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
-            values[i + 1] = readMethod.call(this.dataView, offset + (i + 1) * fieldTypeLength, this.littleEndian);
-          }
-        }
 
-      if (fieldType === _globals.fieldTypes.ASCII) {
-        return String.fromCharCode.apply(null, values);
-      }
-      return values;
+    if (fieldType === fieldTypes.ASCII) {
+      return String.fromCharCode.apply(null, values);
     }
-  }, {
-    key: "getFieldValues",
-    value: function getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
-      var fieldValues;
-      var fieldTypeLength = this.getFieldTypeLength(fieldType);
+    return values;
+  },
 
-      if (fieldTypeLength * typeCount <= 4) {
-        fieldValues = this.getValues(fieldType, typeCount, valueOffset);
+  getFieldValues: function getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
+    var fieldValues;
+    var fieldTypeLength = this.getFieldTypeLength(fieldType);
+
+    if (fieldTypeLength * typeCount <= 4) {
+      fieldValues = this.getValues(fieldType, typeCount, valueOffset);
+    } else {
+      var actualOffset = this.dataView.getUint32(valueOffset, this.littleEndian);
+      fieldValues = this.getValues(fieldType, typeCount, actualOffset);
+    }
+
+    if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1 && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+      return fieldValues[0];
+    }
+
+    return fieldValues;
+  },
+
+  parseGeoKeyDirectory: function parseGeoKeyDirectory(fileDirectory) {
+    var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
+    if (!rawGeoKeyDirectory) {
+      return null;
+    }
+
+    var geoKeyDirectory = {};
+    for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
+      var key = geoKeyNames[rawGeoKeyDirectory[i]],
+          location = rawGeoKeyDirectory[i + 1] ? fieldTagNames[rawGeoKeyDirectory[i + 1]] : null,
+          count = rawGeoKeyDirectory[i + 2],
+          offset = rawGeoKeyDirectory[i + 3];
+
+      var value = null;
+      if (!location) {
+        value = offset;
       } else {
-        var actualOffset = this.dataView.getUint32(valueOffset, this.littleEndian);
-        fieldValues = this.getValues(fieldType, typeCount, actualOffset);
-      }
-
-      if (typeCount === 1 && _globals.arrayFields.indexOf(fieldTag) === -1 && !(fieldType === _globals.fieldTypes.RATIONAL || fieldType === _globals.fieldTypes.SRATIONAL)) {
-        return fieldValues[0];
-      }
-
-      return fieldValues;
-    }
-  }, {
-    key: "parseGeoKeyDirectory",
-    value: function parseGeoKeyDirectory(fileDirectory) {
-      var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
-      if (!rawGeoKeyDirectory) {
-        return null;
-      }
-
-      var geoKeyDirectory = {};
-      for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
-        var key = _globals.geoKeyNames[rawGeoKeyDirectory[i]],
-            location = rawGeoKeyDirectory[i + 1] ? _globals.fieldTagNames[rawGeoKeyDirectory[i + 1]] : null,
-            count = rawGeoKeyDirectory[i + 2],
-            offset = rawGeoKeyDirectory[i + 3];
-
-        var value = null;
-        if (!location) {
-          value = offset;
-        } else {
-          value = fileDirectory[location];
-          if (typeof value === "undefined" || value === null) {
-            throw new Error("Could not get value of geoKey '" + key + "'.");
-          } else if (typeof value === "string") {
-            value = value.substring(offset, offset + count - 1);
-          } else if (value.subarray) {
-            value = value.subarray(offset, offset + count - 1);
-          }
+        value = fileDirectory[location];
+        if (typeof value === "undefined" || value === null) {
+          throw new Error("Could not get value of geoKey '" + key + "'.");
+        } else if (typeof value === "string") {
+          value = value.substring(offset, offset + count - 1);
+        } else if (value.subarray) {
+          value = value.subarray(offset, offset + count - 1);
         }
-        geoKeyDirectory[key] = value;
       }
-      return geoKeyDirectory;
+      geoKeyDirectory[key] = value;
     }
-  }, {
-    key: "parseFileDirectories",
-    value: function parseFileDirectories(byteOffset) {
-      var nextIFDByteOffset = byteOffset;
-      var fileDirectories = [];
+    return geoKeyDirectory;
+  },
 
-      while (nextIFDByteOffset !== 0x00000000) {
-        var numDirEntries = this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
-        var fileDirectory = {};
+  parseFileDirectories: function parseFileDirectories(byteOffset) {
+    var nextIFDByteOffset = byteOffset;
+    var fileDirectories = [];
 
-        for (var i = byteOffset + 2, entryCount = 0; entryCount < numDirEntries; i += 12, ++entryCount) {
-          var fieldTag = this.dataView.getUint16(i, this.littleEndian);
-          var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
-          var typeCount = this.dataView.getUint32(i + 4, this.littleEndian);
+    while (nextIFDByteOffset !== 0x00000000) {
+      var numDirEntries = this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+      var fileDirectory = {};
 
-          fileDirectory[_globals.fieldTagNames[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + 8);
-        }
-        fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
+      for (var i = byteOffset + 2, entryCount = 0; entryCount < numDirEntries; i += 12, ++entryCount) {
+        var fieldTag = this.dataView.getUint16(i, this.littleEndian);
+        var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
+        var typeCount = this.dataView.getUint32(i + 4, this.littleEndian);
 
-        nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
+        fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + 8);
       }
-      return fileDirectories;
+      fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
+
+      nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
     }
+    return fileDirectories;
+  },
 
-    /**
-     * Get the n-th internal subfile a an image. By default, the first is returned.
-     *
-     * @param {Number} [index=0] the index of the image to return.
-     * @returns {GeoTIFFImage} the image at the given index
-     */
-
-  }, {
-    key: "getImage",
-    value: function getImage(index) {
-      index = index || 0;
-      var fileDirectoryAndGeoKey = this.fileDirectories[index];
-      if (!fileDirectoryAndGeoKey) {
-        throw new RangeError("Invalid image index");
-      }
-      return new _geotiffimage2.default(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
+  /**
+   * Get the n-th internal subfile a an image. By default, the first is returned.
+   *
+   * @param {Number} [index=0] the index of the image to return.
+   * @returns {GeoTIFFImage} the image at the given index
+   */
+  getImage: function getImage(index) {
+    index = index || 0;
+    var fileDirectoryAndGeoKey = this.fileDirectories[index];
+    if (!fileDirectoryAndGeoKey) {
+      throw new RangeError("Invalid image index");
     }
+    return new GeoTIFFImage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
+  },
 
-    /**
-     * Returns the count of the internal subfiles.
-     * 
-     * @returns {Number} the number of internal subfile images
-     */
+  /**
+   * Returns the count of the internal subfiles.
+   * 
+   * @returns {Number} the number of internal subfile images
+   */
+  getImageCount: function getImageCount() {
+    return this.fileDirectories.length;
+  }
+};
 
-  }, {
-    key: "getImageCount",
-    value: function getImageCount() {
-      return this.fileDirectories.length;
-    }
-  }]);
+module.exports = GeoTIFF;
 
-  return GeoTIFF;
-}();
-
-exports.default = GeoTIFF;
-
-},{"./geotiffimage.js":7,"./globals":8}],7:[function(require,module,exports){
+},{"./geotiffimage.js":7,"./globals.js":8}],7:[function(require,module,exports){
 "use strict";
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _globals = require("./globals");
-
-var _raw = require("./compression/raw.js");
-
-var _raw2 = _interopRequireDefault(_raw);
-
-var _lzw = require("./compression/lzw.js");
-
-var _lzw2 = _interopRequireDefault(_lzw);
-
-var _deflate = require("./compression/deflate.js");
-
-var _deflate2 = _interopRequireDefault(_deflate);
-
-var _packbits = require("./compression/packbits.js");
-
-var _packbits2 = _interopRequireDefault(_packbits);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var globals = require("./globals.js");
+var RawDecoder = require("./compression/raw.js");
+var LZWDecoder = require("./compression/lzw.js");
+var DeflateDecoder = require("./compression/deflate.js");
+var PackbitsDecoder = require("./compression/packbits.js");
 
 var sum = function sum(array, start, end) {
   var s = 0;
@@ -564,267 +401,327 @@ var arrayForType = function arrayForType(format, bitsPerSample, size) {
   throw Error("Unsupported data format/bitsPerSample");
 };
 
-var GeoTIFFImage = function () {
-  /**
-   * GeoTIFF sub-file image.
-   * @constructor
-   * @param {Object} fileDirectory The parsed file directory
-   * @param {Object} geoKeys The parsed geo-keys
-   * @param {DataView} dataView The DataView for the underlying file.
-   * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
-   * @param {Boolean} cache Whether or not decoded tiles shall be cached
-   */
-
-  function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
-    _classCallCheck(this, GeoTIFFImage);
-
-    this.fileDirectory = fileDirectory;
-    this.geoKeys = geoKeys;
-    this.dataView = dataView;
-    this.littleEndian = littleEndian;
-    this.tiles = cache ? {} : null;
-    this.isTiled = fileDirectory.StripOffsets ? false : true;
-    var planarConfiguration = fileDirectory.PlanarConfiguration;
-    this.planarConfiguration = typeof planarConfiguration === "undefined" ? 1 : planarConfiguration;
-    if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
-      throw new Error("Invalid planar configuration.");
-    }
-
-    switch (this.fileDirectory.Compression) {
-      case 1:
-        // no compression
-        this.decoder = new _raw2.default();
-        break;
-      case 5:
-        // LZW
-        this.decoder = new _lzw2.default();
-        break;
-      case 6:
-        // JPEG
-        throw new Error("JPEG compression not supported.");
-      case 8:
-        // Deflate
-        this.decoder = new _deflate2.default();
-        break;
-      //case 32946: // deflate ??
-      //  throw new Error("Deflate compression not supported.");
-      case 32773:
-        // packbits
-        this.decoder = new _packbits2.default();
-        break;
-      default:
-        throw new Error("Unknown compresseion method identifier: " + this.fileDirectory.Compression);
-    }
+/**
+ * GeoTIFF sub-file image.
+ * @constructor
+ * @param {Object} fileDirectory The parsed file directory
+ * @param {Object} geoKeys The parsed geo-keys
+ * @param {DataView} dataView The DataView for the underlying file.
+ * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+ * @param {Boolean} cache Whether or not decoded tiles shall be cached
+ */
+function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
+  this.fileDirectory = fileDirectory;
+  this.geoKeys = geoKeys;
+  this.dataView = dataView;
+  this.littleEndian = littleEndian;
+  this.tiles = cache ? {} : null;
+  this.isTiled = fileDirectory.StripOffsets ? false : true;
+  var planarConfiguration = fileDirectory.PlanarConfiguration;
+  this.planarConfiguration = typeof planarConfiguration === "undefined" ? 1 : planarConfiguration;
+  if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
+    throw new Error("Invalid planar configuration.");
   }
+
+  switch (this.fileDirectory.Compression) {
+    case 1:
+      // no compression
+      this.decoder = new RawDecoder();
+      break;
+    case 5:
+      // LZW
+      this.decoder = new LZWDecoder();
+      break;
+    case 6:
+      // JPEG
+      throw new Error("JPEG compression not supported.");
+    case 8:
+      // Deflate
+      this.decoder = new DeflateDecoder();
+      break;
+    //case 32946: // deflate ??
+    //  throw new Error("Deflate compression not supported.");
+    case 32773:
+      // packbits
+      this.decoder = new PackbitsDecoder();
+      break;
+    default:
+      throw new Error("Unknown compresseion method identifier: " + this.fileDirectory.Compression);
+  }
+}
+
+GeoTIFFImage.prototype = {
   /**
    * Returns the associated parsed file directory.
    * @returns {Object} the parsed file directory
    */
+  getFileDirectory: function getFileDirectory() {
+    return this.fileDirectory;
+  },
+  /**
+  * Returns the associated parsed geo keys.
+  * @returns {Object} the parsed geo keys
+  */
+  getGeoKeys: function getGeoKeys() {
+    return this.geoKeys;
+  },
+  /**
+   * Returns the width of the image.
+   * @returns {Number} the width of the image
+   */
+  getWidth: function getWidth() {
+    return this.fileDirectory.ImageWidth;
+  },
+  /**
+   * Returns the height of the image.
+   * @returns {Number} the height of the image
+   */
+  getHeight: function getHeight() {
+    return this.fileDirectory.ImageLength;
+  },
+  /**
+   * Returns the number of samples per pixel.
+   * @returns {Number} the number of samples per pixel
+   */
+  getSamplesPerPixel: function getSamplesPerPixel() {
+    return this.fileDirectory.SamplesPerPixel;
+  },
+  /**
+   * Returns the width of each tile.
+   * @returns {Number} the width of each tile
+   */
+  getTileWidth: function getTileWidth() {
+    return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
+  },
+  /**
+   * Returns the height of each tile.
+   * @returns {Number} the height of each tile
+   */
+  getTileHeight: function getTileHeight() {
+    return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
+  },
 
-  _createClass(GeoTIFFImage, [{
-    key: "getFileDirectory",
-    value: function getFileDirectory() {
-      return this.fileDirectory;
-    }
-    /**
-    * Returns the associated parsed geo keys.
-    * @returns {Object} the parsed geo keys
-    */
-
-  }, {
-    key: "getGeoKeys",
-    value: function getGeoKeys() {
-      return this.geoKeys;
-    }
-    /**
-     * Returns the width of the image.
-     * @returns {Number} the width of the image
-     */
-
-  }, {
-    key: "getWidth",
-    value: function getWidth() {
-      return this.fileDirectory.ImageWidth;
-    }
-    /**
-     * Returns the height of the image.
-     * @returns {Number} the height of the image
-     */
-
-  }, {
-    key: "getHeight",
-    value: function getHeight() {
-      return this.fileDirectory.ImageLength;
-    }
-    /**
-     * Returns the number of samples per pixel.
-     * @returns {Number} the number of samples per pixel
-     */
-
-  }, {
-    key: "getSamplesPerPixel",
-    value: function getSamplesPerPixel() {
-      return this.fileDirectory.SamplesPerPixel;
-    }
-    /**
-     * Returns the width of each tile.
-     * @returns {Number} the width of each tile
-     */
-
-  }, {
-    key: "getTileWidth",
-    value: function getTileWidth() {
-      return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
-    }
-    /**
-     * Returns the height of each tile.
-     * @returns {Number} the height of each tile
-     */
-
-  }, {
-    key: "getTileHeight",
-    value: function getTileHeight() {
-      return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
-    }
-
-    /**
-     * Calculates the number of bytes for each pixel across all samples. Only full
-     * bytes are supported, an exception is thrown when this is not the case.
-     * @returns {Number} the bytes per pixel
-     */
-
-  }, {
-    key: "getBytesPerPixel",
-    value: function getBytesPerPixel() {
-      var bitsPerSample = 0;
-      for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
-        var bits = this.fileDirectory.BitsPerSample[i];
-        if (bits % 8 !== 0) {
-          throw new Error("Sample bit-width of " + bits + " is not supported.");
-        } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
-          throw new Error("Differing size of samples in a pixel are not supported.");
-        }
-        bitsPerSample += bits;
-      }
-      return bitsPerSample / 8;
-    }
-  }, {
-    key: "getSampleByteSize",
-    value: function getSampleByteSize(i) {
-      if (i >= this.fileDirectory.BitsPerSample.length) {
-        throw new RangeError("Sample index " + i + " is out of range.");
-      }
+  /**
+   * Calculates the number of bytes for each pixel across all samples. Only full
+   * bytes are supported, an exception is thrown when this is not the case.
+   * @returns {Number} the bytes per pixel
+   */
+  getBytesPerPixel: function getBytesPerPixel() {
+    var bitsPerSample = 0;
+    for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
       var bits = this.fileDirectory.BitsPerSample[i];
       if (bits % 8 !== 0) {
         throw new Error("Sample bit-width of " + bits + " is not supported.");
+      } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
+        throw new Error("Differing size of samples in a pixel are not supported.");
       }
-      return bits / 8;
+      bitsPerSample += bits;
     }
-  }, {
-    key: "getReaderForSample",
-    value: function getReaderForSample(sampleIndex) {
-      var format = this.fileDirectory.SampleFormat[sampleIndex];
-      var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
-      switch (format) {
-        case 1:
-          // unsigned integer data
-          switch (bitsPerSample) {
-            case 8:
-              return DataView.prototype.getUint8;
-            case 16:
-              return DataView.prototype.getUint16;
-            case 32:
-              return DataView.prototype.getUint32;
-          }
-          break;
-        case 2:
-          // twos complement signed integer data
-          switch (bitsPerSample) {
-            case 8:
-              return DataView.prototype.getInt8;
-            case 16:
-              return DataView.prototype.getInt16;
-            case 32:
-              return DataView.prototype.getInt32;
-          }
-          break;
-        case 3:
-          switch (bitsPerSample) {
-            case 32:
-              return DataView.prototype.getFloat32;
-            case 64:
-              return DataView.prototype.getFloat64;
-          }
-          break;
-      }
-    }
-  }, {
-    key: "getArrayForSample",
-    value: function getArrayForSample(sampleIndex, size) {
-      var format = this.fileDirectory.SampleFormat[sampleIndex];
-      var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
-      return arrayForType(format, bitsPerSample, size);
-    }
-  }, {
-    key: "getDecoder",
-    value: function getDecoder() {
-      return this.decoder;
-    }
+    return bitsPerSample / 8;
+  },
 
-    /**
-     * Returns the decoded strip or tile.
-     * @param {Number} x the strip or tile x-offset
-     * @param {Number} y the tile y-offset (0 for stripped images)
-     * @param {Number} plane the planar configuration (1: "chunky", 2: "separate samples")
-     * @returns {(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)}
-     */
+  getSampleByteSize: function getSampleByteSize(i) {
+    if (i >= this.fileDirectory.BitsPerSample.length) {
+      throw new RangeError("Sample index " + i + " is out of range.");
+    }
+    var bits = this.fileDirectory.BitsPerSample[i];
+    if (bits % 8 !== 0) {
+      throw new Error("Sample bit-width of " + bits + " is not supported.");
+    }
+    return bits / 8;
+  },
 
-  }, {
-    key: "getTileOrStrip",
-    value: function getTileOrStrip(x, y, sample, callback) {
-      var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
-      var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
-      var index;
-      var tiles = this.tiles;
-      if (this.planarConfiguration === 1) {
-        index = y * numTilesPerRow + x;
-      } else if (this.planarConfiguration === 2) {
-        index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
-      }
-
-      if (tiles !== null && index in tiles) {
-        if (callback) {
-          return callback(null, { x: x, y: y, sample: sample, data: tiles[index] });
+  getReaderForSample: function getReaderForSample(sampleIndex) {
+    var format = this.fileDirectory.SampleFormat[sampleIndex];
+    var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+    switch (format) {
+      case 1:
+        // unsigned integer data
+        switch (bitsPerSample) {
+          case 8:
+            return DataView.prototype.getUint8;
+          case 16:
+            return DataView.prototype.getUint16;
+          case 32:
+            return DataView.prototype.getUint32;
         }
-        return tiles[index];
+        break;
+      case 2:
+        // twos complement signed integer data
+        switch (bitsPerSample) {
+          case 8:
+            return DataView.prototype.getInt8;
+          case 16:
+            return DataView.prototype.getInt16;
+          case 32:
+            return DataView.prototype.getInt32;
+        }
+        break;
+      case 3:
+        switch (bitsPerSample) {
+          case 32:
+            return DataView.prototype.getFloat32;
+          case 64:
+            return DataView.prototype.getFloat64;
+        }
+        break;
+    }
+  },
+
+  getArrayForSample: function getArrayForSample(sampleIndex, size) {
+    var format = this.fileDirectory.SampleFormat[sampleIndex];
+    var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+    return arrayForType(format, bitsPerSample, size);
+  },
+
+  getDecoder: function getDecoder() {
+    return this.decoder;
+  },
+
+  /**
+   * Returns the decoded strip or tile.
+   * @param {Number} x the strip or tile x-offset
+   * @param {Number} y the tile y-offset (0 for stripped images)
+   * @param {Number} plane the planar configuration (1: "chunky", 2: "separate samples")
+   * @returns {(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)}
+   */
+  getTileOrStrip: function getTileOrStrip(x, y, sample, callback) {
+    var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
+    var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
+    var index;
+    var tiles = this.tiles;
+    if (this.planarConfiguration === 1) {
+      index = y * numTilesPerRow + x;
+    } else if (this.planarConfiguration === 2) {
+      index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
+    }
+
+    if (tiles !== null && index in tiles) {
+      if (callback) {
+        return callback(null, { x: x, y: y, sample: sample, data: tiles[index] });
+      }
+      return tiles[index];
+    } else {
+      var offset, byteCount;
+      if (this.isTiled) {
+        offset = this.fileDirectory.TileOffsets[index];
+        byteCount = this.fileDirectory.TileByteCounts[index];
       } else {
-        var offset, byteCount;
-        if (this.isTiled) {
-          offset = this.fileDirectory.TileOffsets[index];
-          byteCount = this.fileDirectory.TileByteCounts[index];
-        } else {
-          offset = this.fileDirectory.StripOffsets[index];
-          byteCount = this.fileDirectory.StripByteCounts[index];
-        }
-        var slice = this.dataView.buffer.slice(offset, offset + byteCount);
-        if (callback) {
-          return this.getDecoder().decodeBlockAsync(slice, function (error, data) {
-            if (!error && tiles !== null) {
-              tiles[index] = data;
+        offset = this.fileDirectory.StripOffsets[index];
+        byteCount = this.fileDirectory.StripByteCounts[index];
+      }
+      var slice = this.dataView.buffer.slice(offset, offset + byteCount);
+      if (callback) {
+        return this.getDecoder().decodeBlockAsync(slice, function (error, data) {
+          if (!error && tiles !== null) {
+            tiles[index] = data;
+          }
+          callback(error, { x: x, y: y, sample: sample, data: data });
+        });
+      }
+      var block = this.getDecoder().decodeBlock(slice);
+      if (tiles !== null) {
+        tiles[index] = block;
+      }
+      return block;
+    }
+  },
+
+  _readRasterAsync: function _readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+    var tileWidth = this.getTileWidth();
+    var tileHeight = this.getTileHeight();
+
+    var minXTile = Math.floor(imageWindow[0] / tileWidth);
+    var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
+    var minYTile = Math.floor(imageWindow[1] / tileHeight);
+    var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+
+    var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
+
+    var windowWidth = imageWindow[2] - imageWindow[0];
+    var windowHeight = imageWindow[3] - imageWindow[1];
+
+    var bytesPerPixel = this.getBytesPerPixel();
+    var imageWidth = this.getWidth();
+
+    var srcSampleOffsets = [];
+    var sampleReaders = [];
+    for (var i = 0; i < samples.length; ++i) {
+      if (this.planarConfiguration === 1) {
+        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+      } else {
+        srcSampleOffsets.push(0);
+      }
+      sampleReaders.push(this.getReaderForSample(samples[i]));
+    }
+
+    var allStacked = false;
+    var unfinishedTiles = 0;
+    var littleEndian = this.littleEndian;
+    var globalError = null;
+
+    function onTileGot(error, tile) {
+      if (!error) {
+        var dataView = new DataView(tile.data);
+
+        var firstLine = tile.y * tileHeight;
+        var firstCol = tile.x * tileWidth;
+        var lastLine = (tile.y + 1) * tileHeight;
+        var lastCol = (tile.x + 1) * tileWidth;
+        var sampleIndex = tile.sample;
+
+        for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+            var value = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+            var windowCoordinate;
+            if (interleave) {
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + _sampleIndex;
+              valueArrays[windowCoordinate] = value;
+            } else {
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+              valueArrays[_sampleIndex][windowCoordinate] = value;
             }
-            callback(error, { x: x, y: y, sample: sample, data: data });
-          });
+          }
         }
-        var block = this.getDecoder().decodeBlock(slice);
-        if (tiles !== null) {
-          tiles[index] = block;
+      } else {
+        globalError = error;
+      }
+
+      // check end condition and call callbacks
+      unfinishedTiles -= 1;
+      checkFinished();
+    }
+
+    function checkFinished() {
+      if (allStacked && unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        } else {
+          callback(valueArrays);
         }
-        return block;
       }
     }
-  }, {
-    key: "_readRasterAsync",
-    value: function _readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+
+    for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
+      for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
+        for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+          var sample = samples[sampleIndex];
+          if (this.planarConfiguration === 2) {
+            bytesPerPixel = this.getSampleByteSize(sample);
+          }
+          var _sampleIndex = sampleIndex;
+          unfinishedTiles += 1;
+          this.getTileOrStrip(xTile, yTile, sample, onTileGot);
+        }
+      }
+    }
+    allStacked = true;
+    checkFinished();
+  },
+
+  _readRaster: function _readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+    try {
       var tileWidth = this.getTileWidth();
       var tileHeight = this.getTileHeight();
 
@@ -852,319 +749,219 @@ var GeoTIFFImage = function () {
         sampleReaders.push(this.getReaderForSample(samples[i]));
       }
 
-      var allStacked = false;
-      var unfinishedTiles = 0;
-      var littleEndian = this.littleEndian;
-      var globalError = null;
+      for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
+        for (var xTile = minXTile; xTile < maxXTile; ++xTile) {
+          var firstLine = yTile * tileHeight;
+          var firstCol = xTile * tileWidth;
+          var lastLine = (yTile + 1) * tileHeight;
+          var lastCol = (xTile + 1) * tileWidth;
 
-      function onTileGot(error, tile) {
-        if (!error) {
-          var dataView = new DataView(tile.data);
-
-          var firstLine = tile.y * tileHeight;
-          var firstCol = tile.x * tileWidth;
-          var lastLine = (tile.y + 1) * tileHeight;
-          var lastCol = (tile.x + 1) * tileWidth;
-          var sampleIndex = tile.sample;
-
-          for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
-            for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
-              var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-              var value = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
-              var windowCoordinate;
-              if (interleave) {
-                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + _sampleIndex;
-                valueArrays[windowCoordinate] = value;
-              } else {
-                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-                valueArrays[_sampleIndex][windowCoordinate] = value;
-              }
-            }
-          }
-        } else {
-          globalError = error;
-        }
-
-        // check end condition and call callbacks
-        unfinishedTiles -= 1;
-        checkFinished();
-      }
-
-      function checkFinished() {
-        if (allStacked && unfinishedTiles === 0) {
-          if (globalError) {
-            callbackError(globalError);
-          } else {
-            callback(valueArrays);
-          }
-        }
-      }
-
-      for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
-        for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
           for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
             var sample = samples[sampleIndex];
             if (this.planarConfiguration === 2) {
               bytesPerPixel = this.getSampleByteSize(sample);
             }
-            var _sampleIndex = sampleIndex;
-            unfinishedTiles += 1;
-            this.getTileOrStripAsync(xTile, yTile, sample, onTileGot);
-          }
-        }
-      }
-      allStacked = true;
-      checkFinished();
-    }
-  }, {
-    key: "_readRaster",
-    value: function _readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
-      try {
-        var tileWidth = this.getTileWidth();
-        var tileHeight = this.getTileHeight();
+            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
-        var minXTile = Math.floor(imageWindow[0] / tileWidth);
-        var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
-        var minYTile = Math.floor(imageWindow[1] / tileHeight);
-        var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
-
-        var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
-
-        var windowWidth = imageWindow[2] - imageWindow[0];
-        var windowHeight = imageWindow[3] - imageWindow[1];
-
-        var bytesPerPixel = this.getBytesPerPixel();
-        var imageWidth = this.getWidth();
-
-        var srcSampleOffsets = [];
-        var sampleReaders = [];
-        for (var i = 0; i < samples.length; ++i) {
-          if (this.planarConfiguration === 1) {
-            srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
-          } else {
-            srcSampleOffsets.push(0);
-          }
-          sampleReaders.push(this.getReaderForSample(samples[i]));
-        }
-
-        for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
-          for (var xTile = minXTile; xTile < maxXTile; ++xTile) {
-            var firstLine = yTile * tileHeight;
-            var firstCol = xTile * tileWidth;
-            var lastLine = (yTile + 1) * tileHeight;
-            var lastCol = (xTile + 1) * tileWidth;
-
-            for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
-              var sample = samples[sampleIndex];
-              if (this.planarConfiguration === 2) {
-                bytesPerPixel = this.getSampleByteSize(sample);
-              }
-              var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
-
-              for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
-                for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
-                  var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-                  var value = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
-                  var windowCoordinate;
-                  if (interleave) {
-                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
-                    valueArrays[windowCoordinate] = value;
-                  } else {
-                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-                    valueArrays[sampleIndex][windowCoordinate] = value;
-                  }
+            for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+              for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+                var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+                var value = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                var windowCoordinate;
+                if (interleave) {
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+                  valueArrays[windowCoordinate] = value;
+                } else {
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+                  valueArrays[sampleIndex][windowCoordinate] = value;
                 }
               }
             }
           }
         }
-        callback(valueArrays);
-        return valueArrays;
-      } catch (error) {
-        return callbackError(error);
       }
+      callback(valueArrays);
+      return valueArrays;
+    } catch (error) {
+      return callbackError(error);
     }
+  },
 
-    /**
-     * This callback is called upon successful reading of a GeoTIFF image. The
-     * resulting arrays are passed as a single argument. 
-     * @callback GeoTIFFImage~readCallback
-     * @param {(TypedArray|TypedArray[])} array the requested data as a either a 
-     *                                          single typed array or a list of
-     *                                          typed arrays, depending on the 
-     *                                          'interleave' option.
-     */
+  /**
+   * This callback is called upon successful reading of a GeoTIFF image. The
+   * resulting arrays are passed as a single argument. 
+   * @callback GeoTIFFImage~readCallback
+   * @param {(TypedArray|TypedArray[])} array the requested data as a either a 
+   *                                          single typed array or a list of
+   *                                          typed arrays, depending on the 
+   *                                          'interleave' option.
+   */
 
-    /**
-     * This callback is called upon encountering an error while reading of a 
-     * GeoTIFF image
-     * @callback GeoTIFFImage~readErrorCallback
-     * @param {Error} error the encountered error
-     */
+  /**
+   * This callback is called upon encountering an error while reading of a 
+   * GeoTIFF image
+   * @callback GeoTIFFImage~readErrorCallback
+   * @param {Error} error the encountered error
+   */
 
-    /**
-     * Reads raster data from the image. This function reads all selected samples
-     * into separate arrays of the correct type for that sample. When provided,
-     * only a subset of the raster is read for each sample.
-     *
-     * @param {Object} [options] optional parameters
-     * @param {Array} [options.window=whole image] the subset to read data from.
-     * @param {Array} [options.samples=all samples] the selection of samples to read from.
-     * @param {Boolean} [options.interleave=false] whether the data shall be read 
-     *                                             in one single array or separate 
-     *                                             arrays.
-     * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
-     *                                               parameter is mandatory for
-     *                                               asynchronous decoders (some 
-     *                                               compression mechanisms).
-     * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
-     * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
-     *                                           array(s) is/are returned. In
-     *                                           asynchronous cases, nothing is
-     *                                           returned.
-     */
-
-  }, {
-    key: "readRasters",
-    value: function readRasters() /* arguments are read via the 'arguments' object */{
-      var options, callback, callbackError;
-      switch (arguments.length) {
-        case 0:
-          break;
-        case 1:
-          if (typeof arguments[0] === "function") {
-            callback = arguments[0];
-          } else {
-            options = arguments[0];
-          }
-          break;
-        case 2:
-          if (typeof arguments[0] === "function") {
-            callback = arguments[0];
-            callbackError = arguments[1];
-          } else {
-            options = arguments[0];
-            callback = arguments[1];
-          }
-          break;
-        case 3:
+  /**
+   * Reads raster data from the image. This function reads all selected samples
+   * into separate arrays of the correct type for that sample. When provided,
+   * only a subset of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {Array} [options.samples=all samples] the selection of samples to read from.
+   * @param {Boolean} [options.interleave=false] whether the data shall be read 
+   *                                             in one single array or separate 
+   *                                             arrays.
+   * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
+   *                                               parameter is mandatory for
+   *                                               asynchronous decoders (some 
+   *                                               compression mechanisms).
+   * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+   * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
+   *                                           array(s) is/are returned. In
+   *                                           asynchronous cases, nothing is
+   *                                           returned.
+   */
+  readRasters: function readRasters() /* arguments are read via the 'arguments' object */{
+    // parse the arguments
+    var options, callback, callbackError;
+    switch (arguments.length) {
+      case 0:
+        break;
+      case 1:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+        } else {
+          options = arguments[0];
+        }
+        break;
+      case 2:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+          callbackError = arguments[1];
+        } else {
           options = arguments[0];
           callback = arguments[1];
-          callbackError = arguments[2];
-          break;
-        default:
-          throw new Error("Invalid number of arguments passed.");
-      }
-      options = options || {};
-      callbackError = callbackError || function () {};
-
-      var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()],
-          samples = options.samples,
-          interleave = options.interleave;
-
-      if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
-        throw new Error("Select window is out of image bounds.");
-      } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
-        throw new Error("Invalid subsets");
-      }
-
-      var imageWindowWidth = imageWindow[2] - imageWindow[0];
-      var imageWindowHeight = imageWindow[3] - imageWindow[1];
-      var numPixels = imageWindowWidth * imageWindowHeight;
-      var i;
-
-      if (!samples) {
-        samples = [];
-        for (i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
-          samples.push(i);
         }
-      } else {
-        for (i = 0; i < samples.length; ++i) {
-          if (samples[i] >= this.fileDirectory.SamplesPerPixel) {
-            throw new RangeError("Invalid sample index '" + samples[i] + "'.");
-          }
-        }
+        break;
+      case 3:
+        options = arguments[0];
+        callback = arguments[1];
+        callbackError = arguments[2];
+        break;
+      default:
+        throw new Error("Invalid number of arguments passed.");
+    }
+
+    // set up default arguments
+    options = options || {};
+    callbackError = callbackError || function (error) {
+      console.error(error);
+    };
+
+    var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()],
+        samples = options.samples,
+        interleave = options.interleave;
+
+    // check parameters
+    if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
+      throw new Error("Select window is out of image bounds.");
+    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error("Invalid subsets");
+    }
+
+    var imageWindowWidth = imageWindow[2] - imageWindow[0];
+    var imageWindowHeight = imageWindow[3] - imageWindow[1];
+    var numPixels = imageWindowWidth * imageWindowHeight;
+    var i;
+
+    if (!samples) {
+      samples = [];
+      for (i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
+        samples.push(i);
       }
-      var valueArrays;
-      if (interleave) {
-        var format = Math.max.apply(null, this.fileDirectory.SampleFormat),
-            bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
-        valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
-      } else {
-        valueArrays = [];
-        for (i = 0; i < samples.length; ++i) {
-          valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+    } else {
+      for (i = 0; i < samples.length; ++i) {
+        if (samples[i] >= this.fileDirectory.SamplesPerPixel) {
+          throw new RangeError("Invalid sample index '" + samples[i] + "'.");
         }
       }
-
-      var decoder = this.getDecoder();
-      if (decoder.isAsync()) {
-        if (!callback) {
-          throw new Error("No callback specified for asynchronous raster reading.");
-        }
-        return this._readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError);
-      } else {
-        callback = callback || function () {};
-        return this._readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError);
+    }
+    var valueArrays;
+    if (interleave) {
+      var format = Math.max.apply(null, this.fileDirectory.SampleFormat),
+          bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
+      valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
+    } else {
+      valueArrays = [];
+      for (i = 0; i < samples.length; ++i) {
+        valueArrays.push(this.getArrayForSample(samples[i], numPixels));
       }
     }
 
-    /**
-     * Returns an array of tiepoints.
-     * @returns {Object[]}
-     */
-
-  }, {
-    key: "getTiePoints",
-    value: function getTiePoints() {
-      if (!this.fileDirectory.ModelTiepoint) {
-        return [];
+    // start reading data, sync or async
+    var decoder = this.getDecoder();
+    if (decoder.isAsync()) {
+      if (!callback) {
+        throw new Error("No callback specified for asynchronous raster reading.");
       }
+      return this._readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError);
+    } else {
+      callback = callback || function () {};
+      return this._readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError);
+    }
+  },
 
-      var tiePoints = [];
-      for (var i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
-        tiePoints.push({
-          i: this.fileDirectory.ModelTiepoint[i],
-          j: this.fileDirectory.ModelTiepoint[i + 1],
-          k: this.fileDirectory.ModelTiepoint[i + 2],
-          x: this.fileDirectory.ModelTiepoint[i + 3],
-          y: this.fileDirectory.ModelTiepoint[i + 4],
-          z: this.fileDirectory.ModelTiepoint[i + 5]
-        });
-      }
-      return tiePoints;
+  /**
+   * Returns an array of tiepoints.
+   * @returns {Object[]}
+   */
+  getTiePoints: function getTiePoints() {
+    if (!this.fileDirectory.ModelTiepoint) {
+      return [];
     }
 
-    /**
-     * Returns the parsed GDAL metadata items.
-     * @returns {Object}
-     */
-
-  }, {
-    key: "getGDALMetadata",
-    value: function getGDALMetadata() {
-      var metadata = {};
-      if (!this.fileDirectory.GDAL_METADATA) {
-        return null;
-      }
-
-      var xmlDom = (0, _globals.parseXml)(this.fileDirectory.GDAL_METADATA);
-      var result = xmlDom.evaluate("GDALMetadata/Item", xmlDom, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-      for (var i = 0; i < result.snapshotLength; ++i) {
-        var node = result.snapshotItem(i);
-        metadata[node.getAttribute("name")] = node.textContent;
-      }
-      return metadata;
+    var tiePoints = [];
+    for (var i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
+      tiePoints.push({
+        i: this.fileDirectory.ModelTiepoint[i],
+        j: this.fileDirectory.ModelTiepoint[i + 1],
+        k: this.fileDirectory.ModelTiepoint[i + 2],
+        x: this.fileDirectory.ModelTiepoint[i + 3],
+        y: this.fileDirectory.ModelTiepoint[i + 4],
+        z: this.fileDirectory.ModelTiepoint[i + 5]
+      });
     }
-  }]);
+    return tiePoints;
+  },
 
-  return GeoTIFFImage;
-}();
+  /**
+   * Returns the parsed GDAL metadata items.
+   * @returns {Object}
+   */
+  getGDALMetadata: function getGDALMetadata() {
+    var metadata = {};
+    if (!this.fileDirectory.GDAL_METADATA) {
+      return null;
+    }
 
-exports.default = GeoTIFFImage;
+    var xmlDom = globals.parseXml(this.fileDirectory.GDAL_METADATA);
+    var result = xmlDom.evaluate("GDALMetadata/Item", xmlDom, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (var i = 0; i < result.snapshotLength; ++i) {
+      var node = result.snapshotItem(i);
+      metadata[node.getAttribute("name")] = node.textContent;
+    }
+    return metadata;
+  }
+};
 
-},{"./compression/deflate.js":2,"./compression/lzw.js":3,"./compression/packbits.js":4,"./compression/raw.js":5,"./globals":8}],8:[function(require,module,exports){
-'use strict';
+module.exports = GeoTIFFImage;
+
+},{"./compression/deflate.js":2,"./compression/lzw.js":3,"./compression/packbits.js":4,"./compression/raw.js":5,"./globals.js":8}],8:[function(require,module,exports){
+"use strict";
 
 var fieldTagNames = {
   // TIFF Baseline
@@ -1404,13 +1201,9 @@ module.exports = {
 },{"xmldom":"xmldom"}],9:[function(require,module,exports){
 "use strict";
 
-var _geotiff = require("./geotiff.js");
+var GeoTIFF = require("./geotiff.js");
 
-var _geotiff2 = _interopRequireDefault(_geotiff);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/** 
+/**
  * Main parsing function for GeoTIFF files.
  * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
  * @param {Object} [options] further options.
@@ -1430,7 +1223,7 @@ var parse = function parse(data, options) {
   } else {
     throw new Error("Invalid input data given.");
   }
-  return new _geotiff2.default(rawData, options);
+  return new GeoTIFF(rawData, options);
 };
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
