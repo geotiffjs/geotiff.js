@@ -620,8 +620,8 @@ GeoTIFFImage.prototype = {
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
     }
-
-    var xmlDom = globals.parseXml(this.fileDirectory.GDAL_METADATA);
+    var string = this.fileDirectory.GDAL_METADATA;
+    var xmlDom = globals.parseXml(string.substring(0, string.length-1));
     var result = xmlDom.evaluate(
       "GDALMetadata/Item", xmlDom, null,
       XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null
