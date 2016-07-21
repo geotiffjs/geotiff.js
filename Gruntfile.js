@@ -76,8 +76,9 @@ module.exports = function(grunt) {
                 options: {
                     livereload: '<%= connect.options.livereload %>'
                 },
-                tasks: ['jshint', 'browserify'],
+                tasks: ['jshint', 'browserify', 'uglify'],
                 files: [
+                    'Gruntfile.js',
                     'test/*.html',
                     'src/**/*.js',
                     'test/*.spec.js'
@@ -138,7 +139,7 @@ module.exports = function(grunt) {
     // Default task.
     grunt.registerTask('default', ['jshint', 'clean', 'browserify', 'uglify']);
 
-    grunt.registerTask('serve', ['jshint', 'browserify', 'connect:livereload', 'watch']);
+    grunt.registerTask('serve', ['jshint', 'browserify', 'uglify', 'connect:livereload', 'watch']);
 
     grunt.registerTask('test', ['jshint', 'karma']);
 
