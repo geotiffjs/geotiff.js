@@ -25,37 +25,36 @@ var through = require('through');
 
 function DeflateDecoder() {}
 
-DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype, {
-  decodeBlockAsync: function decodeBlockAsync(buffer, callback) {
-    // through(function (data) {
-    //   this.queue(new Buffer(new Uint8Array(buffer)));
-    // },
-    // function() {
-    //   this.queue(null);
-    // })
-    // .pipe(inflate())
-    // /*.pipe(function() {
-    //   alert(arguments);
-    // })*/
-    // .on("data", function(data) {
-    //   buffers.push(data);
-    // })
-    // .on("end", function() {
-    //   var buffer = Buffer.concat(buffers);
-    //   var arrayBuffer = new ArrayBuffer(buffer.length);
-    //   var view = new Uint8Array(ab);
-    //   for (var i = 0; i < buffer.length; ++i) {
-    //       view[i] = buffer[i];
-    //   }
-    //   callback(null, arrayBuffer);
-    // })
-    // .on("error", function(error) {
-    //   callback(error, null)
-    // });
-    throw new Error("DeflateDecoder is not yet implemented.");
-  }
-});
+DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype);
 DeflateDecoder.prototype.constructor = DeflateDecoder;
+DeflateDecoder.prototype.decodeBlockAsync = function (buffer, callback) {
+  // through(function (data) {
+  //   this.queue(new Buffer(new Uint8Array(buffer)));
+  // },
+  // function() {
+  //   this.queue(null);
+  // })
+  // .pipe(inflate())
+  // /*.pipe(function() {
+  //   alert(arguments);
+  // })*/
+  // .on("data", function(data) {
+  //   buffers.push(data);
+  // })
+  // .on("end", function() {
+  //   var buffer = Buffer.concat(buffers);
+  //   var arrayBuffer = new ArrayBuffer(buffer.length);
+  //   var view = new Uint8Array(ab);
+  //   for (var i = 0; i < buffer.length; ++i) {
+  //       view[i] = buffer[i];
+  //   }
+  //   callback(null, arrayBuffer);
+  // })
+  // .on("error", function(error) {
+  //   callback(error, null)
+  // });
+  throw new Error("DeflateDecoder is not yet implemented.");
+};
 
 module.exports = DeflateDecoder;
 
@@ -68,13 +67,12 @@ var AbstractDecoder = require("../abstractdecoder.js");
 
 function LZWDecoder() {}
 
-LZWDecoder.prototype = Object.create(AbstractDecoder.prototype, {
-  decodeBlock: function decodeBlock(buffer) {
-    throw new Error("LZWDecoder is not yet implemented");
-    //return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
-  }
-});
+LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
 LZWDecoder.prototype.constructor = LZWDecoder;
+LZWDecoder.prototype.decodeBlock = function (buffer) {
+  throw new Error("LZWDecoder is not yet implemented");
+  //return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
+};
 
 module.exports = LZWDecoder;
 
@@ -85,32 +83,31 @@ var AbstractDecoder = require("../abstractdecoder.js");
 
 function PackbitsDecoder() {}
 
-PackbitsDecoder.prototype = Object.create(AbstractDecoder.prototype, {
-  decodeBlock: function decodeBlock(buffer) {
-    var dataView = new DataView(buffer);
-    var out = [];
-    var i, j;
-
-    for (i = 0; i < buffer.byteLength; ++i) {
-      var header = dataView.getInt8(i);
-      if (header < 0) {
-        var next = dataView.getUint8(i + 1);
-        header = -header;
-        for (j = 0; j <= header; ++j) {
-          out.push(next);
-        }
-        i += 1;
-      } else {
-        for (j = 0; j <= header; ++j) {
-          out.push(dataView.getUint8(i + j + 1));
-        }
-        i += header + 1;
-      }
-    }
-    return new Uint8Array(out).buffer;
-  }
-});
+PackbitsDecoder.prototype = Object.create(AbstractDecoder.prototype);
 PackbitsDecoder.prototype.constructor = PackbitsDecoder;
+PackbitsDecoder.prototype.decodeBlock = function (buffer) {
+  var dataView = new DataView(buffer);
+  var out = [];
+  var i, j;
+
+  for (i = 0; i < buffer.byteLength; ++i) {
+    var header = dataView.getInt8(i);
+    if (header < 0) {
+      var next = dataView.getUint8(i + 1);
+      header = -header;
+      for (j = 0; j <= header; ++j) {
+        out.push(next);
+      }
+      i += 1;
+    } else {
+      for (j = 0; j <= header; ++j) {
+        out.push(dataView.getUint8(i + j + 1));
+      }
+      i += header + 1;
+    }
+  }
+  return new Uint8Array(out).buffer;
+};
 
 module.exports = PackbitsDecoder;
 
@@ -122,11 +119,7 @@ var AbstractDecoder = require("../abstractdecoder.js");
 function RawDecoder() {}
 
 RawDecoder.prototype = Object.create(AbstractDecoder.prototype);
-//, {
-
-//});
 RawDecoder.prototype.constructor = RawDecoder;
-
 RawDecoder.prototype.decodeBlock = function (buffer) {
   return buffer;
 };
@@ -947,8 +940,8 @@ GeoTIFFImage.prototype = {
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
     }
-
-    var xmlDom = globals.parseXml(this.fileDirectory.GDAL_METADATA);
+    var string = this.fileDirectory.GDAL_METADATA;
+    var xmlDom = globals.parseXml(string.substring(0, string.length - 1));
     var result = xmlDom.evaluate("GDALMetadata/Item", xmlDom, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
     for (var i = 0; i < result.snapshotLength; ++i) {
       var node = result.snapshotItem(i);
