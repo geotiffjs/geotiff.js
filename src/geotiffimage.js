@@ -189,7 +189,7 @@ GeoTIFFImage.prototype = {
             return DataView.prototype.getUint32;
         }
         break;
-      case 2: // twos complement signed integer data 
+      case 2: // twos complement signed integer data
         switch (bitsPerSample) {
           case 8:
             return DataView.prototype.getInt8;
@@ -238,7 +238,7 @@ GeoTIFFImage.prototype = {
     else if (this.planarConfiguration === 2) {
       index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
     }
-    
+
     if (tiles !== null && index in tiles) {
       if (callback) {
         return callback(null, {x: x, y: y, sample: sample, data: tiles[index]});
@@ -290,7 +290,7 @@ GeoTIFFImage.prototype = {
     var imageWidth = this.getWidth();
 
     var srcSampleOffsets = [];
-    var sampleReaders = []; 
+    var sampleReaders = [];
     for (var i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
         srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
@@ -418,10 +418,21 @@ GeoTIFFImage.prototype = {
             }
             var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
-            for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
-              for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var reader = sampleReaders[sampleIndex]
+            var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]))
+            var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]))
+            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel
+            var tileLength = (new Uint8Array(tile.buffer).length)*2
+            if (tileLength !== totalbytes && this._debugMessages) {
+              console.warn('dimension mismatch', tileLength, totalbytes)
+            }
+            for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
+              for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-                var value = sampleReaders[sampleIndex].call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                var value = 0
+                if (pixelOffset < tileLength/2-1) {
+                  value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                }
                 var windowCoordinate;
                 if (interleave) {
                   windowCoordinate =
@@ -451,16 +462,16 @@ GeoTIFFImage.prototype = {
 
   /**
    * This callback is called upon successful reading of a GeoTIFF image. The
-   * resulting arrays are passed as a single argument. 
+   * resulting arrays are passed as a single argument.
    * @callback GeoTIFFImage~readCallback
-   * @param {(TypedArray|TypedArray[])} array the requested data as a either a 
+   * @param {(TypedArray|TypedArray[])} array the requested data as a either a
    *                                          single typed array or a list of
-   *                                          typed arrays, depending on the 
+   *                                          typed arrays, depending on the
    *                                          'interleave' option.
    */
 
   /**
-   * This callback is called upon encountering an error while reading of a 
+   * This callback is called upon encountering an error while reading of a
    * GeoTIFF image
    * @callback GeoTIFFImage~readErrorCallback
    * @param {Error} error the encountered error
@@ -474,12 +485,12 @@ GeoTIFFImage.prototype = {
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.samples=all samples] the selection of samples to read from.
-   * @param {Boolean} [options.interleave=false] whether the data shall be read 
-   *                                             in one single array or separate 
+   * @param {Boolean} [options.interleave=false] whether the data shall be read
+   *                                             in one single array or separate
    *                                             arrays.
    * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
    *                                               parameter is mandatory for
-   *                                               asynchronous decoders (some 
+   *                                               asynchronous decoders (some
    *                                               compression mechanisms).
    * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
    * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
