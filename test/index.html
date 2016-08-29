@@ -28,7 +28,7 @@ var tiffs = [
 ];
 
 var rgbtiffs = [
-//  "rgb.tiff"
+  "rgb.tiff"
 ]
 
 
@@ -84,7 +84,16 @@ tiffs.forEach(function(filename) {
     var rasters = image.readRasters({samples: [0]});
     console.timeEnd('readRasters')
     var canvas = document.getElementById(filename);
-    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [0, 65000], "viridis", false);
+    var minP = Number.MAX_SAFE_INTEGER
+    var maxP = Number.MIN_SAFE_INTEGER
+    for (var i = 0; i<rasters[0].length; i++) {
+      minP = Math.min(minP, rasters[0][i])
+      maxP = Math.max(maxP, rasters[0][i])
+    }
+    minP=0
+    console.log('min:', minP, 'max:', maxP)
+    console.timeEnd('min max')
+    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [minP, maxP], "viridis", false);
     plot.render();
   };
 

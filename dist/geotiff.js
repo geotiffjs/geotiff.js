@@ -14,7 +14,7 @@ module.exports = AbstractDecoder;
 
 },{}],2:[function(require,module,exports){
 "use strict";
-// Redfish Group LLC. 2016
+// (c) Redfish Group LLC. 2016
 //  LZW uncompression/uncompression according to https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
 //
 
@@ -38,7 +38,7 @@ var LZWuncompress = function () {
   }
 
   _createClass(LZWuncompress, [{
-    key: "initDictionary",
+    key: 'initDictionary',
     value: function initDictionary() {
       this.dictionary = new Array(258);
       this.entryLookup = {};
@@ -46,23 +46,26 @@ var LZWuncompress = function () {
       for (var i = 0; i <= 257; i++) {
         // i really feal like i <= 257, but I get strange unknown words that way.
         this.dictionary[i] = [i];
-        if (this._makeEntryLookup) this.entryLookup[i] = i;
+        if (this._makeEntryLookup) {
+          this.entryLookup[i] = i;
+        }
       }
     }
   }, {
-    key: "decompress",
+    key: 'decompress',
     value: function decompress(input) {
       this._makeEntryLookup = false; // for speed
       this.initDictionary();
       this.position = 0;
       this.result = [];
-      if (!input.buffer) input = new Uint8Array(input);
-      var mydataview = new DataView(input.buffer); // this.inputToBinary(input)
+      if (!input.buffer) {
+        input = new Uint8Array(input);
+      }
+      var mydataview = new DataView(input.buffer);
       var code = this.getNext(mydataview);
       var oldCode;
       while (code !== this.EOI_CODE) {
         if (code === this.CLEAR_CODE) {
-          // console.log(`clear code ${Math.floor(this.position/8)} / ${input.length}`)
           this.initDictionary();
           code = this.getNext(mydataview);
           while (code === this.CLEAR_CODE) {
@@ -88,7 +91,7 @@ var LZWuncompress = function () {
           } else {
             var oldVal = this.dictionary[oldCode];
             if (!oldVal) {
-              throw "Bogus entry. Not in dictionary, " + oldCode + " / " + this.dictionary.length + ", position: " + this.position;
+              throw 'Bogus entry. Not in dictionary, ' + oldCode + ' / ' + this.dictionary.length + ', position: ' + this.position;
             }
             var _newVal = oldVal.concat(this.dictionary[oldCode][0]);
             this.appendArray(this.result, _newVal);
@@ -105,7 +108,7 @@ var LZWuncompress = function () {
       return new Uint8Array(this.result);
     }
   }, {
-    key: "appendArray",
+    key: 'appendArray',
     value: function appendArray(dest, source) {
       for (var i = 0; i < source.length; i++) {
         dest.push(source[i]);
@@ -113,38 +116,38 @@ var LZWuncompress = function () {
       return dest;
     }
   }, {
-    key: "haveBytesChanged",
+    key: 'haveBytesChanged',
     value: function haveBytesChanged() {
       if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
         this.byteLength++;
-        console.log("------", this.byteLength);
         return true;
       }
       return false;
     }
   }, {
-    key: "addToDictionary",
+    key: 'addToDictionary',
     value: function addToDictionary(arr) {
       this.dictionary.push(arr);
-      if (this._makeEntryLookup) this.entryLookup[arr] = this.dictionary.length - 1;
+      if (this._makeEntryLookup) {
+        this.entryLookup[arr] = this.dictionary.length - 1;
+      }
       this.haveBytesChanged();
       return this.dictionary.length - 1;
     }
   }, {
-    key: "getNext",
+    key: 'getNext',
     value: function getNext(dataview) {
       var byte = this.getByte(dataview, this.position, this.byteLength);
-      // console.log(byte)
       this.position += this.byteLength;
       return byte;
     }
 
     //
-    // This binary representation might actually be as fast as the completely illegible bit shift bs.
+    // This binary representation might actually be as fast as the completely illegible bit shift approach
     //
 
   }, {
-    key: "getByte",
+    key: 'getByte',
     value: function getByte(dataview, position, length) {
       var d = position % 8;
       var a = Math.floor(position / 8);
@@ -176,7 +179,7 @@ var LZWuncompress = function () {
     // compress has not been optimized and uses a uint8 array to hold binary values.
 
   }, {
-    key: "compress",
+    key: 'compress',
     value: function compress(input) {
       this._makeEntryLookup = true;
       this.initDictionary();
@@ -192,12 +195,10 @@ var LZWuncompress = function () {
         } else {
           var _code = this.entryLookup[omega];
           var _bin = this.binaryFromByte(_code, this.byteLength);
-          resultBits = this.appendArray(resultBits, _bin); // resultBits.concat(Array.from(bin))
-          // console.log(code)
+          resultBits = this.appendArray(resultBits, _bin);
           this.addToDictionary(omk);
           omega = k;
           if (this.dictionary.length >= Math.pow(2, this.MAX_BITS)) {
-            //resultBits = resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
             resultBits = this.appendArray(resultBits, this.binaryFromByte(this.CLEAR_CODE, this.byteLength));
             this.initDictionary();
           }
@@ -205,20 +206,20 @@ var LZWuncompress = function () {
       }
       var code = this.entryLookup[omega];
       var bin = this.binaryFromByte(code, this.byteLength);
-      resultBits = this.appendArray(resultBits, bin); // resultBits.concat(Array.from(bin))
-      resultBits = resultBits = this.appendArray(resultBits, this.binaryFromByte(this.EOI_CODE, this.byteLength)); // resultBits.concat(Array.from(this.binaryFromByte(this.EOI_CODE, this.byteLength)))
+      resultBits = this.appendArray(resultBits, bin);
+      resultBits = resultBits = this.appendArray(resultBits, this.binaryFromByte(this.EOI_CODE, this.byteLength));
       this.binary = resultBits;
       this.result = this.binaryToUint8(resultBits);
       return this.result;
     }
   }, {
-    key: "byteFromCode",
+    key: 'byteFromCode',
     value: function byteFromCode(code) {
       var res = this.dictionary[code];
       return res;
     }
   }, {
-    key: "binaryFromByte",
+    key: 'binaryFromByte',
     value: function binaryFromByte(byte) {
       var byteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
@@ -231,7 +232,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: "binaryToNumber",
+    key: 'binaryToNumber',
     value: function binaryToNumber(bin) {
       var res = 0;
       for (var i = 0; i < bin.length; i++) {
@@ -240,7 +241,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: "inputToBinary",
+    key: 'inputToBinary',
     value: function inputToBinary(input) {
       var inputByteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
@@ -252,7 +253,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: "binaryToUint8",
+    key: 'binaryToUint8',
     value: function binaryToUint8(bin) {
       var result = new Uint8Array(Math.ceil(bin.length / 8));
       var index = 0;
@@ -340,8 +341,6 @@ LZWDecoder.prototype.decodeBlock = function (buffer) {
   var fk = new Uint8Array(buffer);
   var gu = compressor.decompress(fk);
   return gu.buffer;
-  // throw new Error("LZWDecoder is not yet implemented");
-  //return lzwCompress.unpack(Array.prototype.slice.call(new Uint8Array(buffer)));
 };
 
 module.exports = LZWDecoder;

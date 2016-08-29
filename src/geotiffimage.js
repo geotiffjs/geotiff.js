@@ -418,18 +418,18 @@ GeoTIFFImage.prototype = {
             }
             var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
-            var reader = sampleReaders[sampleIndex]
-            var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]))
-            var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]))
-            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel
-            var tileLength = (new Uint8Array(tile.buffer).length)
+            var reader = sampleReaders[sampleIndex];
+            var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
+            var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
+            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
+            var tileLength = (new Uint8Array(tile.buffer).length);
             if (2*tileLength !== totalbytes && this._debugMessages) {
-              console.warn('dimension mismatch', tileLength, totalbytes)
+              console.warn('dimension mismatch', tileLength, totalbytes);
             }
             for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-                var value = 0
+                var value = 0;
                 if (pixelOffset < tileLength-1) {
                   value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
                 }
