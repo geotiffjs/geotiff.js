@@ -9,18 +9,17 @@ class LZWuncompress {
     this.MAX_BITS = 12
     this.CLEAR_CODE = 256 // clear code
     this.EOI_CODE = 257 // end of information
-    this.FIRST_CODE = 258//258 // I am not sure if this is in use. I saw it in the gdal code. It was 258
     this._makeEntryLookup = false
     this.dictionary = []
   }
 
   initDictionary () {
-    this.dictionary = new Array(256 + 3)
+    this.dictionary = new Array(258)
     this.entryLookup = {}
     this.byteLength = this.MIN_BITS
-    for (var i=0; i <= 255 + 3; i++) {
+    for (var i=0; i <= 258; i++) { // i really feal like i <= 257, but I get strange unknown words that way.
       this.dictionary[i] = [i]
-      this.entryLookup[i] = i
+      if (this._makeEntryLookup) this.entryLookup[i] = i
     }
   }
 
@@ -53,9 +52,6 @@ class LZWuncompress {
           oldCode = code;
         }
       } else {
-        if (code === this.FIRST_CODE) {
-          console.log('first code I dont know what this is', this.position)
-        }
         if (this.dictionary[code] !== undefined) {
           let val = this.dictionary[code]
           this.appendArray(this.result, val)
