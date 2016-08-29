@@ -1,5 +1,5 @@
 "use strict";
-// Redfish Group LLC. 2016
+// (c) Redfish Group LLC. 2016
 //  LZW uncompression/uncompression according to https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
 //
 
