@@ -2,22 +2,23 @@
 class LZWuncompress {
 
   constructor (input, options) {
-    this.initialDictSize = 256;  // only expecting ASCII characters
+    this.littleEndian = false
     Object.assign(this, options)
     this.position = 0
     this.MIN_BITS = 9
     this.MAX_BITS = 12
     this.CLEAR_CODE = 256 // clear code
     this.EOI_CODE = 257 // end of information
-    this.FIRST_CODE = 123456778//258
+    this.FIRST_CODE = 258//258 // I am not sure if this is in use. I saw it in the gdal code. It was 258
     this._makeEntryLookup = false
+    this.dictionary = []
   }
 
   initDictionary () {
-    this.dictionary = new Array(256 + 2)
+    this.dictionary = new Array(256 + 3)
     this.entryLookup = {}
     this.byteLength = this.MIN_BITS
-    for (var i=0; i<256+3; i++) {
+    for (var i=0; i <= 255 + 3; i++) {
       this.dictionary[i] = [i]
       this.entryLookup[i] = i
     }
@@ -33,10 +34,9 @@ class LZWuncompress {
     var code = this.getNext(mydataview)
     var oldCode
     while (code !== this.EOI_CODE) {
-      if (code === this.FIRST_CODE) {
-        console.log('first code', this.position)
-      } else if (code === this.CLEAR_CODE) {
-        // console.log('clear code', this.position)
+      if (code === this.CLEAR_CODE) {
+        console.log(`clear code ${Math.floor(this.position/8)} / ${input.length}`)
+        //this.byteLength = this.MIN_BITS
         this.initDictionary()
         code = this.getNext(mydataview)
         while (code === this.CLEAR_CODE) {
@@ -53,6 +53,9 @@ class LZWuncompress {
           oldCode = code;
         }
       } else {
+        if (code === this.FIRST_CODE) {
+          console.log('first code I dont know what this is', this.position)
+        }
         if (this.dictionary[code] !== undefined) {
           let val = this.dictionary[code]
           this.appendArray(this.result, val)
@@ -79,7 +82,7 @@ class LZWuncompress {
       }
       code = this.getNext(mydataview)
       if (code == this.EOI_CODE) {
-        // console.log(`end of input detected ${Math.floor(this.position/8)} / ${input.length}`)
+        console.log(`end of input detected ${Math.floor(this.position/8)} / ${input.length}`)
       }
     }
     return new Uint8Array(this.result)
@@ -130,17 +133,17 @@ class LZWuncompress {
       console.warn('ran off the end of the buffer before finding EOI_CODE')
       return this.EOI_CODE
     }
-    var chunk1 = dataview.getUint8(a,false) & (Math.pow(2, 8-d) - 1)
+    var chunk1 = dataview.getUint8(a,this.littleEndian) & (Math.pow(2, 8-d) - 1)
     chunk1 = chunk1 << (length - de)
     var chunks = chunk1
     if (a+1 < dataview.byteLength) {
-      var chunk2 = dataview.getUint8(a+1,false) >>> fg
+      var chunk2 = dataview.getUint8(a+1,this.littleEndian) >>> fg
       chunk2 = chunk2 << Math.max(0, (length - dg))
       chunks += chunk2
     }
     if (ef > 8) {
       var hi = (a+3)*8 - (position+length)
-      var chunk3 = dataview.getUint8(a+2,false) >>> hi
+      var chunk3 = dataview.getUint8(a+2,this.littleEndian) >>> hi
       chunks += chunk3
     }
     return chunks

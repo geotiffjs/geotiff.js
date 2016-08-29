@@ -17,17 +17,19 @@
 var imageWindow = [0, 0, 500, 500];
 
 var tiffs = [
-  "stripped.tiff",
-  "tiled.tiff",
-  "tiledplanar.tiff",
-  "float32.tiff",
-  "uint32.tiff",
-  "int32.tiff",
-  "float64.tiff",
+  //"stripped.tiff",
+  //"tiled.tiff",
+  //"tiledplanar.tiff",
+  //"float32.tiff",
+  //"uint32.tiff",
+  //"int32.tiff",
+  //"float64.tiff",
   "lzw.tiff",
 ];
 
-var rgbtiffs = ["rgb.tiff"]
+var rgbtiffs = [
+//  "rgb.tiff"
+]
 
 
 
@@ -54,7 +56,7 @@ tiffs.forEach(function(filename) {
   canvas.id = filename;
   canvas.width = 500;
   canvas.height = 500;
-  
+
   div.appendChild(header);
   div.appendChild(canvas);
 
@@ -66,7 +68,7 @@ tiffs.forEach(function(filename) {
     console.log(image);
     console.log(image.getTiePoints());
 
-    var plot;
+    window.plot;
 
     bandsSelect.addEventListener("change", function(e) {
       var rasters = image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]});
@@ -76,7 +78,7 @@ tiffs.forEach(function(filename) {
 
     var rasters = image.readRasters({samples: [0]});
     var canvas = document.getElementById(filename);
-    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [0, 65000], "viridis", false);
     plot.render();
   };
 
@@ -96,7 +98,7 @@ rgbtiffs.forEach(function(filename) {
 
   var canvas = document.createElement("canvas");
   canvas.id = filename;
-  
+
   div.appendChild(header);
   div.appendChild(canvas);
 

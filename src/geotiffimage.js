@@ -422,15 +422,15 @@ GeoTIFFImage.prototype = {
             var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]))
             var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]))
             var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel
-            var tileLength = (new Uint8Array(tile.buffer).length)*2
-            if (tileLength !== totalbytes && this._debugMessages) {
+            var tileLength = (new Uint8Array(tile.buffer).length)
+            if (2*tileLength !== totalbytes && this._debugMessages) {
               console.warn('dimension mismatch', tileLength, totalbytes)
             }
             for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
                 var value = 0
-                if (pixelOffset < tileLength/2-1) {
+                if (pixelOffset < tileLength-1) {
                   value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
                 }
                 var windowCoordinate;
