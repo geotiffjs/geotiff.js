@@ -85,7 +85,7 @@ class LZWuncompress {
   }
 
   haveBytesChanged () {
-    if (this.dictionary.length > Math.pow(2, this.byteLength)) {
+    if (this.dictionary.length >= Math.pow(2, this.byteLength) ) {
       this.byteLength ++
       console.log("------",this.byteLength)
       return true
