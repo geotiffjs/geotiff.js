@@ -17,13 +17,13 @@
 var imageWindow = [0, 0, 500, 500];
 
 var tiffs = [
-  //"stripped.tiff",
-  //"tiled.tiff",
-  //"tiledplanar.tiff",
+  "stripped.tiff",
+  "tiled.tiff",
+  "tiledplanar.tiff",
   "float32.tiff",
-  //"uint32.tiff",
-  //"int32.tiff",
-  //"float64.tiff",
+  "uint32.tiff",
+  "int32.tiff",
+  "float64.tiff",
   "lzw.tiff",
 ];
 
@@ -63,8 +63,12 @@ tiffs.forEach(function(filename) {
   document.getElementById("canvases").appendChild(div);
 
   xhr.onload = function(e) {
+    console.time('parse')
     var parser = GeoTIFF.parse(this.response);
+    console.timeEnd('parse')
+    console.time('getImage')
     var image = parser.getImage();
+    console.timeEnd('getImage')
     console.log(image);
     console.log(image.getTiePoints());
 
@@ -76,7 +80,9 @@ tiffs.forEach(function(filename) {
       plot.render();
     });
 
+    console.time('readRasters')
     var rasters = image.readRasters({samples: [0]});
+    console.timeEnd('readRasters')
     var canvas = document.getElementById(filename);
     plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [0, 65000], "viridis", false);
     plot.render();

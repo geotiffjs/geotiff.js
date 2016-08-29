@@ -40,7 +40,7 @@ var LZWuncompress = function () {
       this.dictionary = new Array(258);
       this.entryLookup = {};
       this.byteLength = this.MIN_BITS;
-      for (var i = 0; i <= 258; i++) {
+      for (var i = 0; i <= 257; i++) {
         // i really feal like i <= 257, but I get strange unknown words that way.
         this.dictionary[i] = [i];
         if (this._makeEntryLookup) this.entryLookup[i] = i;
@@ -59,8 +59,7 @@ var LZWuncompress = function () {
       var oldCode;
       while (code !== this.EOI_CODE) {
         if (code === this.CLEAR_CODE) {
-          console.log('clear code ' + Math.floor(this.position / 8) + ' / ' + input.length);
-          //this.byteLength = this.MIN_BITS
+          // console.log(`clear code ${Math.floor(this.position/8)} / ${input.length}`)
           this.initDictionary();
           code = this.getNext(mydataview);
           while (code === this.CLEAR_CODE) {
@@ -94,17 +93,11 @@ var LZWuncompress = function () {
             oldCode = code;
           }
         }
-        /*  if (this.dictionary.length > 512-5 && this.dictionary.length < 512+5) {
-            console.log('.', code)
-          } */
-        if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
+        // This is strange. It seems like the
+        if (this.dictionary.length >= Math.pow(2, this.byteLength) - 1) {
           this.byteLength++;
-          //console.log("______",this.byteLength)
         }
         code = this.getNext(mydataview);
-        if (code == this.EOI_CODE) {
-          console.log('end of input detected ' + Math.floor(this.position / 8) + ' / ' + input.length);
-        }
       }
       return new Uint8Array(this.result);
     }
