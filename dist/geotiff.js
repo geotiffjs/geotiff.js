@@ -13,7 +13,10 @@ AbstractDecoder.prototype = {
 module.exports = AbstractDecoder;
 
 },{}],2:[function(require,module,exports){
-'use strict';
+"use strict";
+// Redfish Group LLC. 2016
+//  LZW uncompression/uncompression according to https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
+//
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -35,7 +38,7 @@ var LZWuncompress = function () {
   }
 
   _createClass(LZWuncompress, [{
-    key: 'initDictionary',
+    key: "initDictionary",
     value: function initDictionary() {
       this.dictionary = new Array(258);
       this.entryLookup = {};
@@ -47,7 +50,7 @@ var LZWuncompress = function () {
       }
     }
   }, {
-    key: 'decompress',
+    key: "decompress",
     value: function decompress(input) {
       this._makeEntryLookup = false; // for speed
       this.initDictionary();
@@ -85,7 +88,7 @@ var LZWuncompress = function () {
           } else {
             var oldVal = this.dictionary[oldCode];
             if (!oldVal) {
-              throw 'Bogus entry. Not in dictionary, ' + oldCode + ' / ' + this.dictionary.length + ', position: ' + this.position;
+              throw "Bogus entry. Not in dictionary, " + oldCode + " / " + this.dictionary.length + ", position: " + this.position;
             }
             var _newVal = oldVal.concat(this.dictionary[oldCode][0]);
             this.appendArray(this.result, _newVal);
@@ -102,7 +105,7 @@ var LZWuncompress = function () {
       return new Uint8Array(this.result);
     }
   }, {
-    key: 'appendArray',
+    key: "appendArray",
     value: function appendArray(dest, source) {
       for (var i = 0; i < source.length; i++) {
         dest.push(source[i]);
@@ -110,7 +113,7 @@ var LZWuncompress = function () {
       return dest;
     }
   }, {
-    key: 'haveBytesChanged',
+    key: "haveBytesChanged",
     value: function haveBytesChanged() {
       if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
         this.byteLength++;
@@ -120,7 +123,7 @@ var LZWuncompress = function () {
       return false;
     }
   }, {
-    key: 'addToDictionary',
+    key: "addToDictionary",
     value: function addToDictionary(arr) {
       this.dictionary.push(arr);
       if (this._makeEntryLookup) this.entryLookup[arr] = this.dictionary.length - 1;
@@ -128,7 +131,7 @@ var LZWuncompress = function () {
       return this.dictionary.length - 1;
     }
   }, {
-    key: 'getNext',
+    key: "getNext",
     value: function getNext(dataview) {
       var byte = this.getByte(dataview, this.position, this.byteLength);
       // console.log(byte)
@@ -141,7 +144,7 @@ var LZWuncompress = function () {
     //
 
   }, {
-    key: 'getByte',
+    key: "getByte",
     value: function getByte(dataview, position, length) {
       var d = position % 8;
       var a = Math.floor(position / 8);
@@ -173,7 +176,7 @@ var LZWuncompress = function () {
     // compress has not been optimized and uses a uint8 array to hold binary values.
 
   }, {
-    key: 'compress',
+    key: "compress",
     value: function compress(input) {
       this._makeEntryLookup = true;
       this.initDictionary();
@@ -209,13 +212,13 @@ var LZWuncompress = function () {
       return this.result;
     }
   }, {
-    key: 'byteFromCode',
+    key: "byteFromCode",
     value: function byteFromCode(code) {
       var res = this.dictionary[code];
       return res;
     }
   }, {
-    key: 'binaryFromByte',
+    key: "binaryFromByte",
     value: function binaryFromByte(byte) {
       var byteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
@@ -228,7 +231,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: 'binaryToNumber',
+    key: "binaryToNumber",
     value: function binaryToNumber(bin) {
       var res = 0;
       for (var i = 0; i < bin.length; i++) {
@@ -237,7 +240,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: 'inputToBinary',
+    key: "inputToBinary",
     value: function inputToBinary(input) {
       var inputByteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
@@ -249,7 +252,7 @@ var LZWuncompress = function () {
       return res;
     }
   }, {
-    key: 'binaryToUint8',
+    key: "binaryToUint8",
     value: function binaryToUint8(bin) {
       var result = new Uint8Array(Math.ceil(bin.length / 8));
       var index = 0;
