@@ -4,7 +4,7 @@
 var AbstractDecoder = require("../abstractdecoder.js");
 var LZW = require("./LZWuncompress.js");
 
-var compressor = new LZWuncompress();
+var compressor = new window.LZWuncompress();
 
 function LZWDecoder() { }
 

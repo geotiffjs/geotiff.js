@@ -3,11 +3,11 @@
 //  LZW uncompression/uncompression according to https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
 //
 
-class LZWuncompress {
+function LZWuncompress(options) {
 
-  constructor (input, options) {
+  this.constructor = function (options) {
     this.littleEndian = false;
-    Object.assign(this, options);
+    // Object.assign(this, options); // karma says TypeError: undefined is not a constructor (evaluating 'Object.assign(this, options)')
     this.position = 0;
     this.MIN_BITS = 9;
     this.MAX_BITS = 12;
@@ -15,9 +15,9 @@ class LZWuncompress {
     this.EOI_CODE = 257; // end of information
     this._makeEntryLookup = false;
     this.dictionary = [];
-  }
+  };
 
-  initDictionary () {
+  this.initDictionary = function() {
     this.dictionary = new Array(258);
     this.entryLookup = {};
     this.byteLength = this.MIN_BITS;
@@ -25,9 +25,9 @@ class LZWuncompress {
       this.dictionary[i] = [i];
       if (this._makeEntryLookup) { this.entryLookup[i] = i; }
     }
-  }
+  };
 
-  decompress (input) {
+  this.decompress = function (input) {
     this._makeEntryLookup = false; // for speed
     this.initDictionary();
     this.position = 0;
@@ -78,40 +78,39 @@ class LZWuncompress {
       code = this.getNext(mydataview);
     }
     return new Uint8Array(this.result);
-  }
+  };
 
-  appendArray (dest, source) {
+  this.appendArray = function (dest, source) {
     for(var i =0; i<source.length; i++) {
       dest.push(source[i]);
     }
     return dest;
-  }
+  };
 
-  haveBytesChanged () {
+  this.haveBytesChanged = function () {
     if (this.dictionary.length >= Math.pow(2, this.byteLength) ) {
       this.byteLength ++;
       return true;
     }
     return false;
-  }
+  };
 
-  addToDictionary (arr) {
+  this.addToDictionary = function (arr) {
     this.dictionary.push(arr);
     if (this._makeEntryLookup) { this.entryLookup[arr] = this.dictionary.length-1; }
     this.haveBytesChanged();
     return this.dictionary.length-1;
-  }
+  };
 
-  getNext (dataview) {
+  this.getNext = function (dataview) {
     var byte = this.getByte(dataview, this.position, this.byteLength);
     this.position += this.byteLength;
     return byte;
-  }
+  };
 
-  //
   // This binary representation might actually be as fast as the completely illegible bit shift approach
   //
-  getByte (dataview, position, length) {
+  this.getByte = function (dataview, position, length) {
     var d = position % 8;
     var a = Math.floor(position/8);
     var de = 8-d;
@@ -137,10 +136,10 @@ class LZWuncompress {
       chunks += chunk3;
     }
     return chunks;
-  }
+  };
 
-  // compress has not been optimized and uses a uint8 array to hold binary values.
-  compress (input) {
+// compress has not been optimized and uses a uint8 array to hold binary values.
+  this.compress = function (input) {
     this._makeEntryLookup = true;
     this.initDictionary();
     this.position = 0;
@@ -171,14 +170,14 @@ class LZWuncompress {
     this.binary = resultBits;
     this.result = this.binaryToUint8(resultBits);
     return this.result;
-  }
+  };
 
-  byteFromCode (code) {
+  this.byteFromCode = function (code) {
     var res = this.dictionary[code];
     return res;
-  }
+  };
 
-  binaryFromByte (byte, byteLength=8) {
+  this.binaryFromByte = function (byte, byteLength=8) {
     var res = new Uint8Array(byteLength);
     for (var i=0; i<res.length; i++) {
       var mask = Math.pow(2,i);
@@ -186,26 +185,26 @@ class LZWuncompress {
       res[res.length - 1 - i] = isOne;
     }
     return res;
-  }
+  };
 
-  binaryToNumber (bin) {
+  this.binaryToNumber = function (bin) {
     var res = 0;
     for (var i=0; i<bin.length; i++) {
       res += Math.pow(2, bin.length - i - 1) * bin[i];
     }
     return res;
-  }
+  };
 
-  inputToBinary (input, inputByteLength=8) {
+  this.inputToBinary = function (input, inputByteLength=8) {
     var res = new Uint8Array(input.length * inputByteLength);
     for (var i=0; i<input.length; i++) {
       var bin = this.binaryFromByte(input[i], inputByteLength);
       res.set(bin, i * inputByteLength);
     }
     return res;
-  }
+  };
 
-  binaryToUint8 (bin) {
+  this.binaryToUint8 = function (bin) {
     var result = new Uint8Array(Math.ceil(bin.length/8));
     var index = 0;
     for (var i=0; i<bin.length; i+=8) {
@@ -217,7 +216,9 @@ class LZWuncompress {
       index ++;
     }
     return result;
-  }
+  };
+
+  this.constructor(options);
 }
 
 // until export is avaliable
