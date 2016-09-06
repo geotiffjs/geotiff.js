@@ -119,7 +119,7 @@ function LZWuncompress(options) {
     var dg = (a+2)*8 - position;
     fg = Math.max(0, fg);
     if (a >= dataview.byteLength) {
-      console.warn('ran off the end of the buffer before finding EOI_CODE');
+      console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
       return this.EOI_CODE;
     }
     var chunk1 = dataview.getUint8(a,this.littleEndian) & (Math.pow(2, 8-d) - 1);
@@ -130,7 +130,7 @@ function LZWuncompress(options) {
       chunk2 = chunk2 << Math.max(0, (length - dg));
       chunks += chunk2;
     }
-    if (ef > 8) {
+    if (ef > 8 && a+2 < dataview.byteLength) {
       var hi = (a+3)*8 - (position+length);
       var chunk3 = dataview.getUint8(a+2,this.littleEndian) >>> hi;
       chunks += chunk3;
