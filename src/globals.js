@@ -149,7 +149,11 @@ var fieldTypeNames = {
   0x0009: 'SLONG',
   0x000A: 'SRATIONAL',
   0x000B: 'FLOAT',
-  0x000C: 'DOUBLE'
+  0x000C: 'DOUBLE',
+  // introduced by BigTIFF
+  0x0010: 'LONG8',
+  0x0011: 'SLONG8',
+  0x0012: 'IFD8'
 };
 
 var fieldTypes = {};

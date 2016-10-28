@@ -2,6 +2,7 @@
 
 var globals = require("./globals.js");
 var GeoTIFFImage = require("./geotiffimage.js");
+var DataView64 = require("./dataview64.js");
 
 var fieldTypes = globals.fieldTypes,
     fieldTagNames = globals.fieldTagNames,
@@ -16,31 +17,49 @@ var fieldTypes = globals.fieldTypes,
  * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
  */
 function GeoTIFF(rawData, options) {
-    this.dataView = new DataView(rawData);
-    options = options || {};
-    this.cache = options.cache || false;
+  this.dataView = new DataView64(rawData);
+  options = options || {};
+  this.cache = options.cache || false;
 
-    var BOM = this.dataView.getUint16(0, 0);
-    if (BOM === 0x4949) {
-      this.littleEndian = true;
-    }
-    else if (BOM === 0x4D4D) {
-      this.littleEndian = false;
-    }
-    else {
-      throw new TypeError("Invalid byte order value.");
-    }
-
-    if (this.dataView.getUint16(2, this.littleEndian) !== 42) {
-      throw new TypeError("Invalid magic number.");
-    }
-
-    this.fileDirectories = this.parseFileDirectories(
-      this.dataView.getUint32(4, this.littleEndian)
-    );
+  var BOM = this.dataView.getUint16(0, 0);
+  if (BOM === 0x4949) {
+    this.littleEndian = true;
+  }
+  else if (BOM === 0x4D4D) {
+    this.littleEndian = false;
+  }
+  else {
+    throw new TypeError("Invalid byte order value.");
   }
 
+  var magicNumber = this.dataView.getUint16(2, this.littleEndian);
+  if (this.dataView.getUint16(2, this.littleEndian) === 42) {
+    this.bigTiff = false;
+  }
+  else if (magicNumber === 43) {
+    this.bigTiff = true;
+    var offsetBytesize = this.dataView.getUint16(4, this.littleEndian);
+    if (offsetBytesize !== 8) {
+      throw new Error("Unsupported offset byte-size.");
+    }
+  }
+  else {
+    throw new TypeError("Invalid magic number.");
+  }
+
+  this.fileDirectories = this.parseFileDirectories(
+    this.getOffset((this.bigTiff) ? 8 : 4)
+  );
+}
+
 GeoTIFF.prototype = {
+  getOffset: function(offset) {
+    if (this.bigTiff) {
+      return this.dataView.getUint64(offset, this.littleEndian);
+    }
+    return this.dataView.getUint32(offset, this.littleEndian);
+  },
+
   getFieldTypeLength: function(fieldType) {
     switch (fieldType) {
       case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
@@ -50,6 +69,7 @@ GeoTIFF.prototype = {
       case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT:
         return 4;
       case fieldTypes.RATIONAL: case fieldTypes.SRATIONAL: case fieldTypes.DOUBLE:
+      case fieldTypes.LONG8: case fieldTypes.SLONG8: case fieldTypes.IFD8:
         return 8;
       default:
         throw new RangeError("Invalid field type: " + fieldType);
@@ -80,6 +100,12 @@ GeoTIFF.prototype = {
         break;
       case fieldTypes.SLONG:
         values = new Int32Array(count); readMethod = this.dataView.getInt32;
+        break;
+      case fieldTypes.LONG8: case fieldTypes.IFD8:
+        values = new Array(count); readMethod = this.dataView.getUint64;
+        break;
+      case fieldTypes.SLONG8:
+        values = new Array(count); readMethod = this.dataView.getInt64;
         break;
       case fieldTypes.RATIONAL:
         values = new Uint32Array(count*2); readMethod = this.dataView.getUint32;
@@ -127,11 +153,11 @@ GeoTIFF.prototype = {
     var fieldValues;
     var fieldTypeLength = this.getFieldTypeLength(fieldType);
 
-    if (fieldTypeLength * typeCount <= 4) {
+    if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
       fieldValues = this.getValues(fieldType, typeCount, valueOffset);
     }
     else {
-      var actualOffset = this.dataView.getUint32(valueOffset, this.littleEndian);
+      var actualOffset = this.getOffset(valueOffset);
       fieldValues = this.getValues(fieldType, typeCount, actualOffset);
     }
 
@@ -181,23 +207,28 @@ GeoTIFF.prototype = {
     var fileDirectories = [];
 
     while (nextIFDByteOffset !== 0x00000000) {
-      var numDirEntries = this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+      var numDirEntries = this.bigTiff ?
+          this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
+          this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+
       var fileDirectory = {};
 
-      for (var i = byteOffset + 2, entryCount = 0; entryCount < numDirEntries; i += 12, ++entryCount) {
+      for (var i = byteOffset + (this.bigTiff ? 8 : 2), entryCount = 0; entryCount < numDirEntries; i += (this.bigTiff ? 20 : 12), ++entryCount) {
         var fieldTag = this.dataView.getUint16(i, this.littleEndian);
         var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
-        var typeCount = this.dataView.getUint32(i + 4, this.littleEndian);
+        var typeCount = this.bigTiff ?
+            this.dataView.getUint64(i + 4, this.littleEndian):
+            this.dataView.getUint32(i + 4, this.littleEndian);
 
         fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(
-          fieldTag, fieldType, typeCount, i + 8
+          fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8)
         );
       }
       fileDirectories.push([
         fileDirectory, this.parseGeoKeyDirectory(fileDirectory)
       ]);
 
-      nextIFDByteOffset = this.dataView.getUint32(i, this.littleEndian);
+      nextIFDByteOffset = this.getOffset(i);
     }
     return fileDirectories;
   },
@@ -219,7 +250,7 @@ GeoTIFF.prototype = {
 
   /**
    * Returns the count of the internal subfiles.
-   * 
+   *
    * @returns {Number} the number of internal subfile images
    */
   getImageCount: function() {
