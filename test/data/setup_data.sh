@@ -16,3 +16,8 @@ gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
 # overviews
 cp stripped.tiff overviews.tiff
 gdaladdo overviews.tiff 2 4 8 16
+
+# bigtiff
+wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
+unzip -o BigTIFFSamples.zip -d .
+rm BigTIFFSamples.zip

@@ -17,17 +17,20 @@
 var imageWindow = [0, 0, 500, 500];
 
 var tiffs = [
-  "stripped.tiff",
-  "tiled.tiff",
-  "tiledplanar.tiff",
-  "float32.tiff",
-  "uint32.tiff",
-  "int32.tiff",
-  "float64.tiff",
-  "lzw.tiff",
+  // "stripped.tiff",
+  // "tiled.tiff",
+  // "tiledplanar.tiff",
+  // "float32.tiff",
+  // "uint32.tiff",
+  // "int32.tiff",
+  // "float64.tiff",
+  // "lzw.tiff"
 ];
 
-var rgbtiffs = ["rgb.tiff"]
+var rgbtiffs = [
+    "rgb.tiff",
+    "BigTIFF.tif"
+]
 
 
 
@@ -54,7 +57,7 @@ tiffs.forEach(function(filename) {
   canvas.id = filename;
   canvas.width = 500;
   canvas.height = 500;
-  
+
   div.appendChild(header);
   div.appendChild(canvas);
 
@@ -96,7 +99,7 @@ rgbtiffs.forEach(function(filename) {
 
   var canvas = document.createElement("canvas");
   canvas.id = filename;
-  
+
   div.appendChild(header);
   div.appendChild(canvas);
 
