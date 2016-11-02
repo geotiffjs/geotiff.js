@@ -239,6 +239,16 @@ else if (typeof window.ActiveXObject !== "undefined" && new window.ActiveXObject
   };
 }
 
+var photometricInterpretations = {
+  0: 'WhiteIsZero',
+  1: 'BlackIsZero',
+  2: 'RGB',
+  3: 'Palette',
+  4: 'TransparencyMask',
+  5: 'CMYK',
+  6: 'YCbCr'
+};
+
 module.exports = {
   fieldTags: fieldTags,
   fieldTagNames: fieldTagNames,

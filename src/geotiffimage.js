@@ -590,6 +590,30 @@ GeoTIFFImage.prototype = {
   },
 
   /**
+   * Reads raster data from the image as RGB. The result is always an
+   * interleaved typed array.
+   * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+   * When no other method is applicable, the first sample is used to produce a
+   * greayscale image.
+   * When provided, only a subset of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
+   *                                               parameter is mandatory for
+   *                                               asynchronous decoders (some
+   *                                               compression mechanisms).
+   * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+   * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
+   *                                           array(s) is/are returned. In
+   *                                           asynchronous cases, nothing is
+   *                                           returned.
+   */
+  readRGB: function() {
+
+  },
+
+  /**
    * Returns an array of tiepoints.
    * @returns {Object[]}
    */
