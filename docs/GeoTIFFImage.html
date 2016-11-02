@@ -541,7 +541,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line623">line 623</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line643">line 643</a>
     </li></ul></dd>
     
 
@@ -953,7 +953,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line600">line 600</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line620">line 620</a>
     </li></ul></dd>
     
 
@@ -1920,6 +1920,323 @@ only a subset of the raster is read for each sample.
 
 
         
+            
+
+    
+
+    <h4 class="name" id="readRGB"><span class="type-signature"></span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {TypedArray|Array.&lt;TypedArray>|null}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Reads raster data from the image as RGB. The result is always an
+interleaved typed array.
+Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+When no other method is applicable, the first sample is used to produce a
+greayscale image.
+When provided, only a subset of the raster is read for each sample.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">optional parameters
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>window</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    whole image
+                
+                </td>
+            
+
+            <td class="description last">the subset to read data from.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="GeoTIFFImage.html#~readCallback">GeoTIFFImage~readCallback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">the success callback. this
+                                              parameter is mandatory for
+                                              asynchronous decoders (some
+                                              compression mechanisms).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callbackError</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="GeoTIFFImage.html#~readErrorCallback">GeoTIFFImage~readErrorCallback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">the error callback</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line612">line 612</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    in synchonous cases, the decoded
+                                          array(s) is/are returned. In
+                                          asynchronous cases, nothing is
+                                          returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TypedArray</span>
+|
+
+<span class="param-type">Array.&lt;TypedArray></span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
     
 
     
@@ -2215,7 +2532,7 @@ GeoTIFF image
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Nov 02 2016 11:05:41 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Nov 02 2016 11:46:33 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
