@@ -25,6 +25,7 @@ Currently available functionality:
   * Subsetting via an image window and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
   * Configurable tile/strip cache
+  * Limited [bigTIFF](http://bigtiff.org/#FILE_FORMAT) support
   * Automated testing via PhantomJS
 
 Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
@@ -178,6 +179,22 @@ on the fly rendering of the data contained in a GeoTIFF.
   plot.render();
 </script>
 ```
+
+## BigTIFF support
+
+geotiff.js has a limited support for files in the BigTIFF format. The limitations
+originate in the capabilities of current JavaScript implementations regarding
+64 bit integer parsers and structures: there are no functions to read 64 bit
+integers from a stream and no such typed arrays. As BigTIFF relies on 64 bit
+offsets and also allows tag values of those types. In order to still provide
+a reasonable support, the following is implemented:
+
+  * 64 bit integers are read as two 32 bit integers and then combined. As
+    numbers in JavaScript are typically implemented as 64 bit floats, there
+    might be inaccuracies for *very* large values.
+  * For 64 bit integer arrays, the default `Array` type is used. This might
+    cause problems for some compression algorithms if those arrays are used for
+    pixel values.
 
 ## Planned stuff:
 
