@@ -180,6 +180,38 @@ on the fly rendering of the data contained in a GeoTIFF.
 </script>
 ```
 
+## RGB-data
+
+When the TIFF file has color data stored, this can automatically extracted
+using the `readRGB` method. This always resolves with an `Uint8Array` with
+interleaved red, green, and blue values.
+
+This method translates CMYK and YCbCr colorspaces to RGB, supports
+color maps and two versions of grey-scale images (black is zero/white is zero).
+
+The following example shows how to display such data in a browsers canvas:
+
+    var parser = GeoTIFF.parse(data);
+    var image = parser.getImage();
+    image.readRGB(function(raster) {
+      var canvas = document.getElementById('canvas');
+      canvas.width = image.getWidth();
+      canvas.height = image.getHeight();
+      var ctx = canvas.getContext("2d");
+      var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
+      var data = imageData.data;
+      var o = 0;
+      for (var i = 0; i < raster.length; i+=3) {
+        data[o] = raster[i];
+        data[o+1] = raster[i+1];
+        data[o+2] = raster[i+2];
+        data[o+3] = 255;
+        o += 4;
+      }
+      ctx.putImageData(imageData, 0, 0);
+    });
+
+
 ## BigTIFF support
 
 geotiff.js has a limited support for files in the BigTIFF format. The limitations
@@ -198,13 +230,11 @@ a reasonable support, the following is implemented:
 
 ## Planned stuff:
 
-  * Automated extraction of RGB images when possible:
-    * CMYK, YCbCr or CieLAB conversion to RGB
-    * Color lookup tables
   * Better support of geospatial parameters:
     * Parsing of EPSG identifiers
     * WKT representation
     * Specifying of window in CRS coordinates
+  * Improving support of CIEL*a*b* images
   * Support of "overview images" (i.e: images with reduced resolution)
 
 ## Acknowledgements
