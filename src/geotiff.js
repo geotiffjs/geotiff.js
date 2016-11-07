@@ -133,12 +133,12 @@ GeoTIFF.prototype = {
     }
     // RATIONAL or SRATIONAL
     else {
-      for (i=0; i < (count*2); i+=2) {
+      for (i=0; i < count; i+=2) {
         values[i] = readMethod.call(
           this.dataView, offset + (i*fieldTypeLength), this.littleEndian
         );
         values[i+1] = readMethod.call(
-          this.dataView, offset + ((i+1)*fieldTypeLength), this.littleEndian
+          this.dataView, offset + (i*fieldTypeLength + 4), this.littleEndian
         );
       }
     }

@@ -1,6 +1,7 @@
 "use strict";
 
 var globals = require("./globals.js");
+var RGB = require("./rgb.js");
 var RawDecoder = require("./compression/raw.js");
 var LZWDecoder = require("./compression/lzw.js");
 var DeflateDecoder = require("./compression/deflate.js");
@@ -307,6 +308,17 @@ GeoTIFFImage.prototype = {
     var littleEndian = this.littleEndian;
     var globalError = null;
 
+    function checkFinished() {
+      if (allStacked && unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        }
+        else {
+          callback(valueArrays);
+        }
+      }
+    }
+
     function onTileGot(error, tile) {
       if (!error) {
         var dataView = new DataView(tile.data);
@@ -320,20 +332,20 @@ GeoTIFFImage.prototype = {
         for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
           for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
             var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-            var value = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
             var windowCoordinate;
             if (interleave) {
               windowCoordinate =
                 (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                 (x + firstCol - imageWindow[0]) * samples.length +
-                _sampleIndex;
+                sampleIndex;
               valueArrays[windowCoordinate] = value;
             }
             else {
               windowCoordinate = (
                 y + firstLine - imageWindow[1]
               ) * windowWidth + x + firstCol - imageWindow[0];
-              valueArrays[_sampleIndex][windowCoordinate] = value;
+              valueArrays[sampleIndex][windowCoordinate] = value;
             }
           }
         }
@@ -345,17 +357,6 @@ GeoTIFFImage.prototype = {
       // check end condition and call callbacks
       unfinishedTiles -= 1;
       checkFinished();
-    }
-
-    function checkFinished() {
-      if (allStacked && unfinishedTiles === 0) {
-        if (globalError) {
-          callbackError(globalError);
-        }
-        else {
-          callback(valueArrays);
-        }
-      }
     }
 
     for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
@@ -599,18 +600,114 @@ GeoTIFFImage.prototype = {
    *
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
-   *                                               parameter is mandatory for
-   *                                               asynchronous decoders (some
-   *                                               compression mechanisms).
+   * @param {GeoTIFFImage~readCallback} callback the success callback. this
+   *                                             parameter is mandatory.
    * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
-   * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
-   *                                           array(s) is/are returned. In
-   *                                           asynchronous cases, nothing is
-   *                                           returned.
    */
   readRGB: function() {
+    // parse the arguments
+    var options = null, callback = null, callbackError = null;
+    switch (arguments.length) {
+      case 0:
+        break;
+      case 1:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+        }
+        else {
+          options = arguments[0];
+        }
+        break;
+      case 2:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+          callbackError = arguments[1];
+        }
+        else {
+          options = arguments[0];
+          callback = arguments[1];
+        }
+        break;
+      case 3:
+        options = arguments[0];
+        callback = arguments[1];
+        callbackError = arguments[2];
+        break;
+      default:
+        throw new Error("Invalid number of arguments passed.");
+    }
 
+    // set up default arguments
+    options = options || {};
+    callbackError = callbackError || function(error) { console.error(error); };
+
+    var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()];
+
+    // check parameters
+    if (imageWindow[0] < 0 ||
+        imageWindow[1] < 0 ||
+        imageWindow[2] > this.getWidth() ||
+        imageWindow[3] > this.getHeight()) {
+      throw new Error("Select window is out of image bounds.");
+    }
+    else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error("Invalid subsets");
+    }
+
+    var width = imageWindow[2] - imageWindow[0];
+    var height = imageWindow[3] - imageWindow[1];
+
+    var pi = this.fileDirectory.PhotometricInterpretation;
+
+    var bits = this.fileDirectory.BitsPerSample[0];
+    var max = Math.pow(2, bits);
+
+    if (pi === globals.photometricInterpretations.RGB) {
+      return this.readRasters({
+        window: options.window,
+        interleave: true
+      }, callback, callbackError);
+    }
+
+    var samples;
+    switch(pi) {
+      case globals.photometricInterpretations.WhiteIsZero:
+      case globals.photometricInterpretations.BlackIsZero:
+      case globals.photometricInterpretations.Palette:
+        samples = [0];
+        break;
+      case globals.photometricInterpretations.CMYK:
+        samples = [0, 1, 2, 3];
+        break;
+      case globals.photometricInterpretations.YCbCr:
+      case globals.photometricInterpretations.CIELab:
+        samples = [0, 1, 2];
+        break;
+      default:
+        throw new Error("Invalid or unsupported photometric interpretation.");
+    }
+
+    var subOptions = {
+      window: options.window,
+      interleave: true,
+      samples: samples
+    };
+    return this.readRasters(subOptions, function(raster) {
+      switch(pi) {
+        case globals.photometricInterpretations.WhiteIsZero:
+          return callback(RGB.fromWhiteIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.BlackIsZero:
+          return callback(RGB.fromBlackIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.Palette:
+          return callback(RGB.fromPalette(raster, this.fileDirectory.ColorMap, width, height));
+        case globals.photometricInterpretations.CMYK:
+          return callback(RGB.fromCMYK(raster, width, height));
+        case globals.photometricInterpretations.YCbCr:
+          return callback(RGB.fromYCbCr(raster, width, height));
+        case globals.photometricInterpretations.CIELab:
+          return callback(RGB.fromCIELab(raster, width, height));
+      }
+    }, callbackError);
   },
 
   /**
