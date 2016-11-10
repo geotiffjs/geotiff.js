@@ -21,3 +21,9 @@ gdaladdo overviews.tiff 2 4 8 16
 wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
 unzip -o BigTIFFSamples.zip -d .
 rm BigTIFFSamples.zip
+
+# color images
+rgb2pct.py rgb.tiff rgb_paletted.tiff
+convert rgb.tiff -colorspace YCbCr ycbcr.tif
+convert rgb.tiff -colorspace CMYK cmyk.tif
+convert rgb.tiff -colorspace Lab cielab.tif

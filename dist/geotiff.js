@@ -344,9 +344,9 @@ GeoTIFF.prototype = {
     }
     // RATIONAL or SRATIONAL
     else {
-        for (i = 0; i < count * 2; i += 2) {
+        for (i = 0; i < count; i += 2) {
           values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
-          values[i + 1] = readMethod.call(this.dataView, offset + (i + 1) * fieldTypeLength, this.littleEndian);
+          values[i + 1] = readMethod.call(this.dataView, offset + (i * fieldTypeLength + 4), this.littleEndian);
         }
       }
 
@@ -459,6 +459,7 @@ module.exports = GeoTIFF;
 "use strict";
 
 var globals = require("./globals.js");
+var RGB = require("./rgb.js");
 var RawDecoder = require("./compression/raw.js");
 var LZWDecoder = require("./compression/lzw.js");
 var DeflateDecoder = require("./compression/deflate.js");
@@ -769,6 +770,16 @@ GeoTIFFImage.prototype = {
     var littleEndian = this.littleEndian;
     var globalError = null;
 
+    function checkFinished() {
+      if (allStacked && unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        } else {
+          callback(valueArrays);
+        }
+      }
+    }
+
     function onTileGot(error, tile) {
       if (!error) {
         var dataView = new DataView(tile.data);
@@ -782,14 +793,14 @@ GeoTIFFImage.prototype = {
         for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
           for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
             var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-            var value = sampleReaders[_sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
             var windowCoordinate;
             if (interleave) {
-              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + _sampleIndex;
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
               valueArrays[windowCoordinate] = value;
             } else {
               windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-              valueArrays[_sampleIndex][windowCoordinate] = value;
+              valueArrays[sampleIndex][windowCoordinate] = value;
             }
           }
         }
@@ -800,16 +811,6 @@ GeoTIFFImage.prototype = {
       // check end condition and call callbacks
       unfinishedTiles -= 1;
       checkFinished();
-    }
-
-    function checkFinished() {
-      if (allStacked && unfinishedTiles === 0) {
-        if (globalError) {
-          callbackError(globalError);
-        } else {
-          callback(valueArrays);
-        }
-      }
     }
 
     for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
@@ -1025,6 +1026,124 @@ GeoTIFFImage.prototype = {
   },
 
   /**
+   * Reads raster data from the image as RGB. The result is always an
+   * interleaved typed array.
+   * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+   * When no other method is applicable, the first sample is used to produce a
+   * greayscale image.
+   * When provided, only a subset of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {GeoTIFFImage~readCallback} callback the success callback. this
+   *                                             parameter is mandatory.
+   * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+   */
+  readRGB: function readRGB() {
+    // parse the arguments
+    var options = null,
+        callback = null,
+        callbackError = null;
+    switch (arguments.length) {
+      case 0:
+        break;
+      case 1:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+        } else {
+          options = arguments[0];
+        }
+        break;
+      case 2:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+          callbackError = arguments[1];
+        } else {
+          options = arguments[0];
+          callback = arguments[1];
+        }
+        break;
+      case 3:
+        options = arguments[0];
+        callback = arguments[1];
+        callbackError = arguments[2];
+        break;
+      default:
+        throw new Error("Invalid number of arguments passed.");
+    }
+
+    // set up default arguments
+    options = options || {};
+    callbackError = callbackError || function (error) {
+      console.error(error);
+    };
+
+    var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()];
+
+    // check parameters
+    if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
+      throw new Error("Select window is out of image bounds.");
+    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error("Invalid subsets");
+    }
+
+    var width = imageWindow[2] - imageWindow[0];
+    var height = imageWindow[3] - imageWindow[1];
+
+    var pi = this.fileDirectory.PhotometricInterpretation;
+
+    var bits = this.fileDirectory.BitsPerSample[0];
+    var max = Math.pow(2, bits);
+
+    if (pi === globals.photometricInterpretations.RGB) {
+      return this.readRasters({
+        window: options.window,
+        interleave: true
+      }, callback, callbackError);
+    }
+
+    var samples;
+    switch (pi) {
+      case globals.photometricInterpretations.WhiteIsZero:
+      case globals.photometricInterpretations.BlackIsZero:
+      case globals.photometricInterpretations.Palette:
+        samples = [0];
+        break;
+      case globals.photometricInterpretations.CMYK:
+        samples = [0, 1, 2, 3];
+        break;
+      case globals.photometricInterpretations.YCbCr:
+      case globals.photometricInterpretations.CIELab:
+        samples = [0, 1, 2];
+        break;
+      default:
+        throw new Error("Invalid or unsupported photometric interpretation.");
+    }
+
+    var subOptions = {
+      window: options.window,
+      interleave: true,
+      samples: samples
+    };
+    return this.readRasters(subOptions, function (raster) {
+      switch (pi) {
+        case globals.photometricInterpretations.WhiteIsZero:
+          return callback(RGB.fromWhiteIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.BlackIsZero:
+          return callback(RGB.fromBlackIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.Palette:
+          return callback(RGB.fromPalette(raster, this.fileDirectory.ColorMap, width, height));
+        case globals.photometricInterpretations.CMYK:
+          return callback(RGB.fromCMYK(raster, width, height));
+        case globals.photometricInterpretations.YCbCr:
+          return callback(RGB.fromYCbCr(raster, width, height));
+        case globals.photometricInterpretations.CIELab:
+          return callback(RGB.fromCIELab(raster, width, height));
+      }
+    }, callbackError);
+  },
+
+  /**
    * Returns an array of tiepoints.
    * @returns {Object[]}
    */
@@ -1069,7 +1188,7 @@ GeoTIFFImage.prototype = {
 
 module.exports = GeoTIFFImage;
 
-},{"./compression/deflate.js":2,"./compression/lzw.js":3,"./compression/packbits.js":4,"./compression/raw.js":5,"./globals.js":9}],9:[function(require,module,exports){
+},{"./compression/deflate.js":2,"./compression/lzw.js":3,"./compression/packbits.js":4,"./compression/raw.js":5,"./globals.js":9,"./rgb.js":11}],9:[function(require,module,exports){
 "use strict";
 
 var fieldTagNames = {
@@ -1224,6 +1343,19 @@ for (key in fieldTypeNames) {
   fieldTypes[fieldTypeNames[key]] = parseInt(key);
 }
 
+var photometricInterpretations = {
+  WhiteIsZero: 0,
+  BlackIsZero: 1,
+  RGB: 2,
+  Palette: 3,
+  TransparencyMask: 4,
+  CMYK: 5,
+  YCbCr: 6,
+
+  CIELab: 8,
+  ICCLab: 9
+};
+
 var geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
@@ -1306,6 +1438,7 @@ module.exports = {
   arrayFields: arrayFields,
   fieldTypes: fieldTypes,
   fieldTypeNames: fieldTypeNames,
+  photometricInterpretations: photometricInterpretations,
   geoKeys: geoKeys,
   geoKeyNames: geoKeyNames,
   parseXml: parseXml
@@ -1346,4 +1479,128 @@ if (typeof window !== "undefined") {
   window["GeoTIFF"] = { parse: parse };
 }
 
-},{"./geotiff.js":7}]},{},[10]);
+},{"./geotiff.js":7}],11:[function(require,module,exports){
+"use strict";
+
+function fromWhiteIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = 256 - raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromBlackIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromPalette(raster, colorMap, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var greenOffset = colorMap.length / 3;
+  var blueOffset = colorMap.length / 3 * 2;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    var mapIndex = raster[i];
+    rgbRaster[j] = colorMap[mapIndex] / 65536 * 256;
+    rgbRaster[j + 1] = colorMap[mapIndex + greenOffset] / 65536 * 256;
+    rgbRaster[j + 2] = colorMap[mapIndex + blueOffset] / 65536 * 256;
+  }
+  return rgbRaster;
+}
+
+function fromCMYK(cmykRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var c, m, y, k;
+  for (var i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
+    c = cmykRaster[i];
+    m = cmykRaster[i + 1];
+    y = cmykRaster[i + 2];
+    k = cmykRaster[i + 3];
+
+    rgbRaster[j] = 255 * ((255 - c) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 1] = 255 * ((255 - m) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 2] = 255 * ((255 - y) / 256) * ((255 - k) / 256);
+  }
+  return rgbRaster;
+}
+
+function fromYCbCr(yCbCrRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var y, cb, cr;
+  for (var i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
+    y = yCbCrRaster[i];
+    cb = yCbCrRaster[i + 1];
+    cr = yCbCrRaster[i + 2];
+
+    rgbRaster[j] = y + 1.40200 * (cr - 0x80);
+    rgbRaster[j + 1] = y - 0.34414 * (cb - 0x80) - 0.71414 * (cr - 0x80);
+    rgbRaster[j + 2] = y + 1.77200 * (cb - 0x80);
+  }
+  return rgbRaster;
+}
+
+// converted from here:
+// http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
+// still buggy
+function fromCIELab(cieLabRaster, width, height) {
+  var T1 = 0.008856;
+  var T2 = 0.206893;
+  var MAT = [3.240479, -1.537150, -0.498535, -0.969256, 1.875992, 0.041556, 0.055648, -0.204043, 1.057311];
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var L, a, b;
+  var fX, fY, fZ, XT, YT, ZT, X, Y, Z;
+  for (var i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
+    L = cieLabRaster[i];
+    a = cieLabRaster[i + 1];
+    b = cieLabRaster[i + 2];
+
+    // Compute Y
+    fY = Math.pow((L + 16) / 116, 3);
+    YT = fY > T1;
+    fY = (YT !== 0) * (L / 903.3) + YT * fY;
+    Y = fY;
+
+    fY = YT * Math.pow(fY, 1 / 3) + (YT !== 0) * (7.787 * fY + 16 / 116);
+
+    // Compute X
+    fX = a / 500 + fY;
+    XT = fX > T2;
+    X = XT * Math.pow(fX, 3) + (XT !== 0) * ((fX - 16 / 116) / 7.787);
+
+    // Compute Z
+    fZ = fY - b / 200;
+    ZT = fZ > T2;
+    Z = ZT * Math.pow(fZ, 3) + (ZT !== 0) * ((fZ - 16 / 116) / 7.787);
+
+    // Normalize for D65 white point
+    X = X * 0.950456;
+    Z = Z * 1.088754;
+
+    rgbRaster[j] = X * MAT[0] + Y * MAT[1] + Z * MAT[2];
+    rgbRaster[j + 1] = X * MAT[3] + Y * MAT[4] + Z * MAT[5];
+    rgbRaster[j + 2] = X * MAT[6] + Y * MAT[7] + Z * MAT[8];
+  }
+  return rgbRaster;
+}
+
+module.exports = {
+  fromWhiteIsZero: fromWhiteIsZero,
+  fromBlackIsZero: fromBlackIsZero,
+  fromPalette: fromPalette,
+  fromCMYK: fromCMYK,
+  fromYCbCr: fromYCbCr,
+  fromCIELab: fromCIELab
+};
+
+},{}]},{},[10]);

@@ -10,14 +10,14 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'browserify'],
-
+    frameworks: ['mocha', 'browserify', 'source-map-support'],
 
     // list of files / patterns to load in the browser
     files: [
       //'src/*js',
       'test/*spec.js',
-      { pattern: 'test/data/*.tiff', included: false, served: true }
+      { pattern: 'test/data/*.tiff', included: false, served: true },
+      { pattern: 'test/data/*.tif', included: false, served: true }
     ],
 
 
@@ -71,7 +71,6 @@ module.exports = function(config) {
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['PhantomJS2'],
-
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

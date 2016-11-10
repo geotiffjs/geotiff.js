@@ -161,6 +161,19 @@ for (key in fieldTypeNames) {
   fieldTypes[fieldTypeNames[key]] = parseInt(key);
 }
 
+var photometricInterpretations = {
+  WhiteIsZero: 0,
+  BlackIsZero: 1,
+  RGB: 2,
+  Palette: 3,
+  TransparencyMask: 4,
+  CMYK: 5,
+  YCbCr: 6,
+
+  CIELab: 8,
+  ICCLab: 9
+};
+
 var geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
@@ -245,6 +258,7 @@ module.exports = {
   arrayFields: arrayFields,
   fieldTypes: fieldTypes,
   fieldTypeNames: fieldTypeNames,
+  photometricInterpretations: photometricInterpretations,
   geoKeys: geoKeys,
   geoKeyNames: geoKeyNames,
   parseXml: parseXml
