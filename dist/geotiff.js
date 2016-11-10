@@ -14,244 +14,6 @@ module.exports = AbstractDecoder;
 
 },{}],2:[function(require,module,exports){
 "use strict";
-// (c) Redfish Group LLC. 2016
-//  LZW uncompression/uncompression according to https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
-//
-
-function LZWuncompress(options) {
-
-  this.constructor = function (options) {
-    this.littleEndian = false;
-    // Object.assign(this, options); // karma says TypeError: undefined is not a constructor (evaluating 'Object.assign(this, options)')
-    this.position = 0;
-    this.MIN_BITS = 9;
-    this.MAX_BITS = 12;
-    this.CLEAR_CODE = 256; // clear code
-    this.EOI_CODE = 257; // end of information
-    this._makeEntryLookup = false;
-    this.dictionary = [];
-  };
-
-  this.initDictionary = function () {
-    this.dictionary = new Array(258);
-    this.entryLookup = {};
-    this.byteLength = this.MIN_BITS;
-    for (var i = 0; i <= 257; i++) {
-      // i really feal like i <= 257, but I get strange unknown words that way.
-      this.dictionary[i] = [i];
-      if (this._makeEntryLookup) {
-        this.entryLookup[i] = i;
-      }
-    }
-  };
-
-  this.decompress = function (input) {
-    this._makeEntryLookup = false; // for speed
-    this.initDictionary();
-    this.position = 0;
-    this.result = [];
-    if (!input.buffer) {
-      input = new Uint8Array(input);
-    }
-    var mydataview = new DataView(input.buffer);
-    var code = this.getNext(mydataview);
-    var oldCode;
-    while (code !== this.EOI_CODE) {
-      if (code === this.CLEAR_CODE) {
-        this.initDictionary();
-        code = this.getNext(mydataview);
-        while (code === this.CLEAR_CODE) {
-          code = this.getNext(mydataview);
-        }
-        if (code > this.CLEAR_CODE) {
-          throw 'corrupted code at scanline ' + code;
-        }
-        if (code === this.EOI_CODE) {
-          break;
-        } else {
-          var val = this.dictionary[code];
-          this.appendArray(this.result, val);
-          oldCode = code;
-        }
-      } else {
-        if (this.dictionary[code] !== undefined) {
-          var _val = this.dictionary[code];
-          this.appendArray(this.result, _val);
-          var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
-          this.addToDictionary(newVal);
-          oldCode = code;
-        } else {
-          var oldVal = this.dictionary[oldCode];
-          if (!oldVal) {
-            throw 'Bogus entry. Not in dictionary, ' + oldCode + ' / ' + this.dictionary.length + ', position: ' + this.position;
-          }
-          var _newVal = oldVal.concat(this.dictionary[oldCode][0]);
-          this.appendArray(this.result, _newVal);
-          this.addToDictionary(_newVal);
-          oldCode = code;
-        }
-      }
-      // This is strange. It seems like the
-      if (this.dictionary.length >= Math.pow(2, this.byteLength) - 1) {
-        this.byteLength++;
-      }
-      code = this.getNext(mydataview);
-    }
-    return new Uint8Array(this.result);
-  };
-
-  this.appendArray = function (dest, source) {
-    for (var i = 0; i < source.length; i++) {
-      dest.push(source[i]);
-    }
-    return dest;
-  };
-
-  this.haveBytesChanged = function () {
-    if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
-      this.byteLength++;
-      return true;
-    }
-    return false;
-  };
-
-  this.addToDictionary = function (arr) {
-    this.dictionary.push(arr);
-    if (this._makeEntryLookup) {
-      this.entryLookup[arr] = this.dictionary.length - 1;
-    }
-    this.haveBytesChanged();
-    return this.dictionary.length - 1;
-  };
-
-  this.getNext = function (dataview) {
-    var byte = this.getByte(dataview, this.position, this.byteLength);
-    this.position += this.byteLength;
-    return byte;
-  };
-
-  // This binary representation might actually be as fast as the completely illegible bit shift approach
-  //
-  this.getByte = function (dataview, position, length) {
-    var d = position % 8;
-    var a = Math.floor(position / 8);
-    var de = 8 - d;
-    var ef = position + length - (a + 1) * 8;
-    var fg = 8 * (a + 2) - (position + length);
-    var dg = (a + 2) * 8 - position;
-    fg = Math.max(0, fg);
-    if (a >= dataview.byteLength) {
-      console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
-      return this.EOI_CODE;
-    }
-    var chunk1 = dataview.getUint8(a, this.littleEndian) & Math.pow(2, 8 - d) - 1;
-    chunk1 = chunk1 << length - de;
-    var chunks = chunk1;
-    if (a + 1 < dataview.byteLength) {
-      var chunk2 = dataview.getUint8(a + 1, this.littleEndian) >>> fg;
-      chunk2 = chunk2 << Math.max(0, length - dg);
-      chunks += chunk2;
-    }
-    if (ef > 8 && a + 2 < dataview.byteLength) {
-      var hi = (a + 3) * 8 - (position + length);
-      var chunk3 = dataview.getUint8(a + 2, this.littleEndian) >>> hi;
-      chunks += chunk3;
-    }
-    return chunks;
-  };
-
-  // compress has not been optimized and uses a uint8 array to hold binary values.
-  this.compress = function (input) {
-    this._makeEntryLookup = true;
-    this.initDictionary();
-    this.position = 0;
-    var resultBits = [];
-    var omega = [];
-    resultBits = this.appendArray(resultBits, this.binaryFromByte(this.CLEAR_CODE, this.byteLength)); // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
-    for (var i = 0; i < input.length; i++) {
-      var k = [input[i]];
-      var omk = omega.concat(k);
-      if (this.entryLookup[omk] !== undefined) {
-        omega = omk;
-      } else {
-        var _code = this.entryLookup[omega];
-        var _bin = this.binaryFromByte(_code, this.byteLength);
-        resultBits = this.appendArray(resultBits, _bin);
-        this.addToDictionary(omk);
-        omega = k;
-        if (this.dictionary.length >= Math.pow(2, this.MAX_BITS)) {
-          resultBits = this.appendArray(resultBits, this.binaryFromByte(this.CLEAR_CODE, this.byteLength));
-          this.initDictionary();
-        }
-      }
-    }
-    var code = this.entryLookup[omega];
-    var bin = this.binaryFromByte(code, this.byteLength);
-    resultBits = this.appendArray(resultBits, bin);
-    resultBits = resultBits = this.appendArray(resultBits, this.binaryFromByte(this.EOI_CODE, this.byteLength));
-    this.binary = resultBits;
-    this.result = this.binaryToUint8(resultBits);
-    return this.result;
-  };
-
-  this.byteFromCode = function (code) {
-    var res = this.dictionary[code];
-    return res;
-  };
-
-  this.binaryFromByte = function (byte) {
-    var byteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
-
-    var res = new Uint8Array(byteLength);
-    for (var i = 0; i < res.length; i++) {
-      var mask = Math.pow(2, i);
-      var isOne = (byte & mask) > 0;
-      res[res.length - 1 - i] = isOne;
-    }
-    return res;
-  };
-
-  this.binaryToNumber = function (bin) {
-    var res = 0;
-    for (var i = 0; i < bin.length; i++) {
-      res += Math.pow(2, bin.length - i - 1) * bin[i];
-    }
-    return res;
-  };
-
-  this.inputToBinary = function (input) {
-    var inputByteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
-
-    var res = new Uint8Array(input.length * inputByteLength);
-    for (var i = 0; i < input.length; i++) {
-      var bin = this.binaryFromByte(input[i], inputByteLength);
-      res.set(bin, i * inputByteLength);
-    }
-    return res;
-  };
-
-  this.binaryToUint8 = function (bin) {
-    var result = new Uint8Array(Math.ceil(bin.length / 8));
-    var index = 0;
-    for (var i = 0; i < bin.length; i += 8) {
-      var val = 0;
-      for (var j = 0; j < 8 && i + j < bin.length; j++) {
-        val = val + bin[i + j] * Math.pow(2, 8 - j - 1);
-      }
-      result[index] = val;
-      index++;
-    }
-    return result;
-  };
-
-  this.constructor(options);
-}
-
-// until export is avaliable
-window.LZWuncompress = LZWuncompress;
-
-},{}],3:[function(require,module,exports){
-"use strict";
 
 var AbstractDecoder = require("../abstractdecoder.js");
 
@@ -296,29 +58,256 @@ DeflateDecoder.prototype.decodeBlockAsync = function (buffer, callback) {
 
 module.exports = DeflateDecoder;
 
-},{"../abstractdecoder.js":1}],4:[function(require,module,exports){
+},{"../abstractdecoder.js":1}],3:[function(require,module,exports){
 "use strict";
 
 //var lzwCompress = require("lzwcompress");
 
 var AbstractDecoder = require("../abstractdecoder.js");
-var LZW = require("./LZWuncompress.js");
 
-var compressor = new window.LZWuncompress();
+var MIN_BITS = 9;
+var MAX_BITS = 12;
+var CLEAR_CODE = 256; // clear code
+var EOI_CODE = 257; // end of information
 
-function LZWDecoder() {}
+function LZW() {
+  this.littleEndian = false;
+  this.position = 0;
+
+  this._makeEntryLookup = false;
+  this.dictionary = [];
+}
+
+LZW.prototype = {
+  constructor: LZW,
+  initDictionary: function initDictionary() {
+    this.dictionary = new Array(258);
+    this.entryLookup = {};
+    this.byteLength = MIN_BITS;
+    for (var i = 0; i <= 257; i++) {
+      // i really feal like i <= 257, but I get strange unknown words that way.
+      this.dictionary[i] = [i];
+      if (this._makeEntryLookup) {
+        this.entryLookup[i] = i;
+      }
+    }
+  },
+
+  decompress: function decompress(input) {
+    this._makeEntryLookup = false; // for speed
+    this.initDictionary();
+    this.position = 0;
+    this.result = [];
+    if (!input.buffer) {
+      input = new Uint8Array(input);
+    }
+    var mydataview = new DataView(input.buffer);
+    var code = this.getNext(mydataview);
+    var oldCode;
+    while (code !== EOI_CODE) {
+      if (code === CLEAR_CODE) {
+        this.initDictionary();
+        code = this.getNext(mydataview);
+        while (code === CLEAR_CODE) {
+          code = this.getNext(mydataview);
+        }
+        if (code > CLEAR_CODE) {
+          throw 'corrupted code at scanline ' + code;
+        }
+        if (code === EOI_CODE) {
+          break;
+        } else {
+          var val = this.dictionary[code];
+          this.appendArray(this.result, val);
+          oldCode = code;
+        }
+      } else {
+        if (this.dictionary[code] !== undefined) {
+          var _val = this.dictionary[code];
+          this.appendArray(this.result, _val);
+          var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
+          this.addToDictionary(newVal);
+          oldCode = code;
+        } else {
+          var oldVal = this.dictionary[oldCode];
+          if (!oldVal) {
+            throw "Bogus entry. Not in dictionary, " + oldCode + " / " + this.dictionary.length + ", position: " + this.position;
+          }
+          var _newVal = oldVal.concat(this.dictionary[oldCode][0]);
+          this.appendArray(this.result, _newVal);
+          this.addToDictionary(_newVal);
+          oldCode = code;
+        }
+      }
+      // This is strange. It seems like the
+      if (this.dictionary.length >= Math.pow(2, this.byteLength) - 1) {
+        this.byteLength++;
+      }
+      code = this.getNext(mydataview);
+    }
+    return new Uint8Array(this.result);
+  },
+
+  appendArray: function appendArray(dest, source) {
+    for (var i = 0; i < source.length; i++) {
+      dest.push(source[i]);
+    }
+    return dest;
+  },
+
+  haveBytesChanged: function haveBytesChanged() {
+    if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
+      this.byteLength++;
+      return true;
+    }
+    return false;
+  },
+
+  addToDictionary: function addToDictionary(arr) {
+    this.dictionary.push(arr);
+    if (this._makeEntryLookup) {
+      this.entryLookup[arr] = this.dictionary.length - 1;
+    }
+    this.haveBytesChanged();
+    return this.dictionary.length - 1;
+  },
+
+  getNext: function getNext(dataview) {
+    var byte = this.getByte(dataview, this.position, this.byteLength);
+    this.position += this.byteLength;
+    return byte;
+  },
+
+  // This binary representation might actually be as fast as the completely illegible bit shift approach
+  //
+  getByte: function getByte(dataview, position, length) {
+    var d = position % 8;
+    var a = Math.floor(position / 8);
+    var de = 8 - d;
+    var ef = position + length - (a + 1) * 8;
+    var fg = 8 * (a + 2) - (position + length);
+    var dg = (a + 2) * 8 - position;
+    fg = Math.max(0, fg);
+    if (a >= dataview.byteLength) {
+      console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
+      return EOI_CODE;
+    }
+    var chunk1 = dataview.getUint8(a, this.littleEndian) & Math.pow(2, 8 - d) - 1;
+    chunk1 = chunk1 << length - de;
+    var chunks = chunk1;
+    if (a + 1 < dataview.byteLength) {
+      var chunk2 = dataview.getUint8(a + 1, this.littleEndian) >>> fg;
+      chunk2 = chunk2 << Math.max(0, length - dg);
+      chunks += chunk2;
+    }
+    if (ef > 8 && a + 2 < dataview.byteLength) {
+      var hi = (a + 3) * 8 - (position + length);
+      var chunk3 = dataview.getUint8(a + 2, this.littleEndian) >>> hi;
+      chunks += chunk3;
+    }
+    return chunks;
+  },
+
+  // compress has not been optimized and uses a uint8 array to hold binary values.
+  compress: function compress(input) {
+    this._makeEntryLookup = true;
+    this.initDictionary();
+    this.position = 0;
+    var resultBits = [];
+    var omega = [];
+    resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength)); // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
+    for (var i = 0; i < input.length; i++) {
+      var k = [input[i]];
+      var omk = omega.concat(k);
+      if (this.entryLookup[omk] !== undefined) {
+        omega = omk;
+      } else {
+        var _code = this.entryLookup[omega];
+        var _bin = this.binaryFromByte(_code, this.byteLength);
+        resultBits = this.appendArray(resultBits, _bin);
+        this.addToDictionary(omk);
+        omega = k;
+        if (this.dictionary.length >= Math.pow(2, MAX_BITS)) {
+          resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength));
+          this.initDictionary();
+        }
+      }
+    }
+    var code = this.entryLookup[omega];
+    var bin = this.binaryFromByte(code, this.byteLength);
+    resultBits = this.appendArray(resultBits, bin);
+    resultBits = resultBits = this.appendArray(resultBits, this.binaryFromByte(EOI_CODE, this.byteLength));
+    this.binary = resultBits;
+    this.result = this.binaryToUint8(resultBits);
+    return this.result;
+  },
+
+  byteFromCode: function byteFromCode(code) {
+    var res = this.dictionary[code];
+    return res;
+  },
+
+  binaryFromByte: function binaryFromByte(byte) {
+    var byteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+
+    var res = new Uint8Array(byteLength);
+    for (var i = 0; i < res.length; i++) {
+      var mask = Math.pow(2, i);
+      var isOne = (byte & mask) > 0;
+      res[res.length - 1 - i] = isOne;
+    }
+    return res;
+  },
+
+  binaryToNumber: function binaryToNumber(bin) {
+    var res = 0;
+    for (var i = 0; i < bin.length; i++) {
+      res += Math.pow(2, bin.length - i - 1) * bin[i];
+    }
+    return res;
+  },
+
+  inputToBinary: function inputToBinary(input) {
+    var inputByteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+
+    var res = new Uint8Array(input.length * inputByteLength);
+    for (var i = 0; i < input.length; i++) {
+      var bin = this.binaryFromByte(input[i], inputByteLength);
+      res.set(bin, i * inputByteLength);
+    }
+    return res;
+  },
+
+  binaryToUint8: function binaryToUint8(bin) {
+    var result = new Uint8Array(Math.ceil(bin.length / 8));
+    var index = 0;
+    for (var i = 0; i < bin.length; i += 8) {
+      var val = 0;
+      for (var j = 0; j < 8 && i + j < bin.length; j++) {
+        val = val + bin[i + j] * Math.pow(2, 8 - j - 1);
+      }
+      result[index] = val;
+      index++;
+    }
+    return result;
+  }
+};
+
+// the actual decoder interface
+
+function LZWDecoder() {
+  this.decompressor = new LZW();
+}
 
 LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
 LZWDecoder.prototype.constructor = LZWDecoder;
 LZWDecoder.prototype.decodeBlock = function (buffer) {
-  var fk = new Uint8Array(buffer);
-  var gu = compressor.decompress(fk);
-  return gu.buffer;
+  return this.decompressor.decompress(buffer).buffer;
 };
 
 module.exports = LZWDecoder;
 
-},{"../abstractdecoder.js":1,"./LZWuncompress.js":2}],5:[function(require,module,exports){
+},{"../abstractdecoder.js":1}],4:[function(require,module,exports){
 "use strict";
 
 var AbstractDecoder = require("../abstractdecoder.js");
@@ -353,7 +342,7 @@ PackbitsDecoder.prototype.decodeBlock = function (buffer) {
 
 module.exports = PackbitsDecoder;
 
-},{"../abstractdecoder.js":1}],6:[function(require,module,exports){
+},{"../abstractdecoder.js":1}],5:[function(require,module,exports){
 "use strict";
 
 var AbstractDecoder = require("../abstractdecoder.js");
@@ -368,7 +357,7 @@ RawDecoder.prototype.decodeBlock = function (buffer) {
 
 module.exports = RawDecoder;
 
-},{"../abstractdecoder.js":1}],7:[function(require,module,exports){
+},{"../abstractdecoder.js":1}],6:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -697,7 +686,7 @@ GeoTIFF.prototype = {
 
 module.exports = GeoTIFF;
 
-},{"./geotiffimage.js":8,"./globals.js":9}],8:[function(require,module,exports){
+},{"./dataview64.js":6,"./geotiffimage.js":8,"./globals.js":9}],8:[function(require,module,exports){
 "use strict";
 
 var globals = require("./globals.js");
@@ -1378,6 +1367,7 @@ GeoTIFFImage.prototype = {
       interleave: true,
       samples: samples
     };
+    var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function (raster) {
       switch (pi) {
         case globals.photometricInterpretations.WhiteIsZero:
@@ -1385,7 +1375,7 @@ GeoTIFFImage.prototype = {
         case globals.photometricInterpretations.BlackIsZero:
           return callback(RGB.fromBlackIsZero(raster, max, width, height));
         case globals.photometricInterpretations.Palette:
-          return callback(RGB.fromPalette(raster, this.fileDirectory.ColorMap, width, height));
+          return callback(RGB.fromPalette(raster, fileDirectory.ColorMap, width, height));
         case globals.photometricInterpretations.CMYK:
           return callback(RGB.fromCMYK(raster, width, height));
         case globals.photometricInterpretations.YCbCr:
@@ -1441,7 +1431,7 @@ GeoTIFFImage.prototype = {
 
 module.exports = GeoTIFFImage;
 
-},{"./compression/deflate.js":3,"./compression/lzw.js":4,"./compression/packbits.js":5,"./compression/raw.js":6,"./globals.js":9}],9:[function(require,module,exports){
+},{"./compression/deflate.js":2,"./compression/lzw.js":3,"./compression/packbits.js":4,"./compression/raw.js":5,"./globals.js":9,"./rgb.js":11}],9:[function(require,module,exports){
 "use strict";
 
 var fieldTagNames = {
@@ -1732,4 +1722,128 @@ if (typeof window !== "undefined") {
   window["GeoTIFF"] = { parse: parse };
 }
 
-},{"./geotiff.js":7}]},{},[10]);
+},{"./geotiff.js":7}],11:[function(require,module,exports){
+"use strict";
+
+function fromWhiteIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = 256 - raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromBlackIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromPalette(raster, colorMap, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var greenOffset = colorMap.length / 3;
+  var blueOffset = colorMap.length / 3 * 2;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    var mapIndex = raster[i];
+    rgbRaster[j] = colorMap[mapIndex] / 65536 * 256;
+    rgbRaster[j + 1] = colorMap[mapIndex + greenOffset] / 65536 * 256;
+    rgbRaster[j + 2] = colorMap[mapIndex + blueOffset] / 65536 * 256;
+  }
+  return rgbRaster;
+}
+
+function fromCMYK(cmykRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var c, m, y, k;
+  for (var i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
+    c = cmykRaster[i];
+    m = cmykRaster[i + 1];
+    y = cmykRaster[i + 2];
+    k = cmykRaster[i + 3];
+
+    rgbRaster[j] = 255 * ((255 - c) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 1] = 255 * ((255 - m) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 2] = 255 * ((255 - y) / 256) * ((255 - k) / 256);
+  }
+  return rgbRaster;
+}
+
+function fromYCbCr(yCbCrRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var y, cb, cr;
+  for (var i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
+    y = yCbCrRaster[i];
+    cb = yCbCrRaster[i + 1];
+    cr = yCbCrRaster[i + 2];
+
+    rgbRaster[j] = y + 1.40200 * (cr - 0x80);
+    rgbRaster[j + 1] = y - 0.34414 * (cb - 0x80) - 0.71414 * (cr - 0x80);
+    rgbRaster[j + 2] = y + 1.77200 * (cb - 0x80);
+  }
+  return rgbRaster;
+}
+
+// converted from here:
+// http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
+// still buggy
+function fromCIELab(cieLabRaster, width, height) {
+  var T1 = 0.008856;
+  var T2 = 0.206893;
+  var MAT = [3.240479, -1.537150, -0.498535, -0.969256, 1.875992, 0.041556, 0.055648, -0.204043, 1.057311];
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var L, a, b;
+  var fX, fY, fZ, XT, YT, ZT, X, Y, Z;
+  for (var i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
+    L = cieLabRaster[i];
+    a = cieLabRaster[i + 1];
+    b = cieLabRaster[i + 2];
+
+    // Compute Y
+    fY = Math.pow((L + 16) / 116, 3);
+    YT = fY > T1;
+    fY = (YT !== 0) * (L / 903.3) + YT * fY;
+    Y = fY;
+
+    fY = YT * Math.pow(fY, 1 / 3) + (YT !== 0) * (7.787 * fY + 16 / 116);
+
+    // Compute X
+    fX = a / 500 + fY;
+    XT = fX > T2;
+    X = XT * Math.pow(fX, 3) + (XT !== 0) * ((fX - 16 / 116) / 7.787);
+
+    // Compute Z
+    fZ = fY - b / 200;
+    ZT = fZ > T2;
+    Z = ZT * Math.pow(fZ, 3) + (ZT !== 0) * ((fZ - 16 / 116) / 7.787);
+
+    // Normalize for D65 white point
+    X = X * 0.950456;
+    Z = Z * 1.088754;
+
+    rgbRaster[j] = X * MAT[0] + Y * MAT[1] + Z * MAT[2];
+    rgbRaster[j + 1] = X * MAT[3] + Y * MAT[4] + Z * MAT[5];
+    rgbRaster[j + 2] = X * MAT[6] + Y * MAT[7] + Z * MAT[8];
+  }
+  return rgbRaster;
+}
+
+module.exports = {
+  fromWhiteIsZero: fromWhiteIsZero,
+  fromBlackIsZero: fromBlackIsZero,
+  fromPalette: fromPalette,
+  fromCMYK: fromCMYK,
+  fromYCbCr: fromYCbCr,
+  fromCIELab: fromCIELab
+};
+
+},{}]},{},[10]);

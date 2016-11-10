@@ -21,6 +21,7 @@ Currently available functionality:
   * Enabled compressions:
     * no compression
     * Packbits
+    * LZW
     * ... (more soon to follow)
   * Subsetting via an image window and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
@@ -236,6 +237,7 @@ a reasonable support, the following is implemented:
     * Specifying of window in CRS coordinates
   * Improving support of CIEL*a*b* images
   * Support of "overview images" (i.e: images with reduced resolution)
+  * Deflate compression
 
 ## Acknowledgements
 
