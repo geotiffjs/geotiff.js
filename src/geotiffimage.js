@@ -692,6 +692,7 @@ GeoTIFFImage.prototype = {
       interleave: true,
       samples: samples
     };
+    var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function(raster) {
       switch(pi) {
         case globals.photometricInterpretations.WhiteIsZero:
@@ -699,7 +700,7 @@ GeoTIFFImage.prototype = {
         case globals.photometricInterpretations.BlackIsZero:
           return callback(RGB.fromBlackIsZero(raster, max, width, height));
         case globals.photometricInterpretations.Palette:
-          return callback(RGB.fromPalette(raster, this.fileDirectory.ColorMap, width, height));
+          return callback(RGB.fromPalette(raster, fileDirectory.ColorMap, width, height));
         case globals.photometricInterpretations.CMYK:
           return callback(RGB.fromCMYK(raster, width, height));
         case globals.photometricInterpretations.YCbCr:
