@@ -132,6 +132,52 @@ describe("mainTests", function() {
     });
   });
 
+  it("should work on LZW compressed images", function(done) {
+    retrieve("lzw.tiff", done, function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+
+      try {
+        var allData = image.readRasters({window: [200, 200, 210, 210]});
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
+        expect(data[0]).to.deep.equal(allData[5]);
+        done();
+      }
+      catch (error) {
+        done(error);
+      }
+    });
+  });
+
+  it("should work on band interleaved, lzw compressed, and tiled tiffs", function(done) {
+    retrieve("tiledplanarlzw.tiff", done, function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+
+      try {
+        var allData = image.readRasters({window: [200, 200, 210, 210]});
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Uint16Array);
+        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
+        expect(data[0]).to.deep.equal(allData[5]);
+        done();
+      }
+      catch (error) {
+        done(error);
+      }
+    });
+  });
+
   it("should work on Int32 tiffs", function(done) {
     retrieve("int32.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
@@ -203,6 +249,29 @@ describe("mainTests", function() {
 
   it("should work on Float64 tiffs", function(done) {
     retrieve("float64.tiff", done, function(tiff) {
+      expect(tiff).to.be.ok;
+      var image = tiff.getImage();
+      expect(image).to.be.ok;
+      expect(image.getWidth()).to.equal(539);
+      expect(image.getHeight()).to.equal(448);
+      expect(image.getSamplesPerPixel()).to.equal(15);
+
+      try {
+        var allData = image.readRasters({window: [200, 200, 210, 210]});
+        expect(allData).to.have.length(15);
+        expect(allData[0]).to.be.an.instanceof(Float64Array);
+        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
+        expect(data[0]).to.deep.equal(allData[5]);
+        done();
+      }
+      catch (error) {
+        done(error);
+      }
+    });
+  });
+
+  it("should work on Float64 and lzw compressed tiffs", function(done) {
+    retrieve("float64lzw.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -330,13 +399,9 @@ describe("mainTests", function() {
       }
     });
   });
-
-  // RGBs: RGB, CMYK, YCbCr, CIEL*a*b*, Palette using the readRGB function
 });
 
 describe("RGB-tests", function() {
-
-  // TODO: compare with comparison raster
   var options = { window: [250, 250, 300, 300], interleave: true };
 
   var comparisonPromise = new Promise(function(resolve, reject) {
