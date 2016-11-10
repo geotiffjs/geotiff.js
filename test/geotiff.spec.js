@@ -1,6 +1,4 @@
 var chai = require("chai");
-// var chaiStats = require('chai-stats');
-// chai.use(chaiStats);
 var expect = chai.expect;
 
 var Promise = require('es6-promise').Promise;
