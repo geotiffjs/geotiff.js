@@ -39,7 +39,8 @@
     "karma-mocha": "^1.2.0",
     "karma-phantomjs2-launcher": "^0.5.0",
     "karma-source-map-support": "^1.2.0",
-    "load-grunt-tasks": "^3.5.2"
+    "load-grunt-tasks": "^3.5.2",
+    "mocha": "^3.1.2"
   },
   "scripts": {
     "test": "grunt test"
