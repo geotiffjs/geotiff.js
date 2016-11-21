@@ -13,6 +13,7 @@
     "eqnull": true,
     "browser": true,
     "browserify": true,
+    "loopfunc": true,
     "globals": {
         "_": true,
         "module": true,

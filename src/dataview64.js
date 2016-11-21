@@ -1,4 +1,4 @@
-class DataView64 {
+export default class DataView64 {
   constructor(arrayBuffer) {
     this._dataView = new DataView(arrayBuffer);
   }
@@ -61,5 +61,3 @@ class DataView64 {
     return this._dataView.getFloat64(offset, littleEndian);
   }
 }
-
-module.exports = DataView64;

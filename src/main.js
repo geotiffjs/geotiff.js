@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-var GeoTIFF = require("./geotiff.js");
+import GeoTIFF from './geotiff.js';
 
 /**
  * Main parsing function for GeoTIFF files.
@@ -11,7 +11,7 @@ var GeoTIFF = require("./geotiff.js");
  */
 var parse = function(data, options) {
   var rawData, i, strLen, view;
-  if (typeof data === "string" || data instanceof String) {
+  if (typeof data === 'string' || data instanceof String) {
     rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
     view = new Uint16Array(rawData);
     for (i=0, strLen=data.length; i<strLen; ++i) {
@@ -22,14 +22,14 @@ var parse = function(data, options) {
     rawData = data;
   }
   else {
-    throw new Error("Invalid input data given.");
+    throw new Error('Invalid input data given.');
   }
   return new GeoTIFF(rawData, options);
 };
 
-if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports.parse = parse;
 }
-if (typeof window !== "undefined") {
-  window["GeoTIFF"] = {parse:parse};
+if (typeof window !== 'undefined') {
+  window['GeoTIFF'] = { parse: parse };
 }

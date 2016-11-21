@@ -16,26 +16,27 @@
 var imageWindow = [0, 0, 500, 500];
 
 var tiffs = [
-  "stripped.tiff",
-  "tiled.tiff",
-  "tiledplanar.tiff",
-  "float32.tiff",
-  "uint32.tiff",
-  "int32.tiff",
-  "float64.tiff",
-  "lzw.tiff",
-  "tiledplanarlzw.tiff",
-  "float64lzw.tiff",
+  // "stripped.tiff",
+  "packbits.tiff",
+  // "tiled.tiff",
+  // "tiledplanar.tiff",
+  // "float32.tiff",
+  // "uint32.tiff",
+  // "int32.tiff",
+  // "float64.tiff",
+  // // "lzw.tiff",
+  // "tiledplanarlzw.tiff",
+  // "float64lzw.tiff",
 ];
 
 var rgbtiffs = [
-    "stripped.tiff",
-    "rgb.tiff",
-    "BigTIFF.tif",
-    "rgb_paletted.tiff",
-    "cmyk.tif",
-    "ycbcr.tif",
-    "cielab.tif"
+    // "stripped.tiff",
+    // "rgb.tiff",
+    // "BigTIFF.tif",
+    // "rgb_paletted.tiff",
+    // "cmyk.tif",
+    // "ycbcr.tif",
+    // "cielab.tif"
 ]
 
 
@@ -70,23 +71,28 @@ tiffs.forEach(function(filename) {
   document.getElementById("canvases").appendChild(div);
 
   xhr.onload = function(e) {
+    console.time("readRasters " + filename);
     var parser = GeoTIFF.parse(this.response);
     var image = parser.getImage();
-    console.log(image);
-    console.log(image.getTiePoints());
 
     var plot;
 
     bandsSelect.addEventListener("change", function(e) {
-      var rasters = image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]});
-      plot.setData(rasters[0], image.getWidth(), image.getHeight());
-      plot.render();
+      image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]})
+        .then(function(rasters) {
+            var canvas = document.getElementById(filename);
+            plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+            plot.render();
+        });
     });
-
-    var rasters = image.readRasters({samples: [0]});
-    var canvas = document.getElementById(filename);
-    plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
-    plot.render();
+    // image.readRasters({samples: [0], poolSize: 8})
+    image.readRasters({samples: [0], poolSize: null})
+      .then(function(rasters) {
+        console.timeEnd("readRasters " + filename);
+        var canvas = document.getElementById(filename);
+        plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+        plot.render();
+      });
   };
 
   xhr.send();
@@ -118,7 +124,9 @@ rgbtiffs.forEach(function(filename) {
     var plot;
 
     //image.readRasters({samples: [0,1,2], interleave: true}, function(raster) {
-    image.readRGB(function(raster) {
+    console.time("readRGB " + filename);
+    image.readRGB().then(function(raster) {
+      console.timeEnd("readRGB " + filename);
       canvas.width = image.getWidth();
       canvas.height = image.getHeight();
       var ctx = canvas.getContext("2d");

@@ -1,7 +1,9 @@
-function fromWhiteIsZero(raster, max, width, height) {
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var value;
-  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+'use strict';
+
+export function fromWhiteIsZero(raster, max, width, height) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  let value;
+  for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
     value = 256 - (raster[i] / max * 256);
     rgbRaster[j] = value;
     rgbRaster[j + 1] = value;
@@ -10,10 +12,10 @@ function fromWhiteIsZero(raster, max, width, height) {
   return rgbRaster;
 }
 
-function fromBlackIsZero(raster, max, width, height) {
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var value;
-  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+export function fromBlackIsZero(raster, max, width, height) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  let value;
+  for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
     value = raster[i] / max * 256;
     rgbRaster[j] = value;
     rgbRaster[j + 1] = value;
@@ -22,12 +24,12 @@ function fromBlackIsZero(raster, max, width, height) {
   return rgbRaster;
 }
 
-function fromPalette(raster, colorMap, width, height) {
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var greenOffset = colorMap.length / 3;
-  var blueOffset = colorMap.length / 3 * 2;
-  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
-    var mapIndex = raster[i];
+export function fromPalette(raster, colorMap, width, height) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  const greenOffset = colorMap.length / 3;
+  const blueOffset = colorMap.length / 3 * 2;
+  for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    let mapIndex = raster[i];
     rgbRaster[j] = colorMap[mapIndex] / 65536 * 256;
     rgbRaster[j + 1] = colorMap[mapIndex + greenOffset] / 65536 * 256;
     rgbRaster[j + 2] = colorMap[mapIndex + blueOffset] / 65536 * 256;
@@ -35,10 +37,10 @@ function fromPalette(raster, colorMap, width, height) {
   return rgbRaster;
 }
 
-function fromCMYK(cmykRaster, width, height) {
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var c, m, y, k;
-  for (var i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
+export function fromCMYK(cmykRaster, width, height) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  let c, m, y, k;
+  for (let i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
     c = cmykRaster[i];
     m = cmykRaster[i + 1];
     y = cmykRaster[i + 2];
@@ -51,10 +53,10 @@ function fromCMYK(cmykRaster, width, height) {
   return rgbRaster;
 }
 
-function fromYCbCr(yCbCrRaster, width, height) {
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var y, cb, cr;
-  for (var i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
+export function fromYCbCr(yCbCrRaster, width, height) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  let y, cb, cr;
+  for (let i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
     y = yCbCrRaster[i];
     cb = yCbCrRaster[i + 1];
     cr = yCbCrRaster[i + 2];
@@ -69,16 +71,16 @@ function fromYCbCr(yCbCrRaster, width, height) {
 // converted from here:
 // http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
 // still buggy
-function fromCIELab(cieLabRaster, width, height) {
-  var T1 = 0.008856;
-  var T2 = 0.206893;
-  var MAT = [ 3.240479, -1.537150, -0.498535,
+export function fromCIELab(cieLabRaster, width, height) {
+  const T1 = 0.008856;
+  const T2 = 0.206893;
+  const MAT = [ 3.240479, -1.537150, -0.498535,
              -0.969256,  1.875992,  0.041556,
               0.055648, -0.204043,  1.057311];
-  var rgbRaster = new Uint8Array(width * height * 3);
-  var L, a, b;
-  var fX, fY, fZ, XT, YT, ZT, X, Y, Z;
-  for (var i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
+  const rgbRaster = new Uint8Array(width * height * 3);
+  let L, a, b;
+  let fX, fY, fZ, XT, YT, ZT, X, Y, Z;
+  for (let i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
     L = cieLabRaster[i];
     a = cieLabRaster[i + 1];
     b = cieLabRaster[i + 2];
@@ -111,12 +113,3 @@ function fromCIELab(cieLabRaster, width, height) {
   }
   return rgbRaster;
 }
-
-module.exports = {
-  fromWhiteIsZero: fromWhiteIsZero,
-  fromBlackIsZero: fromBlackIsZero,
-  fromPalette: fromPalette,
-  fromCMYK: fromCMYK,
-  fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab
-};

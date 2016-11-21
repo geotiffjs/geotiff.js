@@ -1,24 +1,22 @@
-"use strict";
+'use strict';
 
-//var lzwCompress = require("lzwcompress");
-var AbstractDecoder = require("../abstractdecoder.js");
+import AbstractDecoder from '../abstractdecoder.js';
 
 var MIN_BITS = 9;
 var MAX_BITS = 12;
 var CLEAR_CODE = 256; // clear code
 var EOI_CODE = 257; // end of information
 
-function LZW() {
-  this.littleEndian = false;
-  this.position = 0;
+class LZW {
+  constructor() {
+    this.littleEndian = false;
+    this.position = 0;
 
-  this._makeEntryLookup = false;
-  this.dictionary = [];
-}
+    this._makeEntryLookup = false;
+    this.dictionary = [];
+  }
 
-LZW.prototype = {
-  constructor: LZW,
-  initDictionary: function() {
+  initDictionary() {
     this.dictionary = new Array(258);
     this.entryLookup = {};
     this.byteLength = MIN_BITS;
@@ -28,9 +26,9 @@ LZW.prototype = {
         this.entryLookup[i] = i;
       }
     }
-  },
+  }
 
-  decompress: function(input) {
+  decompress(input) {
     this._makeEntryLookup = false; // for speed
     this.initDictionary();
     this.position = 0;
@@ -49,7 +47,7 @@ LZW.prototype = {
           code = this.getNext(mydataview);
         }
         if (code > CLEAR_CODE) {
-          throw('corrupted code at scanline ' + code);
+          throw new Error(`corrupted code at scanline ${code}`);
         }
         if (code === EOI_CODE) {
           break;
@@ -68,7 +66,7 @@ LZW.prototype = {
         } else {
           let oldVal = this.dictionary[oldCode];
           if (!oldVal) {
-            throw(`Bogus entry. Not in dictionary, ${oldCode} / ${this.dictionary.length}, position: ${this.position}`);
+            throw new Error(`Bogus entry. Not in dictionary, ${oldCode} / ${this.dictionary.length}, position: ${this.position}`);
           }
           let newVal = oldVal.concat(this.dictionary[oldCode][0]);
           this.appendArray(this.result, newVal);
@@ -83,41 +81,41 @@ LZW.prototype = {
       code = this.getNext(mydataview);
     }
     return new Uint8Array(this.result);
-  },
+  }
 
-  appendArray: function (dest, source) {
+  appendArray(dest, source) {
     for (var i =0; i<source.length; i++) {
       dest.push(source[i]);
     }
     return dest;
-  },
+  }
 
-  haveBytesChanged: function () {
+  haveBytesChanged() {
     if (this.dictionary.length >= Math.pow(2, this.byteLength) ) {
       this.byteLength ++;
       return true;
     }
     return false;
-  },
+  }
 
-  addToDictionary: function (arr) {
+  addToDictionary(arr) {
     this.dictionary.push(arr);
     if (this._makeEntryLookup) {
       this.entryLookup[arr] = this.dictionary.length - 1;
     }
     this.haveBytesChanged();
     return this.dictionary.length - 1;
-  },
+  }
 
-  getNext: function (dataview) {
+  getNext(dataview) {
     var byte = this.getByte(dataview, this.position, this.byteLength);
     this.position += this.byteLength;
     return byte;
-  },
+  }
 
   // This binary representation might actually be as fast as the completely illegible bit shift approach
   //
-  getByte: function (dataview, position, length) {
+  getByte(dataview, position, length) {
     var d = position % 8;
     var a = Math.floor(position/8);
     var de = 8-d;
@@ -143,10 +141,10 @@ LZW.prototype = {
       chunks += chunk3;
     }
     return chunks;
-  },
+  }
 
 // compress has not been optimized and uses a uint8 array to hold binary values.
-  compress: function (input) {
+  compress(input) {
     this._makeEntryLookup = true;
     this.initDictionary();
     this.position = 0;
@@ -177,14 +175,14 @@ LZW.prototype = {
     this.binary = resultBits;
     this.result = this.binaryToUint8(resultBits);
     return this.result;
-  },
+  }
 
-  byteFromCode: function (code) {
+  byteFromCode(code) {
     var res = this.dictionary[code];
     return res;
-  },
+  }
 
-  binaryFromByte: function (byte, byteLength=8) {
+  binaryFromByte(byte, byteLength=8) {
     var res = new Uint8Array(byteLength);
     for (var i=0; i<res.length; i++) {
       var mask = Math.pow(2,i);
@@ -192,26 +190,26 @@ LZW.prototype = {
       res[res.length - 1 - i] = isOne;
     }
     return res;
-  },
+  }
 
-  binaryToNumber: function (bin) {
+  binaryToNumber(bin) {
     var res = 0;
     for (var i=0; i<bin.length; i++) {
       res += Math.pow(2, bin.length - i - 1) * bin[i];
     }
     return res;
-  },
+  }
 
-  inputToBinary: function (input, inputByteLength=8) {
+  inputToBinary(input, inputByteLength=8) {
     var res = new Uint8Array(input.length * inputByteLength);
     for (var i=0; i<input.length; i++) {
       var bin = this.binaryFromByte(input[i], inputByteLength);
       res.set(bin, i * inputByteLength);
     }
     return res;
-  },
+  }
 
-  binaryToUint8: function (bin) {
+  binaryToUint8(bin) {
     var result = new Uint8Array(Math.ceil(bin.length/8));
     var index = 0;
     for (var i=0; i<bin.length; i+=8) {
@@ -224,18 +222,13 @@ LZW.prototype = {
     }
     return result;
   }
-};
+}
 
 // the actual decoder interface
 
-function LZWDecoder() {
-  this.decompressor = new LZW();
+export default class LZWDecoder extends AbstractDecoder {
+  decodeBlock(buffer) {
+    // decompressor = new LZW();
+    return Promise.resolve((new LZW()).decompress(buffer).buffer);
+  }
 }
-
-LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
-LZWDecoder.prototype.constructor = LZWDecoder;
-LZWDecoder.prototype.decodeBlock = function(buffer) {
-  return this.decompressor.decompress(buffer).buffer;
-};
-
-module.exports = LZWDecoder;
