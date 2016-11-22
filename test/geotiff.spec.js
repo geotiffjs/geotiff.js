@@ -1,7 +1,7 @@
 var chai = require("chai");
 var expect = chai.expect;
 
-var Promise = require('es6-promise').Promise;
+require('es6-promise').polyfill();
 
 import GeoTIFF from "../src/main.js"
 
@@ -50,12 +50,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]}),
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -73,12 +77,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -96,12 +104,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -119,12 +131,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -142,12 +158,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -165,12 +185,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -188,12 +212,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Int32Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Int32Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -211,12 +239,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint32Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint32Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -234,12 +266,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Float32Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Float32Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -257,12 +293,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Float64Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Float64Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -280,12 +320,16 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Float64Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Float64Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -303,68 +347,20 @@ describe("mainTests", function() {
       expect(image.getSamplesPerPixel()).to.equal(15);
 
       try {
-        var allData = image.readRasters({window: [200, 200, 210, 210]});
-        expect(allData).to.have.length(15);
-        expect(allData[0]).to.be.an.instanceof(Uint16Array);
-        var data = image.readRasters({window: [200, 200, 210, 210], samples: [5]});
-        expect(data[0]).to.deep.equal(allData[5]);
-        done();
+        Promise.all([
+          image.readRasters({window: [200, 200, 210, 210]}),
+          image.readRasters({window: [200, 200, 210, 210], samples: [5]})
+        ])
+          .then(function([allData, data]) {
+            expect(allData).to.have.length(15);
+            expect(allData[0]).to.be.an.instanceof(Uint16Array);
+            expect(data[0]).to.deep.equal(allData[5]);
+            done();
+          });
       }
       catch (error) {
         done(error);
       }
-    });
-  });
-
-  it("should work with no options other than a callback", function(done) {
-    retrieve("small.tiff", done, function(tiff) {
-      expect(tiff).to.be.ok;
-      var image = tiff.getImage();
-      image.readRasters(function(allData) {
-        expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(53*44);
-        done();
-      });
-    });
-  });
-
-  it("should work with callback and error callback", function(done) {
-    retrieve("small.tiff", done, function(tiff) {
-      expect(tiff).to.be.ok;
-      var image = tiff.getImage();
-      image.readRasters(function(allData) {
-        expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(53*44);
-        done();
-      }, function(error) {
-        done(error);
-      });
-    });
-  });
-
-  it("should work with options and callback", function(done) {
-    retrieve("packbits.tiff", done, function(tiff) {
-      expect(tiff).to.be.ok;
-      var image = tiff.getImage();
-      image.readRasters({window: [200, 200, 210, 210]}, function(allData) {
-        expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(10*10);
-        done();
-      });
-    });
-  });
-
-  it("should work with options, callback and error callback", function(done) {
-    retrieve("packbits.tiff", done, function(tiff) {
-      expect(tiff).to.be.ok;
-      var image = tiff.getImage();
-      image.readRasters({window: [200, 200, 210, 210]}, function(allData) {
-        expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(10*10);
-        done();
-      }, function(error) {
-        done(error);
-      });
     });
   });
 
@@ -373,10 +369,12 @@ describe("mainTests", function() {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
-        var raster = image.readRasters({window: [200, 200, 210, 210], samples: [0, 1, 2, 3], interleave: true});
-        expect(raster).to.have.length(10 * 10 * 4);
-        expect(raster).to.be.an.instanceof(Uint16Array);
-        done();
+        image.readRasters({window: [200, 200, 210, 210], samples: [0, 1, 2, 3], interleave: true})
+          .then(function(raster) {
+            expect(raster).to.have.length(10 * 10 * 4);
+            expect(raster).to.be.an.instanceof(Uint16Array);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -389,10 +387,12 @@ describe("mainTests", function() {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
-        var raster = image.readRasters({samples: [0, 1, 2], interleave: true});
-        // expect(raster).to.have.length(10 * 10 * 3);
-        expect(raster).to.be.an.instanceof(Uint8Array);
-        done();
+        image.readRasters({samples: [0, 1, 2], interleave: true})
+          .then(function(raster) {
+            // expect(raster).to.have.length(10 * 10 * 3);
+            expect(raster).to.be.an.instanceof(Uint8Array);
+            done();
+          });
       }
       catch (error) {
         done(error);
@@ -417,10 +417,10 @@ describe("RGB-tests", function() {
 
   it("should work with CMYK files", function(done) {
     retrieve("cmyk.tif", done, function(tiff) {
-      comparisonPromise.then(function(comparisonRaster) {
-        expect(tiff).to.be.ok;
-        var image = tiff.getImage();
-        image.readRGB(options, function(rgbRaster) {
+      var image = tiff.getImage();
+      Promise.all([comparisonPromise, image.readRGB(options)])
+        .then(function([comparisonRaster, rgbRaster]) {
+          expect(tiff).to.be.ok;
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -429,16 +429,15 @@ describe("RGB-tests", function() {
           expect(Math.max.apply(null, diff)).to.be.at.most(1);
           done();
         }, done);
-      }, done);
     });
   });
 
   it("should work with YCbCr files", function(done) {
     retrieve("ycbcr.tif", done, function(tiff) {
-      comparisonPromise.then(function(comparisonRaster) {
-        expect(tiff).to.be.ok;
-        var image = tiff.getImage();
-        image.readRGB(options, function(rgbRaster) {
+      var image = tiff.getImage();
+      Promise.all([comparisonPromise, image.readRGB(options)])
+        .then(function([comparisonRaster, rgbRaster]) {
+          expect(tiff).to.be.ok;
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -447,16 +446,15 @@ describe("RGB-tests", function() {
           expect(Math.max.apply(null, diff)).to.be.at.most(3);
           done();
         }, done);
-      }, done);
     });
   });
 
   it("should work with paletted files", function(done) {
     retrieve("rgb_paletted.tiff", done, function(tiff) {
-      comparisonPromise.then(function(comparisonRaster) {
-        expect(tiff).to.be.ok;
-        var image = tiff.getImage();
-        image.readRGB(options, function(rgbRaster) {
+      var image = tiff.getImage();
+      Promise.all([comparisonPromise, image.readRGB(options)])
+        .then(function([comparisonRaster, rgbRaster]) {
+          expect(tiff).to.be.ok;
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -465,7 +463,6 @@ describe("RGB-tests", function() {
           expect(Math.max.apply(null, diff)).to.be.at.most(15);
           done();
         }, done);
-      }, done);
     });
   });
 });
