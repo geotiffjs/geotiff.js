@@ -85,7 +85,6 @@ LZW.prototype = {
     this.entryLookup = {};
     this.byteLength = MIN_BITS;
     for (var i = 0; i <= 257; i++) {
-      // i really feal like i <= 257, but I get strange unknown words that way.
       this.dictionary[i] = [i];
       if (this._makeEntryLookup) {
         this.entryLookup[i] = i;
@@ -139,7 +138,6 @@ LZW.prototype = {
           oldCode = code;
         }
       }
-      // This is strange. It seems like the
       if (this.dictionary.length >= Math.pow(2, this.byteLength) - 1) {
         this.byteLength++;
       }
