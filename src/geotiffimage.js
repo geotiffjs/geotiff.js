@@ -669,16 +669,10 @@ GeoTIFFImage.prototype = {
     var height = imageWindow[3] - imageWindow[1];
 
     var pi = this.fileDirectory.PhotometricInterpretation;
+    var predictor = this.fileDirectory.Predictor;
 
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
-
-    if (pi === globals.photometricInterpretations.RGB) {
-      return this.readRasters({
-        window: options.window,
-        interleave: true
-      }, callback, callbackError);
-    }
 
     var samples;
     switch(pi) {
@@ -692,6 +686,7 @@ GeoTIFFImage.prototype = {
         break;
       case globals.photometricInterpretations.YCbCr:
       case globals.photometricInterpretations.CIELab:
+      case globals.photometricInterpretations.RGB:
         samples = [0, 1, 2];
         break;
       default:
@@ -705,20 +700,33 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function(raster) {
+      let rasterResult;
+      if (predictor === 2) {
+        raster = RGB.fromPredictorType2(raster, width, height, samples.length);
+      }
       switch(pi) {
         case globals.photometricInterpretations.WhiteIsZero:
-          return callback(RGB.fromWhiteIsZero(raster, max, width, height));
+          rasterResult = RGB.fromWhiteIsZero(raster, max, width, height);
+          break;
         case globals.photometricInterpretations.BlackIsZero:
-          return callback(RGB.fromBlackIsZero(raster, max, width, height));
+          rasterResult = RGB.fromBlackIsZero(raster, max, width, height);
+          break;
         case globals.photometricInterpretations.Palette:
-          return callback(RGB.fromPalette(raster, fileDirectory.ColorMap, width, height));
+          rasterResult = RGB.fromPalette(raster, fileDirectory.ColorMap, width, height);
+          break;
         case globals.photometricInterpretations.CMYK:
-          return callback(RGB.fromCMYK(raster, width, height));
+          rasterResult = RGB.fromCMYK(raster, width, height);
+          break;
         case globals.photometricInterpretations.YCbCr:
-          return callback(RGB.fromYCbCr(raster, width, height));
+          rasterResult = RGB.fromYCbCr(raster, width, height);
+          break;
         case globals.photometricInterpretations.CIELab:
-          return callback(RGB.fromCIELab(raster, width, height));
+          rasterResult = RGB.fromCIELab(raster, width, height);
+          break;
+        case globals.photometricInterpretations.RGB:
+          rasterResult = raster;
       }
+      return callback(rasterResult);
     }, callbackError);
   },
 

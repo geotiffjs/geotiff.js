@@ -248,7 +248,7 @@ LZW.prototype = {
   },
 
   binaryFromByte: function binaryFromByte(byte) {
-    var byteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+    var byteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
     var res = new Uint8Array(byteLength);
     for (var i = 0; i < res.length; i++) {
@@ -268,7 +268,7 @@ LZW.prototype = {
   },
 
   inputToBinary: function inputToBinary(input) {
-    var inputByteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+    var inputByteLength = arguments.length <= 1 || arguments[1] === undefined ? 8 : arguments[1];
 
     var res = new Uint8Array(input.length * inputByteLength);
     for (var i = 0; i < input.length; i++) {
@@ -1333,16 +1333,10 @@ GeoTIFFImage.prototype = {
     var height = imageWindow[3] - imageWindow[1];
 
     var pi = this.fileDirectory.PhotometricInterpretation;
+    var predictor = this.fileDirectory.Predictor;
 
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
-
-    if (pi === globals.photometricInterpretations.RGB) {
-      return this.readRasters({
-        window: options.window,
-        interleave: true
-      }, callback, callbackError);
-    }
 
     var samples;
     switch (pi) {
@@ -1356,6 +1350,7 @@ GeoTIFFImage.prototype = {
         break;
       case globals.photometricInterpretations.YCbCr:
       case globals.photometricInterpretations.CIELab:
+      case globals.photometricInterpretations.RGB:
         samples = [0, 1, 2];
         break;
       default:
@@ -1369,20 +1364,33 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function (raster) {
+      var rasterResult = void 0;
+      if (predictor === 2) {
+        raster = RGB.fromPredictorType2(raster, width, height, samples.length);
+      }
       switch (pi) {
         case globals.photometricInterpretations.WhiteIsZero:
-          return callback(RGB.fromWhiteIsZero(raster, max, width, height));
+          rasterResult = RGB.fromWhiteIsZero(raster, max, width, height);
+          break;
         case globals.photometricInterpretations.BlackIsZero:
-          return callback(RGB.fromBlackIsZero(raster, max, width, height));
+          rasterResult = RGB.fromBlackIsZero(raster, max, width, height);
+          break;
         case globals.photometricInterpretations.Palette:
-          return callback(RGB.fromPalette(raster, fileDirectory.ColorMap, width, height));
+          rasterResult = RGB.fromPalette(raster, fileDirectory.ColorMap, width, height);
+          break;
         case globals.photometricInterpretations.CMYK:
-          return callback(RGB.fromCMYK(raster, width, height));
+          rasterResult = RGB.fromCMYK(raster, width, height);
+          break;
         case globals.photometricInterpretations.YCbCr:
-          return callback(RGB.fromYCbCr(raster, width, height));
+          rasterResult = RGB.fromYCbCr(raster, width, height);
+          break;
         case globals.photometricInterpretations.CIELab:
-          return callback(RGB.fromCIELab(raster, width, height));
+          rasterResult = RGB.fromCIELab(raster, width, height);
+          break;
+        case globals.photometricInterpretations.RGB:
+          rasterResult = raster;
       }
+      return callback(rasterResult);
     }, callbackError);
   },
 
@@ -1837,13 +1845,31 @@ function fromCIELab(cieLabRaster, width, height) {
   return rgbRaster;
 }
 
+function fromPredictorType2(rgbRaster, width, height, channels) {
+  var rgbRasterOut = new Uint8Array(width * height * 3);
+  rgbRasterOut.set(rgbRaster); // copy
+  for (var y = 0; y < height; y++) {
+    for (var x = 1; x < width; x++) {
+      for (var chan = 0; chan < channels; chan++) {
+        var idxPrev = channels * (width * y + x - 1) + chan;
+        var idx = channels * (width * y + x) + chan;
+        var prev = rgbRasterOut[idxPrev];
+        var curr = rgbRasterOut[idx];
+        rgbRasterOut[idx] = curr + prev;
+      }
+    }
+  }
+  return rgbRasterOut;
+}
+
 module.exports = {
   fromWhiteIsZero: fromWhiteIsZero,
   fromBlackIsZero: fromBlackIsZero,
   fromPalette: fromPalette,
   fromCMYK: fromCMYK,
   fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab
+  fromCIELab: fromCIELab,
+  fromPredictorType2: fromPredictorType2
 };
 
 },{}]},{},[10]);

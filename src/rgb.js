@@ -112,11 +112,29 @@ function fromCIELab(cieLabRaster, width, height) {
   return rgbRaster;
 }
 
+function fromPredictorType2(rgbRaster, width, height, channels) {
+  var rgbRasterOut = new Uint8Array(width * height * 3);
+  rgbRasterOut.set(rgbRaster); // copy
+  for (var y = 0; y < height; y++) {
+    for (var x = 1; x < width; x++) {
+       for (var chan = 0; chan < channels; chan++) {
+           var idxPrev = channels * (width * y + x - 1) + chan;
+           var idx = channels * (width * y + x) + chan;
+           var prev = rgbRasterOut[idxPrev];
+           var curr = rgbRasterOut[idx];
+           rgbRasterOut[idx] = (curr + prev);
+       }
+    }
+  }
+  return rgbRasterOut;
+}
+
 module.exports = {
   fromWhiteIsZero: fromWhiteIsZero,
   fromBlackIsZero: fromBlackIsZero,
   fromPalette: fromPalette,
   fromCMYK: fromCMYK,
   fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab
+  fromCIELab: fromCIELab,
+  fromPredictorType2: fromPredictorType2
 };
