@@ -700,33 +700,25 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function(raster) {
-      let rasterResult;
       if (predictor === 2) {
         raster = RGB.fromPredictorType2(raster, width, height, samples.length);
       }
       switch(pi) {
         case globals.photometricInterpretations.WhiteIsZero:
-          rasterResult = RGB.fromWhiteIsZero(raster, max, width, height);
-          break;
+          return callback(RGB.fromWhiteIsZero(raster, max, width, height));
         case globals.photometricInterpretations.BlackIsZero:
-          rasterResult = RGB.fromBlackIsZero(raster, max, width, height);
-          break;
+          return callback(RGB.fromBlackIsZero(raster, max, width, height));
         case globals.photometricInterpretations.Palette:
-          rasterResult = RGB.fromPalette(raster, fileDirectory.ColorMap, width, height);
-          break;
+          return callback(RGB.fromPalette(raster, fileDirectory.ColorMap, width, height));
         case globals.photometricInterpretations.CMYK:
-          rasterResult = RGB.fromCMYK(raster, width, height);
-          break;
+          return callback(RGB.fromCMYK(raster, width, height));
         case globals.photometricInterpretations.YCbCr:
-          rasterResult = RGB.fromYCbCr(raster, width, height);
-          break;
+          return callback(RGB.fromYCbCr(raster, width, height));
         case globals.photometricInterpretations.CIELab:
-          rasterResult = RGB.fromCIELab(raster, width, height);
-          break;
+          return callback(RGB.fromCIELab(raster, width, height));
         case globals.photometricInterpretations.RGB:
-          rasterResult = raster;
+          return callback(raster);
       }
-      return callback(rasterResult);
     }, callbackError);
   },
 

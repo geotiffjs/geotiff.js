@@ -113,7 +113,7 @@ function fromCIELab(cieLabRaster, width, height) {
 }
 
 function fromPredictorType2(rgbRaster, width, height, channels) {
-  var rgbRasterOut = new Uint8Array(width * height * 3);
+  var rgbRasterOut = new Uint8Array(width * height * channels);
   rgbRasterOut.set(rgbRaster); // copy
   for (var y = 0; y < height; y++) {
     for (var x = 1; x < width; x++) {
