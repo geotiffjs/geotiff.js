@@ -1,5 +1,3 @@
-'use strict';
-
 export const fieldTagNames = {
   // TIFF Baseline
   0x013B: 'Artist',
@@ -117,13 +115,14 @@ export const fieldTagNames = {
   0x85D8: 'ModelTransformation',
   0x87AF: 'GeoKeyDirectory',
   0x87B0: 'GeoDoubleParams',
-  0x87B1: 'GeoAsciiParams'
+  0x87B1: 'GeoAsciiParams',
 };
 
-var key;
 export const fieldTags = {};
-for (key in fieldTagNames) {
-  fieldTags[fieldTagNames[key]] = parseInt(key);
+for (const key in fieldTagNames) {
+  if (fieldTagNames.hasOwnProperty(key)) {
+    fieldTags[fieldTagNames[key]] = parseInt(key, 10);
+  }
 }
 
 export const arrayFields = [
@@ -134,7 +133,7 @@ export const arrayFields = [
   fieldTags.StripOffsets,
   fieldTags.StripRowCounts,
   fieldTags.TileByteCounts,
-  fieldTags.TileOffsets
+  fieldTags.TileOffsets,
 ];
 
 export const fieldTypeNames = {
@@ -153,12 +152,12 @@ export const fieldTypeNames = {
   // introduced by BigTIFF
   0x0010: 'LONG8',
   0x0011: 'SLONG8',
-  0x0012: 'IFD8'
+  0x0012: 'IFD8',
 };
 
 export const fieldTypes = {};
-for (key in fieldTypeNames) {
-  fieldTypes[fieldTypeNames[key]] = parseInt(key);
+for (const key in fieldTypeNames) {
+  fieldTypes[fieldTypeNames[key]] = parseInt(key, 10);
 }
 
 export const photometricInterpretations = {
@@ -171,7 +170,7 @@ export const photometricInterpretations = {
   YCbCr: 6,
 
   CIELab: 8,
-  ICCLab: 9
+  ICCLab: 9,
 };
 
 export const geoKeyNames = {
@@ -221,31 +220,31 @@ export const geoKeyNames = {
   4096: 'VerticalCSTypeGeoKey',
   4097: 'VerticalCitationGeoKey',
   4098: 'VerticalDatumGeoKey',
-  4099: 'VerticalUnitsGeoKey'
+  4099: 'VerticalUnitsGeoKey',
 };
 
 export const geoKeys = {};
-for (key in geoKeyNames) {
-  geoKeys[geoKeyNames[key]] = parseInt(key);
+for (const key in geoKeyNames) {
+  if (geoKeyNames.hasOwnProperty(key)) {
+    geoKeys[geoKeyNames[key]] = parseInt(key, 10);
+  }
 }
 
 export let parseXml;
 // node.js version
 if (typeof window === 'undefined') {
-  parseXml = function(xmlStr) {
+  parseXml = function (xmlStr) {
     // requires xmldom module
-    var DOMParser = require('xmldom').DOMParser;
-    return ( new DOMParser() ).parseFromString(xmlStr, 'text/xml');
+    const DOMParser = require('xmldom').DOMParser;
+    return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
-}
-else if (typeof window.DOMParser !== 'undefined') {
-  parseXml = function(xmlStr) {
-    return ( new window.DOMParser() ).parseFromString(xmlStr, 'text/xml');
+} else if (typeof window.DOMParser !== 'undefined') {
+  parseXml = function (xmlStr) {
+    return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
-}
-else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
-  parseXml = function(xmlStr) {
-    var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
+} else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
+  parseXml = function (xmlStr) {
+    const xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
     xmlDoc.async = 'false';
     xmlDoc.loadXML(xmlStr);
     return xmlDoc;

@@ -1,13 +1,21 @@
-'use strict';
-
 import work from 'webworkify';
-import worker from './worker.js';
+import worker from './worker';
 import { getDecoder } from './compression';
 
 
 const defaultPoolSize = navigator.hardwareConcurrency;
 
-export default class Pool {
+/**
+ * Pool for workers to decode chunks of the images.
+ */
+class Pool {
+  /**
+   * @constructor
+   * @param {Number} compression The TIFF compression identifier.
+   * @param {Number} size The size of the pool. Defaults to the number of CPUs
+   *                      available. When this parameter is `null` or 0, then the
+   *                      decoding will be done in the main thread.
+   */
   constructor(compression, size = defaultPoolSize) {
     this.compression = compression;
     this.workers = [];
@@ -23,6 +31,11 @@ export default class Pool {
     }
   }
 
+  /**
+   * Decode the given block of bytes with the set compression method.
+   * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
+   * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
+   */
   decodeBlock(buffer) {
     if (this.decoder) {
       return this.decoder.decodeBlock(buffer);
@@ -39,7 +52,7 @@ export default class Pool {
             reject(error);
           };
           currentWorker.postMessage([
-            'decode', this.compression, buffer
+            'decode', this.compression, buffer,
           ], [buffer]);
         });
       });
@@ -66,3 +79,5 @@ export default class Pool {
     }
   }
 }
+
+export default Pool;

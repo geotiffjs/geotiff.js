@@ -126,15 +126,24 @@ an <code>Array</code> of <code>TypedArrays</code> for each of the requested samp
 region:</p>
 <pre class="prettyprint source lang-javascript"><code>var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
 var samples = [0, 1, 2, 3];
-var rasters = image.readRasters({window: rasterWindow, samples: samples});
-for (var i = 0; i &lt; rasters.length; ++i) {
-  console.log(rasters[i]);
-}
+image.readRasters({window: rasterWindow, samples: samples})
+  .then(function(rasters) {
+    for (var i = 0; i &lt; rasters.length; ++i) {
+      console.log(rasters[i]);
+    }
+  });
+
 // to read all samples with no subsets:
-rasters = image.readRasters();
+image.readRasters()
+  .then(function(rasters) {
+    // ...
+  });
 
 // to read the data in a single interleaved array:
-var array = image.readRasters({interleave: true});</code></pre><p>To read TIFF or geo-spatial metadata, the methods <code>.getFileDirectory()</code> and
+image.readRasters({interleave: true})
+  .then(function(raster) {
+    // ...
+  });</code></pre><p>To read TIFF or geo-spatial metadata, the methods <code>.getFileDirectory()</code> and
 <code>.getGeoKeys()</code> provide the data:</p>
 <pre class="prettyprint source lang-javascript"><code>console.log(image.getFileDirectory(), image.getGeoKeys());</code></pre><h2>What to do with the data?</h2><p>There is a nice HTML 5/WebGL based rendering library called
 <a href="https://github.com/santilland/plotty">plotty</a>, that allows for some really nice
@@ -144,14 +153,16 @@ on the fly rendering of the data contained in a GeoTIFF.</p>
   // ...
   var tiff = GeoTIFF.parse(data);
   var image = tiff.getImage();
-  var rasters = image.readRasters();
-  var canvas = document.getElementById(&quot;plot&quot;);
-  var plot = new plotty.plot({
-    canvas: canvas, data: rasters[0],
-    width: image.getWidth(), height: image.getHeight(),
-    domain: [0, 256], colorScale: &quot;viridis&quot;
-  });
-  plot.render();
+  image.readRasters()
+    .then(function(rasters) {
+      var canvas = document.getElementById(&quot;plot&quot;);
+      var plot = new plotty.plot({
+        canvas: canvas, data: rasters[0],
+        width: image.getWidth(), height: image.getHeight(),
+        domain: [0, 256], colorScale: &quot;viridis&quot;
+      });
+      plot.render();
+    });
 &lt;/script></code></pre><h2>RGB-data</h2><p>When the TIFF file has color data stored, this can automatically extracted
 using the <code>readRGB</code> method. This always resolves with an <code>Uint8Array</code> with
 interleaved red, green, and blue values.</p>
@@ -160,23 +171,24 @@ color maps and two versions of grey-scale images (black is zero/white is zero).<
 <p>The following example shows how to display such data in a browsers canvas:</p>
 <pre class="prettyprint source"><code>var parser = GeoTIFF.parse(data);
 var image = parser.getImage();
-image.readRGB(function(raster) {
-  var canvas = document.getElementById('canvas');
-  canvas.width = image.getWidth();
-  canvas.height = image.getHeight();
-  var ctx = canvas.getContext(&quot;2d&quot;);
-  var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
-  var data = imageData.data;
-  var o = 0;
-  for (var i = 0; i &lt; raster.length; i+=3) {
-    data[o] = raster[i];
-    data[o+1] = raster[i+1];
-    data[o+2] = raster[i+2];
-    data[o+3] = 255;
-    o += 4;
-  }
-  ctx.putImageData(imageData, 0, 0);
-});</code></pre><h2>BigTIFF support</h2><p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
+image.readRGB()
+  .then(function(raster) {
+    var canvas = document.getElementById('canvas');
+    canvas.width = image.getWidth();
+    canvas.height = image.getHeight();
+    var ctx = canvas.getContext(&quot;2d&quot;);
+    var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
+    var data = imageData.data;
+    var o = 0;
+    for (var i = 0; i &lt; raster.length; i+=3) {
+      data[o] = raster[i];
+      data[o+1] = raster[i+1];
+      data[o+2] = raster[i+2];
+      data[o+3] = 255;
+      o += 4;
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }));</code></pre><h2>BigTIFF support</h2><p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
 originate in the capabilities of current JavaScript implementations regarding
 64 bit integer parsers and structures: there are no functions to read 64 bit
 integers from a stream and no such typed arrays. As BigTIFF relies on 64 bit
@@ -215,13 +227,13 @@ which is the aim of geotiff.js.</p></article>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="Pool.html">Pool</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 10 2016 15:13:29 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Nov 22 2016 10:01:29 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

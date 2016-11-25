@@ -1,6 +1,4 @@
-'use strict';
-
-import AbstractDecoder from '../abstractdecoder.js';
+import AbstractDecoder from '../abstractdecoder';
 
 export default class RawDecoder extends AbstractDecoder {
   decodeBlock(buffer) {

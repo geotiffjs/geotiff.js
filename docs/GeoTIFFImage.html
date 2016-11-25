@@ -30,6 +30,8 @@
     
         <h2>GeoTIFFImage</h2>
         
+            <div class="class-description">GeoTIFF sub-file image.</div>
+        
     
 </header>
 
@@ -39,16 +41,14 @@
         
 
     
+    <h2>Constructor</h2>
+    
 
     <h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>new GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian, cache)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    GeoTIFF sub-file image.
-</div>
 
 
 
@@ -232,7 +232,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line62">line 62</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -333,7 +333,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line154">line 154</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -437,7 +437,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line103">line 103</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -541,7 +541,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line752">line 752</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line527">line 527</a>
     </li></ul></dd>
     
 
@@ -641,7 +641,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line110">line 110</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line86">line 86</a>
     </li></ul></dd>
     
 
@@ -745,7 +745,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line124">line 124</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line100">line 100</a>
     </li></ul></dd>
     
 
@@ -849,7 +849,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line131">line 131</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -953,7 +953,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line729">line 729</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line504">line 504</a>
     </li></ul></dd>
     
 
@@ -1053,7 +1053,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line145">line 145</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line121">line 121</a>
     </li></ul></dd>
     
 
@@ -1106,7 +1106,7 @@ bytes are supported, an exception is thrown when this is not the case.
 
     
 
-    <h4 class="name" id="getTileOrStrip"><span class="type-signature"></span>getTileOrStrip<span class="signature">(x, y, plane)</span><span class="type-signature"> &rarr; {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array}</span></h4>
+    <h4 class="name" id="getTileOrStrip"><span class="type-signature"></span>getTileOrStrip<span class="signature">(x, y, sample, pool)</span><span class="type-signature"> &rarr; {Promise.&lt;(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)>}</span></h4>
 
     
 
@@ -1195,7 +1195,7 @@ bytes are supported, an exception is thrown when this is not the case.
 
         <tr>
             
-                <td class="name"><code>plane</code></td>
+                <td class="name"><code>sample</code></td>
             
 
             <td class="type">
@@ -1211,7 +1211,30 @@ bytes are supported, an exception is thrown when this is not the case.
 
             
 
-            <td class="description last">the planar configuration (1: "chunky", 2: "separate samples")</td>
+            <td class="description last">the sample to get for separated samples</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pool</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Pool.html">Pool</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the decoder pool</td>
         </tr>
 
     
@@ -1252,7 +1275,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line232">line 232</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line209">line 209</a>
     </li></ul></dd>
     
 
@@ -1286,28 +1309,7 @@ bytes are supported, an exception is thrown when this is not the case.
     </dt>
     <dd>
         
-<span class="param-type">Int8Array</span>
-|
-
-<span class="param-type">Uint8Array</span>
-|
-
-<span class="param-type">Int16Array</span>
-|
-
-<span class="param-type">Uint16Array</span>
-|
-
-<span class="param-type">Int32Array</span>
-|
-
-<span class="param-type">Uint32Array</span>
-|
-
-<span class="param-type">Float32Array</span>
-|
-
-<span class="param-type">Float64Array</span>
+<span class="param-type">Promise.&lt;(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)></span>
 
 
     </dd>
@@ -1373,7 +1375,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line138">line 138</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line114">line 114</a>
     </li></ul></dd>
     
 
@@ -1477,7 +1479,7 @@ bytes are supported, an exception is thrown when this is not the case.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line117">line 117</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -1530,7 +1532,7 @@ bytes are supported, an exception is thrown when this is not the case.
 
     
 
-    <h4 class="name" id="readRasters"><span class="type-signature"></span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {TypedArray|Array.&lt;TypedArray>|null}</span></h4>
+    <h4 class="name" id="readRasters"><span class="type-signature"></span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
 
     
 
@@ -1756,75 +1758,6 @@ only a subset of the raster is read for each sample.
         </tr>
 
     
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="GeoTIFFImage.html#~readCallback">GeoTIFFImage~readCallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the success callback. this
-                                              parameter is mandatory for
-                                              asynchronous decoders (some
-                                              compression mechanisms).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callbackError</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="GeoTIFFImage.html#~readErrorCallback">GeoTIFFImage~readErrorCallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the error callback</td>
-        </tr>
-
-    
     </tbody>
 </table>
 
@@ -1862,7 +1795,7 @@ only a subset of the raster is read for each sample.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line503">line 503</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line360">line 360</a>
     </li></ul></dd>
     
 
@@ -1889,10 +1822,7 @@ only a subset of the raster is read for each sample.
 
         
 <div class="param-desc">
-    in synchonous cases, the decoded
-                                          array(s) is/are returned. In
-                                          asynchronous cases, nothing is
-                                          returned.
+    the decoded arrays as a promise
 </div>
 
 
@@ -1903,13 +1833,7 @@ only a subset of the raster is read for each sample.
     </dt>
     <dd>
         
-<span class="param-type">TypedArray</span>
-|
-
-<span class="param-type">Array.&lt;TypedArray></span>
-|
-
-<span class="param-type">null</span>
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
 
 
     </dd>
@@ -1924,7 +1848,7 @@ only a subset of the raster is read for each sample.
 
     
 
-    <h4 class="name" id="readRGB"><span class="type-signature"></span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, callback, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="readRGB"><span class="type-signature"></span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
 
     
 
@@ -2073,71 +1997,6 @@ When provided, only a subset of the raster is read for each sample.
         </tr>
 
     
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="GeoTIFFImage.html#~readCallback">GeoTIFFImage~readCallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the success callback. this
-                                            parameter is mandatory.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callbackError</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="GeoTIFFImage.html#~readErrorCallback">GeoTIFFImage~readErrorCallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the error callback</td>
-        </tr>
-
-    
     </tbody>
 </table>
 
@@ -2175,7 +2034,7 @@ When provided, only a subset of the raster is read for each sample.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line618">line 618</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line426">line 426</a>
     </li></ul></dd>
     
 
@@ -2198,6 +2057,28 @@ When provided, only a subset of the raster is read for each sample.
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    the RGB array as a Promise
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -2319,7 +2200,7 @@ resulting arrays are passed as a single argument.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line465">line 465</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line330">line 330</a>
     </li></ul></dd>
     
 
@@ -2451,7 +2332,7 @@ GeoTIFF image
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line475">line 475</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line340">line 340</a>
     </li></ul></dd>
     
 
@@ -2491,13 +2372,13 @@ GeoTIFF image
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="Pool.html">Pool</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 10 2016 15:13:29 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Nov 22 2016 10:01:29 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

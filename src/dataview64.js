@@ -8,8 +8,8 @@ export default class DataView64 {
   }
 
   getUint64(offset, littleEndian) {
-    var left = this.getUint32(offset, littleEndian);
-    var right = this.getUint32(offset + 4, littleEndian);
+    const left = this.getUint32(offset, littleEndian);
+    const right = this.getUint32(offset + 4, littleEndian);
     if (littleEndian) {
       return left << 32 | right;
     }

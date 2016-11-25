@@ -8,12 +8,14 @@ function decode(self, compression, buffer) {
     });
 }
 
-export default function(self) {
-  self.addEventListener('message', function (event) {
+export default function (self) {
+  self.addEventListener('message', event => {
     const [name, ...args] = event.data;
     switch (name) {
       case 'decode':
         decode(self, ...args);
+        break;
+      default:
         break;
     }
   });

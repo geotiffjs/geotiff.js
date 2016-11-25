@@ -1,9 +1,7 @@
-'use strict';
-
-import AbstractDecoder from '../abstractdecoder.js';
+import AbstractDecoder from '../abstractdecoder';
 
 export default class DeflateDecoder extends AbstractDecoder {
   decodeBlock() {
-    throw new Error("not supported");
+    throw new Error('not supported');
   }
 }

@@ -119,7 +119,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _abstractdecoder = require('../abstractdecoder.js');
+var _abstractdecoder = require('../abstractdecoder');
 
 var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
 
@@ -143,7 +143,7 @@ var DeflateDecoder = function (_AbstractDecoder) {
   _createClass(DeflateDecoder, [{
     key: 'decodeBlock',
     value: function decodeBlock() {
-      throw new Error("not supported");
+      throw new Error('not supported');
     }
   }]);
 
@@ -152,7 +152,7 @@ var DeflateDecoder = function (_AbstractDecoder) {
 
 exports.default = DeflateDecoder;
 
-},{"../abstractdecoder.js":2}],4:[function(require,module,exports){
+},{"../abstractdecoder":2}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -160,19 +160,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getDecoder = getDecoder;
 
-var _raw = require('./raw.js');
+var _raw = require('./raw');
 
 var _raw2 = _interopRequireDefault(_raw);
 
-var _lzw = require('./lzw.js');
+var _lzw = require('./lzw');
 
 var _lzw2 = _interopRequireDefault(_lzw);
 
-var _deflate = require('./deflate.js');
+var _deflate = require('./deflate');
 
 var _deflate2 = _interopRequireDefault(_deflate);
 
-var _packbits = require('./packbits.js');
+var _packbits = require('./packbits');
 
 var _packbits2 = _interopRequireDefault(_packbits);
 
@@ -193,7 +193,7 @@ function getDecoder(compression) {
     case 8:
       // Deflate
       return new _deflate2.default();
-    //case 32946: // deflate ??
+    // case 32946: // deflate ??
     //  throw new Error("Deflate compression not supported.");
     case 32773:
       // packbits
@@ -203,7 +203,7 @@ function getDecoder(compression) {
   }
 }
 
-},{"./deflate.js":3,"./lzw.js":5,"./packbits.js":6,"./raw.js":7}],5:[function(require,module,exports){
+},{"./deflate":3,"./lzw":5,"./packbits":6,"./raw":7}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -212,7 +212,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _abstractdecoder = require('../abstractdecoder.js');
+var _abstractdecoder = require('../abstractdecoder');
 
 var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
 
@@ -246,8 +246,8 @@ var LZW = function () {
       this.dictionary = new Array(258);
       this.entryLookup = {};
       this.byteLength = MIN_BITS;
-      for (var i = 0; i <= 257; i++) {
-        // i really feal like i <= 257, but I get strange unknown words that way.
+      // i really feal like i <= 257, but I get strange unknown words that way.
+      for (var i = 0; i <= 257; ++i) {
         this.dictionary[i] = [i];
         if (this._makeEntryLookup) {
           this.entryLookup[i] = i;
@@ -266,7 +266,7 @@ var LZW = function () {
       }
       var mydataview = new DataView(input.buffer);
       var code = this.getNext(mydataview);
-      var oldCode;
+      var oldCode = void 0;
       while (code !== EOI_CODE) {
         if (code === CLEAR_CODE) {
           this.initDictionary();
@@ -313,7 +313,7 @@ var LZW = function () {
   }, {
     key: 'appendArray',
     value: function appendArray(dest, source) {
-      for (var i = 0; i < source.length; i++) {
+      for (var i = 0; i < source.length; ++i) {
         dest.push(source[i]);
       }
       return dest;
@@ -345,8 +345,8 @@ var LZW = function () {
       return byte;
     }
 
-    // This binary representation might actually be as fast as the completely illegible bit shift approach
-    //
+    // This binary representation might actually be as fast as the completely
+    // illegible bit shift approach
 
   }, {
     key: 'getByte',
@@ -388,8 +388,9 @@ var LZW = function () {
       this.position = 0;
       var resultBits = [];
       var omega = [];
-      resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength)); // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
-      for (var i = 0; i < input.length; i++) {
+      resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength));
+      // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
+      for (var i = 0; i < input.length; ++i) {
         var k = [input[i]];
         var omk = omega.concat(k);
         if (this.entryLookup[omk] !== undefined) {
@@ -417,8 +418,7 @@ var LZW = function () {
   }, {
     key: 'byteFromCode',
     value: function byteFromCode(code) {
-      var res = this.dictionary[code];
-      return res;
+      return this.dictionary[code];
     }
   }, {
     key: 'binaryFromByte',
@@ -426,7 +426,7 @@ var LZW = function () {
       var byteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
 
       var res = new Uint8Array(byteLength);
-      for (var i = 0; i < res.length; i++) {
+      for (var i = 0; i < res.length; ++i) {
         var mask = Math.pow(2, i);
         var isOne = (byte & mask) > 0;
         res[res.length - 1 - i] = isOne;
@@ -437,7 +437,7 @@ var LZW = function () {
     key: 'binaryToNumber',
     value: function binaryToNumber(bin) {
       var res = 0;
-      for (var i = 0; i < bin.length; i++) {
+      for (var i = 0; i < bin.length; ++i) {
         res += Math.pow(2, bin.length - i - 1) * bin[i];
       }
       return res;
@@ -448,7 +448,7 @@ var LZW = function () {
       var inputByteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
 
       var res = new Uint8Array(input.length * inputByteLength);
-      for (var i = 0; i < input.length; i++) {
+      for (var i = 0; i < input.length; ++i) {
         var bin = this.binaryFromByte(input[i], inputByteLength);
         res.set(bin, i * inputByteLength);
       }
@@ -461,11 +461,11 @@ var LZW = function () {
       var index = 0;
       for (var i = 0; i < bin.length; i += 8) {
         var val = 0;
-        for (var j = 0; j < 8 && i + j < bin.length; j++) {
-          val = val + bin[i + j] * Math.pow(2, 8 - j - 1);
+        for (var j = 0; j < 8 && i + j < bin.length; ++j) {
+          val += bin[i + j] * Math.pow(2, 8 - j - 1);
         }
         result[index] = val;
-        index++;
+        ++index;
       }
       return result;
     }
@@ -498,7 +498,7 @@ var LZWDecoder = function (_AbstractDecoder) {
 
 exports.default = LZWDecoder;
 
-},{"../abstractdecoder.js":2}],6:[function(require,module,exports){
+},{"../abstractdecoder":2}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -507,7 +507,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _abstractdecoder = require('../abstractdecoder.js');
+var _abstractdecoder = require('../abstractdecoder');
 
 var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
 
@@ -559,7 +559,7 @@ var PackbitsDecoder = function (_AbstractDecoder) {
 
 exports.default = PackbitsDecoder;
 
-},{"../abstractdecoder.js":2}],7:[function(require,module,exports){
+},{"../abstractdecoder":2}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -568,7 +568,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _abstractdecoder = require('../abstractdecoder.js');
+var _abstractdecoder = require('../abstractdecoder');
 
 var _abstractdecoder2 = _interopRequireDefault(_abstractdecoder);
 
@@ -601,7 +601,7 @@ var RawDecoder = function (_AbstractDecoder) {
 
 exports.default = RawDecoder;
 
-},{"../abstractdecoder.js":2}],8:[function(require,module,exports){
+},{"../abstractdecoder":2}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -704,13 +704,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _globals = require('./globals.js');
+var _globals = require('./globals');
 
-var _geotiffimage = require('./geotiffimage.js');
+var _geotiffimage = require('./geotiffimage');
 
 var _geotiffimage2 = _interopRequireDefault(_geotiffimage);
 
-var _dataview = require('./dataview64.js');
+var _dataview = require('./dataview64');
 
 var _dataview2 = _interopRequireDefault(_dataview);
 
@@ -720,17 +720,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
  * The abstraction for a whole GeoTIFF file.
- * @constructor
- * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
- * @param {Object} [options] further options.
- * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
  */
 var GeoTIFF = function () {
-  function GeoTIFF(rawData, options) {
+  /**
+   * @constructor
+   * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+   * @param {Object} [options] further options.
+   * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
+   */
+  function GeoTIFF(rawData) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
     _classCallCheck(this, GeoTIFF);
 
     this.dataView = new _dataview2.default(rawData);
-    options = options || {};
     this.cache = options.cache || false;
 
     var BOM = this.dataView.getUint16(0, 0);
@@ -836,14 +839,13 @@ var GeoTIFF = function () {
         for (var i = 0; i < count; ++i) {
           values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
         }
-      }
-      // RATIONAL or SRATIONAL
-      else {
-          for (var _i = 0; _i < count; _i += 2) {
-            values[_i] = readMethod.call(this.dataView, offset + _i * fieldTypeLength, this.littleEndian);
-            values[_i + 1] = readMethod.call(this.dataView, offset + (_i * fieldTypeLength + 4), this.littleEndian);
-          }
+      } else {
+        // RATIONAL or SRATIONAL
+        for (var _i = 0; _i < count; _i += 2) {
+          values[_i] = readMethod.call(this.dataView, offset + _i * fieldTypeLength, this.littleEndian);
+          values[_i + 1] = readMethod.call(this.dataView, offset + (_i * fieldTypeLength + 4), this.littleEndian);
         }
+      }
 
       if (fieldType === _globals.fieldTypes.ASCII) {
         return String.fromCharCode.apply(null, values);
@@ -853,7 +855,7 @@ var GeoTIFF = function () {
   }, {
     key: 'getFieldValues',
     value: function getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
-      var fieldValues;
+      var fieldValues = void 0;
       var fieldTypeLength = this.getFieldTypeLength(fieldType);
 
       if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
@@ -879,10 +881,10 @@ var GeoTIFF = function () {
 
       var geoKeyDirectory = {};
       for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
-        var key = _globals.geoKeyNames[rawGeoKeyDirectory[i]],
-            location = rawGeoKeyDirectory[i + 1] ? _globals.fieldTagNames[rawGeoKeyDirectory[i + 1]] : null,
-            count = rawGeoKeyDirectory[i + 2],
-            offset = rawGeoKeyDirectory[i + 3];
+        var key = _globals.geoKeyNames[rawGeoKeyDirectory[i]];
+        var location = rawGeoKeyDirectory[i + 1] ? _globals.fieldTagNames[rawGeoKeyDirectory[i + 1]] : null;
+        var count = rawGeoKeyDirectory[i + 2];
+        var offset = rawGeoKeyDirectory[i + 3];
 
         var value = null;
         if (!location) {
@@ -911,17 +913,16 @@ var GeoTIFF = function () {
         var numDirEntries = this.bigTiff ? this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) : this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
 
         var fileDirectory = {};
-
-        for (var i = byteOffset + (this.bigTiff ? 8 : 2), entryCount = 0; entryCount < numDirEntries; i += this.bigTiff ? 20 : 12, ++entryCount) {
+        var headerSize = this.bigTiff ? 20 : 12;
+        for (var i = byteOffset + (this.bigTiff ? 8 : 2), entryCount = 0; entryCount < numDirEntries; i += headerSize, ++entryCount) {
           var fieldTag = this.dataView.getUint16(i, this.littleEndian);
           var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
           var typeCount = this.bigTiff ? this.dataView.getUint64(i + 4, this.littleEndian) : this.dataView.getUint32(i + 4, this.littleEndian);
 
           fileDirectory[_globals.fieldTagNames[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8));
+          nextIFDByteOffset = this.getOffset(i);
         }
         fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
-
-        nextIFDByteOffset = this.getOffset(i);
       }
       return fileDirectories;
     }
@@ -935,8 +936,9 @@ var GeoTIFF = function () {
 
   }, {
     key: 'getImage',
-    value: function getImage(index) {
-      index = index || 0;
+    value: function getImage() {
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
       var fileDirectoryAndGeoKey = this.fileDirectories[index];
       if (!fileDirectoryAndGeoKey) {
         throw new RangeError('Invalid image index');
@@ -962,7 +964,7 @@ var GeoTIFF = function () {
 
 exports.default = GeoTIFF;
 
-},{"./dataview64.js":8,"./geotiffimage.js":10,"./globals.js":11}],10:[function(require,module,exports){
+},{"./dataview64":8,"./geotiffimage":10,"./globals":11}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -971,11 +973,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _globals = require('./globals.js');
+var _globals = require('./globals');
 
-var _rgb = require('./rgb.js');
+var _rgb = require('./rgb');
 
-var _pool = require('./pool.js');
+var _pool = require('./pool');
 
 var _pool2 = _interopRequireDefault(_pool);
 
@@ -1002,6 +1004,8 @@ function arrayForType(format, bitsPerSample, size) {
           return new Uint16Array(size);
         case 32:
           return new Uint32Array(size);
+        default:
+          break;
       }
       break;
     case 2:
@@ -1013,6 +1017,8 @@ function arrayForType(format, bitsPerSample, size) {
           return new Int16Array(size);
         case 32:
           return new Int32Array(size);
+        default:
+          break;
       }
       break;
     case 3:
@@ -1022,7 +1028,11 @@ function arrayForType(format, bitsPerSample, size) {
           return new Float32Array(size);
         case 64:
           return new Float64Array(size);
+        default:
+          break;
       }
+      break;
+    default:
       break;
   }
   throw Error('Unsupported data format/bitsPerSample');
@@ -1030,15 +1040,17 @@ function arrayForType(format, bitsPerSample, size) {
 
 /**
  * GeoTIFF sub-file image.
- * @constructor
- * @param {Object} fileDirectory The parsed file directory
- * @param {Object} geoKeys The parsed geo-keys
- * @param {DataView} dataView The DataView for the underlying file.
- * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
- * @param {Boolean} cache Whether or not decoded tiles shall be cached
  */
 
 var GeoTIFFImage = function () {
+  /**
+   * @constructor
+   * @param {Object} fileDirectory The parsed file directory
+   * @param {Object} geoKeys The parsed geo-keys
+   * @param {DataView} dataView The DataView for the underlying file.
+   * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+   * @param {Boolean} cache Whether or not decoded tiles shall be cached
+   */
   function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
     _classCallCheck(this, GeoTIFFImage);
 
@@ -1047,7 +1059,7 @@ var GeoTIFFImage = function () {
     this.dataView = dataView;
     this.littleEndian = littleEndian;
     this.tiles = cache ? {} : null;
-    this.isTiled = fileDirectory.StripOffsets ? false : true;
+    this.isTiled = !fileDirectory.StripOffsets;
     var planarConfiguration = fileDirectory.PlanarConfiguration;
     this.planarConfiguration = typeof planarConfiguration === 'undefined' ? 1 : planarConfiguration;
     if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
@@ -1175,6 +1187,8 @@ var GeoTIFFImage = function () {
               return DataView.prototype.getUint16;
             case 32:
               return DataView.prototype.getUint32;
+            default:
+              break;
           }
           break;
         case 2:
@@ -1186,6 +1200,8 @@ var GeoTIFFImage = function () {
               return DataView.prototype.getInt16;
             case 32:
               return DataView.prototype.getInt32;
+            default:
+              break;
           }
           break;
         case 3:
@@ -1194,9 +1210,14 @@ var GeoTIFFImage = function () {
               return DataView.prototype.getFloat32;
             case 64:
               return DataView.prototype.getFloat64;
+            default:
+              break;
           }
           break;
+        default:
+          break;
       }
+      throw Error('Unsupported data format/bitsPerSample');
     }
   }, {
     key: 'getArrayForSample',
@@ -1216,6 +1237,7 @@ var GeoTIFFImage = function () {
      * @param {Number} x the strip or tile x-offset
      * @param {Number} y the tile y-offset (0 for stripped images)
      * @param {Number} sample the sample to get for separated samples
+     * @param {Pool} pool the decoder pool
      * @returns {Promise.<Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array>}
      */
 
@@ -1232,8 +1254,8 @@ var GeoTIFFImage = function () {
         index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
       }
 
-      var offset = void 0,
-          byteCount = void 0;
+      var offset = void 0;
+      var byteCount = void 0;
       if (this.isTiled) {
         offset = this.fileDirectory.TileOffsets[index];
         byteCount = this.fileDirectory.TileByteCounts[index];
@@ -1248,21 +1270,14 @@ var GeoTIFFImage = function () {
         // promise = this.getDecoder().decodeBlock(slice);
         promise = pool.decodeBlock(slice);
         // promise = this.pool.decodeBlock(offset, byteCount);
-      } else {
-        if (!tiles[index]) {
-          // tiles[index] = promise = this.getDecoder().decodeBlock(slice);
-          tiles[index] = promise = pool.decodeBlock(slice);
-          // tiles[index] = promise = this.pool.decodeBlock(offset, byteCount);
-        }
+      } else if (!tiles[index]) {
+        // tiles[index] = promise = this.getDecoder().decodeBlock(slice);
+        tiles[index] = promise = pool.decodeBlock(slice);
+        // tiles[index] = promise = this.pool.decodeBlock(offset, byteCount);
       }
 
       return promise.then(function (data) {
-        return {
-          x: x,
-          y: y,
-          sample: sample,
-          data: data
-        };
+        return { x: x, y: y, sample: sample, data: data };
       });
     }
   }, {
@@ -1300,8 +1315,8 @@ var GeoTIFFImage = function () {
       for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
         for (var xTile = minXTile; xTile < maxXTile; ++xTile) {
           var _loop = function _loop(sampleIndex) {
-            var _sampleIndex = sampleIndex;
-            var sample = samples[_sampleIndex];
+            var si = sampleIndex;
+            var sample = samples[si];
             if (_this.planarConfiguration === 2) {
               bytesPerPixel = _this.getSampleByteSize(sample);
             }
@@ -1313,7 +1328,7 @@ var GeoTIFFImage = function () {
               var firstCol = tile.x * tileWidth;
               var lastLine = (tile.y + 1) * tileHeight;
               var lastCol = (tile.x + 1) * tileWidth;
-              var reader = sampleReaders[_sampleIndex];
+              var reader = sampleReaders[si];
 
               var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
               var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
@@ -1321,14 +1336,14 @@ var GeoTIFFImage = function () {
               for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
                 for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                   var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-                  var value = reader.call(dataView, pixelOffset + srcSampleOffsets[_sampleIndex], littleEndian);
+                  var value = reader.call(dataView, pixelOffset + srcSampleOffsets[si], littleEndian);
                   var windowCoordinate = void 0;
                   if (interleave) {
-                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + _sampleIndex;
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + si;
                     valueArrays[windowCoordinate] = value;
                   } else {
                     windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
-                    valueArrays[_sampleIndex][windowCoordinate] = value;
+                    valueArrays[si][windowCoordinate] = value;
                   }
                 }
               }
@@ -1373,21 +1388,24 @@ var GeoTIFFImage = function () {
      * @param {Boolean} [options.interleave=false] whether the data shall be read
      *                                             in one single array or separate
      *                                             arrays.
+     * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
+     *                                         decode chunks. `null` means that the
+     *                                         decoding is done in the main thread.
      * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
      */
 
   }, {
     key: 'readRasters',
-    value: function readRasters(_ref) {
-      var wnd = _ref.window,
-          samples = _ref.samples,
+    value: function readRasters() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          wnd = _ref.window,
+          _ref$samples = _ref.samples,
+          samples = _ref$samples === undefined ? [] : _ref$samples,
           interleave = _ref.interleave,
           _ref$poolSize = _ref.poolSize,
           poolSize = _ref$poolSize === undefined ? null : _ref$poolSize;
 
-
       var imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
-
       var pool = new _pool2.default(this.fileDirectory.Compression, poolSize);
 
       // check parameters
@@ -1402,7 +1420,6 @@ var GeoTIFFImage = function () {
       var numPixels = imageWindowWidth * imageWindowHeight;
 
       if (!samples) {
-        samples = [];
         for (var i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
           samples.push(i);
         }
@@ -1441,13 +1458,17 @@ var GeoTIFFImage = function () {
      *
      * @param {Object} [options] optional parameters
      * @param {Array} [options.window=whole image] the subset to read data from.
+     * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
+     *                                         decode chunks. `null` means that the
+     *                                         decoding is done in the main thread.
      * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
      */
 
   }, {
     key: 'readRGB',
-    value: function readRGB(_ref2) {
-      var window = _ref2.window,
+    value: function readRGB() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          window = _ref2.window,
           poolSize = _ref2.poolSize;
 
       var imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
@@ -1514,6 +1535,8 @@ var GeoTIFFImage = function () {
             return (0, _rgb.fromYCbCr)(raster, width, height);
           case _globals.photometricInterpretations.CIELab:
             return (0, _rgb.fromCIELab)(raster, width, height);
+          default:
+            throw new Error('Unsupported photometric interpretation.');
         }
       });
     }
@@ -1572,7 +1595,7 @@ var GeoTIFFImage = function () {
 
 exports.default = GeoTIFFImage;
 
-},{"./globals.js":11,"./pool.js":13,"./rgb.js":14}],11:[function(require,module,exports){
+},{"./globals":11,"./pool":13,"./rgb":14}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1698,10 +1721,11 @@ var fieldTagNames = exports.fieldTagNames = {
   0x87B1: 'GeoAsciiParams'
 };
 
-var key;
 var fieldTags = exports.fieldTags = {};
-for (key in fieldTagNames) {
-  fieldTags[fieldTagNames[key]] = parseInt(key);
+for (var key in fieldTagNames) {
+  if (fieldTagNames.hasOwnProperty(key)) {
+    fieldTags[fieldTagNames[key]] = parseInt(key, 10);
+  }
 }
 
 var arrayFields = exports.arrayFields = [fieldTags.BitsPerSample, fieldTags.ExtraSamples, fieldTags.SampleFormat, fieldTags.StripByteCounts, fieldTags.StripOffsets, fieldTags.StripRowCounts, fieldTags.TileByteCounts, fieldTags.TileOffsets];
@@ -1726,8 +1750,8 @@ var fieldTypeNames = exports.fieldTypeNames = {
 };
 
 var fieldTypes = exports.fieldTypes = {};
-for (key in fieldTypeNames) {
-  fieldTypes[fieldTypeNames[key]] = parseInt(key);
+for (var _key in fieldTypeNames) {
+  fieldTypes[fieldTypeNames[_key]] = parseInt(_key, 10);
 }
 
 var photometricInterpretations = exports.photometricInterpretations = {
@@ -1794,8 +1818,10 @@ var geoKeyNames = exports.geoKeyNames = {
 };
 
 var geoKeys = exports.geoKeys = {};
-for (key in geoKeyNames) {
-  geoKeys[geoKeyNames[key]] = parseInt(key);
+for (var _key2 in geoKeyNames) {
+  if (geoKeyNames.hasOwnProperty(_key2)) {
+    geoKeys[geoKeyNames[_key2]] = parseInt(_key2, 10);
+  }
 }
 
 var parseXml = exports.parseXml = void 0;
@@ -1822,7 +1848,7 @@ if (typeof window === 'undefined') {
 },{"xmldom":"xmldom"}],12:[function(require,module,exports){
 'use strict';
 
-var _geotiff = require('./geotiff.js');
+var _geotiff = require('./geotiff');
 
 var _geotiff2 = _interopRequireDefault(_geotiff);
 
@@ -1835,8 +1861,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
  * @returns {GeoTIFF} the parsed geotiff file.
  */
-var parse = function parse(data, options) {
-  var rawData, i, strLen, view;
+function parse(data, options) {
+  var rawData = void 0;
+  var i = void 0;
+  var strLen = void 0;
+  var view = void 0;
   if (typeof data === 'string' || data instanceof String) {
     rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
     view = new Uint16Array(rawData);
@@ -1849,16 +1878,16 @@ var parse = function parse(data, options) {
     throw new Error('Invalid input data given.');
   }
   return new _geotiff2.default(rawData, options);
-};
+}
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports.parse = parse;
 }
 if (typeof window !== 'undefined') {
-  window['GeoTIFF'] = { parse: parse };
+  window.GeoTIFF = { parse: parse };
 }
 
-},{"./geotiff.js":9}],13:[function(require,module,exports){
+},{"./geotiff":9}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1871,7 +1900,7 @@ var _webworkify = require('webworkify');
 
 var _webworkify2 = _interopRequireDefault(_webworkify);
 
-var _worker = require('./worker.js');
+var _worker = require('./worker');
 
 var _worker2 = _interopRequireDefault(_worker);
 
@@ -1883,7 +1912,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var defaultPoolSize = navigator.hardwareConcurrency;
 
+/**
+ * Pool for workers to decode chunks of the images.
+ */
+
 var Pool = function () {
+  /**
+   * @constructor
+   * @param {Number} compression The TIFF compression identifier.
+   * @param {Number} size The size of the pool. Defaults to the number of CPUs
+   *                      available. When this parameter is `null` or 0, then the
+   *                      decoding will be done in the main thread.
+   */
   function Pool(compression) {
     var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultPoolSize;
 
@@ -1902,6 +1942,13 @@ var Pool = function () {
       this.decoder = (0, _compression.getDecoder)(compression);
     }
   }
+
+  /**
+   * Decode the given block of bytes with the set compression method.
+   * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
+   * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
+   */
+
 
   _createClass(Pool, [{
     key: 'decodeBlock',
@@ -1957,8 +2004,8 @@ var Pool = function () {
 
 exports.default = Pool;
 
-},{"./compression":4,"./worker.js":15,"webworkify":1}],14:[function(require,module,exports){
-'use strict';
+},{"./compression":4,"./worker":15,"webworkify":1}],14:[function(require,module,exports){
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -2008,15 +2055,11 @@ function fromPalette(raster, colorMap, width, height) {
 
 function fromCMYK(cmykRaster, width, height) {
   var rgbRaster = new Uint8Array(width * height * 3);
-  var c = void 0,
-      m = void 0,
-      y = void 0,
-      k = void 0;
   for (var i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
-    c = cmykRaster[i];
-    m = cmykRaster[i + 1];
-    y = cmykRaster[i + 2];
-    k = cmykRaster[i + 3];
+    var c = cmykRaster[i];
+    var m = cmykRaster[i + 1];
+    var y = cmykRaster[i + 2];
+    var k = cmykRaster[i + 3];
 
     rgbRaster[j] = 255 * ((255 - c) / 256) * ((255 - k) / 256);
     rgbRaster[j + 1] = 255 * ((255 - m) / 256) * ((255 - k) / 256);
@@ -2027,13 +2070,10 @@ function fromCMYK(cmykRaster, width, height) {
 
 function fromYCbCr(yCbCrRaster, width, height) {
   var rgbRaster = new Uint8Array(width * height * 3);
-  var y = void 0,
-      cb = void 0,
-      cr = void 0;
   for (var i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
-    y = yCbCrRaster[i];
-    cb = yCbCrRaster[i + 1];
-    cr = yCbCrRaster[i + 2];
+    var y = yCbCrRaster[i];
+    var cb = yCbCrRaster[i + 1];
+    var cr = yCbCrRaster[i + 2];
 
     rgbRaster[j] = y + 1.40200 * (cr - 0x80);
     rgbRaster[j + 1] = y - 0.34414 * (cb - 0x80) - 0.71414 * (cr - 0x80);
@@ -2050,44 +2090,33 @@ function fromCIELab(cieLabRaster, width, height) {
   var T2 = 0.206893;
   var MAT = [3.240479, -1.537150, -0.498535, -0.969256, 1.875992, 0.041556, 0.055648, -0.204043, 1.057311];
   var rgbRaster = new Uint8Array(width * height * 3);
-  var L = void 0,
-      a = void 0,
-      b = void 0;
-  var fX = void 0,
-      fY = void 0,
-      fZ = void 0,
-      XT = void 0,
-      YT = void 0,
-      ZT = void 0,
-      X = void 0,
-      Y = void 0,
-      Z = void 0;
+
   for (var i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
-    L = cieLabRaster[i];
-    a = cieLabRaster[i + 1];
-    b = cieLabRaster[i + 2];
+    var L = cieLabRaster[i];
+    var a = cieLabRaster[i + 1];
+    var b = cieLabRaster[i + 2];
 
     // Compute Y
-    fY = Math.pow((L + 16) / 116, 3);
-    YT = fY > T1;
+    var fY = Math.pow((L + 16) / 116, 3);
+    var YT = fY > T1;
     fY = (YT !== 0) * (L / 903.3) + YT * fY;
-    Y = fY;
+    var Y = fY;
 
     fY = YT * Math.pow(fY, 1 / 3) + (YT !== 0) * (7.787 * fY + 16 / 116);
 
     // Compute X
-    fX = a / 500 + fY;
-    XT = fX > T2;
-    X = XT * Math.pow(fX, 3) + (XT !== 0) * ((fX - 16 / 116) / 7.787);
+    var fX = a / 500 + fY;
+    var XT = fX > T2;
+    var X = XT * Math.pow(fX, 3) + (XT !== 0) * ((fX - 16 / 116) / 7.787);
 
     // Compute Z
-    fZ = fY - b / 200;
-    ZT = fZ > T2;
-    Z = ZT * Math.pow(fZ, 3) + (ZT !== 0) * ((fZ - 16 / 116) / 7.787);
+    var fZ = fY - b / 200;
+    var ZT = fZ > T2;
+    var Z = ZT * Math.pow(fZ, 3) + (ZT !== 0) * ((fZ - 16 / 116) / 7.787);
 
     // Normalize for D65 white point
-    X = X * 0.950456;
-    Z = Z * 1.088754;
+    X *= 0.950456;
+    Z *= 1.088754;
 
     rgbRaster[j] = X * MAT[0] + Y * MAT[1] + Z * MAT[2];
     rgbRaster[j + 1] = X * MAT[3] + Y * MAT[4] + Z * MAT[5];
@@ -2112,6 +2141,8 @@ exports.default = function (self) {
     switch (name) {
       case 'decode':
         decode.apply(undefined, [self].concat(_toConsumableArray(args)));
+        break;
+      default:
         break;
     }
   });

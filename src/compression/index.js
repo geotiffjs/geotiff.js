@@ -1,7 +1,7 @@
-import RawDecoder from './raw.js';
-import LZWDecoder from './lzw.js';
-import DeflateDecoder from './deflate.js';
-import PackbitsDecoder from './packbits.js';
+import RawDecoder from './raw';
+import LZWDecoder from './lzw';
+import DeflateDecoder from './deflate';
+import PackbitsDecoder from './packbits';
 
 export function getDecoder(compression) {
   switch (compression) {
@@ -14,7 +14,7 @@ export function getDecoder(compression) {
       throw new Error('JPEG compression not supported.');
     case 8: // Deflate
       return new DeflateDecoder();
-    //case 32946: // deflate ??
+    // case 32946: // deflate ??
     //  throw new Error("Deflate compression not supported.");
     case 32773: // packbits
       return new PackbitsDecoder();
