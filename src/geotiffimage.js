@@ -454,6 +454,10 @@ GeoTIFFImage.prototype = {
           }
         }
       }
+      console.log('predictor', this.fileDirectory.Predictor);
+      if (this.fileDirectory.Predictor === 2) {
+        valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length, bytesPerPixel);
+      }
       callback(valueArrays);
       return valueArrays;
     }
@@ -669,7 +673,6 @@ GeoTIFFImage.prototype = {
     var height = imageWindow[3] - imageWindow[1];
 
     var pi = this.fileDirectory.PhotometricInterpretation;
-    var predictor = this.fileDirectory.Predictor;
 
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
@@ -700,9 +703,6 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function(raster) {
-      if (predictor === 2) {
-        raster = RGB.fromPredictorType2(raster, width, height, samples.length);
-      }
       switch(pi) {
         case globals.photometricInterpretations.WhiteIsZero:
           return callback(RGB.fromWhiteIsZero(raster, max, width, height));

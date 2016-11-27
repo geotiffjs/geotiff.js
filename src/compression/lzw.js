@@ -223,6 +223,7 @@ LZW.prototype = {
     }
     return result;
   }
+
 };
 
 // the actual decoder interface
@@ -235,6 +236,26 @@ LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
 LZWDecoder.prototype.constructor = LZWDecoder;
 LZWDecoder.prototype.decodeBlock = function(buffer) {
   return this.decompressor.decompress(buffer).buffer;
+};
+/**
+* Convert from predictor raster (where every value is the diffrence between it and the one to it's left) to normal raster
+* It says that it only makes sense with LZW compressions but could be used with other compressions too.
+**/
+LZWDecoder.prototype.fromPredictorType2 = function(raster, width, height, channels, bytesPerPixel) {
+  var rasterOut = new Uint8Array(width * height * channels);
+  rasterOut.set(raster); // copy
+  for (var y = 0; y < height; y++) {
+    for (var x = 1; x < width; x++) {
+       for (var chan = 0; chan < channels; chan++) {
+           var idxPrev = channels * (width * y + x - 1) + chan;
+           var idx = channels * (width * y + x) + chan;
+           var prev = rasterOut[idxPrev];
+           var curr = rasterOut[idx];
+           rasterOut[idx] = (curr + prev);
+       }
+    }
+  }
+  return rasterOut;
 };
 
 module.exports = LZWDecoder;

@@ -289,6 +289,7 @@ LZW.prototype = {
     }
     return result;
   }
+
 };
 
 // the actual decoder interface
@@ -301,6 +302,26 @@ LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
 LZWDecoder.prototype.constructor = LZWDecoder;
 LZWDecoder.prototype.decodeBlock = function (buffer) {
   return this.decompressor.decompress(buffer).buffer;
+};
+/**
+* Convert from predictor raster (where every value is the diffrence between it and the one to it's left) to normal raster
+* It says that it only makes sense with LZW compressions but could be used with other compressions too.
+**/
+LZWDecoder.prototype.fromPredictorType2 = function (raster, width, height, channels, bytesPerPixel) {
+  var rasterOut = new Uint8Array(width * height * channels);
+  rasterOut.set(raster); // copy
+  for (var y = 0; y < height; y++) {
+    for (var x = 1; x < width; x++) {
+      for (var chan = 0; chan < channels; chan++) {
+        var idxPrev = channels * (width * y + x - 1) + chan;
+        var idx = channels * (width * y + x) + chan;
+        var prev = rasterOut[idxPrev];
+        var curr = rasterOut[idx];
+        rasterOut[idx] = curr + prev;
+      }
+    }
+  }
+  return rasterOut;
 };
 
 module.exports = LZWDecoder;
@@ -1130,6 +1151,10 @@ GeoTIFFImage.prototype = {
           }
         }
       }
+      console.log('predictor', this.fileDirectory.Predictor);
+      if (this.fileDirectory.Predictor === 2) {
+        valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length, bytesPerPixel);
+      }
       callback(valueArrays);
       return valueArrays;
     } catch (error) {
@@ -1331,7 +1356,6 @@ GeoTIFFImage.prototype = {
     var height = imageWindow[3] - imageWindow[1];
 
     var pi = this.fileDirectory.PhotometricInterpretation;
-    var predictor = this.fileDirectory.Predictor;
 
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
@@ -1362,9 +1386,6 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function (raster) {
-      if (predictor === 2) {
-        raster = RGB.fromPredictorType2(raster, width, height, samples.length);
-      }
       switch (pi) {
         case globals.photometricInterpretations.WhiteIsZero:
           return callback(RGB.fromWhiteIsZero(raster, max, width, height));
@@ -1835,31 +1856,13 @@ function fromCIELab(cieLabRaster, width, height) {
   return rgbRaster;
 }
 
-function fromPredictorType2(rgbRaster, width, height, channels) {
-  var rgbRasterOut = new Uint8Array(width * height * channels);
-  rgbRasterOut.set(rgbRaster); // copy
-  for (var y = 0; y < height; y++) {
-    for (var x = 1; x < width; x++) {
-      for (var chan = 0; chan < channels; chan++) {
-        var idxPrev = channels * (width * y + x - 1) + chan;
-        var idx = channels * (width * y + x) + chan;
-        var prev = rgbRasterOut[idxPrev];
-        var curr = rgbRasterOut[idx];
-        rgbRasterOut[idx] = curr + prev;
-      }
-    }
-  }
-  return rgbRasterOut;
-}
-
 module.exports = {
   fromWhiteIsZero: fromWhiteIsZero,
   fromBlackIsZero: fromBlackIsZero,
   fromPalette: fromPalette,
   fromCMYK: fromCMYK,
   fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab,
-  fromPredictorType2: fromPredictorType2
+  fromCIELab: fromCIELab
 };
 
 },{}]},{},[10]);
