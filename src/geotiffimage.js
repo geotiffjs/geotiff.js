@@ -454,9 +454,14 @@ GeoTIFFImage.prototype = {
           }
         }
       }
-      console.log('predictor', this.fileDirectory.Predictor);
       if (this.fileDirectory.Predictor === 2) {
-        valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length, bytesPerPixel);
+        if (interleave) {
+          valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length);
+        } else {
+          for (i = 0; i < valueArrays.length; i++) {
+            valueArrays[i] = LZWDecoder.prototype.fromPredictorType2(valueArrays[i], windowWidth, windowHeight, 1);
+          }
+        }
       }
       callback(valueArrays);
       return valueArrays;

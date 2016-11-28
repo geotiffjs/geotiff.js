@@ -124,6 +124,10 @@ LZW.prototype = {
         if (this.dictionary[code] !== undefined) {
           var _val = this.dictionary[code];
           this.appendArray(this.result, _val);
+          var oldEntry = this.dictionary[oldCode];
+          if (!oldEntry) {
+            console.warn('fail', oldCode);
+          }
           var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
           this.addToDictionary(newVal);
           oldCode = code;
@@ -307,8 +311,10 @@ LZWDecoder.prototype.decodeBlock = function (buffer) {
 * Convert from predictor raster (where every value is the diffrence between it and the one to it's left) to normal raster
 * It says that it only makes sense with LZW compressions but could be used with other compressions too.
 **/
-LZWDecoder.prototype.fromPredictorType2 = function (raster, width, height, channels, bytesPerPixel) {
-  var rasterOut = new Uint8Array(width * height * channels);
+LZWDecoder.prototype.fromPredictorType2 = function (raster, width, height) {
+  var channels = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
+
+  var rasterOut = new raster.constructor(width * height * channels);
   rasterOut.set(raster); // copy
   for (var y = 0; y < height; y++) {
     for (var x = 1; x < width; x++) {
@@ -317,7 +323,8 @@ LZWDecoder.prototype.fromPredictorType2 = function (raster, width, height, chann
         var idx = channels * (width * y + x) + chan;
         var prev = rasterOut[idxPrev];
         var curr = rasterOut[idx];
-        rasterOut[idx] = curr + prev;
+        var val = prev + curr;
+        rasterOut[idx] = val;
       }
     }
   }
@@ -1151,9 +1158,14 @@ GeoTIFFImage.prototype = {
           }
         }
       }
-      console.log('predictor', this.fileDirectory.Predictor);
       if (this.fileDirectory.Predictor === 2) {
-        valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length, bytesPerPixel);
+        if (interleave) {
+          valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length);
+        } else {
+          for (i = 0; i < valueArrays.length; i++) {
+            valueArrays[i] = LZWDecoder.prototype.fromPredictorType2(valueArrays[i], windowWidth, windowHeight, 1);
+          }
+        }
       }
       callback(valueArrays);
       return valueArrays;
