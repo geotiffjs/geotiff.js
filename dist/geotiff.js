@@ -71,7 +71,6 @@ var CLEAR_CODE = 256; // clear code
 var EOI_CODE = 257; // end of information
 
 function LZW() {
-  this.littleEndian = false;
   this.position = 0;
 
   this._makeEntryLookup = false;
@@ -124,9 +123,11 @@ LZW.prototype = {
         if (this.dictionary[code] !== undefined) {
           var _val = this.dictionary[code];
           this.appendArray(this.result, _val);
-          var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
-          this.addToDictionary(newVal);
-          oldCode = code;
+          if (this.dictionary[oldCode]) {
+            var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
+            this.addToDictionary(newVal);
+            oldCode = code;
+          }
         } else {
           var oldVal = this.dictionary[oldCode];
           if (!oldVal) {
@@ -190,17 +191,17 @@ LZW.prototype = {
       console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
       return EOI_CODE;
     }
-    var chunk1 = dataview.getUint8(a, this.littleEndian) & Math.pow(2, 8 - d) - 1;
+    var chunk1 = dataview.getUint8(a) & Math.pow(2, 8 - d) - 1;
     chunk1 = chunk1 << length - de;
     var chunks = chunk1;
     if (a + 1 < dataview.byteLength) {
-      var chunk2 = dataview.getUint8(a + 1, this.littleEndian) >>> fg;
+      var chunk2 = dataview.getUint8(a + 1) >>> fg;
       chunk2 = chunk2 << Math.max(0, length - dg);
       chunks += chunk2;
     }
     if (ef > 8 && a + 2 < dataview.byteLength) {
       var hi = (a + 3) * 8 - (position + length);
-      var chunk3 = dataview.getUint8(a + 2, this.littleEndian) >>> hi;
+      var chunk3 = dataview.getUint8(a + 2) >>> hi;
       chunks += chunk3;
     }
     return chunks;
@@ -289,6 +290,7 @@ LZW.prototype = {
     }
     return result;
   }
+
 };
 
 // the actual decoder interface
@@ -301,6 +303,29 @@ LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
 LZWDecoder.prototype.constructor = LZWDecoder;
 LZWDecoder.prototype.decodeBlock = function (buffer) {
   return this.decompressor.decompress(buffer).buffer;
+};
+/**
+* Convert from predictor raster (where every value is the diffrence between it and the one to it's left) to normal raster
+* It says that it only makes sense with LZW compressions but could be used with other compressions too.
+**/
+LZWDecoder.prototype.fromPredictorType2 = function (raster, width, height) {
+  var channels = arguments.length <= 3 || arguments[3] === undefined ? 1 : arguments[3];
+
+  var rasterOut = new raster.constructor(width * height * channels);
+  rasterOut.set(raster); // copy
+  for (var y = 0; y < height; y++) {
+    for (var x = 1; x < width; x++) {
+      for (var chan = 0; chan < channels; chan++) {
+        var idxPrev = channels * (width * y + x - 1) + chan;
+        var idx = channels * (width * y + x) + chan;
+        var prev = rasterOut[idxPrev];
+        var curr = rasterOut[idx];
+        var val = prev + curr;
+        rasterOut[idx] = val;
+      }
+    }
+  }
+  return rasterOut;
 };
 
 module.exports = LZWDecoder;
@@ -1130,6 +1155,15 @@ GeoTIFFImage.prototype = {
           }
         }
       }
+      if (this.fileDirectory.Predictor === 2) {
+        if (interleave) {
+          valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length);
+        } else {
+          for (i = 0; i < valueArrays.length; i++) {
+            valueArrays[i] = LZWDecoder.prototype.fromPredictorType2(valueArrays[i], windowWidth, windowHeight, 1);
+          }
+        }
+      }
       callback(valueArrays);
       return valueArrays;
     } catch (error) {
@@ -1331,7 +1365,6 @@ GeoTIFFImage.prototype = {
     var height = imageWindow[3] - imageWindow[1];
 
     var pi = this.fileDirectory.PhotometricInterpretation;
-    var predictor = this.fileDirectory.Predictor;
 
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
@@ -1362,9 +1395,6 @@ GeoTIFFImage.prototype = {
     };
     var fileDirectory = this.fileDirectory;
     return this.readRasters(subOptions, function (raster) {
-      if (predictor === 2) {
-        raster = RGB.fromPredictorType2(raster, width, height, samples.length);
-      }
       switch (pi) {
         case globals.photometricInterpretations.WhiteIsZero:
           return callback(RGB.fromWhiteIsZero(raster, max, width, height));
@@ -1835,31 +1865,13 @@ function fromCIELab(cieLabRaster, width, height) {
   return rgbRaster;
 }
 
-function fromPredictorType2(rgbRaster, width, height, channels) {
-  var rgbRasterOut = new Uint8Array(width * height * channels);
-  rgbRasterOut.set(rgbRaster); // copy
-  for (var y = 0; y < height; y++) {
-    for (var x = 1; x < width; x++) {
-      for (var chan = 0; chan < channels; chan++) {
-        var idxPrev = channels * (width * y + x - 1) + chan;
-        var idx = channels * (width * y + x) + chan;
-        var prev = rgbRasterOut[idxPrev];
-        var curr = rgbRasterOut[idx];
-        rgbRasterOut[idx] = curr + prev;
-      }
-    }
-  }
-  return rgbRasterOut;
-}
-
 module.exports = {
   fromWhiteIsZero: fromWhiteIsZero,
   fromBlackIsZero: fromBlackIsZero,
   fromPalette: fromPalette,
   fromCMYK: fromCMYK,
   fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab,
-  fromPredictorType2: fromPredictorType2
+  fromCIELab: fromCIELab
 };
 
 },{}]},{},[10]);

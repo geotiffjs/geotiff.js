@@ -14,7 +14,10 @@ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co I
 gdal_translate -of GTiff -co COMPRESS=LZW -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND stripped.tiff tiledplanarlzw.tiff
 gdal_translate -of GTiff -co COMPRESS=LZW -ot Float64 stripped.tiff float64lzw.tiff
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
-gdal_translate -of Gtiff -co PREDICTOR=2 -co COMPRESS=LZW rgb.tiff rgbLzwPredictor.tiff
+gdal_translate -of Gtiff -co PREDICTOR=2 -co COMPRESS=LZW -ot Int32 stripped.tiff int32lzw_predictor.tiff
+gdal_translate -of Gtiff -co PREDICTOR=2 -co COMPRESS=LZW -ot Float32 stripped.tiff float32lzw_predictor.tiff
+gdal_translate -of Gtiff -co PREDICTOR=2 -co COMPRESS=LZW rgb.tiff rgblzw_predictor.tiff
+
 # overviews
 cp stripped.tiff overviews.tiff
 gdaladdo overviews.tiff 2 4 8 16
