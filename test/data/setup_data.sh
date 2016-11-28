@@ -1,5 +1,6 @@
 wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/MER_FRS_1P_reduced/ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_uint16_reduced_compressed.tif -O initial.tiff
 wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/mosaic_MER_FRS_1P_RGB_reduced/mosaic_ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_RGB_reduced.tif -O rgb.tiff
+wget https://raw.githubusercontent.com/OSGeo/gdal/1.11/gdal/swig/python/scripts/rgb2pct.py -O rgb2pct.py
 gdal_translate -of GTiff initial.tiff stripped.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 stripped.tiff tiled.tiff
 gdal_translate -of GTiff -ot Int32 stripped.tiff int32.tiff
@@ -25,7 +26,7 @@ unzip -o BigTIFFSamples.zip -d .
 rm BigTIFFSamples.zip
 
 # color images
-rgb2pct.py rgb.tiff rgb_paletted.tiff
+python rgb2pct.py rgb.tiff rgb_paletted.tiff
 convert rgb.tiff -colorspace YCbCr ycbcr.tif
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
