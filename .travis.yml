@@ -2,16 +2,10 @@ language: node_js
 node_js:
     - "4.1"
 before_install:
-    # - export PHANTOMJS_BIN=/usr/local/phantomjs/bin/phantomjs
-    # - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
-    # - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
-    # - sudo rm -rf /usr/local/phantomjs/bin/phantomjs
-    # - sudo mv phantomjs /usr/local/phantomjs/bin/phantomjs
     - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
     - sudo apt-get update
     - sudo apt-get install -y gdal-bin python-gdal imagemagick
 before_script:
-    - command -v rgb2pct.py || { echo "no rgb2pct.py"; }
     - npm install -g grunt-cli
     - mkdir -p test/data
     - pushd test/data
