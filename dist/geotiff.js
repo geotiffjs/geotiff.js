@@ -124,8 +124,7 @@ LZW.prototype = {
         if (this.dictionary[code] !== undefined) {
           var _val = this.dictionary[code];
           this.appendArray(this.result, _val);
-          var oldEntry = this.dictionary[oldCode];
-          if (!oldEntry) {
+          if (!this.dictionary[oldCode]) {
             console.warn('fail', oldCode);
           }
           var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
