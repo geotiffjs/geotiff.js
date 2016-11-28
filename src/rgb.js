@@ -118,5 +118,5 @@ module.exports = {
   fromPalette: fromPalette,
   fromCMYK: fromCMYK,
   fromYCbCr: fromYCbCr,
-  fromCIELab: fromCIELab,
+  fromCIELab: fromCIELab
 };

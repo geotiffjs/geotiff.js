@@ -40,7 +40,6 @@ LZW.prototype = {
     var mydataview = new DataView(input.buffer);
     var code = this.getNext(mydataview);
     var oldCode;
-    var errorFound = false;
     while (code !== EOI_CODE) {
       if (code === CLEAR_CODE) {
         this.initDictionary();
