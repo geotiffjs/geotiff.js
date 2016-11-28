@@ -395,7 +395,6 @@ GeoTIFFImage.prototype = {
       var imageWidth = this.getWidth();
 
       var predictor = this.fileDirectory.Predictor || 1;
-      console.log(predictor);
 
       var srcSampleOffsets = [];
       var sampleReaders = [];
@@ -441,7 +440,6 @@ GeoTIFFImage.prototype = {
 
                 var windowCoordinate;
                 if (interleave) {
-                  // if (predictor !== 1 && x > imageWindow[0] - firstCol) {
                   if (predictor !== 1 && x > 0) {
                     windowCoordinate =
                       (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
@@ -457,7 +455,6 @@ GeoTIFFImage.prototype = {
                   valueArrays[windowCoordinate] = value;
                 }
                 else {
-                  // if (predictor !== 1 && x > imageWindow[0] - firstCol) {
                   if (predictor !== 1 && x > 0) {
                     windowCoordinate = (
                       y + firstLine - imageWindow[1]
