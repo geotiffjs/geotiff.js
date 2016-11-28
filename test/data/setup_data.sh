@@ -8,6 +8,8 @@ gdal_translate -of GTiff -ot Float32 stripped.tiff float32.tiff
 gdal_translate -of GTiff -ot Float64 stripped.tiff float64.tiff
 gdal_translate -of GTiff -co COMPRESS=LZW stripped.tiff lzw.tiff
 gdal_translate -of GTiff -co COMPRESS=DEFLATE stripped.tiff deflate.tiff
+gdal_translate -of GTiff -co COMPRESS=DEFLATE -co PREDICTOR=2 stripped.tiff deflate_predictor.tiff
+gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co COMPRESS=DEFLATE -co PREDICTOR=2 stripped.tiff deflate_predictor_tiled.tiff
 gdal_translate -of GTiff -co COMPRESS=PACKBITS stripped.tiff packbits.tiff
 gdal_translate -of GTiff -co INTERLEAVE=BAND stripped.tiff interleave.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co INTERLEAVE=BAND stripped.tiff tiledplanar.tiff
