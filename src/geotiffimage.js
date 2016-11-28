@@ -454,6 +454,15 @@ GeoTIFFImage.prototype = {
           }
         }
       }
+      if (this.fileDirectory.Predictor === 2) {
+        if (interleave) {
+          valueArrays = LZWDecoder.prototype.fromPredictorType2(valueArrays, windowWidth, windowHeight, samples.length);
+        } else {
+          for (i = 0; i < valueArrays.length; i++) {
+            valueArrays[i] = LZWDecoder.prototype.fromPredictorType2(valueArrays[i], windowWidth, windowHeight, 1);
+          }
+        }
+      }
       callback(valueArrays);
       return valueArrays;
     }
@@ -673,13 +682,6 @@ GeoTIFFImage.prototype = {
     var bits = this.fileDirectory.BitsPerSample[0];
     var max = Math.pow(2, bits);
 
-    if (pi === globals.photometricInterpretations.RGB) {
-      return this.readRasters({
-        window: options.window,
-        interleave: true
-      }, callback, callbackError);
-    }
-
     var samples;
     switch(pi) {
       case globals.photometricInterpretations.WhiteIsZero:
@@ -692,6 +694,7 @@ GeoTIFFImage.prototype = {
         break;
       case globals.photometricInterpretations.YCbCr:
       case globals.photometricInterpretations.CIELab:
+      case globals.photometricInterpretations.RGB:
         samples = [0, 1, 2];
         break;
       default:
@@ -718,6 +721,8 @@ GeoTIFFImage.prototype = {
           return callback(RGB.fromYCbCr(raster, width, height));
         case globals.photometricInterpretations.CIELab:
           return callback(RGB.fromCIELab(raster, width, height));
+        case globals.photometricInterpretations.RGB:
+          return callback(raster);
       }
     }, callbackError);
   },
