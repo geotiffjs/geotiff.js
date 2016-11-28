@@ -157,7 +157,9 @@ export const fieldTypeNames = {
 
 export const fieldTypes = {};
 for (const key in fieldTypeNames) {
-  fieldTypes[fieldTypeNames[key]] = parseInt(key, 10);
+  if (fieldTypeNames.hasOwnProperty(key)) {
+    fieldTypes[fieldTypeNames[key]] = parseInt(key, 10);
+  }
 }
 
 export const photometricInterpretations = {
@@ -230,12 +232,12 @@ for (const key in geoKeyNames) {
   }
 }
 
-export let parseXml;
+export let parseXml; // eslint-disable-line
 // node.js version
 if (typeof window === 'undefined') {
   parseXml = function (xmlStr) {
     // requires xmldom module
-    const DOMParser = require('xmldom').DOMParser;
+    const DOMParser = require('xmldom').DOMParser; // eslint-disable-line global-require
     return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
 } else if (typeof window.DOMParser !== 'undefined') {

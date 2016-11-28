@@ -11,22 +11,23 @@ export default class DataView64 {
     const left = this.getUint32(offset, littleEndian);
     const right = this.getUint32(offset + 4, littleEndian);
     if (littleEndian) {
-      return left << 32 | right;
+      return (left << 32) | right;
     }
-    return right << 32 | left;
+    return (right << 32) | left;
   }
 
   getInt64(offset, littleEndian) {
-    var left, right;
+    let left;
+    let right;
     if (littleEndian) {
       left = this.getInt32(offset, littleEndian);
       right = this.getUint32(offset + 4, littleEndian);
 
-      return left << 32 | right;
+      return (left << 32) | right;
     }
     left = this.getUint32(offset, littleEndian);
     right = this.getInt32(offset + 4, littleEndian);
-    return right << 32 | left;
+    return (right << 32) | left;
   }
 
   getUint8(offset, littleEndian) {

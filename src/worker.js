@@ -9,7 +9,7 @@ function decode(self, compression, buffer) {
 }
 
 export default function (self) {
-  self.addEventListener('message', event => {
+  self.addEventListener('message', (event) => {
     const [name, ...args] = event.data;
     switch (name) {
       case 'decode':

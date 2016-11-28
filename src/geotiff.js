@@ -39,7 +39,7 @@ class GeoTIFF {
     }
 
     this.fileDirectories = this.parseFileDirectories(
-      this.getOffset((this.bigTiff) ? 8 : 4)
+      this.getOffset((this.bigTiff) ? 8 : 4),
     );
   }
 
@@ -116,16 +116,16 @@ class GeoTIFF {
     if (!(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
       for (let i = 0; i < count; ++i) {
         values[i] = readMethod.call(
-          this.dataView, offset + (i * fieldTypeLength), this.littleEndian
+          this.dataView, offset + (i * fieldTypeLength), this.littleEndian,
         );
       }
     } else { // RATIONAL or SRATIONAL
       for (let i = 0; i < count; i += 2) {
         values[i] = readMethod.call(
-          this.dataView, offset + (i * fieldTypeLength), this.littleEndian
+          this.dataView, offset + (i * fieldTypeLength), this.littleEndian,
         );
         values[i + 1] = readMethod.call(
-          this.dataView, offset + ((i * fieldTypeLength) + 4), this.littleEndian
+          this.dataView, offset + ((i * fieldTypeLength) + 4), this.littleEndian,
         );
       }
     }
@@ -189,16 +189,20 @@ class GeoTIFF {
 
   parseFileDirectories(byteOffset) {
     let nextIFDByteOffset = byteOffset;
+    const offsetSize = this.bigTiff ? 8 : 2;
+    const headerSize = this.bigTiff ? 20 : 12;
     const fileDirectories = [];
 
     while (nextIFDByteOffset !== 0x00000000) {
-      const numDirEntries = this.bigTiff ?
+      const entryCount = this.bigTiff ?
           this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
           this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
-
       const fileDirectory = {};
-      const headerSize = this.bigTiff ? 20 : 12;
-      for (let i = byteOffset + (this.bigTiff ? 8 : 2), entryCount = 0; entryCount < numDirEntries; i += headerSize, ++entryCount) {
+
+      let i;
+      let c;
+
+      for (i = byteOffset + offsetSize, c = 0; c < entryCount; i += headerSize, ++c) {
         const fieldTag = this.dataView.getUint16(i, this.littleEndian);
         const fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
         const typeCount = this.bigTiff ?
@@ -206,12 +210,14 @@ class GeoTIFF {
             this.dataView.getUint32(i + 4, this.littleEndian);
 
         fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(
-          fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8)
+          fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8),
         );
-        nextIFDByteOffset = this.getOffset(i);
       }
+
+      nextIFDByteOffset = this.getOffset(i);
+
       fileDirectories.push([
-        fileDirectory, this.parseGeoKeyDirectory(fileDirectory)
+        fileDirectory, this.parseGeoKeyDirectory(fileDirectory),
       ]);
     }
     return fileDirectories;
@@ -230,7 +236,7 @@ class GeoTIFF {
     }
     return new GeoTIFFImage(
       fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1],
-      this.dataView, this.littleEndian, this.cache
+      this.dataView, this.littleEndian, this.cache,
     );
   }
 

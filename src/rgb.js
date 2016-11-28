@@ -67,6 +67,7 @@ export function fromYCbCr(yCbCrRaster, width, height) {
 // converted from here:
 // http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
 // still buggy
+/* eslint-disable */
 export function fromCIELab(cieLabRaster, width, height) {
   const T1 = 0.008856;
   const T2 = 0.206893;
@@ -108,3 +109,4 @@ export function fromCIELab(cieLabRaster, width, height) {
   }
   return rgbRaster;
 }
+/* eslint-enable */
