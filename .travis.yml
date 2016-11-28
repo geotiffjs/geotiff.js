@@ -11,6 +11,8 @@ before_install:
     - sudo apt-get update
     - sudo apt-get install -y gdal-bin imagemagick
 before_script:
+    - command -v rgb2pct
+    - command -v rgb2pct.py
     - npm install -g grunt-cli
     - mkdir -p test/data
     - pushd test/data
