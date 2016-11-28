@@ -1079,6 +1079,8 @@ GeoTIFFImage.prototype = {
       var bytesPerPixel = this.getBytesPerPixel();
       var imageWidth = this.getWidth();
 
+      var predictor = this.fileDirectory.Predictor || 1;
+
       var srcSampleOffsets = [];
       var sampleReaders = [];
       for (var i = 0; i < samples.length; ++i) {
@@ -1119,11 +1121,21 @@ GeoTIFFImage.prototype = {
                 if (pixelOffset < tileLength - 1) {
                   value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
                 }
+
                 var windowCoordinate;
                 if (interleave) {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0] - 1) * samples.length + sampleIndex;
+                    value += valueArrays[windowCoordinate];
+                  }
+
                   windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
                   valueArrays[windowCoordinate] = value;
                 } else {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                    value += valueArrays[sampleIndex][windowCoordinate];
+                  }
                   windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
                   valueArrays[sampleIndex][windowCoordinate] = value;
                 }
