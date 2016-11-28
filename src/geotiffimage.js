@@ -765,6 +765,69 @@ GeoTIFFImage.prototype = {
       metadata[node.getAttribute("name")] = node.textContent;
     }
     return metadata;
+  },
+
+  /**
+   * Returns the image origin as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The origin as a vector
+   */
+  getOrigin: function() {
+    var tiePoints = this.fileDirectory.ModelTiepoint;
+    if (!tiePoints || tiePoints.length !== 6) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [tiePoints[3], tiePoints[4], tiePoints[5]];
+  },
+
+  /**
+   * Returns the image resolution as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The resolution as a vector
+   */
+  getResolution: function() {
+    if (!this.fileDirectory.ModelPixelScale) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [
+      this.fileDirectory.ModelPixelScale[0],
+      this.fileDirectory.ModelPixelScale[1],
+      this.fileDirectory.ModelPixelScale[2]
+    ];
+  },
+
+  /**
+   * Returns whether or not the pixels of the image depict an area (or point).
+   * @returns {Boolean} Whether the pixels are a point
+   */
+  pixelIsArea: function() {
+    return this.geoKeys.GTRasterTypeGeoKey === 1;
+  },
+
+  /**
+   * Returns the image bounding box as an array of 4 values: min-x, min-y,
+   * max-x and max-y. When the image has no affine transformation, then an
+   * exception is thrown.
+   * @returns {Array} The bounding box
+   */
+  getBoundingBox: function() {
+    var origin = this.getOrigin();
+    var resolution = this.getResolution();
+
+    var x1 = origin[0];
+    var y1 = origin[1];
+
+    var x2 = x1 + resolution[0] * this.getWidth();
+    var y2 = y1 + resolution[1] * this.getHeight();
+
+    return [
+      Math.min(x1, x2),
+      Math.min(y1, y2),
+      Math.max(x1, x2),
+      Math.max(y1, y2),
+    ];
   }
 };
 
