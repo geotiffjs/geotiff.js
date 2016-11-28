@@ -9,7 +9,6 @@ var CLEAR_CODE = 256; // clear code
 var EOI_CODE = 257; // end of information
 
 function LZW() {
-  this.littleEndian = false;
   this.position = 0;
 
   this._makeEntryLookup = false;
@@ -41,6 +40,7 @@ LZW.prototype = {
     var mydataview = new DataView(input.buffer);
     var code = this.getNext(mydataview);
     var oldCode;
+    var errorFound = false;
     while (code !== EOI_CODE) {
       if (code === CLEAR_CODE) {
         this.initDictionary();
@@ -62,12 +62,11 @@ LZW.prototype = {
         if (this.dictionary[code] !== undefined) {
           let val = this.dictionary[code];
           this.appendArray(this.result, val);
-          if (!this.dictionary[oldCode]) {
-            console.warn('fail', oldCode);
+          if (this.dictionary[oldCode]) {
+            let newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
+            this.addToDictionary(newVal);
+            oldCode = code;
           }
-          let newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
-          this.addToDictionary(newVal);
-          oldCode = code;
         } else {
           let oldVal = this.dictionary[oldCode];
           if (!oldVal) {
@@ -131,17 +130,17 @@ LZW.prototype = {
       console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
       return EOI_CODE;
     }
-    var chunk1 = dataview.getUint8(a,this.littleEndian) & (Math.pow(2, 8-d) - 1);
+    var chunk1 = dataview.getUint8(a) & (Math.pow(2, 8-d) - 1);
     chunk1 = chunk1 << (length - de);
     var chunks = chunk1;
     if (a+1 < dataview.byteLength) {
-      var chunk2 = dataview.getUint8(a+1,this.littleEndian) >>> fg;
+      var chunk2 = dataview.getUint8(a+1) >>> fg;
       chunk2 = chunk2 << Math.max(0, (length - dg));
       chunks += chunk2;
     }
     if (ef > 8 && a+2 < dataview.byteLength) {
       var hi = (a+3)*8 - (position+length);
-      var chunk3 = dataview.getUint8(a+2,this.littleEndian) >>> hi;
+      var chunk3 = dataview.getUint8(a+2) >>> hi;
       chunks += chunk3;
     }
     return chunks;
