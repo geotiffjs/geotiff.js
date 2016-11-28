@@ -1241,13 +1241,24 @@ var GeoTIFFImage = function () {
      * @returns {Promise.<Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array>}
      */
 
-  }, {
-    key: 'getTileOrStrip',
-    value: function getTileOrStrip(x, y, sample, pool) {
-      var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
-      var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
-      var index = void 0;
-      var tiles = this.tiles;
+    var minXTile = Math.floor(imageWindow[0] / tileWidth);
+    var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
+    var minYTile = Math.floor(imageWindow[1] / tileHeight);
+    var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+
+    var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
+
+    var windowWidth = imageWindow[2] - imageWindow[0];
+    var windowHeight = imageWindow[3] - imageWindow[1];
+
+    var bytesPerPixel = this.getBytesPerPixel();
+    var imageWidth = this.getWidth();
+
+    var predictor = this.fileDirectory.Predictor || 1;
+
+    var srcSampleOffsets = [];
+    var sampleReaders = [];
+    for (var i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
         index = y * numTilesPerRow + x;
       } else if (this.planarConfiguration === 2) {
@@ -1265,15 +1276,42 @@ var GeoTIFFImage = function () {
       }
       var slice = this.dataView.buffer.slice(offset, offset + byteCount);
 
-      var promise = void 0;
-      if (tiles === null) {
-        // promise = this.getDecoder().decodeBlock(slice);
-        promise = pool.decodeBlock(slice);
-        // promise = this.pool.decodeBlock(offset, byteCount);
-      } else if (!tiles[index]) {
-        // tiles[index] = promise = this.getDecoder().decodeBlock(slice);
-        tiles[index] = promise = pool.decodeBlock(slice);
-        // tiles[index] = promise = this.pool.decodeBlock(offset, byteCount);
+    function onTileGot(error, tile) {
+      if (!error) {
+        var dataView = new DataView(tile.data);
+
+        var firstLine = tile.y * tileHeight;
+        var firstCol = tile.x * tileWidth;
+        var lastLine = (tile.y + 1) * tileHeight;
+        var lastCol = (tile.x + 1) * tileWidth;
+        var sampleIndex = tile.sample;
+
+        for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+            var windowCoordinate;
+            if (interleave) {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0] - 1) * samples.length + sampleIndex;
+                value += valueArrays[windowCoordinate];
+              }
+
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+              valueArrays[windowCoordinate] = value;
+            } else {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                value += valueArrays[sampleIndex][windowCoordinate];
+              }
+
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+              valueArrays[sampleIndex][windowCoordinate] = value;
+            }
+          }
+        }
+      } else {
+        globalError = error;
       }
 
       return promise.then(function (data) {
@@ -1297,6 +1335,8 @@ var GeoTIFFImage = function () {
       // const windowHeight = imageWindow[3] - imageWindow[1];
 
       var bytesPerPixel = this.getBytesPerPixel();
+
+      var predictor = this.fileDirectory.Predictor || 1;
 
       var srcSampleOffsets = [];
       var sampleReaders = [];
@@ -1345,6 +1385,25 @@ var GeoTIFFImage = function () {
                     windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
                     valueArrays[si][windowCoordinate] = value;
                   }
+                }
+
+                var windowCoordinate;
+                if (interleave) {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0] - 1) * samples.length + sampleIndex;
+                    value += valueArrays[windowCoordinate];
+                  }
+
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+                  valueArrays[windowCoordinate] = value;
+                } else {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                    value += valueArrays[sampleIndex][windowCoordinate];
+                  }
+
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+                  valueArrays[sampleIndex][windowCoordinate] = value;
                 }
               }
             });

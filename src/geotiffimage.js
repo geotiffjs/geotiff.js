@@ -272,6 +272,8 @@ class GeoTIFFImage {
 
     let bytesPerPixel = this.getBytesPerPixel();
 
+    const predictor = this.fileDirectory.Predictor || 1;
+
     const srcSampleOffsets = [];
     const sampleReaders = [];
     for (let i = 0; i < samples.length; ++i) {
@@ -286,11 +288,76 @@ class GeoTIFFImage {
     const promises = [];
     const littleEndian = this.littleEndian;
 
-    for (let yTile = minYTile; yTile < maxYTile; ++yTile) {
-      for (let xTile = minXTile; xTile < maxXTile; ++xTile) {
-        for (let sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
-          const si = sampleIndex;
-          const sample = samples[si];
+    function checkFinished() {
+      if (allStacked && unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        }
+        else {
+          callback(valueArrays);
+        }
+      }
+    }
+
+    function onTileGot(error, tile) {
+      if (!error) {
+        var dataView = new DataView(tile.data);
+
+        var firstLine = tile.y * tileHeight;
+        var firstCol = tile.x * tileWidth;
+        var lastLine = (tile.y + 1) * tileHeight;
+        var lastCol = (tile.x + 1) * tileWidth;
+        var sampleIndex = tile.sample;
+
+        for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+            var windowCoordinate;
+            if (interleave) {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate =
+                  (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                  (x + firstCol - imageWindow[0] - 1) * samples.length +
+                  sampleIndex;
+                value += valueArrays[windowCoordinate];
+              }
+
+              windowCoordinate =
+                (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                (x + firstCol - imageWindow[0]) * samples.length +
+                sampleIndex;
+              valueArrays[windowCoordinate] = value;
+            }
+            else {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate = (
+                  y + firstLine - imageWindow[1]
+                ) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                value += valueArrays[sampleIndex][windowCoordinate];
+              }
+
+              windowCoordinate = (
+                y + firstLine - imageWindow[1]
+              ) * windowWidth + x + firstCol - imageWindow[0];
+              valueArrays[sampleIndex][windowCoordinate] = value;
+            }
+          }
+        }
+      }
+      else {
+        globalError = error;
+      }
+
+      // check end condition and call callbacks
+      unfinishedTiles -= 1;
+      checkFinished();
+    }
+
+    for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
+      for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
+        for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+          var sample = samples[sampleIndex];
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sample);
           }
@@ -313,6 +380,14 @@ class GeoTIFFImage {
                 const value = reader.call(dataView, pixelOffset + srcSampleOffsets[si], littleEndian);
                 let windowCoordinate;
                 if (interleave) {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate =
+                      (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                      (x + firstCol - imageWindow[0] - 1) * samples.length +
+                      si;
+                    value += valueArrays[windowCoordinate];
+                  }
+
                   windowCoordinate =
                     (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                     (x + firstCol - imageWindow[0]) * samples.length +
@@ -320,6 +395,13 @@ class GeoTIFFImage {
                   valueArrays[windowCoordinate] = value;
                 }
                 else {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (
+                      y + firstLine - imageWindow[1]
+                    ) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                    value += valueArrays[si][windowCoordinate];
+                  }
+
                   windowCoordinate = (
                     y + firstLine - imageWindow[1]
                   ) * windowWidth + x + firstCol - imageWindow[0];
@@ -549,6 +631,69 @@ class GeoTIFFImage {
       metadata[node.getAttribute('name')] = node.textContent;
     }
     return metadata;
+  }
+
+  /**
+   * Returns the image origin as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The origin as a vector
+   */
+  getOrigin() {
+    var tiePoints = this.fileDirectory.ModelTiepoint;
+    if (!tiePoints || tiePoints.length !== 6) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [tiePoints[3], tiePoints[4], tiePoints[5]];
+  }
+
+  /**
+   * Returns the image resolution as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The resolution as a vector
+   */
+  getResolution() {
+    if (!this.fileDirectory.ModelPixelScale) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [
+      this.fileDirectory.ModelPixelScale[0],
+      this.fileDirectory.ModelPixelScale[1],
+      this.fileDirectory.ModelPixelScale[2]
+    ];
+  }
+
+  /**
+   * Returns whether or not the pixels of the image depict an area (or point).
+   * @returns {Boolean} Whether the pixels are a point
+   */
+  pixelIsArea() {
+    return this.geoKeys.GTRasterTypeGeoKey === 1;
+  }
+
+  /**
+   * Returns the image bounding box as an array of 4 values: min-x, min-y,
+   * max-x and max-y. When the image has no affine transformation, then an
+   * exception is thrown.
+   * @returns {Array} The bounding box
+   */
+  getBoundingBox() {
+    var origin = this.getOrigin();
+    var resolution = this.getResolution();
+
+    var x1 = origin[0];
+    var y1 = origin[1];
+
+    var x2 = x1 + resolution[0] * this.getWidth();
+    var y2 = y1 + resolution[1] * this.getHeight();
+
+    return [
+      Math.min(x1, x2),
+      Math.min(y1, y2),
+      Math.max(x1, x2),
+      Math.max(y1, y2),
+    ];
   }
 }
 
