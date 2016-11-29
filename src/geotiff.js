@@ -190,19 +190,20 @@ class GeoTIFF {
   parseFileDirectories(byteOffset) {
     let nextIFDByteOffset = byteOffset;
     const offsetSize = this.bigTiff ? 8 : 2;
-    const headerSize = this.bigTiff ? 20 : 12;
+    const entrySize = this.bigTiff ? 20 : 12;
     const fileDirectories = [];
 
     while (nextIFDByteOffset !== 0x00000000) {
       const entryCount = this.bigTiff ?
           this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
           this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+
       const fileDirectory = {};
 
       let i;
       let c;
 
-      for (i = byteOffset + offsetSize, c = 0; c < entryCount; i += headerSize, ++c) {
+      for (i = nextIFDByteOffset + offsetSize, c = 0; c < entryCount; i += entrySize, ++c) {
         const fieldTag = this.dataView.getUint16(i, this.littleEndian);
         const fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
         const typeCount = this.bigTiff ?
@@ -214,11 +215,11 @@ class GeoTIFF {
         );
       }
 
-      nextIFDByteOffset = this.getOffset(i);
-
       fileDirectories.push([
         fileDirectory, this.parseGeoKeyDirectory(fileDirectory),
       ]);
+
+      nextIFDByteOffset = this.getOffset(nextIFDByteOffset + offsetSize + (entrySize * entryCount));
     }
     return fileDirectories;
   }
