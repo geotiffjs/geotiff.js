@@ -22,10 +22,12 @@ Currently available functionality:
     * no compression
     * Packbits
     * LZW
-    * ... (more soon to follow)
+    * Deflate
   * Subsetting via an image window and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
   * Configurable tile/strip cache
+  * Configurable Pool of workers to increase decoding efficiency
+  * Utility functions for geospatial parameters (Bounding Box, Origin, Resolution)
   * Limited [bigTIFF](http://bigtiff.org/#FILE_FORMAT) support
   * Automated testing via PhantomJS
 
@@ -41,7 +43,6 @@ git clone https://github.com/constantinius/geotiff.js.git
 cd geotiff.js/
 
 # install development dependencies
-npm install -g grunt-cli
 npm install
 ```
 
@@ -57,13 +58,13 @@ cd -
 To test the library (using PhantomJS, karma, mocha and chai) do the following:
 
 ```bash
-grunt test
+npm run test
 ```
 
 To do some in-browser testing do:
 
 ```bash
-grunt serve
+npm run dev
 ```
 
 and navigate to `http://localhost:9000/test/`
@@ -71,7 +72,7 @@ and navigate to `http://localhost:9000/test/`
 To build the library do:
 
 ```bash
-grunt
+npm run build
 ```
 
 The output is written to `dist/geotiff.js` and `dist/geotiff.min.js`.
@@ -249,7 +250,6 @@ a reasonable support, the following is implemented:
     * Specifying of window in CRS coordinates
   * Improving support of CIEL*a*b* images
   * Support of "overview images" (i.e: images with reduced resolution)
-  * Deflate compression
 
 ## Acknowledgements
 
