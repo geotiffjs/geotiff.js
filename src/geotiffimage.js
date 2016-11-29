@@ -85,7 +85,7 @@ class GeoTIFFImage {
   getFileDirectory() {
     return this.fileDirectory;
   }
-   /**
+  /**
    * Returns the associated parsed geo keys.
    * @returns {Object} the parsed geo keys
    */
@@ -210,10 +210,6 @@ class GeoTIFFImage {
     return arrayForType(format, bitsPerSample, size);
   }
 
-  getDecoder() {
-    return this.decoder;
-  }
-
   /**
    * Returns the decoded strip or tile.
    * @param {Number} x the strip or tile x-offset
@@ -255,6 +251,15 @@ class GeoTIFFImage {
     return promise.then(data => ({ x, y, sample, data }));
   }
 
+  /*
+   * Internal read function.
+   * @param {Array} imageWindow The image window in pixel coordinates
+   * @param {Array} samples The selected samples (0-based indices)
+   * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into
+   * @param {Boolean} interleave Whether or not to write in an interleaved manner
+   * @param {Pool} pool The decoder pool
+   * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
+   */
   _readRaster(imageWindow, samples, valueArrays, interleave, pool) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
@@ -346,26 +351,10 @@ class GeoTIFFImage {
   }
 
   /**
-   * This callback is called upon successful reading of a GeoTIFF image. The
-   * resulting arrays are passed as a single argument.
-   * @callback GeoTIFFImage~readCallback
-   * @param {(TypedArray|TypedArray[])} array the requested data as a either a
-   *                                          single typed array or a list of
-   *                                          typed arrays, depending on the
-   *                                          'interleave' option.
-   */
-
-  /**
-   * This callback is called upon encountering an error while reading of a
-   * GeoTIFF image
-   * @callback GeoTIFFImage~readErrorCallback
-   * @param {Error} error the encountered error
-   */
-
-  /**
    * Reads raster data from the image. This function reads all selected samples
-   * into separate arrays of the correct type for that sample. When provided,
-   * only a subset of the raster is read for each sample.
+   * into separate arrays of the correct type for that sample or into a single
+   * combined array when `interleave` is set. When provided, only a subset
+   * of the raster is read for each sample.
    *
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
