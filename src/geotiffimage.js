@@ -223,7 +223,7 @@ class GeoTIFFImage {
    * @returns {Promise.<Int8Array|Uint8Array|Int16Array
    *                    |Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array>}
    */
-  async getTileOrStrip(x, y, sample, pool) {
+  getTileOrStrip(x, y, sample, pool) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -247,13 +247,9 @@ class GeoTIFFImage {
 
     let promise;
     if (tiles === null) {
-      // promise = this.getDecoder().decodeBlock(slice);
       promise = pool.decodeBlock(slice);
-      // promise = this.pool.decodeBlock(offset, byteCount);
     } else if (!tiles[index]) {
-      // tiles[index] = promise = this.getDecoder().decodeBlock(slice);
       tiles[index] = promise = pool.decodeBlock(slice);
-      // tiles[index] = promise = this.pool.decodeBlock(offset, byteCount);
     }
 
     return promise.then(data => ({ x, y, sample, data }));
@@ -382,7 +378,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  async readRasters({ window: wnd, samples = [], interleave, poolSize = null } = {}) {
+  readRasters({ window: wnd, samples = [], interleave, poolSize = null } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
     const pool = new Pool(this.fileDirectory.Compression, poolSize);
 

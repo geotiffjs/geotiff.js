@@ -36,45 +36,30 @@ class Pool {
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
    * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
    */
-  async decodeBlock(buffer) {
+  decodeBlock(buffer) {
     if (this.decoder) {
       return this.decoder.decodeBlock(buffer);
     }
 
-    const currentWorker = await this.waitForWorker();
-    return new Promise((resolve, reject) => {
-      currentWorker.onmessage = (event) => {
-        this.workers.push(currentWorker);
-        resolve(event.data[0]);
-      };
-      currentWorker.onerror = (error) => {
-        this.workers.push(currentWorker);
-        reject(error);
-      };
-      currentWorker.postMessage([
-        'decode', this.compression, buffer,
-      ], [buffer]);
-    });
-
-    // return this.waitForWorker()
-    //   .then(currentWorker => {
-    //     return new Promise((resolve, reject) => {
-    //       currentWorker.onmessage = (event) => {
-    //         this.workers.push(currentWorker);
-    //         resolve(event.data[0]);
-    //       };
-    //       currentWorker.onerror = (error) => {
-    //         this.workers.push(currentWorker);
-    //         reject(error);
-    //       };
-    //       currentWorker.postMessage([
-    //         'decode', this.compression, buffer,
-    //       ], [buffer]);
-    //     });
-    //   });
+    return this.waitForWorker()
+      .then((currentWorker) => {
+        return new Promise((resolve, reject) => {
+          currentWorker.onmessage = (event) => {
+            this.workers.push(currentWorker);
+            resolve(event.data[0]);
+          };
+          currentWorker.onerror = (error) => {
+            this.workers.push(currentWorker);
+            reject(error);
+          };
+          currentWorker.postMessage([
+            'decode', this.compression, buffer,
+          ], [buffer]);
+        });
+      });
   }
 
-  async waitForWorker() {
+  waitForWorker() {
     const sleepTime = 10;
     const waiter = (callback) => {
       if (this.workers.length) {
