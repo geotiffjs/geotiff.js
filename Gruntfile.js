@@ -140,7 +140,7 @@ module.exports = function (grunt) {
     'browserify', 'uglify', 'connect:livereload', 'watch',
   ]);
 
-  grunt.registerTask('test', ['jshint', 'karma']);
+  grunt.registerTask('test', ['karma']);
 
   grunt.registerTask('docs', ['jsdoc']);
 };
