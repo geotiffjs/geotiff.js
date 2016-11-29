@@ -42,6 +42,7 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-karma": "^2.0.0",
     "grunt-release": "^0.14.0",
+    "jsdoc-babel": "^0.2.1",
     "jshint-stylish": "^2.2.1",
     "karma": "^1.3.0",
     "karma-browserify": "^5.1.0",
@@ -57,7 +58,7 @@
     "build": "browserify src/main.js -d -x xmldom -t babelify -o dist/geotiff.js ; uglifyjs dist/geotiff.js -o dist/geotiff.min.js --source-map",
     "test": "grunt test",
     "lint": "eslint src",
-    "docs": "rm -rf docs/*; jsdoc -r src README.md -d docs"
+    "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs"
   },
   "babel": {
     "presets": [
