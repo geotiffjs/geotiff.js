@@ -212,7 +212,7 @@ GeoTIFF.prototype = {
           this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
 
       var fileDirectory = {};
-      var i = nextIFDByteOffset + (this.bigTiff ? 8 : 2)
+      var i = nextIFDByteOffset + (this.bigTiff ? 8 : 2);
       for (var entryCount = 0; entryCount < numDirEntries; i += (this.bigTiff ? 20 : 12), ++entryCount) {
         var fieldTag = this.dataView.getUint16(i, this.littleEndian);
         var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
