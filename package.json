@@ -9,8 +9,10 @@
     "image",
     "raster"
   ],
-  "main": "src/main.js",
+  "main": "dist/main.js",
   "dependencies": {
+    "babel-cli": "^6.24.0",
+    "grunt-cli": "^1.2.0",
     "pako": "^1.0.3",
     "xmldom": "0.1.*"
   },
@@ -44,7 +46,10 @@
     "mocha": "^3.1.2"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "start": "grunt serve",
+    "build": "grunt && babel src/ -d dist/",
+    "prepublish": "npm run build"
   },
   "author": "Fabian Schindler",
   "contributors": [

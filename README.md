@@ -22,7 +22,7 @@ Currently available functionality:
     * no compression
     * Packbits
     * LZW
-    * ... (more soon to follow)
+    * Deflate
   * Subsetting via an image window and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
   * Configurable tile/strip cache
@@ -57,13 +57,13 @@ cd -
 To test the library (using PhantomJS, karma, mocha and chai) do the following:
 
 ```bash
-grunt test
+npm test
 ```
 
 To do some in-browser testing do:
 
 ```bash
-grunt serve
+npm start
 ```
 
 and navigate to `http://localhost:9000/test/`
@@ -71,10 +71,10 @@ and navigate to `http://localhost:9000/test/`
 To build the library do:
 
 ```bash
-grunt
+npm run build
 ```
 
-The output is written to `dist/geotiff.js` and `dist/geotiff.min.js`.
+The output is written to `dist/geotiff.browserify.js` and `dist/geotiff.browserify.min.js`.
 
 ## Usage
 
@@ -82,13 +82,16 @@ geotiff.js works with both browserify style `require` and the global variable
 `GeoTIFF`:
 
 ```javascript
-var GeoTIFF = require("geotiff.js");
+var GeoTIFF = require("geotiff");
 ```
 
 or:
 
 ```html
-<script src="geotiff.js"></script>
+<script src="dist/geotiff.browserify.js"></script>
+<!-- or use the minified version:
+  <script src="dist/geotiff.browserify.min.js"></script>
+-->
 <script>
   console.log(GeoTIFF);
 </script>
@@ -237,7 +240,13 @@ a reasonable support, the following is implemented:
     * Specifying of window in CRS coordinates
   * Improving support of CIEL*a*b* images
   * Support of "overview images" (i.e: images with reduced resolution)
-  * Deflate compression
+
+## Contribution
+
+If you have an idea, found a bug or have a remark, please open a ticket, we will
+look into it ASAP.
+
+Pull requests are welcome as well!
 
 ## Acknowledgements
 

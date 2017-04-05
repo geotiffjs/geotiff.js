@@ -27,9 +27,9 @@ module.exports = function(grunt) {
     };
 
     // setup dynamic filenames
-    config.dist = ['dist/', '.js'].join(config.pkg.name);
-    config.browserifyFiles[['dist/', '.js'].join(config.pkg.name)] = ["src/main.js"];
-    config.uglifyFiles[['dist/', '.min.js'].join(config.pkg.name)] = config.dist;
+    config.dist = ['dist/', '.browserify.js'].join(config.pkg.name);
+    config.browserifyFiles[['dist/', '.browserify.js'].join(config.pkg.name)] = ["src/main.js"];
+    config.uglifyFiles[['dist/', '.browserify.min.js'].join(config.pkg.name)] = config.dist;
 
     // Project configuration.
     grunt.initConfig({
