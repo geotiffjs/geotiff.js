@@ -31,6 +31,14 @@ Currently available functionality:
 
 Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
 
+## Example Usage
+
+* [Slice view using Cesium.js (TAMP project)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
+[![3D slice view](http://img.youtube.com/vi/E6kFLtKgeJ8/0.jpg)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
+
+* [Contour generation using d3-contour](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+[![contour](https://pbs.twimg.com/card_img/850410549196271616/ZKcdfREH?format=jpg&name=600x314)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+
 ## Setup
 
 To setup the repository do the following steps:
