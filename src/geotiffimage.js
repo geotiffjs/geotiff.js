@@ -18,15 +18,24 @@ var sum = function(array, start, end) {
 
 var arrayForType = function(format, bitsPerSample, size) {
   switch (format) {
-    case 1: // unsigned integer data
-      switch (bitsPerSample) {
-        case 8:
+    case 1: { // unsigned integer data
+        if (bitsPerSample <= 8) {
           return new Uint8Array(size);
-        case 16:
+        } else if (bitsPerSample <= 16) {
           return new Uint16Array(size);
-        case 32:
+        } else if (bitsPerSample <= 32) {
           return new Uint32Array(size);
+        }
       }
+      // switch (bitsPerSample) {
+      //   // case 8:
+      //   //   return new Uint8Array(size);
+      //   // case 16:
+      //   //   return new Uint16Array(size);
+      //   // case 32:
+      //   //   return new Uint32Array(size);
+      //
+      // }
       break;
     case 2: // twos complement signed integer data
       switch (bitsPerSample) {
@@ -40,6 +49,7 @@ var arrayForType = function(format, bitsPerSample, size) {
       break;
     case 3: // floating point data
       switch (bitsPerSample) {
+        // TODO: support for 16 bit floats (halfs)
         case 32:
           return new Float32Array(size);
         case 64:
@@ -151,12 +161,25 @@ GeoTIFFImage.prototype = {
    * bytes are supported, an exception is thrown when this is not the case.
    * @returns {Number} the bytes per pixel
    */
+  getBitsPerPixel: function() {
+    var bitsPerSample = 0;
+    for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
+      bitsPerSample += this.fileDirectory.BitsPerSample[i];
+    }
+    return bitsPerSample;
+  },
+
+  /**
+   * Calculates the number of bytes for each pixel across all samples. Only full
+   * bytes are supported, an exception is thrown when this is not the case.
+   * @returns {Number} the bytes per pixel
+   */
   getBytesPerPixel: function() {
     var bitsPerSample = 0;
     for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
       var bits = this.fileDirectory.BitsPerSample[i];
       if ((bits % 8) !== 0) {
-        throw new Error("Sample bit-width of " + bits + " is not supported.");
+        // throw new Error("Sample bit-width of " + bits + " is not supported.");
       }
       else if (bits !== this.fileDirectory.BitsPerSample[0]) {
         throw new Error("Differing size of samples in a pixel are not supported.");
@@ -164,6 +187,13 @@ GeoTIFFImage.prototype = {
       bitsPerSample += bits;
     }
     return bitsPerSample / 8;
+  },
+
+  getSampleBitSize: function(i) {
+    if (i >= this.fileDirectory.BitsPerSample.length) {
+      throw new RangeError("Sample index " + i + " is out of range.");
+    }
+    return this.fileDirectory.BitsPerSample[i];
   },
 
   getSampleByteSize: function(i) {
@@ -180,33 +210,89 @@ GeoTIFFImage.prototype = {
   getReaderForSample: function(sampleIndex) {
     var format = this.fileDirectory.SampleFormat ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
     var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+
+    function padLeft(nr, n, str){
+      return Array(n-String(nr).length+1).join(str||'0')+nr;
+    }
+
+    function LAST (k, n) {
+      console.log("c", padLeft(((1 << n) - 1).toString(2), 32));
+
+      return k & ((1 << n) - 1);
+    }
+
+    function MID (k, m, n) {
+      console.log("a", padLeft((k).toString(2), 32));
+      console.log("b", padLeft((k >> m).toString(2), 32));
+
+      return LAST(k >> m, n - m);
+    }
+
     switch (format) {
       case 1: // unsigned integer data
         switch (bitsPerSample) {
           case 8:
-            return DataView.prototype.getUint8;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getUint8(bitOffset / 8, littleEndian);
+            };
           case 16:
-            return DataView.prototype.getUint16;
+            return function(dataView, bitOffset, littleEndian) {
+              console.log(padLeft(dataView.getUint16(bitOffset / 8, littleEndian).toString(2), 32));
+              return dataView.getUint16(bitOffset / 8, littleEndian);
+            };
           case 32:
-            return DataView.prototype.getUint32;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getUint32(bitOffset / 8, littleEndian);
+            };
+          default:
+            return function(dataView, bitOffset, littleEndian) {
+
+              var binary = function(dataView, offset) {
+                return padLeft(dataView.getUint32(offset, true).toString(2), 32);
+              };
+
+
+              var mod = bitOffset % 8;
+              // get the offset (highest possible byte)
+              var raw = dataView.getUint32(Math.floor(bitOffset / 8), littleEndian);
+
+              console.log("-1", binary(dataView, bitOffset / 8 - 1));
+              console.log(" 0", binary(dataView, bitOffset / 8));
+
+              console.log("+1", binary(dataView, bitOffset / 8 + 1));
+              // console.log(padLeft(raw.toString(2), 32));
+
+              console.log("reading", bitOffset, raw, mod);
+              return MID(raw, mod, mod+bitsPerSample);
+            };
         }
         break;
       case 2: // twos complement signed integer data
         switch (bitsPerSample) {
           case 8:
-            return DataView.prototype.getInt8;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getInt8(bitOffset / 8, littleEndian);
+            };
           case 16:
-            return DataView.prototype.getInt16;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getInt16(bitOffset / 8, littleEndian);
+            };
           case 32:
-            return DataView.prototype.getInt32;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getInt32(bitOffset / 8, littleEndian);
+            };
         }
         break;
       case 3:
         switch (bitsPerSample) {
           case 32:
-            return DataView.prototype.getFloat32;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getFloat32(bitOffset / 8, littleEndian);
+            };
           case 64:
-            return DataView.prototype.getFloat64;
+            return function(dataView, bitOffset, littleEndian) {
+              return dataView.getFloat64(bitOffset / 8, littleEndian);
+            };
         }
         break;
     }
@@ -408,7 +494,7 @@ GeoTIFFImage.prototype = {
       var windowWidth = imageWindow[2] - imageWindow[0];
       var windowHeight = imageWindow[3] - imageWindow[1];
 
-      var bytesPerPixel = this.getBytesPerPixel();
+      var bitsPerPixel = this.getBitsPerPixel();
       var imageWidth = this.getWidth();
 
       var predictor = this.fileDirectory.Predictor || 1;
@@ -417,12 +503,14 @@ GeoTIFFImage.prototype = {
       var sampleReaders = [];
       for (var i = 0; i < samples.length; ++i) {
         if (this.planarConfiguration === 1) {
-          srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+          srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]));
         }
         else {
           srcSampleOffsets.push(0);
         }
         sampleReaders.push(this.getReaderForSample(samples[i]));
+
+        console.log(this.getSampleBitSize(samples[i]));
       }
 
       for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
@@ -435,24 +523,27 @@ GeoTIFFImage.prototype = {
           for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
             var sample = samples[sampleIndex];
             if (this.planarConfiguration === 2) {
-              bytesPerPixel = this.getSampleByteSize(sample);
+              bitsPerPixel = this.getSampleBitSize(sample);
             }
             var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
             var reader = sampleReaders[sampleIndex];
             var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
             var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
-            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
+            // var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
             var tileLength = (new Uint8Array(tile.buffer).length);
-            if (2*tileLength !== totalbytes && this._debugMessages) {
-              console.warn('dimension mismatch', tileLength, totalbytes);
-            }
+            // if (2*tileLength !== totalbytes && this._debugMessages) {
+            //   console.warn('dimension mismatch', tileLength, totalbytes);
+            // }
+
             for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
-                var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+                var pixelOffset = (y * tileWidth + x) * bitsPerPixel;
+                console.log(x, y, bitsPerPixel, pixelOffset);
                 var value = 0;
-                if (pixelOffset < tileLength-1) {
-                  value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                if ((pixelOffset / 8 ) < tileLength-1) {
+                  value = reader(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                  console.log("value", value, x, y);
                 }
 
                 var windowCoordinate;
@@ -784,7 +875,7 @@ GeoTIFFImage.prototype = {
    * Returns the parsed GDAL metadata items.
    * @returns {Object}
    */
-  getGDALMetadata: function() {
+  getGDALMetadata: function(sample) {
     var metadata = {};
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
@@ -797,7 +888,11 @@ GeoTIFFImage.prototype = {
     );
     for (var i=0; i < result.snapshotLength; ++i) {
       var node = result.snapshotItem(i);
-      metadata[node.getAttribute("name")] = node.textContent;
+      if (typeof sample !== 'undefined' && node.getAttribute('sample') === sample.toString()) {
+        metadata[node.getAttribute("name")] = node.textContent;
+      } else if (typeof sample === 'undefined' && !node.hasAttribute('sample')) {
+        metadata[node.getAttribute("name")] = node.textContent;
+      }
     }
     return metadata;
   },
@@ -863,7 +958,81 @@ GeoTIFFImage.prototype = {
       Math.max(x1, x2),
       Math.max(y1, y2),
     ];
-  }
+  },
+
+  // /**
+  //  *
+  //  * @returns {Array}
+  //  */
+  // transformPCStoImage(points) {
+  //   var resolution = this.getResolution();
+  //   var tiePoints = this.fileDirectory.ModelTiepoint;
+  //
+  //   if (typeof points[0] === 'number') {
+  //     single = true;
+  //     points = [points];
+  //   }
+  //
+  //   // from https://github.com/smanders/libgeotiff/blob/sdl_1_2_4/geo_trans.c#L249
+  //   // case when one ModelTiepoint and ModelPixelScale is given
+  //   // TODO: other cases?
+  //   var transformed = points.map(function(point) {
+  //     return [
+  //       (point[0] - tiePoints[3]) / resolution[0] + tiePoints[0],
+  //       (point[1] - tiePoints[4]) / (-1 * resolution[1]) + tiePoints[1]
+  //     ];
+  //   });
+  //
+  //   if (single) {
+  //     return transformed[0];
+  //   }
+  //   return transformed;
+  // },
+  //
+  // /**
+  //  *
+  //  * @returns {Array}
+  //  */
+  // transformImageToPCS(points) {
+  //   var resolution = this.getResolution();
+  //   var tiePoints = this.fileDirectory.ModelTiepoint;
+  //
+  //   if (typeof points[0] === 'number') {
+  //     single = true;
+  //     points = [points];
+  //   }
+  //
+  //   // function invGeotransform(gt) {
+  //   //   var det = gt[0] * gt[4] - gt[1] * gt[3];
+  //   //   if (Math.abs(det) < 0.000000000000001) {
+  //   //     throw new Error('Invalid geotransform');
+  //   //   }
+  //   //
+  //   //   var invDet = 1.0 / det;
+  //   //
+  //   //   var gtOut = [];
+  //   //   gtOut[0] =  gt[4] * invDet;
+  //   //   gtOut[3] = -gt[3] * invDet;
+  //   //
+  //   //   gtOut[1] = -gt[1] * invDet;
+  //   //   gtOut[4] =  gt[0] * invDet;
+  //   //
+  //   //   gtOut[2] = ( gt[1] * gt[5] - gt[2] * gt[4]) * invDet;
+  //   //   gtOut[5] = (-gt[0] * gt[5] + gt[2] * gt[3]) * invDet;
+  //   //   return gtOut;
+  //   // }
+  //   var transformed = points.map(function(point) {
+  //     return [
+  //       (point[0] - tiePoints[0]) / resolution[0] + tiePoints[3],
+  //       (point[1] - tiePoints[1]) / (-1 * resolution[1]) + tiePoints[4]
+  //     ];
+  //   });
+  //
+  //   if (single) {
+  //     return transformed[0];
+  //   }
+  //   return transformed;
+  // },
 };
 
 module.exports = GeoTIFFImage;
