@@ -11,6 +11,7 @@
   ],
   "main": "dist/main.js",
   "dependencies": {
+    "@petamoriken/float16": "^1.0.2",
     "babel-cli": "^6.24.0",
     "grunt-cli": "^1.2.0",
     "pako": "^1.0.3",

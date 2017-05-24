@@ -1,5 +1,7 @@
 "use strict";
 
+var convertFloat16 = require("@petamoriken/float16/lib/lib").convertNumber;
+
 var globals = require("./globals.js");
 var RGB = require("./rgb.js");
 var RawDecoder = require("./compression/raw.js");
@@ -49,7 +51,7 @@ var arrayForType = function(format, bitsPerSample, size) {
       break;
     case 3: // floating point data
       switch (bitsPerSample) {
-        // TODO: support for 16 bit floats (halfs)
+        case 16: // halfs are stored in full Float32 arrays for simplicity
         case 32:
           return new Float32Array(size);
         case 64:
@@ -285,6 +287,9 @@ GeoTIFFImage.prototype = {
         break;
       case 3:
         switch (bitsPerSample) {
+            return function(dataView, bitOffset, littleEndian) {
+              return convertFloat16(dataView.getUint16(bitOffset / 8, littleEndian));
+            };
           case 32:
             return function(dataView, bitOffset, littleEndian) {
               return dataView.getFloat32(bitOffset / 8, littleEndian);
