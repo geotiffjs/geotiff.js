@@ -29,24 +29,15 @@ var arrayForType = function(format, bitsPerSample, size) {
           return new Uint32Array(size);
         }
       }
-      // switch (bitsPerSample) {
-      //   // case 8:
-      //   //   return new Uint8Array(size);
-      //   // case 16:
-      //   //   return new Uint16Array(size);
-      //   // case 32:
-      //   //   return new Uint32Array(size);
-      //
-      // }
       break;
-    case 2: // twos complement signed integer data
-      switch (bitsPerSample) {
-        case 8:
+    case 2: { // twos complement signed integer data
+        if (bitsPerSample <= 8) {
           return new Int8Array(size);
-        case 16:
+        } else if (bitsPerSample <= 16) {
           return new Int16Array(size);
-        case 32:
+        } else if (bitsPerSample <= 32) {
           return new Int32Array(size);
+        }
       }
       break;
     case 3: // floating point data
@@ -59,7 +50,7 @@ var arrayForType = function(format, bitsPerSample, size) {
       }
       break;
   }
-  throw Error("Unsupported data format/bitsPerSample");
+  throw new Error("Unsupported data format/bitsPerSample");
 };
 
 /**
@@ -209,26 +200,9 @@ GeoTIFFImage.prototype = {
     return (bits / 8);
   },
 
-  getReaderForSample: function(sampleIndex) {
+  getReaderForSample: function(sampleIndex, arrayBuffer) {
     var format = this.fileDirectory.SampleFormat ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
     var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
-
-    function padLeft(nr, n, str){
-      return Array(n-String(nr).length+1).join(str||'0')+nr;
-    }
-
-    function LAST (k, n) {
-      console.log("c", padLeft(((1 << n) - 1).toString(2), 32));
-
-      return k & ((1 << n) - 1);
-    }
-
-    function MID (k, m, n) {
-      console.log("a", padLeft((k).toString(2), 32));
-      console.log("b", padLeft((k >> m).toString(2), 32));
-
-      return LAST(k >> m, n - m);
-    }
 
     switch (format) {
       case 1: // unsigned integer data
@@ -239,7 +213,6 @@ GeoTIFFImage.prototype = {
             };
           case 16:
             return function(dataView, bitOffset, littleEndian) {
-              console.log(padLeft(dataView.getUint16(bitOffset / 8, littleEndian).toString(2), 32));
               return dataView.getUint16(bitOffset / 8, littleEndian);
             };
           case 32:
@@ -248,24 +221,15 @@ GeoTIFFImage.prototype = {
             };
           default:
             return function(dataView, bitOffset, littleEndian) {
-
-              var binary = function(dataView, offset) {
-                return padLeft(dataView.getUint32(offset, true).toString(2), 32);
-              };
-
-
-              var mod = bitOffset % 8;
-              // get the offset (highest possible byte)
-              var raw = dataView.getUint32(Math.floor(bitOffset / 8), littleEndian);
-
-              console.log("-1", binary(dataView, bitOffset / 8 - 1));
-              console.log(" 0", binary(dataView, bitOffset / 8));
-
-              console.log("+1", binary(dataView, bitOffset / 8 + 1));
-              // console.log(padLeft(raw.toString(2), 32));
-
-              console.log("reading", bitOffset, raw, mod);
-              return MID(raw, mod, mod+bitsPerSample);
+              var value = 0;
+              // translation from https://github.com/OSGeo/gdal/blob/trunk/gdal/frmts/gtiff/geotiff.cpp#L6573
+              for (var bit = 0; bit < bitsPerSample; ++bit ) {
+                if (dataView.getUint8(bitOffset >> 3) & (0x80 >>(bitOffset & 7))) {
+                  value |= (1 << (bitsPerSample - 1 - bit));
+                }
+                ++bitOffset;
+              }
+              return value;
             };
         }
         break;
@@ -283,10 +247,14 @@ GeoTIFFImage.prototype = {
             return function(dataView, bitOffset, littleEndian) {
               return dataView.getInt32(bitOffset / 8, littleEndian);
             };
+          default:
+            throw new Error("Signed integers are only supported for 8/16/32 bits per sample.");
+          // TODO: non-multiple of 8 bits is not supported for signed integers
         }
         break;
       case 3:
         switch (bitsPerSample) {
+          case 16:
             return function(dataView, bitOffset, littleEndian) {
               return convertFloat16(dataView.getUint16(bitOffset / 8, littleEndian));
             };
@@ -379,16 +347,18 @@ GeoTIFFImage.prototype = {
     var windowWidth = imageWindow[2] - imageWindow[0];
     var windowHeight = imageWindow[3] - imageWindow[1];
 
-    var bytesPerPixel = this.getBytesPerPixel();
+    var bitsPerPixel = this.getBitsPerPixel();
     var imageWidth = this.getWidth();
 
     var predictor = this.fileDirectory.Predictor || 1;
+    var planarConfiguration = this.planarConfiguration;
 
     var srcSampleOffsets = [];
     var sampleReaders = [];
+    var sampleBitSizes = this.fileDirectory.BitsPerSample;
     for (var i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
-        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]));
       }
       else {
         srcSampleOffsets.push(0);
@@ -422,10 +392,28 @@ GeoTIFFImage.prototype = {
         var lastCol = (tile.x + 1) * tileWidth;
         var sampleIndex = tile.sample;
 
+        var reader = sampleReaders[sampleIndex];
+
+        // translated from https://github.com/OSGeo/gdal/blob/trunk/gdal/frmts/gtiff/geotiff.cpp#L6573
+        var bitsPerLine = tileWidth * sampleBitSizes[sampleIndex];
+        if (planarConfiguration === 1) {
+          bitsPerLine = tileWidth * sum(sampleBitSizes, 0, sampleBitSizes.length);
+        } else {
+          bitsPerLine = tileWidth * sampleBitSizes[sampleIndex];
+        }
+
+        // round up bits per line to next full byte (similarly to GDAL)
+        if ((bitsPerLine & 7) !== 0) {
+          bitsPerLine = (bitsPerLine + 7) & (~7);
+        }
+
         for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          var lineOffset = bitsPerLine * y;
+
           for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
-            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
-            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+            var pixelOffset = lineOffset + x * bitsPerPixel;
+            var value = reader(tile, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+
             var windowCoordinate;
             if (interleave) {
               if (predictor !== 1 && x > 0) {
@@ -472,7 +460,7 @@ GeoTIFFImage.prototype = {
         for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
           var sample = samples[sampleIndex];
           if (this.planarConfiguration === 2) {
-            bytesPerPixel = this.getSampleByteSize(sample);
+            bitsPerPixel = this.getSampleBitSize(sample);
           }
           var _sampleIndex = sampleIndex;
           unfinishedTiles += 1;
@@ -514,8 +502,6 @@ GeoTIFFImage.prototype = {
           srcSampleOffsets.push(0);
         }
         sampleReaders.push(this.getReaderForSample(samples[i]));
-
-        console.log(this.getSampleBitSize(samples[i]));
       }
 
       for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
@@ -530,26 +516,33 @@ GeoTIFFImage.prototype = {
             if (this.planarConfiguration === 2) {
               bitsPerPixel = this.getSampleBitSize(sample);
             }
-            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
 
+            var arrayBuffer = this.getTileOrStrip(xTile, yTile, sample);
+            var tile = new DataView(arrayBuffer);
             var reader = sampleReaders[sampleIndex];
+
             var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
             var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
-            // var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
-            var tileLength = (new Uint8Array(tile.buffer).length);
-            // if (2*tileLength !== totalbytes && this._debugMessages) {
-            //   console.warn('dimension mismatch', tileLength, totalbytes);
-            // }
+
+            // translated from https://github.com/OSGeo/gdal/blob/trunk/gdal/frmts/gtiff/geotiff.cpp#L6573
+            var bitsPerLine = tileWidth * this.getSampleBitSize(sampleIndex);
+            if (this.planarConfiguration === 1) {
+              bitsPerLine = tileWidth * sum(this.fileDirectory.BitsPerSample, 0, this.fileDirectory.BitsPerSample.length);
+            } else {
+              bitsPerLine = tileWidth * this.getSampleBitSize(sampleIndex);
+            }
+
+            // round up bits per line to next full byte (similarly to GDAL)
+            if ((bitsPerLine & 7) !== 0) {
+              bitsPerLine = (bitsPerLine + 7) & (~7);
+            }
 
             for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
+              var lineOffset = bitsPerLine * y;
+
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
-                var pixelOffset = (y * tileWidth + x) * bitsPerPixel;
-                console.log(x, y, bitsPerPixel, pixelOffset);
-                var value = 0;
-                if ((pixelOffset / 8 ) < tileLength-1) {
-                  value = reader(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
-                  console.log("value", value, x, y);
-                }
+                var pixelOffset = lineOffset + x * bitsPerPixel;
+                var value = reader(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
 
                 var windowCoordinate;
                 if (interleave) {
