@@ -57,7 +57,18 @@ npm install
 
 ## Testing and Building
 
-In order to run the tests you first have to set up the test data:
+In order to run the tests you first have to set up the test data. This requires
+the [GDAL](http://gdal.org/) and [ImageMagick](http://imagemagick.org/) tools.
+Installation of these tools varies according to the operating system, the
+following listing shows the installation on Ubuntu (using the ubuntugis-unstable
+repository):
+```bash
+sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
+sudo apt-get update
+sudo apt-get install -y gdal-bin imagemagick
+```
+
+When GDAL and ImageMagick is installed, the test data setup script can be run:
 ```bash
 cd test/data
 sh setup_data.sh
