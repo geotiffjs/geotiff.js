@@ -8,7 +8,7 @@
 <select id="bands">
 </select>
 
-<script src="../dist/geotiff.js"></script>
+<script src="../dist/geotiff.browserify.js"></script>
 <script src="lib/plotty.min.js"></script>
 
 <script>
@@ -77,6 +77,17 @@ tiffs.forEach(function(filename) {
     console.time("readRasters " + filename);
     var parser = GeoTIFF.parse(this.response);
     var image = parser.getImage();
+    // console.log(image);
+    // console.log(image.getTiePoints());
+
+
+    var imageWindow = null;
+    var width = image.getWidth();
+    var height = image.getHeight();
+    if (imageWindow) {
+      width = imageWindow[2] - imageWindow[0];
+      height = imageWindow[3] - imageWindow[1];
+    }
 
     var plot;
 
@@ -84,7 +95,7 @@ tiffs.forEach(function(filename) {
       image.readRasters({samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)]})
         .then(function(rasters) {
             var canvas = document.getElementById(filename);
-            plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+            plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
             plot.render();
         });
     });
@@ -93,7 +104,7 @@ tiffs.forEach(function(filename) {
       .then(function(rasters) {
         console.timeEnd("readRasters " + filename);
         var canvas = document.getElementById(filename);
-        plot = new plotty.plot(canvas, rasters[0], image.getWidth(), image.getHeight(), [10, 65000], "viridis", false);
+        plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
         plot.render();
       });
   };

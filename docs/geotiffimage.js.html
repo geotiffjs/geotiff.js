@@ -297,9 +297,11 @@ class GeoTIFFImage {
 
     const predictor = this.fileDirectory.Predictor || 1;
 
-    const srcSampleOffsets = [];
-    const sampleReaders = [];
-    for (let i = 0; i &lt; samples.length; ++i) {
+    var predictor = this.fileDirectory.Predictor || 1;
+
+    var srcSampleOffsets = [];
+    var sampleReaders = [];
+    for (var i = 0; i &lt; samples.length; ++i) {
       if (this.planarConfiguration === 1) {
         srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
       } else {
@@ -311,11 +313,76 @@ class GeoTIFFImage {
     const promises = [];
     const littleEndian = this.littleEndian;
 
-    for (let yTile = minYTile; yTile &lt; maxYTile; ++yTile) {
-      for (let xTile = minXTile; xTile &lt; maxXTile; ++xTile) {
-        for (let sampleIndex = 0; sampleIndex &lt; samples.length; ++sampleIndex) {
-          const si = sampleIndex;
-          const sample = samples[sampleIndex];
+    function checkFinished() {
+      if (allStacked &amp;&amp; unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        }
+        else {
+          callback(valueArrays);
+        }
+      }
+    }
+
+    function onTileGot(error, tile) {
+      if (!error) {
+        var dataView = new DataView(tile.data);
+
+        var firstLine = tile.y * tileHeight;
+        var firstCol = tile.x * tileWidth;
+        var lastLine = (tile.y + 1) * tileHeight;
+        var lastCol = (tile.x + 1) * tileWidth;
+        var sampleIndex = tile.sample;
+
+        for (var y = Math.max(0, imageWindow[1] - firstLine); y &lt; Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          for (var x = Math.max(0, imageWindow[0] - firstCol); x &lt; Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+            var windowCoordinate;
+            if (interleave) {
+              if (predictor !== 1 &amp;&amp; x > 0) {
+                windowCoordinate =
+                  (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                  (x + firstCol - imageWindow[0] - 1) * samples.length +
+                  sampleIndex;
+                value += valueArrays[windowCoordinate];
+              }
+
+              windowCoordinate =
+                (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                (x + firstCol - imageWindow[0]) * samples.length +
+                sampleIndex;
+              valueArrays[windowCoordinate] = value;
+            }
+            else {
+              if (predictor !== 1 &amp;&amp; x > 0) {
+                windowCoordinate = (
+                  y + firstLine - imageWindow[1]
+                ) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                value += valueArrays[sampleIndex][windowCoordinate];
+              }
+
+              windowCoordinate = (
+                y + firstLine - imageWindow[1]
+              ) * windowWidth + x + firstCol - imageWindow[0];
+              valueArrays[sampleIndex][windowCoordinate] = value;
+            }
+          }
+        }
+      }
+      else {
+        globalError = error;
+      }
+
+      // check end condition and call callbacks
+      unfinishedTiles -= 1;
+      checkFinished();
+    }
+
+    for (var yTile = minYTile; yTile &lt;= maxYTile; ++yTile) {
+      for (var xTile = minXTile; xTile &lt;= maxXTile; ++xTile) {
+        for (var sampleIndex = 0; sampleIndex &lt; samples.length; ++sampleIndex) {
+          var sample = samples[sampleIndex];
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sample);
           }
@@ -332,17 +399,70 @@ class GeoTIFFImage {
             const ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
             const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
 
-            for (let y = Math.max(0, imageWindow[1] - firstLine); y &lt; ymax; ++y) {
-              for (let x = Math.max(0, imageWindow[0] - firstCol); x &lt; xmax; ++x) {
-                const pixelOffset = ((y * tileWidth) + x) * bytesPerPixel;
-                let value = reader.call(dataView, pixelOffset + srcSampleOffsets[si], littleEndian);
-                let windowCoordinate;
+      var minXTile = Math.floor(imageWindow[0] / tileWidth);
+      var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
+      var minYTile = Math.floor(imageWindow[1] / tileHeight);
+      var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+
+      var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
+
+      var windowWidth = imageWindow[2] - imageWindow[0];
+      var windowHeight = imageWindow[3] - imageWindow[1];
+
+      var bytesPerPixel = this.getBytesPerPixel();
+      var imageWidth = this.getWidth();
+
+      var predictor = this.fileDirectory.Predictor || 1;
+
+      var srcSampleOffsets = [];
+      var sampleReaders = [];
+      for (var i = 0; i &lt; samples.length; ++i) {
+        if (this.planarConfiguration === 1) {
+          srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        }
+        else {
+          srcSampleOffsets.push(0);
+        }
+        sampleReaders.push(this.getReaderForSample(samples[i]));
+      }
+
+      for (var yTile = minYTile; yTile &lt; maxYTile; ++yTile) {
+        for (var xTile = minXTile; xTile &lt; maxXTile; ++xTile) {
+          var firstLine = yTile * tileHeight;
+          var firstCol = xTile * tileWidth;
+          var lastLine = (yTile + 1) * tileHeight;
+          var lastCol = (xTile + 1) * tileWidth;
+
+          for (var sampleIndex = 0; sampleIndex &lt; samples.length; ++sampleIndex) {
+            var sample = samples[sampleIndex];
+            if (this.planarConfiguration === 2) {
+              bytesPerPixel = this.getSampleByteSize(sample);
+            }
+            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
+
+            var reader = sampleReaders[sampleIndex];
+            var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
+            var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
+            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
+            var tileLength = (new Uint8Array(tile.buffer).length);
+            if (2*tileLength !== totalbytes &amp;&amp; this._debugMessages) {
+              console.warn('dimension mismatch', tileLength, totalbytes);
+            }
+            for (var y = Math.max(0, imageWindow[1] - firstLine); y &lt; ymax; ++y) {
+              for (var x = Math.max(0, imageWindow[0] - firstCol); x &lt; xmax; ++x) {
+                var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+                var value = 0;
+                if (pixelOffset &lt; tileLength-1) {
+                  value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
+                }
+
+                var windowCoordinate;
                 if (interleave) {
                   if (predictor !== 1 &amp;&amp; x > 0) {
                     windowCoordinate =
-                      ((y + firstLine - imageWindow[1]) * windowWidth * samples.length) +
-                      ((x + firstCol - imageWindow[0] - 1) * samples.length) +
-                      si;
+                      (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
+                      (x + firstCol - imageWindow[0] - 1) * samples.length +
+                      sampleIndex;
                     value += valueArrays[windowCoordinate];
                   }
 
@@ -351,12 +471,13 @@ class GeoTIFFImage {
                     ((x + firstCol - imageWindow[0]) * samples.length) +
                     si;
                   valueArrays[windowCoordinate] = value;
-                } else {
+                }
+                else {
                   if (predictor !== 1 &amp;&amp; x > 0) {
-                    windowCoordinate = ((
+                    windowCoordinate = (
                       y + firstLine - imageWindow[1]
-                    ) * windowWidth) + x - 1 + firstCol - imageWindow[0];
-                    value += valueArrays[si][windowCoordinate];
+                    ) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                    value += valueArrays[sampleIndex][windowCoordinate];
                   }
 
                   windowCoordinate = (
@@ -588,6 +709,69 @@ class GeoTIFFImage {
       metadata[node.getAttribute('name')] = node.textContent;
     }
     return metadata;
+  },
+
+  /**
+   * Returns the image origin as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The origin as a vector
+   */
+  getOrigin: function() {
+    var tiePoints = this.fileDirectory.ModelTiepoint;
+    if (!tiePoints || tiePoints.length !== 6) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [tiePoints[3], tiePoints[4], tiePoints[5]];
+  },
+
+  /**
+   * Returns the image resolution as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The resolution as a vector
+   */
+  getResolution: function() {
+    if (!this.fileDirectory.ModelPixelScale) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [
+      this.fileDirectory.ModelPixelScale[0],
+      this.fileDirectory.ModelPixelScale[1],
+      this.fileDirectory.ModelPixelScale[2]
+    ];
+  },
+
+  /**
+   * Returns whether or not the pixels of the image depict an area (or point).
+   * @returns {Boolean} Whether the pixels are a point
+   */
+  pixelIsArea: function() {
+    return this.geoKeys.GTRasterTypeGeoKey === 1;
+  },
+
+  /**
+   * Returns the image bounding box as an array of 4 values: min-x, min-y,
+   * max-x and max-y. When the image has no affine transformation, then an
+   * exception is thrown.
+   * @returns {Array} The bounding box
+   */
+  getBoundingBox: function() {
+    var origin = this.getOrigin();
+    var resolution = this.getResolution();
+
+    var x1 = origin[0];
+    var y1 = origin[1];
+
+    var x2 = x1 + resolution[0] * this.getWidth();
+    var y2 = y1 + resolution[1] * this.getHeight();
+
+    return [
+      Math.min(x1, x2),
+      Math.min(y1, y2),
+      Math.max(x1, x2),
+      Math.max(y1, y2),
+    ];
   }
 
   /**
@@ -671,7 +855,7 @@ export default GeoTIFFImage;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Nov 29 2016 11:00:44 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Apr 08 2017 13:52:20 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

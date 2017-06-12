@@ -33,6 +33,16 @@ Currently available functionality:
 
 Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
 
+## Example Usage
+
+* [Slice view using Cesium.js (TAMP project)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
+
+[![3D slice view](http://img.youtube.com/vi/E6kFLtKgeJ8/0.jpg)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
+
+* [Contour generation using d3-contour](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+
+[![contour](https://pbs.twimg.com/card_img/850410549196271616/ZKcdfREH?format=jpg&name=600x314)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+
 ## Setup
 
 To setup the repository do the following steps:
@@ -48,7 +58,18 @@ npm install
 
 ## Testing and Building
 
-In order to run the tests you first have to set up the test data:
+In order to run the tests you first have to set up the test data. This requires
+the [GDAL](http://gdal.org/) and [ImageMagick](http://imagemagick.org/) tools.
+Installation of these tools varies according to the operating system, the
+following listing shows the installation on Ubuntu (using the ubuntugis-unstable
+repository):
+```bash
+sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
+sudo apt-get update
+sudo apt-get install -y gdal-bin imagemagick
+```
+
+When GDAL and ImageMagick is installed, the test data setup script can be run:
 ```bash
 cd test/data
 sh setup_data.sh
@@ -58,13 +79,13 @@ cd -
 To test the library (using PhantomJS, karma, mocha and chai) do the following:
 
 ```bash
-npm run test
+npm test
 ```
 
 To do some in-browser testing do:
 
 ```bash
-npm run dev
+npm start
 ```
 
 and navigate to `http://localhost:9000/test/`
@@ -75,7 +96,7 @@ To build the library do:
 npm run build
 ```
 
-The output is written to `dist/geotiff.js` and `dist/geotiff.min.js`.
+The output is written to `dist/geotiff.browserify.js` and `dist/geotiff.browserify.min.js`.
 
 ## Usage
 
@@ -83,13 +104,16 @@ geotiff.js works with both browserify style `require` and the global variable
 `GeoTIFF`:
 
 ```javascript
-var GeoTIFF = require("geotiff.js");
+var GeoTIFF = require("geotiff");
 ```
 
 or:
 
 ```html
-<script src="geotiff.js"></script>
+<script src="dist/geotiff.browserify.js"></script>
+<!-- or use the minified version:
+  <script src="dist/geotiff.browserify.min.js"></script>
+-->
 <script>
   console.log(GeoTIFF);
 </script>
@@ -250,6 +274,13 @@ a reasonable support, the following is implemented:
     * Specifying of window in CRS coordinates
   * Improving support of CIEL*a*b* images
   * Support of "overview images" (i.e: images with reduced resolution)
+
+## Contribution
+
+If you have an idea, found a bug or have a remark, please open a ticket, we will
+look into it ASAP.
+
+Pull requests are welcome as well!
 
 ## Acknowledgements
 

@@ -1,235 +1,139 @@
-import AbstractDecoder from '../abstractdecoder';
+"use strict";
 
-const MIN_BITS = 9;
-const MAX_BITS = 12;
-const CLEAR_CODE = 256; // clear code
-const EOI_CODE = 257; // end of information
+//var lzwCompress = require("lzwcompress");
+var AbstractDecoder = require("../abstractdecoder.js");
 
-class LZW {
-  constructor() {
-    this.littleEndian = false;
-    this.position = 0;
+var MIN_BITS = 9;
+var MAX_BITS = 12;
+var CLEAR_CODE = 256; // clear code
+var EOI_CODE = 257; // end of information
 
-    this._makeEntryLookup = false;
-    this.dictionary = [];
+function getByte(array, position, length) {
+  var d = position % 8;
+  var a = Math.floor(position/8);
+  var de = 8-d;
+  var ef = (position + length) - ((a+1)*8);
+  var fg = 8*(a+2) - (position+length);
+  var dg = (a+2)*8 - position;
+  fg = Math.max(0, fg);
+  if (a >= array.length) {
+    console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
+    return EOI_CODE;
   }
-
-  initDictionary() {
-    this.dictionary = new Array(258);
-    this.entryLookup = {};
-    this.byteLength = MIN_BITS;
-    // i really feal like i <= 257, but I get strange unknown words that way.
-    for (let i = 0; i <= 257; ++i) {
-      this.dictionary[i] = [i];
-      if (this._makeEntryLookup) {
-        this.entryLookup[i] = i;
-      }
-    }
+  var chunk1 = array[a] & (Math.pow(2, 8-d) - 1);
+  chunk1 = chunk1 << (length - de);
+  var chunks = chunk1;
+  if (a+1 < array.length) {
+    var chunk2 = array[a+1] >>> fg;
+    chunk2 = chunk2 << Math.max(0, (length - dg));
+    chunks += chunk2;
   }
-
-  decompress(input) {
-    const buffer = input.buffer ? input.buffer : (new Uint8Array(input)).buffer;
-    this._makeEntryLookup = false; // for speed
-    this.initDictionary();
-    this.position = 0;
-    this.result = [];
-
-    const mydataview = new DataView(buffer);
-    let code = this.getNext(mydataview);
-    let oldCode;
-    while (code !== EOI_CODE) {
-      if (code === CLEAR_CODE) {
-        this.initDictionary();
-        code = this.getNext(mydataview);
-        while (code === CLEAR_CODE) {
-          code = this.getNext(mydataview);
-        }
-        if (code > CLEAR_CODE) {
-          throw new Error(`corrupted code at scanline ${code}`);
-        }
-        if (code === EOI_CODE) {
-          break;
-        } else {
-          const val = this.dictionary[code];
-          this.appendArray(this.result, val);
-          oldCode = code;
-        }
-      } else if (this.dictionary[code] !== undefined) {
-        const val = this.dictionary[code];
-        this.appendArray(this.result, val);
-        const newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
-        this.addToDictionary(newVal);
-        oldCode = code;
-      } else {
-        const oldVal = this.dictionary[oldCode];
-        if (!oldVal) {
-          throw new Error(`Bogus entry. Not in dictionary, ${oldCode} / ${this.dictionary.length}, position: ${this.position}`);
-        }
-        const newVal = oldVal.concat(this.dictionary[oldCode][0]);
-        this.appendArray(this.result, newVal);
-        this.addToDictionary(newVal);
-        oldCode = code;
-      }
-      // This is strange. It seems like the
-      if (this.dictionary.length >= (2 ** this.byteLength) - 1) {
-        this.byteLength++;
-      }
-      code = this.getNext(mydataview);
-    }
-    return new Uint8Array(this.result);
+  if (ef > 8 && a+2 < array.length) {
+    var hi = (a+3)*8 - (position+length);
+    var chunk3 = array[a+2] >>> hi;
+    chunks += chunk3;
   }
+  return chunks;
+}
 
-  appendArray(dest, source) {
-    for (let i = 0; i < source.length; ++i) {
-      dest.push(source[i]);
-    }
-    return dest;
+function appendReversed(dest, source) {
+  for (let i = source.length - 1; i >= 0; i--) {
+    dest.push(source[i]);
   }
+  return dest;
+}
 
-  haveBytesChanged() {
-    if (this.dictionary.length >= 2 ** this.byteLength) {
-      this.byteLength++;
-      return true;
-    }
-    return false;
+function decompress(input) {
+  let dictionary_index = new Uint16Array(4093);
+  let dictionary_char = new Uint8Array(4093);
+  for (var i=0; i <= 257; i++) {
+    dictionary_index[i] = 4096;
+    dictionary_char[i] = i;
   }
+  let dictionary_length = 258;
+  let byteLength = MIN_BITS;
+  let position = 0;
 
-  addToDictionary(arr) {
-    this.dictionary.push(arr);
-    if (this._makeEntryLookup) {
-      this.entryLookup[arr] = this.dictionary.length - 1;
-    }
-    this.haveBytesChanged();
-    return this.dictionary.length - 1;
+  function initDictionary() {
+    dictionary_length = 258;
+    byteLength = MIN_BITS;
   }
-
-  getNext(dataview) {
-    const byte = this.getByte(dataview, this.position, this.byteLength);
-    this.position += this.byteLength;
+  function getNext(array) {
+    var byte = getByte(array, position, byteLength);
+    position += byteLength;
     return byte;
   }
-
-  // This binary representation might actually be as fast as the completely
-  // illegible bit shift approach
-  getByte(dataview, position, length) {
-    const d = position % 8;
-    const a = Math.floor(position / 8);
-    const de = 8 - d;
-    const ef = (position + length) - ((a + 1) * 8);
-    let fg = (8 * (a + 2)) - (position + length);
-    const dg = ((a + 2) * 8) - position;
-    fg = Math.max(0, fg);
-    if (a >= dataview.byteLength) {
-      // eslint-disable-next-line no-console
-      console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
-      return EOI_CODE;
+  function addToDictionary(i, c) {
+    dictionary_char[dictionary_length] = c;
+    dictionary_index[dictionary_length] = i;
+    dictionary_length++;
+    if (dictionary_length >= Math.pow(2, byteLength)) {
+      byteLength++;
     }
-    let chunk1 = dataview.getUint8(a, this.littleEndian) & ((2 ** (8 - d)) - 1);
-    chunk1 <<= (length - de);
-    let chunks = chunk1;
-    if (a + 1 < dataview.byteLength) {
-      let chunk2 = dataview.getUint8(a + 1, this.littleEndian) >>> fg;
-      chunk2 <<= Math.max(0, (length - dg));
-      chunks += chunk2;
+    return dictionary_length - 1;
+  }
+  function get_dictionary_reversed(n) {
+    const rev = [];
+    while (n !== 4096) {
+      rev.push(dictionary_char[n]);
+      n = dictionary_index[n];
     }
-    if (ef > 8 && a + 2 < dataview.byteLength) {
-      const hi = ((a + 3) * 8) - (position + length);
-      const chunk3 = dataview.getUint8(a + 2, this.littleEndian) >>> hi;
-      chunks += chunk3;
-    }
-    return chunks;
+    return rev;
   }
 
-// compress has not been optimized and uses a uint8 array to hold binary values.
-  compress(input) {
-    this._makeEntryLookup = true;
-    this.initDictionary();
-    this.position = 0;
-    let resultBits = [];
-    let omega = [];
-    resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength));
-    // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
-    for (let i = 0; i < input.length; ++i) {
-      const k = [input[i]];
-      const omk = omega.concat(k);
-      if (this.entryLookup[omk] !== undefined) {
-        omega = omk;
+  const result = [];
+  initDictionary();
+  var array = new Uint8Array(input);
+  var code = getNext(array);
+  var oldCode;
+  while (code !== EOI_CODE) {
+    if (code === CLEAR_CODE) {
+      initDictionary();
+      code = getNext(array);
+      while (code === CLEAR_CODE) {
+        code = getNext(array);
+      }
+      if (code > CLEAR_CODE) {
+        throw('corrupted code at scanline ' + code);
+      }
+      if (code === EOI_CODE) {
+        break;
       } else {
-        const code = this.entryLookup[omega];
-        const bin = this.binaryFromByte(code, this.byteLength);
-        resultBits = this.appendArray(resultBits, bin);
-        this.addToDictionary(omk);
-        omega = k;
-        if (this.dictionary.length >= 2 ** MAX_BITS) {
-          resultBits = this.appendArray(
-            resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength),
-          );
-          this.initDictionary();
+        let val = get_dictionary_reversed(code);
+        appendReversed(result, val);
+        oldCode = code;
+      }
+    } else {
+      if (code < dictionary_length) {
+        let val = get_dictionary_reversed(code);
+        appendReversed(result, val);
+        addToDictionary(oldCode, val[val.length-1]);
+        oldCode = code;
+      } else {
+        let oldVal = get_dictionary_reversed(oldCode);
+        if (!oldVal) {
+          throw(`Bogus entry. Not in dictionary, ${oldCode} / ${dictionary_length}, position: ${position}`);
         }
+        appendReversed(result, oldVal);
+        result.push(oldVal[oldVal.length-1]);
+        addToDictionary(oldCode, oldVal[oldVal.length-1]);
+        oldCode = code;
       }
     }
-    const code = this.entryLookup[omega];
-    const bin = this.binaryFromByte(code, this.byteLength);
-    resultBits = this.appendArray(resultBits, bin);
-    resultBits = resultBits = this.appendArray(
-      resultBits, this.binaryFromByte(EOI_CODE, this.byteLength),
-    );
-    this.binary = resultBits;
-    this.result = this.binaryToUint8(resultBits);
-    return this.result;
-  }
-
-  byteFromCode(code) {
-    return this.dictionary[code];
-  }
-
-  binaryFromByte(byte, byteLength = 8) {
-    const res = new Uint8Array(byteLength);
-    for (let i = 0; i < res.length; ++i) {
-      const mask = 2 ** i;
-      const isOne = (byte & mask) > 0;
-      res[res.length - 1 - i] = isOne;
+    if (dictionary_length >= Math.pow(2, byteLength) - 1) {
+      byteLength ++;
     }
-    return res;
+    code = getNext(array);
   }
-
-  binaryToNumber(bin) {
-    let res = 0;
-    for (let i = 0; i < bin.length; ++i) {
-      res += (2 ** (bin.length - i - 1)) * bin[i];
-    }
-    return res;
-  }
-
-  inputToBinary(input, inputByteLength = 8) {
-    const res = new Uint8Array(input.length * inputByteLength);
-    for (let i = 0; i < input.length; ++i) {
-      const bin = this.binaryFromByte(input[i], inputByteLength);
-      res.set(bin, i * inputByteLength);
-    }
-    return res;
-  }
-
-  binaryToUint8(bin) {
-    const result = new Uint8Array(Math.ceil(bin.length / 8));
-    let index = 0;
-    for (let i = 0; i < bin.length; i += 8) {
-      let val = 0;
-      for (let j = 0; j < 8 && i + j < bin.length; ++j) {
-        val += bin[i + j] * (2 ** (8 - j - 1));
-      }
-      result[index] = val;
-      ++index;
-    }
-    return result;
-  }
+  return new Uint8Array(result);
 }
 
-// the actual decoder interface
+function LZWDecoder() {}
 
-export default class LZWDecoder extends AbstractDecoder {
-  decodeBlock(buffer) {
-    // decompressor = new LZW();
-    return Promise.resolve((new LZW()).decompress(buffer).buffer);
-  }
-}
+LZWDecoder.prototype = Object.create(AbstractDecoder.prototype);
+LZWDecoder.prototype.constructor = LZWDecoder;
+LZWDecoder.prototype.decodeBlock = function(buffer) {
+  return decompress(buffer, false).buffer;
+};
+
+module.exports = LZWDecoder;
