@@ -60,6 +60,22 @@ class DataView64 {
   getFloat64(offset, littleEndian) {
     return this._dataView.getFloat64(offset, littleEndian);
   }
+
+  // set unsigned byte
+  setUint8(offset, value) {
+    return this._dataView.setUint8(offset, value);
+  }
+  
+  // set unsigned short
+  setUint16(offset, value) {
+    return this._dataView.setUint16(offset, value);
+  }
+ 
+  // set unsigned integer
+  setUint32(offset, value) {
+    return this._dataView.setUint32(offset, value);
+  }  
+  
 }
 
 module.exports = DataView64;

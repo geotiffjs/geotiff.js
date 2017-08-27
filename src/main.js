@@ -1,6 +1,7 @@
 "use strict";
 
 var GeoTIFF = require("./geotiff.js");
+var GeoTIFFWriter = require("./geotiffwriter.js");
 
 /**
  * Main parsing function for GeoTIFF files.
@@ -27,12 +28,22 @@ var parse = function(data, options) {
   return new GeoTIFF(rawData, options);
 };
 
+/**
+ * Main creating function for GeoTIFF files.
+ * @param {(Array)} three dimensional array of pixel value
+ * @returns {metadata} metadata
+ */
+var create = function(values, metadata) {
+  return GeoTIFFWriter.write_geotiff(values, metadata);
+};
+
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   module.exports.parse = parse;
+  module.exports.create = create;
 }
 if (typeof window !== "undefined") {
-  window["GeoTIFF"] = {parse:parse};
+  window["GeoTIFF"] = { create: create, parse: parse };
 } else if (typeof self !== "undefined") {
-  self["GeoTIFF"] = { parse: parse };
+  self["GeoTIFF"] = { create: create, parse: parse }; // jshint ignore:line
 }
 
