@@ -133,6 +133,17 @@ xhr.onload = function(e) {
 xhr.send();
 ```
 
+Similarly, the `fetch()` API can be used:
+
+```javascript
+fetch(url)
+  .then(function(response) { return response.arrayBuffer(); })
+  .then(function(data) {
+    const tiff = GeoTIFF.parse(data);
+    // ...
+  });
+```
+
 When using the parser in node, you have to convert the `Buffer` to an
 `ArrayBuffer` first. See the following example for the conversion:
 
