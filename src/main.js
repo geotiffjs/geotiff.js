@@ -30,7 +30,7 @@ var parse = function(data, options) {
 
 /**
  * Main creating function for GeoTIFF files.
- * @param {(Array)} three dimensional array of pixel value
+ * @param {(Array)} array of pixel values
  * @returns {metadata} metadata
  */
 var create = function(values, metadata) {
