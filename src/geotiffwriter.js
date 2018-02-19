@@ -35,65 +35,55 @@ var stringify = function (obj) {
 };
 
 var _binBE = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    nextZero: function(data, o) {
-        while(data[o] !== 0) {
-            o++;
-        }
-        return o;
-    },
-    readUshort: function(buff, p) {
-        return (buff[p]<< 8) | buff[p+1];
-    },
-    readShort: function(buff, p) {
-        var a = _binBE.ui8;
-        a[0] = buff[p+1];
-        a[1] = buff[p+0];
-        return _binBE.i16[0];
-    },
-    readInt: function(buff, p) {
-        var a = _binBE.ui8;
-        a[0]=buff[p+3];
-        a[1]=buff[p+2];
-        a[2]=buff[p+1];
-        a[3]=buff[p+0];
-        return _binBE.i32[0];
-    },
-	readUint: function(buff, p) {
-	    var a = _binBE.ui8;
-	    a[0]=buff[p+3];
-	    a[1]=buff[p+2];
-	    a[2]=buff[p+1];
-	    a[3]=buff[p+0];
-	    return _binBE.ui32[0];
+	nextZero: function (data, o) {
+		while (data[o] !== 0) {
+			o++;
+		}
+		return o;
 	},
-	readASCII: function(buff, p, l) {
-	    return l.map(function(i) {
-	        return String.fromCharCode(buff[p+i]);
-	    }).join("");
+	readUshort: function (buff, p) {
+		return (buff[p] << 8) | buff[p + 1];
 	},
-	readFloat: function(buff, p) {
-	    var a = _binBE.ui8;
-	    times(4, function(i) { a[i] = buff[p+3-i]; });
-	    return _binBE.fl32[0];
+	readShort: function (buff, p) {
+		var a = _binBE.ui8;
+		a[0] = buff[p + 1];
+		a[1] = buff[p + 0];
+		return _binBE.i16[0];
 	},
-	readDouble: function(buff, p) {
-	    var a = _binBE.ui8;
-	    times(8, function(i) { a[i] = buff[p+7-i]; });
-	    return _binBE.fl64[0];
+	readInt: function (buff, p) {
+		var a = _binBE.ui8;
+		a[0] = buff[p + 3];
+		a[1] = buff[p + 2];
+		a[2] = buff[p + 1];
+		a[3] = buff[p + 0];
+		return _binBE.i32[0];
 	},
-=======
->>>>>>> ab9e8c9... incomplete
-	writeUshort: function(buff, p, n) {
-	    buff[p] = (n>> 8)&255;
-	    buff[p+1] = n&255;
-=======
+	readUint: function (buff, p) {
+		var a = _binBE.ui8;
+		a[0] = buff[p + 3];
+		a[1] = buff[p + 2];
+		a[2] = buff[p + 1];
+		a[3] = buff[p + 0];
+		return _binBE.ui32[0];
+	},
+	readASCII: function (buff, p, l) {
+		return l.map(function (i) {
+			return String.fromCharCode(buff[p + i]);
+		}).join("");
+	},
+	readFloat: function (buff, p) {
+		var a = _binBE.ui8;
+		times(4, function (i) { a[i] = buff[p + 3 - i]; });
+		return _binBE.fl32[0];
+	},
+	readDouble: function (buff, p) {
+		var a = _binBE.ui8;
+		times(8, function (i) { a[i] = buff[p + 7 - i]; });
+		return _binBE.fl64[0];
+	},
 	writeUshort: function (buff, p, n) {
 		buff[p] = (n >> 8) & 255;
 		buff[p + 1] = n & 255;
->>>>>>> 5154971... added writing capability
 	},
 	writeUint: function (buff, p, n) {
 		buff[p] = (n >> 24) & 255;
@@ -101,33 +91,11 @@ var _binBE = {
 		buff[p + 2] = (n >> 8) & 255;
 		buff[p + 3] = (n >> 0) & 255;
 	},
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> bde66b5... incomplete
-=======
->>>>>>> ab9e8c9... incomplete
-	writeASCII: function(buff, p, s) {
-<<<<<<< HEAD
-	    times(s.length, function(i){ buff[p+i] = s.charCodeAt(i); });
-=======
-		console.log("starting writeASCII with", p, s);
-<<<<<<< HEAD
-		times(s.length, function(i){ buff[p+i] = s.charCodeAt(i); });
->>>>>>> 3c1620e... improved writing
-=======
-		times(s.length, function(i){
-			buff[p+i] = s.charCodeAt(i);
-		});
->>>>>>> 88ff16a... added more geotiff writing code including doubles
-    },
-=======
 	writeASCII: function (buff, p, s) {
 		times(s.length, function (i) {
 			buff[p + i] = s.charCodeAt(i);
 		});
 	},
->>>>>>> 5154971... added writing capability
 	ui8: new Uint8Array(8)
 };
 _binBE.fl64 = new Float64Array(_binBE.ui8.buffer);
