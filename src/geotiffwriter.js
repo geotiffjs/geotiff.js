@@ -1,5 +1,13 @@
 'use strict';
-//!!!!! If strip definition tags are omitted, the image is assumed to contain a single strip.
+
+/* 
+	Some parts of this file are based on UTIF.js,
+	which was released under the MIT License.
+	You can view that here:
+	https://github.com/photopea/UTIF.js/blob/master/LICENSE
+*/
+
+
 var globals = require("./globals.js");
 
 var _ = require("lodash");

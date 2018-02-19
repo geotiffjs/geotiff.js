@@ -60,7 +60,6 @@ class DataView64 {
   getFloat64(offset, littleEndian) {
     return this._dataView.getFloat64(offset, littleEndian);
   }
-
 }
 
 module.exports = DataView64;

@@ -9,14 +9,14 @@ var Promise = require('es6-promise').Promise;
 
 import GeoTIFF from "../src/main.js"
 
-var retrieve = function (filename, done, callback) {
+var retrieve = function(filename, done, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/base/test/data/' + filename, true);
   xhr.responseType = 'arraybuffer';
-  xhr.onload = function (e) {
+  xhr.onload = function(e) {
     callback(GeoTIFF.parse(this.response));
   };
-  xhr.onerror = function (e) {
+  xhr.onerror = function(e) {
     console.error(e);
     done(e);
   };
@@ -24,14 +24,14 @@ var retrieve = function (filename, done, callback) {
   xhr.send();
 };
 
-var retrieveSync = function (filename, done, callback) {
+var retrieveSync = function(filename, done, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/base/test/data/' + filename, true);
   xhr.responseType = 'arraybuffer';
-  xhr.onload = function (e) {
+  xhr.onload = function(e) {
     callback(GeoTIFF.parse(this.response));
   };
-  xhr.onerror = function (e) {
+  xhr.onerror = function(e) {
     console.error(e);
     done(e);
   };
@@ -39,7 +39,7 @@ var retrieveSync = function (filename, done, callback) {
   xhr.send();
 };
 
-var toArrayRecursively = function (input) {
+var toArrayRecursively = function(input) {
   if (input.length) {
     return _.toArray(input).map(toArrayRecursively);
   }
@@ -48,11 +48,11 @@ var toArrayRecursively = function (input) {
   }
 }
 
-var normalize = function (input) {
+var normalize = function(input) {
   return JSON.stringify(toArrayRecursively(input));
 }
 
-var getMockMetaData = function (height, width) {
+var getMockMetaData = function(height, width) {
   return {
     "ImageWidth": width, // only necessary if values aren't multi-dimensional
     "ImageLength": height, // only necessary if values aren't multi-dimensional
@@ -76,13 +76,13 @@ var getMockMetaData = function (height, width) {
   };
 }
 
-describe("mainTests", function () {
-  it("geotiff.js module available", function () {
+describe("mainTests", function() {
+  it("geotiff.js module available", function() {
     expect(GeoTIFF).to.be.ok;
   });
 
-  it("should work on stripped tiffs", function (done) {
-    retrieve("stripped.tiff", done, function (tiff) {
+  it("should work on stripped tiffs", function(done) {
+    retrieve("stripped.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -104,8 +104,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on tiled tiffs", function (done) {
-    retrieve("tiled.tiff", done, function (tiff) {
+  it("should work on tiled tiffs", function(done) {
+    retrieve("tiled.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -127,8 +127,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on band interleaved tiffs", function (done) {
-    retrieve("interleave.tiff", done, function (tiff) {
+  it("should work on band interleaved tiffs", function(done) {
+    retrieve("interleave.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -150,8 +150,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on band interleaved and tiled tiffs", function (done) {
-    retrieve("interleave.tiff", done, function (tiff) {
+  it("should work on band interleaved and tiled tiffs", function(done) {
+    retrieve("interleave.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -173,8 +173,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on LZW compressed images", function (done) {
-    retrieve("lzw.tiff", done, function (tiff) {
+  it("should work on LZW compressed images", function(done) {
+    retrieve("lzw.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -196,8 +196,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on band interleaved, lzw compressed, and tiled tiffs", function (done) {
-    retrieve("tiledplanarlzw.tiff", done, function (tiff) {
+  it("should work on band interleaved, lzw compressed, and tiled tiffs", function(done) {
+    retrieve("tiledplanarlzw.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -219,8 +219,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on Int32 tiffs", function (done) {
-    retrieve("int32.tiff", done, function (tiff) {
+  it("should work on Int32 tiffs", function(done) {
+    retrieve("int32.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -242,8 +242,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on UInt32 tiffs", function (done) {
-    retrieve("uint32.tiff", done, function (tiff) {
+  it("should work on UInt32 tiffs", function(done) {
+    retrieve("uint32.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -265,8 +265,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on Float32 tiffs", function (done) {
-    retrieve("float32.tiff", done, function (tiff) {
+  it("should work on Float32 tiffs", function(done) {
+    retrieve("float32.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -288,8 +288,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on Float64 tiffs", function (done) {
-    retrieve("float64.tiff", done, function (tiff) {
+  it("should work on Float64 tiffs", function(done) {
+    retrieve("float64.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -311,8 +311,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on Float64 and lzw compressed tiffs", function (done) {
-    retrieve("float64lzw.tiff", done, function (tiff) {
+  it("should work on Float64 and lzw compressed tiffs", function(done) {
+    retrieve("float64lzw.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -334,8 +334,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work on packbit compressed tiffs", function (done) {
-    retrieve("packbits.tiff", done, function (tiff) {
+  it("should work on packbit compressed tiffs", function(done) {
+    retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       expect(image).to.be.ok;
@@ -357,11 +357,11 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work with no options other than a callback", function (done) {
-    retrieve("small.tiff", done, function (tiff) {
+  it("should work with no options other than a callback", function(done) {
+    retrieve("small.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters(function (allData) {
+      image.readRasters(function(allData) {
         expect(allData).to.have.length(15);
         expect(allData[0].length).to.equal(53 * 44);
         done();
@@ -369,25 +369,25 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work with callback and error callback", function (done) {
-    retrieve("small.tiff", done, function (tiff) {
+  it("should work with callback and error callback", function(done) {
+    retrieve("small.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters(function (allData) {
+      image.readRasters(function(allData) {
         expect(allData).to.have.length(15);
         expect(allData[0].length).to.equal(53 * 44);
         done();
-      }, function (error) {
+      }, function(error) {
         done(error);
       });
     });
   });
 
-  it("should work with options and callback", function (done) {
-    retrieve("packbits.tiff", done, function (tiff) {
+  it("should work with options and callback", function(done) {
+    retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters({ window: [200, 200, 210, 210] }, function (allData) {
+      image.readRasters({ window: [200, 200, 210, 210] }, function(allData) {
         expect(allData).to.have.length(15);
         expect(allData[0].length).to.equal(10 * 10);
         done();
@@ -395,22 +395,22 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work with options, callback and error callback", function (done) {
-    retrieve("packbits.tiff", done, function (tiff) {
+  it("should work with options, callback and error callback", function(done) {
+    retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters({ window: [200, 200, 210, 210] }, function (allData) {
+      image.readRasters({ window: [200, 200, 210, 210] }, function(allData) {
         expect(allData).to.have.length(15);
         expect(allData[0].length).to.equal(10 * 10);
         done();
-      }, function (error) {
+      }, function(error) {
         done(error);
       });
     });
   });
 
-  it("should work with interleaved reading", function (done) {
-    retrieve("packbits.tiff", done, function (tiff) {
+  it("should work with interleaved reading", function(done) {
+    retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
@@ -425,8 +425,8 @@ describe("mainTests", function () {
     });
   });
 
-  it("should work with BigTIFFs", function (done) {
-    retrieve("BigTIFF.tif", done, function (tiff) {
+  it("should work with BigTIFFs", function(done) {
+    retrieve("BigTIFF.tif", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
@@ -442,11 +442,11 @@ describe("mainTests", function () {
   });
 });
 
-describe("RGB-tests", function () {
+describe("RGB-tests", function() {
   var options = { window: [250, 250, 300, 300], interleave: true };
 
-  var comparisonPromise = new Promise(function (resolve, reject) {
-    retrieve("rgb.tiff", reject, function (tiff) {
+  var comparisonPromise = new Promise(function(resolve, reject) {
+    retrieve("rgb.tiff", reject, function(tiff) {
       try {
         //console.log("tiff.fileDirectories:", JSON.stringify(tiff.fileDirectories));
         var image = tiff.getImage();
@@ -458,12 +458,12 @@ describe("RGB-tests", function () {
     });
   });
 
-  it("should work with CMYK files", function (done) {
-    retrieve("cmyk.tif", done, function (tiff) {
-      comparisonPromise.then(function (comparisonRaster) {
+  it("should work with CMYK files", function(done) {
+    retrieve("cmyk.tif", done, function(tiff) {
+      comparisonPromise.then(function(comparisonRaster) {
         expect(tiff).to.be.ok;
         var image = tiff.getImage();
-        image.readRGB(options, function (rgbRaster) {
+        image.readRGB(options, function(rgbRaster) {
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -476,12 +476,12 @@ describe("RGB-tests", function () {
     });
   });
 
-  it("should work with YCbCr files", function (done) {
-    retrieve("ycbcr.tif", done, function (tiff) {
-      comparisonPromise.then(function (comparisonRaster) {
+  it("should work with YCbCr files", function(done) {
+    retrieve("ycbcr.tif", done, function(tiff) {
+      comparisonPromise.then(function(comparisonRaster) {
         expect(tiff).to.be.ok;
         var image = tiff.getImage();
-        image.readRGB(options, function (rgbRaster) {
+        image.readRGB(options, function(rgbRaster) {
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -494,12 +494,12 @@ describe("RGB-tests", function () {
     });
   });
 
-  it("should work with paletted files", function (done) {
-    retrieve("rgb_paletted.tiff", done, function (tiff) {
-      comparisonPromise.then(function (comparisonRaster) {
+  it("should work with paletted files", function(done) {
+    retrieve("rgb_paletted.tiff", done, function(tiff) {
+      comparisonPromise.then(function(comparisonRaster) {
         expect(tiff).to.be.ok;
         var image = tiff.getImage();
-        image.readRGB(options, function (rgbRaster) {
+        image.readRGB(options, function(rgbRaster) {
           expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
           var diff = new Float32Array(rgbRaster);
           for (var i = 0; i < rgbRaster.length; ++i) {
@@ -513,9 +513,9 @@ describe("RGB-tests", function () {
   });
 });
 
-describe("writeTests", function () {
+describe("writeTests", function() {
 
-  it("should write flattened pixel values", function () {
+  it("should write flattened pixel values", function() {
 
     var original_values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -534,7 +534,7 @@ describe("writeTests", function () {
 
   });
 
-  it("should write pixel values in two dimensions", function () {
+  it("should write pixel values in two dimensions", function() {
 
     var original_values = [
       [
@@ -554,7 +554,7 @@ describe("writeTests", function () {
     var new_geotiff = GeoTIFF.parse(new_geotiff_as_binary_data);
 
     var new_values = new_geotiff.getImage().readRasters();
-    var new_values_reshaped = _.toArray(new_values).map(function (band) {
+    var new_values_reshaped = _.toArray(new_values).map(function(band) {
       return chunk(_.toArray(band), width);
     });
 
@@ -563,7 +563,7 @@ describe("writeTests", function () {
   });
 
 
-  it("should write metadata correctly", function () {
+  it("should write metadata correctly", function() {
 
 
     var height = 12;
