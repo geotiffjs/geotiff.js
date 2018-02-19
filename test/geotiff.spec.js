@@ -363,7 +363,7 @@ describe("mainTests", function() {
       var image = tiff.getImage();
       image.readRasters(function(allData) {
         expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(53 * 44);
+        expect(allData[0].length).to.equal(53*44);
         done();
       });
     });
@@ -375,7 +375,7 @@ describe("mainTests", function() {
       var image = tiff.getImage();
       image.readRasters(function(allData) {
         expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(53 * 44);
+        expect(allData[0].length).to.equal(53*44);
         done();
       }, function(error) {
         done(error);
@@ -387,9 +387,9 @@ describe("mainTests", function() {
     retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters({window: [200, 200, 210, 210] }, function(allData) {
+      image.readRasters({window: [200, 200, 210, 210]}, function(allData) {
         expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(10 * 10);
+        expect(allData[0].length).to.equal(10*10);
         done();
       });
     });
@@ -399,9 +399,9 @@ describe("mainTests", function() {
     retrieve("packbits.tiff", done, function(tiff) {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
-      image.readRasters({window: [200, 200, 210, 210] }, function(allData) {
+      image.readRasters({window: [200, 200, 210, 210]}, function(allData) {
         expect(allData).to.have.length(15);
-        expect(allData[0].length).to.equal(10 * 10);
+        expect(allData[0].length).to.equal(10*10);
         done();
       }, function(error) {
         done(error);
@@ -414,7 +414,7 @@ describe("mainTests", function() {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
-        var raster = image.readRasters({window: [200, 200, 210, 210], samples: [0, 1, 2, 3], interleave: true });
+        var raster = image.readRasters({window: [200, 200, 210, 210], samples: [0, 1, 2, 3], interleave: true});
         expect(raster).to.have.length(10 * 10 * 4);
         expect(raster).to.be.an.instanceof(Uint16Array);
         done();
@@ -430,7 +430,7 @@ describe("mainTests", function() {
       expect(tiff).to.be.ok;
       var image = tiff.getImage();
       try {
-        var raster = image.readRasters({ samples: [0, 1, 2], interleave: true });
+        var raster = image.readRasters({samples: [0, 1, 2], interleave: true});
         // expect(raster).to.have.length(10 * 10 * 3);
         expect(raster).to.be.an.instanceof(Uint8Array);
         done();
@@ -448,11 +448,9 @@ describe("RGB-tests", function() {
   var comparisonPromise = new Promise(function(resolve, reject) {
     retrieve("rgb.tiff", reject, function(tiff) {
       try {
-        //console.log("tiff.fileDirectories:", JSON.stringify(tiff.fileDirectories));
         var image = tiff.getImage();
         resolve(image.readRasters(options));
-      }
-      catch (error) {
+      } catch (error) {
         reject(error);
       }
     });
