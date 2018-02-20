@@ -38,7 +38,7 @@ class Pool {
    */
   decodeBlock(buffer) {
     if (this.decoder) {
-      return this.decoder.decodeBlock(buffer);
+      return Promise.resolve(this.decoder.decodeBlock(buffer));
     }
 
     return this.waitForWorker()
