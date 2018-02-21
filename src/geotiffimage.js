@@ -385,7 +385,7 @@ class GeoTIFFImage {
     const imageWindowHeight = imageWindow[3] - imageWindow[1];
     const numPixels = imageWindowWidth * imageWindowHeight;
 
-    if (!samples) {
+    if (!samples || !samples.length) {
       for (let i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
         samples.push(i);
       }
