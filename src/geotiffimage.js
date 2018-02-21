@@ -810,7 +810,7 @@ GeoTIFFImage.prototype = {
   getOrigin: function() {
     var tiePoints = this.fileDirectory.ModelTiepoint;
     var modelTransformation = this.fileDirectory.ModelTransformation;
-    if (tiePoints && tiePoints.length !== 6) {
+    if (tiePoints && tiePoints.length === 6) {
       return [
         tiePoints[3],
         tiePoints[4],
