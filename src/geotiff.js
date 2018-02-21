@@ -195,8 +195,8 @@ class GeoTIFF {
 
     while (nextIFDByteOffset !== 0x00000000) {
       const numDirEntries = this.bigTiff ?
-          this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
-          this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+        this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
+        this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
 
       const fileDirectory = {};
       let i = nextIFDByteOffset + (this.bigTiff ? 8 : 2);
@@ -204,8 +204,8 @@ class GeoTIFF {
         const fieldTag = this.dataView.getUint16(i, this.littleEndian);
         const fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
         const typeCount = this.bigTiff ?
-            this.dataView.getUint64(i + 4, this.littleEndian) :
-            this.dataView.getUint32(i + 4, this.littleEndian);
+          this.dataView.getUint64(i + 4, this.littleEndian) :
+          this.dataView.getUint32(i + 4, this.littleEndian);
 
         fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(
           fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8),
