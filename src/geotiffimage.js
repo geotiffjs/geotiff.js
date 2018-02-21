@@ -556,31 +556,51 @@ class GeoTIFFImage {
    * transformation, then an exception is thrown.
    * @returns {Array} The origin as a vector
    */
-  getOrigin() {
+  getOrigin: function() {
     const tiePoints = this.fileDirectory.ModelTiepoint;
-    if (!tiePoints || tiePoints.length !== 6) {
+    const modelTransformation = this.fileDirectory.ModelTransformation;
+    if (tiePoints && tiePoints.length === 6) {
+      return [
+        tiePoints[3],
+        tiePoints[4],
+        tiePoints[5]
+      ]; 
+    } else if (modelTransformation) {
+      return [
+        modelTransformation[3],
+        modelTransformation[7],
+        modelTransformation[11]
+      ];
+    } else {
       throw new Error('The image does not have an affine transformation.');
     }
-
-    return [tiePoints[3], tiePoints[4], tiePoints[5]];
-  }
+  },
 
   /**
    * Returns the image resolution as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
    * @returns {Array} The resolution as a vector
    */
-  getResolution() {
-    if (!this.fileDirectory.ModelPixelScale) {
+  getResolution: function() {
+    const modelPixelScale = this.fileDirectory.ModelPixelScale;
+    const modelTransformation = this.fileDirectory.ModelTransformation;
+
+    if (modelPixelScale) {
+      return [
+        modelPixelScale[0],
+        modelPixelScale[1],
+        modelPixelScale[2],
+      ];
+    } else if (modelTransformation) {
+      return [
+        modelTransformation[0],
+        modelTransformation[5],
+        modelTransformation[10],
+      ];
+    } else {
       throw new Error('The image does not have an affine transformation.');
     }
-
-    return [
-      this.fileDirectory.ModelPixelScale[0],
-      this.fileDirectory.ModelPixelScale[1],
-      this.fileDirectory.ModelPixelScale[2],
-    ];
-  }
+  },
 
   /**
    * Returns whether or not the pixels of the image depict an area (or point).
