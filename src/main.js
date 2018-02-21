@@ -31,4 +31,8 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 }
 if (typeof window !== 'undefined') {
   window.GeoTIFF = { parse };
+} else if (typeof self !== 'undefined') {
+  self.GeoTIFF = { parse };
 }
+
+
