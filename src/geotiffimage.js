@@ -337,7 +337,7 @@ GeoTIFFImage.prototype = {
             var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
             var windowCoordinate;
             if (interleave) {
-              if (predictor !== 1 && x > 0) {
+              if (predictor === 2 && x > 0) {
                 windowCoordinate =
                   (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                   (x + firstCol - imageWindow[0] - 1) * samples.length +
@@ -352,7 +352,7 @@ GeoTIFFImage.prototype = {
               valueArrays[windowCoordinate] = value;
             }
             else {
-              if (predictor !== 1 && x > 0) {
+              if (predictor === 2 && x > 0) {
                 windowCoordinate = (
                   y + firstLine - imageWindow[1]
                 ) * windowWidth + x - 1 + firstCol - imageWindow[0];
@@ -457,7 +457,7 @@ GeoTIFFImage.prototype = {
 
                 var windowCoordinate;
                 if (interleave) {
-                  if (predictor !== 1 && x > 0) {
+                  if (predictor === 2 && x > 0) {
                     windowCoordinate =
                       (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                       (x + firstCol - imageWindow[0] - 1) * samples.length +
@@ -472,7 +472,7 @@ GeoTIFFImage.prototype = {
                   valueArrays[windowCoordinate] = value;
                 }
                 else {
-                  if (predictor !== 1 && x > 0) {
+                  if (predictor === 2 && x > 0) {
                     windowCoordinate = (
                       y + firstLine - imageWindow[1]
                     ) * windowWidth + x - 1 + firstCol - imageWindow[0];
@@ -591,6 +591,11 @@ GeoTIFFImage.prototype = {
     var imageWindowHeight = imageWindow[3] - imageWindow[1];
     var numPixels = imageWindowWidth * imageWindowHeight;
     var i;
+
+    var predictor = this.fileDirectory.Predictor || 1;
+    if (predictor !== 1 && predictor !== 2) {
+      throw new Error("Unsupported predictor: " + predictor);
+    }
 
     if (!samples) {
       samples = [];
