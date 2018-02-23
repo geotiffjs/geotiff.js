@@ -145,25 +145,23 @@ class GeoTIFF {
   async getSlice(offset, size) {
     return new DataSlice(
       await this.source.fetch(
-        offset, size || this.bigTiff ? 4048 : 1024
-      ), offset, this.littleEndian, this.bigTiff
+        offset, size || this.bigTiff ? 4048 : 1024,
+      ), offset, this.littleEndian, this.bigTiff,
     );
   }
 
   async parseFileDirectories() {
     let nextIFDByteOffset = this.firstIFDOffset;
     const offsetSize = this.bigTiff ? 8 : 2;
-    const entrySize = this.bigTiff ? 20 : 12; 
+    const entrySize = this.bigTiff ? 20 : 12;
     const fileDirectories = [];
+
+    let dataSlice = await this.getSlice(nextIFDByteOffset);
 
     while (nextIFDByteOffset !== 0x00000000) {
       const numDirEntries = this.bigTiff ?
-        this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
-        this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
-
-      const numDirEntries = this.bigTiff ?
-          dataSlice.readUint64(nextIFDByteOffset) :
-          dataSlice.readUint16(nextIFDByteOffset);
+        dataSlice.readUint64(nextIFDByteOffset) :
+        dataSlice.readUint16(nextIFDByteOffset);
 
       // if the slice does not cover the whole IFD, request a bigger slice, where the
       // whole IFD fits: num of entries + n x tag length + offset to next IFD
@@ -180,8 +178,8 @@ class GeoTIFF {
         const fieldTag = dataSlice.readUint16(i);
         const fieldType = dataSlice.readUint16(i + 2);
         const typeCount = this.bigTiff ?
-            dataSlice.readUint64(i + 4) :
-            dataSlice.readUint32(i + 4);
+          dataSlice.readUint64(i + 4) :
+          dataSlice.readUint32(i + 4);
 
         let fieldValues;
         let value;
@@ -204,7 +202,7 @@ class GeoTIFF {
           } else {
             const fieldDataSlice = await this.getSlice(actualOffset, length);
             fieldValues = getValues(fieldDataSlice, fieldType, typeCount, actualOffset);
-          }            
+          }
         }
 
         // unpack single values from the array
@@ -225,7 +223,7 @@ class GeoTIFF {
 
       // continue with the next IFD
       nextIFDByteOffset = dataSlice.readOffset(
-        nextIFDByteOffset + offsetSize + (entrySize * numDirEntries)
+        nextIFDByteOffset + offsetSize + (entrySize * numDirEntries),
       );
     }
     return fileDirectories;
@@ -272,9 +270,9 @@ class GeoTIFF {
   }
 
   /**
-   * 
-   * @param {*} source 
-   * @param {*} options 
+   * Parse a (Geo)TIFF file from the given source.
+   * @param {object} source The source of data to parse from.
+   * @param {object} options Additional options.
    */
   static async parse(source, options) {
     const headerData = await source.fetch(0, 1024);
@@ -303,7 +301,7 @@ class GeoTIFF {
     } else {
       throw new TypeError('Invalid magic number.');
     }
-  
+
     const firstIFDOffset = bigTiff ?
       dataView.getUint64(8, littleEndian) :
       dataView.getUint32(4, littleEndian);

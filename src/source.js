@@ -29,41 +29,62 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   return rangeData;
 }
 
-export default class Source {
-  constructor(retrievalFunction, data, { blockSize = 65535 } = {}) {
+/**
+ * @typedef {object} Block
+ * @property {ArrayBuffer} data The actual data of the block.
+ * @property {number} offset The actual offset of the block within the file.
+ * @property {number} length The actual size of the block in bytes.
+ */
+
+/**
+ * Callback type for sources to request patches of data.
+ * @callback requestCallback
+ * @async
+ * @param {number} offset The offset within the file.
+ * @param {number} length The desired length of data to be read.
+ * @returns {Promise<Block>} The block of data.
+ */
+
+/**
+ * BlockedSource - an abstraction of (remote) files.
+ */
+class BlockedSource {
+  /**
+   * @param {requestCallback} retrievalFunction Callback function to request data
+   * @param {object} options Additional options
+   * @param {object} options.blockSize Size of blocks to be fetched
+   */
+  constructor(retrievalFunction, { blockSize = 65535 } = {}) {
     this.retrievalFunction = retrievalFunction;
-    this.data = data;
     this.blockSize = blockSize;
 
     this.blockRequests = new Map();
     this.blocks = new Map();
-
-    if (data instanceof ArrayBuffer) {
-      this.blockSize = data.byteLength;
-    }
   }
 
   /**
-   * 
-   * @param {*} offset 
-   * @param {*} length 
+   * Fetch a subset of the file.
+   * @param {number} offset The offset within the file to read from.
+   * @param {number} length The length in bytes to read from.
+   * @returns {ArrayBuffer} The subset of the file.
    */
   async fetch(offset, length) {
     const top = offset + length;
     const blockIds = [];
     const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
-    for (let currentOffset = firstBlockOffset; currentOffset < top; currentOffset += this.blockSize) {
-      const blockId = Math.floor(currentOffset / this.blockSize);
+    for (let current = firstBlockOffset; current < top; current += this.blockSize) {
+      const blockId = Math.floor(current / this.blockSize);
       blockIds.push(blockId);
     }
     const blocks = await Promise.all(blockIds.map(blockId => this.fetchBlock(blockId)));
     return readRangeFromBlocks(blocks, offset, length);
   }
 
-  async fetchBlocks(blockIds) {
-    
-  }
-
+  /**
+   * Fetch a single block, if it is not already within the cache.
+   * @param {number} blockId The block identifier to fetch.
+   * @returns {Promise<Block>} The requested block.
+   */
   async fetchBlock(blockId) {
     let block = this.blocks.get(blockId);
     if (block) {
@@ -71,7 +92,7 @@ export default class Source {
     }
     let blockRequest = this.blockRequests.get(blockId);
     if (blockRequest) {
-      return await blockRequest;
+      return blockRequest;
     }
 
     // cache the request to fetch the block
@@ -95,15 +116,19 @@ export default class Source {
   }
 }
 
-
-
+/**
+ * Create a new source to
+ * @param {string} url The URL to send requests to.
+ * @param {object} headers Additional headers to be sent to the server.
+ */
 export function makeFetchSource(url, headers) {
-  return new Source(async (offset, length) => {
+  return new BlockedSource(async (offset, length) => {
     const response = await fetch(url, {
       headers: Object.assign({},
         headers, {
-        Range: `bytes=${offset}-${offset + length}`,
-      })
+          Range: `bytes=${offset}-${offset + length}`,
+        },
+      ),
     });
 
     // check the response was okay and if the server actually understands range requests
@@ -125,4 +150,12 @@ export function makeFetchSource(url, headers) {
       };
     }
   });
+}
+
+export function makeBufferSource(arrayBuffer) {
+  return {
+    async fetch(offset, length) {
+      return arrayBuffer.slice(offset, offset + length);
+    },
+  };
 }
