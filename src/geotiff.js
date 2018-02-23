@@ -157,7 +157,9 @@ class GeoTIFF {
     const fileDirectories = [];
 
     while (nextIFDByteOffset !== 0x00000000) {
-      let dataSlice = await this.getSlice(nextIFDByteOffset)
+      const numDirEntries = this.bigTiff ?
+        this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) :
+        this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
 
       const numDirEntries = this.bigTiff ?
           dataSlice.readUint64(nextIFDByteOffset) :

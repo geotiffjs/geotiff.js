@@ -2,8 +2,7 @@ import work from 'webworkify';
 import worker from './worker';
 import { getDecoder } from './compression';
 
-
-const defaultPoolSize = navigator.hardwareConcurrency;
+const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : 1;
 
 /**
  * Pool for workers to decode chunks of the images.
@@ -38,7 +37,7 @@ class Pool {
    */
   async decodeBlock(buffer) {
     if (this.decoder) {
-      return this.decoder.decodeBlock(buffer);
+      return Promise.resolve(this.decoder.decodeBlock(buffer));
     }
 
     const currentWorker = await this.waitForWorker();

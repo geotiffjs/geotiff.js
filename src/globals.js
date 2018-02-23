@@ -237,7 +237,7 @@ export let parseXml; // eslint-disable-line
 if (typeof window === 'undefined') {
   parseXml = function (xmlStr) {
     // requires xmldom module
-    const DOMParser = require('xmldom').DOMParser; // eslint-disable-line global-require
+    const { DOMParser } = require('xmldom'); // eslint-disable-line global-require
     return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
 } else if (typeof window.DOMParser !== 'undefined') {

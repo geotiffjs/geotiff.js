@@ -32,3 +32,6 @@ rgb2pct.py rgb.tiff rgb_paletted.tiff
 convert rgb.tiff -colorspace YCbCr ycbcr.tif
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
+
+# modeltransformation tag
+wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff

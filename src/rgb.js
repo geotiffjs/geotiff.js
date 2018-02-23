@@ -64,48 +64,40 @@ export function fromYCbCr(yCbCrRaster, width, height) {
   return rgbRaster;
 }
 
-// converted from here:
-// http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
-// still buggy
-/* eslint-disable */
+const Xn = 0.95047;
+const Yn = 1.00000;
+const Zn = 1.08883;
+
+// from https://github.com/antimatter15/rgb-lab/blob/master/color.js
+
 export function fromCIELab(cieLabRaster, width, height) {
-  const T1 = 0.008856;
-  const T2 = 0.206893;
-  const MAT = [3.240479, -1.537150, -0.498535,
-              -0.969256,  1.875992,  0.041556,
-               0.055648, -0.204043,  1.057311];
   const rgbRaster = new Uint8Array(width * height * 3);
 
   for (let i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
-    const L = cieLabRaster[i];
-    const a = cieLabRaster[i + 1];
-    const b = cieLabRaster[i + 2];
+    const L = cieLabRaster[i + 0];
+    const a_ = cieLabRaster[i + 1] << 24 >> 24; // conversion from uint8 to int8
+    const b_ = cieLabRaster[i + 2] << 24 >> 24; // same
 
-    // Compute Y
-    let fY = Math.pow(((L + 16) / 116), 3);
-    const YT = fY > T1;
-    fY = ((YT !== 0) * (L / 903.3)) + (YT * fY);
-    const Y = fY;
+    let y = (L + 16) / 116;
+    let x = a_ / 500 + y;
+    let z = y - b_ / 200;
+    let r, g, b;
 
-    fY = YT * Math.pow(fY, 1 / 3) + (YT !== 0) * (7.787 * fY + 16/116);
+    x = Xn * ((x * x * x > 0.008856) ? x * x * x : (x - 16 / 116) / 7.787);
+    y = Yn * ((y * y * y > 0.008856) ? y * y * y : (y - 16 / 116) / 7.787);
+    z = Zn * ((z * z * z > 0.008856) ? z * z * z : (z - 16 / 116) / 7.787);
 
-    // Compute X
-    const fX = (a / 500) + fY;
-    const XT = fX > T2;
-    let X = ((XT * Math.pow(fX, 3)) + ((XT !== 0) * ((fX - (16 / 116)) / 7.787)));
+    r = x * 3.2406 + y * -1.5372 + z * -0.4986;
+    g = x * -0.9689 + y * 1.8758 + z * 0.0415;
+    b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
-    // Compute Z
-    const fZ = fY - (b / 200);
-    const ZT = fZ > T2;
-    let Z = ((ZT * Math.pow(fZ, 3)) + ((ZT !== 0) * ((fZ - (16 / 116)) / 7.787)));
-
-    // Normalize for D65 white point
-    X *= 0.950456;
-    Z *= 1.088754;
-
-    rgbRaster[j] = (X * MAT[0]) + (Y * MAT[1]) + (Z * MAT[2]);
-    rgbRaster[j + 1] = (X * MAT[3]) + (Y * MAT[4]) + (Z * MAT[5]);
-    rgbRaster[j + 2] = (X * MAT[6]) + (Y * MAT[7]) + (Z * MAT[8]);
+    r = (r > 0.0031308) ? (1.055 * Math.pow(r, 1 / 2.4) - 0.055) : 12.92 * r;
+    g = (g > 0.0031308) ? (1.055 * Math.pow(g, 1 / 2.4) - 0.055) : 12.92 * g;
+    b = (b > 0.0031308) ? (1.055 * Math.pow(b, 1 / 2.4) - 0.055) : 12.92 * b;
+    
+    rgbRaster[j] = Math.max(0, Math.min(1, r)) * 255;
+    rgbRaster[j + 1] = Math.max(0, Math.min(1, g)) * 255;
+    rgbRaster[j + 2] = Math.max(0, Math.min(1, b)) * 255;
   }
   return rgbRaster;
 }
