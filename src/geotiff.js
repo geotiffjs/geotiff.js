@@ -200,7 +200,7 @@ class GeoTIFF {
 
       const fileDirectory = {};
       let i = nextIFDByteOffset + (this.bigTiff ? 8 : 2);
-      for (let entryCount = 0; entryCount < numDirEntries; i += (this.bigTiff ? 20 : 12), ++entryCount) {
+      for (let entryCount = 0; entryCount < numDirEntries; i += entrySize, ++entryCount) {
         const fieldTag = this.dataView.getUint16(i, this.littleEndian);
         const fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
         const typeCount = this.bigTiff ?
@@ -216,7 +216,9 @@ class GeoTIFF {
         fileDirectory, this.parseGeoKeyDirectory(fileDirectory),
       ]);
 
-      nextIFDByteOffset = this.getOffset(nextIFDByteOffset + offsetSize + (entrySize * numDirEntries));
+      nextIFDByteOffset = this.getOffset(
+        nextIFDByteOffset + offsetSize + (entrySize * numDirEntries),
+      );
     }
     return fileDirectories;
   }
