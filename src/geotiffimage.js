@@ -1,5 +1,6 @@
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
+import { applyPredictor } from './predictor';
 import Pool from './pool';
 
 function sum(array, start, end) {
@@ -299,7 +300,11 @@ class GeoTIFFImage {
           const promise = this.getTileOrStrip(xTile, yTile, sample, pool);
           promises.push(promise);
           promise.then((tile) => {
-            const dataView = new DataView(tile.data);
+            const buffer = tile.data;
+            if (predictor !== 1) {
+              buffer = applyPredictor(buffer, predictor, tileWidth, tileHeight, this.fileDirectory.BitsPerSample);
+            }
+            const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
             const firstCol = tile.x * tileWidth;
             const lastLine = (tile.y + 1) * tileHeight;
@@ -315,27 +320,12 @@ class GeoTIFFImage {
                 let value = reader.call(dataView, pixelOffset + srcSampleOffsets[si], littleEndian);
                 let windowCoordinate;
                 if (interleave) {
-                  if (predictor !== 1 && x > 0) {
-                    windowCoordinate =
-                      ((y + firstLine - imageWindow[1]) * windowWidth * samples.length) +
-                      ((x + firstCol - imageWindow[0] - 1) * samples.length) +
-                      si;
-                    value += valueArrays[windowCoordinate];
-                  }
-
                   windowCoordinate =
                     ((y + firstLine - imageWindow[1]) * windowWidth * samples.length) +
                     ((x + firstCol - imageWindow[0]) * samples.length) +
                     si;
                   valueArrays[windowCoordinate] = value;
                 } else {
-                  if (predictor !== 1 && x > 0) {
-                    windowCoordinate = ((
-                      y + firstLine - imageWindow[1]
-                    ) * windowWidth) + x - 1 + firstCol - imageWindow[0];
-                    value += valueArrays[si][windowCoordinate];
-                  }
-
                   windowCoordinate = (
                     (y + firstLine - imageWindow[1]) * windowWidth
                   ) + x + firstCol - imageWindow[0];
