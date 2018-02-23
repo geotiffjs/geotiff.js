@@ -6,6 +6,7 @@ var RawDecoder = require("./compression/raw.js");
 var LZWDecoder = require("./compression/lzw.js");
 var DeflateDecoder = require("./compression/deflate.js");
 var PackbitsDecoder = require("./compression/packbits.js");
+var applyPredictor = require("./predictor.js").applyPredictor;
 
 
 var sum = function(array, start, end) {
@@ -292,6 +293,7 @@ GeoTIFFImage.prototype = {
     var imageWidth = this.getWidth();
 
     var predictor = this.fileDirectory.Predictor || 1;
+    var bitsPerSample = this.fileDirectory.BitsPerSample;
 
     var srcSampleOffsets = [];
     var sampleReaders = [];
@@ -323,7 +325,11 @@ GeoTIFFImage.prototype = {
 
     function onTileGot(error, tile) {
       if (!error) {
-        var dataView = new DataView(tile.data);
+        var buffer = tile.data;
+        if (predictor !== 1) {
+          buffer = applyPredictor(buffer, predictor, tileWidth, tileHeight, bitsPerSample);
+        }
+        var dataView = new DataView(buffer);
 
         var firstLine = tile.y * tileHeight;
         var firstCol = tile.x * tileWidth;
@@ -337,28 +343,12 @@ GeoTIFFImage.prototype = {
             var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
             var windowCoordinate;
             if (interleave) {
-              if (predictor !== 1 && x > 0) {
-                windowCoordinate =
-                  (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
-                  (x + firstCol - imageWindow[0] - 1) * samples.length +
-                  sampleIndex;
-                value += valueArrays[windowCoordinate];
-              }
-
               windowCoordinate =
                 (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                 (x + firstCol - imageWindow[0]) * samples.length +
                 sampleIndex;
               valueArrays[windowCoordinate] = value;
-            }
-            else {
-              if (predictor !== 1 && x > 0) {
-                windowCoordinate = (
-                  y + firstLine - imageWindow[1]
-                ) * windowWidth + x - 1 + firstCol - imageWindow[0];
-                value += valueArrays[sampleIndex][windowCoordinate];
-              }
-
+            } else {
               windowCoordinate = (
                 y + firstLine - imageWindow[1]
               ) * windowWidth + x + firstCol - imageWindow[0];
@@ -437,7 +427,12 @@ GeoTIFFImage.prototype = {
             if (this.planarConfiguration === 2) {
               bytesPerPixel = this.getSampleByteSize(sample);
             }
-            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
+
+            var buffer = this.getTileOrStrip(xTile, yTile, sample);
+            if (predictor !== 1) {
+              buffer = applyPredictor(buffer, predictor, tileWidth, tileHeight, this.fileDirectory.BitsPerSample);
+            }
+            var tile = new DataView(buffer);
 
             var reader = sampleReaders[sampleIndex];
             var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
@@ -457,28 +452,12 @@ GeoTIFFImage.prototype = {
 
                 var windowCoordinate;
                 if (interleave) {
-                  if (predictor !== 1 && x > 0) {
-                    windowCoordinate =
-                      (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
-                      (x + firstCol - imageWindow[0] - 1) * samples.length +
-                      sampleIndex;
-                    value += valueArrays[windowCoordinate];
-                  }
-
                   windowCoordinate =
                     (y + firstLine - imageWindow[1]) * windowWidth * samples.length +
                     (x + firstCol - imageWindow[0]) * samples.length +
                     sampleIndex;
                   valueArrays[windowCoordinate] = value;
-                }
-                else {
-                  if (predictor !== 1 && x > 0) {
-                    windowCoordinate = (
-                      y + firstLine - imageWindow[1]
-                    ) * windowWidth + x - 1 + firstCol - imageWindow[0];
-                    value += valueArrays[sampleIndex][windowCoordinate];
-                  }
-
+                } else {
                   windowCoordinate = (
                     y + firstLine - imageWindow[1]
                   ) * windowWidth + x + firstCol - imageWindow[0];
