@@ -175,7 +175,7 @@ GeoTIFF.prototype = {
     }
 
     var geoKeyDirectory = {};
-    for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
+    for (var i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
       var key = geoKeyNames[rawGeoKeyDirectory[i]],
         location = (rawGeoKeyDirectory[i+1]) ? (fieldTagNames[rawGeoKeyDirectory[i+1]]) : null,
         count = rawGeoKeyDirectory[i+2],
