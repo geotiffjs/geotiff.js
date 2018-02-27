@@ -162,7 +162,7 @@ class GeoTIFF {
     }
 
     const geoKeyDirectory = {};
-    for (let i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
+    for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
       const key = geoKeyNames[rawGeoKeyDirectory[i]];
       const location = (rawGeoKeyDirectory[i + 1]) ?
         (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
