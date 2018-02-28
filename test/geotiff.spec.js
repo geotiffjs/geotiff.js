@@ -473,9 +473,9 @@ describe('RGB-tests', () => {
     });
   });
 
-  it("should be able to get the origin and offset of images using tie points and scale", function(done) {
-    retrieve("stripped.tiff", done, function(tiff) {
-      var image = tiff.getImage();
+  it('should be able to get the origin and offset of images using tie points and scale', (done) => {
+    retrieve('stripped.tiff', done, (tiff) => {
+      const image = tiff.getImage();
       expect(image.getResolution()).to.be.an('array');
       expect(image.getOrigin()).to.be.an('array');
       expect(image.getBoundingBox()).to.be.an('array');
@@ -483,9 +483,9 @@ describe('RGB-tests', () => {
     });
   });
 
-  it("should be able to get the origin and offset of images using model transformation", function (done) {
-    retrieve("no_pixelscale_or_tiepoints.tiff", done, function (tiff) {
-      var image = tiff.getImage();
+  it('should be able to get the origin and offset of images using model transformation', (done) => {
+    retrieve('no_pixelscale_or_tiepoints.tiff', done, (tiff) => {
+      const image = tiff.getImage();
       expect(image.getResolution()).to.be.an('array');
       expect(image.getOrigin()).to.be.an('array');
       expect(image.getBoundingBox()).to.be.an('array');

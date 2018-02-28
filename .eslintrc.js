@@ -39,5 +39,7 @@ module.exports = {
     'arrow-body-style': 0,
     'function-paren-newline': 0,
     'object-curly-newline': 0,
+    'no-await-in-loop': 0,
+    'prefer-destructuring': ['error', { 'object': true, 'array': false }],
   }
 };

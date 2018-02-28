@@ -1,6 +1,6 @@
 import { getDecoder } from './compression';
 
-function decode(self, compression, buffer) {
+async function decode(self, compression, buffer) {
   const decoder = getDecoder(compression);
   decoder.decodeBlock(buffer)
     .then((result) => {

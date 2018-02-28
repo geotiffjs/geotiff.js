@@ -35,30 +35,28 @@ class Pool {
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
    * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
    */
-  decodeBlock(buffer) {
+  async decodeBlock(buffer) {
     if (this.decoder) {
       return Promise.resolve(this.decoder.decodeBlock(buffer));
     }
 
-    return this.waitForWorker()
-      .then((currentWorker) => {
-        return new Promise((resolve, reject) => {
-          currentWorker.onmessage = (event) => {
-            this.workers.push(currentWorker);
-            resolve(event.data[0]);
-          };
-          currentWorker.onerror = (error) => {
-            this.workers.push(currentWorker);
-            reject(error);
-          };
-          currentWorker.postMessage([
-            'decode', this.compression, buffer,
-          ], [buffer]);
-        });
-      });
+    const currentWorker = await this.waitForWorker();
+    return new Promise((resolve, reject) => {
+      currentWorker.onmessage = (event) => {
+        this.workers.push(currentWorker);
+        resolve(event.data[0]);
+      };
+      currentWorker.onerror = (error) => {
+        this.workers.push(currentWorker);
+        reject(error);
+      };
+      currentWorker.postMessage([
+        'decode', this.compression, buffer,
+      ], [buffer]);
+    });
   }
 
-  waitForWorker() {
+  async waitForWorker() {
     const sleepTime = 10;
     const waiter = (callback) => {
       if (this.workers.length) {

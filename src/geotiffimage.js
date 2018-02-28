@@ -65,7 +65,7 @@ class GeoTIFFImage {
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
    */
-  constructor(fileDirectory, geoKeys, dataView, littleEndian, cache) {
+  constructor(fileDirectory, geoKeys, dataView, littleEndian, cache, source) {
     this.fileDirectory = fileDirectory;
     this.geoKeys = geoKeys;
     this.dataView = dataView;
@@ -77,6 +77,8 @@ class GeoTIFFImage {
     if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
       throw new Error('Invalid planar configuration.');
     }
+
+    this.source = source;
   }
 
   /**
@@ -217,10 +219,9 @@ class GeoTIFFImage {
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
    * @param {Pool} pool the decoder pool
-   * @returns {Promise.<Int8Array|Uint8Array|Int16Array
-   *                    |Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array>}
+   * @returns {Promise.<ArrayBuffer>}
    */
-  getTileOrStrip(x, y, sample, pool) {
+  async getTileOrStrip(x, y, sample, pool) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -240,17 +241,16 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
-    const slice = this.dataView.buffer.slice(offset, offset + byteCount);
+    const slice = await this.source.fetch(offset, byteCount);
 
-    let promise;
+    let request;
     if (tiles === null) {
-      promise = pool.decodeBlock(slice);
+      request = pool.decodeBlock(slice);
     } else if (!tiles[index]) {
-      promise = pool.decodeBlock(slice);
-      tiles[index] = promise;
+      request = pool.decodeBlock(slice);
+      tiles[index] = request;
     }
-
-    return promise.then(data => ({ x, y, sample, data }));
+    return { x, y, sample, data: await request };
   }
 
   /*
@@ -262,7 +262,7 @@ class GeoTIFFImage {
    * @param {Pool} pool The decoder pool
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  _readRaster(imageWindow, samples, valueArrays, interleave, pool) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, pool) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -362,7 +362,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  readRasters({ window: wnd, samples = [], interleave, poolSize = null } = {}) {
+  async readRasters({ window: wnd, samples = [], interleave, poolSize = null } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
     const pool = new Pool(this.fileDirectory.Compression, poolSize);
 
@@ -426,7 +426,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  readRGB({ window, poolSize } = {}) {
+  async readRGB({ window, poolSize } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
