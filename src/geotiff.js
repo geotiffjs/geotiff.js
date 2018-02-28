@@ -143,9 +143,10 @@ class GeoTIFF {
   }
 
   async getSlice(offset, size) {
+    const fallbackSize = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
       await this.source.fetch(
-        offset, size || this.bigTiff ? 4048 : 1024,
+        offset, typeof size !== 'undefined' ? size : fallbackSize,
       ), offset, this.littleEndian, this.bigTiff,
     );
   }
