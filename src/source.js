@@ -159,3 +159,20 @@ export function makeBufferSource(arrayBuffer) {
     },
   };
 }
+
+export function makeFileSource(path) {
+  const { promisify } = require('util');
+  const { open, read } = require('fs');
+  const openAsync = promisify(open);
+  const readAsync = promisify(read);
+
+  const fileOpen = openAsync(path, 'r');
+
+  return {
+    async fetch(offset, length) {
+      const fd = await fileOpen;
+      const { buffer } = await readAsync(fd, new Uint8Array(length), 0, length, offset);
+      return buffer.buffer;
+    },
+  };
+}
