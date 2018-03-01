@@ -17,6 +17,7 @@ gdal_translate -of GTiff -co COMPRESS=LZW -co TILED=YES -co BLOCKXSIZE=32 -co BL
 gdal_translate -of GTiff -co COMPRESS=LZW -ot Float64 stripped.tiff float64lzw.tiff
 gdal_translate -of GTiff -co COMPRESS=LZW -co PREDICTOR=2 stripped.tiff lzw_predictor.tiff
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
+gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
 
 # overviews
 cp stripped.tiff overviews.tiff

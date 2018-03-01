@@ -6,492 +6,157 @@ import { expect } from 'chai';
 import 'isomorphic-fetch';
 
 import GeoTIFF from '../src/main';
+import { makeFetchSource, makeFileSource } from '../src/source';
 
-const retrieve = isNode ? async (filename, done, callback) => {
-  const fs = require('fs');
-  fs.readFile(`test/data/${filename}`, (err, contents) => {
-    if (err) {
-      done(err);
-    } else {
-      const tiff = GeoTIFF.parse(contents.buffer);
-      callback(tiff);
-    }
-  });
-} : async (filename, done, callback) => {
-  const response = await fetch(`/base/test/data/${filename}`);
-  const data = await response.arrayBuffer();
-  callback(GeoTIFF.parse(data));
-};
+function createSource(filename) {
+  if (isNode) {
+    return makeFileSource(`test/data/${filename}`);
+  }
+  return makeFetchSource(`test/data/${filename}`);
+}
 
-describe('mainTests', () => {
+async function performTiffTests(tiff, width, height, sampleCount, type) {
+  const image = await tiff.getImage();
+  expect(image).to.be.ok;
+  expect(image.getWidth()).to.equal(width);
+  expect(image.getHeight()).to.equal(height);
+  expect(image.getSamplesPerPixel()).to.equal(sampleCount);
+  expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+  expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+
+  const allData = await image.readRasters({ window: [200, 200, 210, 210] });
+  const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
+  expect(allData).to.have.length(sampleCount);
+  expect(allData[0]).to.be.an.instanceof(type);
+  expect(data[0]).to.deep.equal(allData[5]);
+}
+
+async function performRGBTest(tiff, options, comparisonRaster, maxDiff) {
+  const image = await tiff.getImage();
+  const rgbRaster = await image.readRGB(options);
+  const comp = await comparisonRaster;
+
+  expect(rgbRaster).to.have.lengthOf(comp.length);
+  const diff = new Float32Array(rgbRaster);
+  for (let i = 0; i < rgbRaster.length; ++i) {
+    diff[i] = Math.abs(comp[i] - rgbRaster[i]);
+  }
+  expect(Math.max.apply(null, diff)).to.be.at.most(maxDiff);
+}
+
+
+describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {
     expect(GeoTIFF).to.be.ok;
   });
 
-  it('should work on stripped tiffs', (done) => {
-    retrieve('stripped.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on stripped tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on tiled tiffs', (done) => {
-    retrieve('tiled.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on tiled tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('tiled.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on band interleaved tiffs', (done) => {
-    retrieve('interleave.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on band interleaved tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('interleave.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on band interleaved and tiled tiffs', (done) => {
-    retrieve('interleave.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  // TODO: currently only the interleave.tiff is used, make own
+  it('should work on band interleaved tiled tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('interleave.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on LZW compressed images', (done) => {
-    retrieve('lzw.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on LZW compressed images', async () => {
+    const tiff = await GeoTIFF.parse(createSource('lzw.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on band interleaved, lzw compressed, and tiled tiffs', (done) => {
-    retrieve('tiledplanarlzw.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('tiledplanarlzw.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work on Int32 tiffs', (done) => {
-    retrieve('int32.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Int32Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on Int32 tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('int32.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Int32Array);
   });
 
-  it('should work on UInt32 tiffs', (done) => {
-    retrieve('uint32.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint32Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on UInt32 tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('uint32.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint32Array);
   });
 
-  it('should work on Float32 tiffs', (done) => {
-    retrieve('float32.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Float32Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on Float32 tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('float32.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
-  it('should work on Float64 tiffs', (done) => {
-    retrieve('float64.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Float64Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on Float64 tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('float64.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float64Array);
   });
 
-  it('should work on Float64 and lzw compressed tiffs', (done) => {
-    retrieve('float64lzw.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Float64Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on Float64 and lzw compressed tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('float64lzw.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float64Array);
   });
 
-  it('should work on packbit compressed tiffs', (done) => {
-    retrieve('packbits.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      expect(image).to.be.ok;
-      expect(image.getWidth()).to.equal(539);
-      expect(image.getHeight()).to.equal(448);
-      expect(image.getSamplesPerPixel()).to.equal(15);
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
-      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
-
-      try {
-        Promise.all([
-          image.readRasters({ window: [200, 200, 210, 210] }),
-          image.readRasters({ window: [200, 200, 210, 210], samples: [5] }),
-        ])
-          .then(([allData, data]) => {
-            expect(allData).to.have.length(15);
-            expect(allData[0]).to.be.an.instanceof(Uint16Array);
-            expect(data[0]).to.deep.equal(allData[5]);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work on packbit compressed tiffs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('packbits.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
-  it('should work with interleaved reading', (done) => {
-    retrieve('packbits.tiff', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      try {
-        image.readRasters({ window: [200, 200, 210, 210], samples: [0, 1, 2, 3], interleave: true })
-          .then((raster) => {
-            expect(raster).to.have.length(10 * 10 * 4);
-            expect(raster).to.be.an.instanceof(Uint16Array);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
-  });
-
-  it('should work with BigTIFFs', (done) => {
-    retrieve('BigTIFF.tif', done, (tiff) => {
-      expect(tiff).to.be.ok;
-      const image = tiff.getImage();
-      try {
-        image.readRasters({ samples: [0, 1, 2], interleave: true })
-          .then((raster) => {
-            // expect(raster).to.have.length(10 * 10 * 3);
-            expect(raster).to.be.an.instanceof(Uint8Array);
-            done();
-          });
-      } catch (error) {
-        done(error);
-      }
-    });
+  it('should work with BigTIFFs', async () => {
+    const tiff = await GeoTIFF.parse(createSource('bigtiff.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 });
 
 describe('RGB-tests', () => {
   const options = { window: [250, 250, 300, 300], interleave: true };
+  const comparisonRaster = (async () => {
+    const tiff = await GeoTIFF.parse(createSource('rgb.tiff'));
+    const image = await tiff.getImage();
+    return image.readRasters(options);
+  })();
 
-  const comparisonPromise = new Promise((resolve, reject) => {
-    retrieve('rgb.tiff', reject, (tiff) => {
-      try {
-        const image = tiff.getImage();
-        resolve(image.readRasters(options));
-      } catch (error) {
-        reject(error);
-      }
-    });
+  it('should work with CMYK files', async () => {
+    const tiff = await GeoTIFF.parse(createSource('cmyk.tif'));
+    await performRGBTest(tiff, options, comparisonRaster, 1);
   });
 
-  it('should work with CMYK files', (done) => {
-    retrieve('cmyk.tif', done, (tiff) => {
-      const image = tiff.getImage();
-      Promise.all([comparisonPromise, image.readRGB(options)])
-        .then(([comparisonRaster, rgbRaster]) => {
-          expect(tiff).to.be.ok;
-          expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
-          const diff = new Float32Array(rgbRaster);
-          for (let i = 0; i < rgbRaster.length; ++i) {
-            diff[i] = Math.abs(comparisonRaster[i] - rgbRaster[i]);
-          }
-          expect(Math.max.apply(null, diff)).to.be.at.most(1);
-          done();
-        }, done);
-    });
+  it('should work with YCbCr files', async () => {
+    const tiff = await GeoTIFF.parse(createSource('ycbcr.tif'));
+    await performRGBTest(tiff, options, comparisonRaster, 3);
   });
 
-  it('should work with YCbCr files', (done) => {
-    retrieve('ycbcr.tif', done, (tiff) => {
-      const image = tiff.getImage();
-      Promise.all([comparisonPromise, image.readRGB(options)])
-        .then(([comparisonRaster, rgbRaster]) => {
-          expect(tiff).to.be.ok;
-          expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
-          const diff = new Float32Array(rgbRaster);
-          for (let i = 0; i < rgbRaster.length; ++i) {
-            diff[i] = Math.abs(comparisonRaster[i] - rgbRaster[i]);
-          }
-          expect(Math.max.apply(null, diff)).to.be.at.most(3);
-          done();
-        }, done);
-    });
+  it('should work with paletted files', async () => {
+    const tiff = await GeoTIFF.parse(createSource('rgb_paletted.tiff'));
+    await performRGBTest(tiff, options, comparisonRaster, 15);
+  });
+});
+
+describe('Geo metadata tests', async () => {
+  it('should be able to get the origin and offset of images using tie points and scale', async () => {
+    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    const image = await tiff.getImage();
+    expect(image.getResolution()).to.be.an('array');
+    expect(image.getOrigin()).to.be.an('array');
+    expect(image.getBoundingBox()).to.be.an('array');
   });
 
-  it('should work with paletted files', (done) => {
-    retrieve('rgb_paletted.tiff', done, (tiff) => {
-      const image = tiff.getImage();
-      Promise.all([comparisonPromise, image.readRGB(options)])
-        .then(([comparisonRaster, rgbRaster]) => {
-          expect(tiff).to.be.ok;
-          expect(rgbRaster).to.have.lengthOf(comparisonRaster.length);
-          const diff = new Float32Array(rgbRaster);
-          for (let i = 0; i < rgbRaster.length; ++i) {
-            diff[i] = Math.abs(comparisonRaster[i] - rgbRaster[i]);
-          }
-          expect(Math.max.apply(null, diff)).to.be.at.most(15);
-          done();
-        }, done);
-    });
-  });
-
-  it('should be able to get the origin and offset of images using tie points and scale', (done) => {
-    retrieve('stripped.tiff', done, (tiff) => {
-      const image = tiff.getImage();
-      expect(image.getResolution()).to.be.an('array');
-      expect(image.getOrigin()).to.be.an('array');
-      expect(image.getBoundingBox()).to.be.an('array');
-      done();
-    });
-  });
-
-  it('should be able to get the origin and offset of images using model transformation', (done) => {
-    retrieve('no_pixelscale_or_tiepoints.tiff', done, (tiff) => {
-      const image = tiff.getImage();
-      expect(image.getResolution()).to.be.an('array');
-      expect(image.getOrigin()).to.be.an('array');
-      expect(image.getBoundingBox()).to.be.an('array');
-      expect(image.getGeoKeys()).to.have.property("GeographicTypeGeoKey");
-      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
-      done();
-    });
+  it('should be able to get the origin and offset of images using model transformation', async () => {
+    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    const image = await tiff.getImage();
+    expect(image.getResolution()).to.be.an('array');
+    expect(image.getOrigin()).to.be.an('array');
+    expect(image.getBoundingBox()).to.be.an('array');
+    expect(image.getGeoKeys()).to.have.property('GeographicTypeGeoKey');
+    expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
   });
 });
