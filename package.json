@@ -42,10 +42,11 @@
     "webpack-dev-server": "^2.11.1"
   },
   "scripts": {
-    "dev": "webpack-dev-server -w --entry ./src/main --output-filename dist/geotiff.bundle.js --devtool eval-cheap-module-source-map",
-    "watch": "webpack -w --entry ./src/main --output-filename dist/geotiff.bundle.js --devtool eval-cheap-module-source-map",
-    "build": "webpack --entry ./src/main --output-filename dist/geotiff.bundle.js --devtool eval-cheap-module-source-map",
-    "test": "mocha --compilers js:babel-core/register",
+    "dev": "webpack-dev-server -w --config webpack.conf.js",
+    "watch": "webpack -w --config webpack.conf.js",
+    "build": "webpack --config webpack.conf.js",
+    "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
+    "test-watch": "mocha --compilers js:babel-core/register --require babel-polyfill -w",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "prepublish": "npm run build"
