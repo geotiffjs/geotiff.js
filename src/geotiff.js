@@ -2,6 +2,7 @@ import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
+import { makeFetchSource, makeBufferSource, makeFileSource } from './source';
 
 
 function getFieldTypeLength(fieldType) {
@@ -157,9 +158,8 @@ class GeoTIFF {
     const entrySize = this.bigTiff ? 20 : 12;
     const fileDirectories = [];
 
-    let dataSlice = await this.getSlice(nextIFDByteOffset);
-
     while (nextIFDByteOffset !== 0x00000000) {
+      let dataSlice = await this.getSlice(nextIFDByteOffset);
       const numDirEntries = this.bigTiff ?
         dataSlice.readUint64(nextIFDByteOffset) :
         dataSlice.readUint16(nextIFDByteOffset);
@@ -271,11 +271,96 @@ class GeoTIFF {
   }
 
   /**
+   * @param {object} options
+   * @returns {Promise<TypedArray[]>}
+   */
+  async readRaster(options) {
+    const { window: imageWindow, width, height } = options;
+    let { resX, resY, bbox } = options;
+
+    const firstImage = await this.getImage();
+    let usedImage = firstImage;
+    const imageCount = await this.getImageCount();
+    const imgBBox = firstImage.getBoundingBox();
+
+    if (imageWindow && bbox) {
+      throw new Error('Both "bbox" and "window" passed.');
+    }
+
+    // if width/height is passed, transform it to resolution
+    if (width || height) {
+      // if we have an image window (pixel coordinates), transform it to a BBox
+      // using the origin/resolution of the first image.
+      if (imageWindow) {
+        const [oX, oY] = firstImage.getOrigin();
+        const [rX, rY] = firstImage.getResolution();
+
+        bbox = [
+          oX + (imageWindow[0] * rX),
+          oY + (imageWindow[1] * rY),
+          oX + (imageWindow[2] * rX),
+          oY + (imageWindow[3] * rY),
+        ];
+      }
+
+      // if we have a bbox (or calculated one)
+
+      const usedBBox = bbox || imgBBox;
+
+      if (width) {
+        if (resX) {
+          throw new Error('Both width and resX passed');
+        }
+        resX = (usedBBox[2] - usedBBox[0]) / width;
+      }
+      if (height) {
+        if (resY) {
+          throw new Error('Both width and resY passed');
+        }
+        resY = (usedBBox[3] - usedBBox[1]) / height;
+      }
+    }
+
+    // if resolution is set or calculated, try to get the image with the worst acceptable resolution
+    if (resX || resY) {
+      const allImages = [];
+      for (let i = 0; i < imageCount; ++i) {
+        const image = await this.getImage(i);
+        const { SubfileType: subfileType, NewSubfileType: newSubfileType } = image.fileDirectory;
+        if (i === 0 || subfileType === 2 || newSubfileType & 1) {
+          allImages.push(image);
+        }
+      }
+
+      allImages.sort((a, b) => a.getWidth() - b.getWidth());
+      for (let i = 0; i < allImages.length; ++i) {
+        const image = allImages[i];
+        const imgResX = (imgBBox[2] - imgBBox[0]) / image.getWidth();
+        const imgResY = (imgBBox[3] - imgBBox[1]) / image.getHeight();
+
+        usedImage = image;
+        if ((resX && resX > imgResX) || (resY && resY > imgResY)) {
+          break;
+        }
+      }
+    }
+
+    let wnd = imageWindow;
+    if (bbox) {
+      // TODO: calculate wnd from bbox
+    }
+
+    return usedImage.readRasters(Object.assign({}, options, {
+      window: wnd,
+    }));
+  }
+
+  /**
    * Parse a (Geo)TIFF file from the given source.
    * @param {object} source The source of data to parse from.
    * @param {object} options Additional options.
    */
-  static async parse(source, options) {
+  static async fromSource(source, options) {
     const headerData = await source.fetch(0, 1024);
     const dataView = new DataView64(headerData);
 
@@ -307,6 +392,18 @@ class GeoTIFF {
       dataView.getUint64(8, littleEndian) :
       dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
+  }
+
+  static async fromUrl(url, options = {}) {
+    return this.fromSource(makeFetchSource(url, options));
+  }
+
+  static async fromArrayBuffer(arrayBuffer) {
+    return this.fromSource(makeBufferSource(arrayBuffer));
+  }
+
+  static async fromFile(path) {
+    return this.fromSource(makeFileSource(path));
   }
 }
 
