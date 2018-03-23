@@ -2,6 +2,7 @@ import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { applyPredictor } from './predictor';
 import Pool from './pool';
+import { resample } from './resample';
 
 function sum(array, start, end) {
   let s = 0;
@@ -262,7 +263,7 @@ class GeoTIFFImage {
    * @param {Pool} pool The decoder pool
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, pool) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -342,7 +343,17 @@ class GeoTIFFImage {
         }
       }
     }
-    return Promise.all(promises).then(() => valueArrays);
+    await Promise.all(promises);
+
+    if ((width && (imageWindow[2] - imageWindow[0]) !== width)
+        || (height && (imageWindow[3] - imageWindow[1]) !== height)) {
+      return resample(
+        valueArrays, imageWindow[2] - imageWindow[0], imageWindow[3] - imageWindow[1],
+        width, height, resampleMethod,
+      );
+    }
+
+    return valueArrays;
   }
 
   /**
@@ -362,7 +373,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  async readRasters({ window: wnd, samples = [], interleave, poolSize = null } = {}) {
+  async readRasters({ window: wnd, samples = [], interleave, poolSize = null, width, height, resampleMethod } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
     const pool = new Pool(this.fileDirectory.Compression, poolSize);
 
@@ -371,9 +382,9 @@ class GeoTIFFImage {
         imageWindow[1] < 0 ||
         imageWindow[2] > this.getWidth() ||
         imageWindow[3] > this.getHeight()) {
-      return Promise.reject(new Error('Select window is out of image bounds.'));
+      throw new Error('Select window is out of image bounds.');
     } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
-      return Promise.reject(new Error('Invalid subsets'));
+      throw new Error('Invalid subsets');
     }
 
     const imageWindowWidth = imageWindow[2] - imageWindow[0];
@@ -404,11 +415,11 @@ class GeoTIFFImage {
       }
     }
 
-    return this._readRaster(imageWindow, samples, valueArrays, interleave, pool)
-      .then((result) => {
-        pool.destroy();
-        return result;
-      });
+    const result = await this._readRaster(
+      imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod,
+    );
+    pool.destroy();
+    return result;
   }
 
   /**
