@@ -2,7 +2,7 @@ import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
-import { makeFetchSource, makeBufferSource, makeFileSource } from './source';
+import { makeRemoteSource, makeBufferSource, makeFileSource } from './source';
 
 
 function getFieldTypeLength(fieldType) {
@@ -123,10 +123,98 @@ function getValues(dataSlice, fieldType, count, offset) {
   return values;
 }
 
+class GeoTIFFBase {
+  /**
+   * @param {object} options
+   * @returns {Promise<TypedArray[]>}
+   */
+  async readRaster(options) {
+    const { window: imageWindow, width, height } = options;
+    let { resX, resY, bbox } = options;
+
+    const firstImage = await this.getImage();
+    let usedImage = firstImage;
+    const imageCount = await this.getImageCount();
+    const imgBBox = firstImage.getBoundingBox();
+
+    if (imageWindow && bbox) {
+      throw new Error('Both "bbox" and "window" passed.');
+    }
+
+    // if width/height is passed, transform it to resolution
+    if (width || height) {
+      // if we have an image window (pixel coordinates), transform it to a BBox
+      // using the origin/resolution of the first image.
+      if (imageWindow) {
+        const [oX, oY] = firstImage.getOrigin();
+        const [rX, rY] = firstImage.getResolution();
+
+        bbox = [
+          oX + (imageWindow[0] * rX),
+          oY + (imageWindow[1] * rY),
+          oX + (imageWindow[2] * rX),
+          oY + (imageWindow[3] * rY),
+        ];
+      }
+
+      // if we have a bbox (or calculated one)
+
+      const usedBBox = bbox || imgBBox;
+
+      if (width) {
+        if (resX) {
+          throw new Error('Both width and resX passed');
+        }
+        resX = (usedBBox[2] - usedBBox[0]) / width;
+      }
+      if (height) {
+        if (resY) {
+          throw new Error('Both width and resY passed');
+        }
+        resY = (usedBBox[3] - usedBBox[1]) / height;
+      }
+    }
+
+    // if resolution is set or calculated, try to get the image with the worst acceptable resolution
+    if (resX || resY) {
+      const allImages = [];
+      for (let i = 0; i < imageCount; ++i) {
+        const image = await this.getImage(i);
+        const { SubfileType: subfileType, NewSubfileType: newSubfileType } = image.fileDirectory;
+        if (i === 0 || subfileType === 2 || newSubfileType & 1) {
+          allImages.push(image);
+        }
+      }
+
+      allImages.sort((a, b) => a.getWidth() - b.getWidth());
+      for (let i = 0; i < allImages.length; ++i) {
+        const image = allImages[i];
+        const imgResX = (imgBBox[2] - imgBBox[0]) / image.getWidth();
+        const imgResY = (imgBBox[3] - imgBBox[1]) / image.getHeight();
+
+        usedImage = image;
+        if ((resX && resX > imgResX) || (resY && resY > imgResY)) {
+          break;
+        }
+      }
+    }
+
+    const wnd = imageWindow;
+    if (bbox) {
+      // TODO: calculate wnd from bbox
+    }
+
+    return usedImage.readRasters(Object.assign({}, options, {
+      window: wnd,
+    }));
+  }
+}
+
+
 /**
  * The abstraction for a whole GeoTIFF file.
  */
-class GeoTIFF {
+class GeoTIFF extends GeoTIFFBase {
   /**
    * @constructor
    * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
@@ -134,6 +222,7 @@ class GeoTIFF {
    * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
    */
   constructor(source, littleEndian, bigTiff, firstIFDOffset, options = {}) {
+    super();
     this.source = source;
     this.littleEndian = littleEndian;
     this.bigTiff = bigTiff;
@@ -271,91 +360,6 @@ class GeoTIFF {
   }
 
   /**
-   * @param {object} options
-   * @returns {Promise<TypedArray[]>}
-   */
-  async readRaster(options) {
-    const { window: imageWindow, width, height } = options;
-    let { resX, resY, bbox } = options;
-
-    const firstImage = await this.getImage();
-    let usedImage = firstImage;
-    const imageCount = await this.getImageCount();
-    const imgBBox = firstImage.getBoundingBox();
-
-    if (imageWindow && bbox) {
-      throw new Error('Both "bbox" and "window" passed.');
-    }
-
-    // if width/height is passed, transform it to resolution
-    if (width || height) {
-      // if we have an image window (pixel coordinates), transform it to a BBox
-      // using the origin/resolution of the first image.
-      if (imageWindow) {
-        const [oX, oY] = firstImage.getOrigin();
-        const [rX, rY] = firstImage.getResolution();
-
-        bbox = [
-          oX + (imageWindow[0] * rX),
-          oY + (imageWindow[1] * rY),
-          oX + (imageWindow[2] * rX),
-          oY + (imageWindow[3] * rY),
-        ];
-      }
-
-      // if we have a bbox (or calculated one)
-
-      const usedBBox = bbox || imgBBox;
-
-      if (width) {
-        if (resX) {
-          throw new Error('Both width and resX passed');
-        }
-        resX = (usedBBox[2] - usedBBox[0]) / width;
-      }
-      if (height) {
-        if (resY) {
-          throw new Error('Both width and resY passed');
-        }
-        resY = (usedBBox[3] - usedBBox[1]) / height;
-      }
-    }
-
-    // if resolution is set or calculated, try to get the image with the worst acceptable resolution
-    if (resX || resY) {
-      const allImages = [];
-      for (let i = 0; i < imageCount; ++i) {
-        const image = await this.getImage(i);
-        const { SubfileType: subfileType, NewSubfileType: newSubfileType } = image.fileDirectory;
-        if (i === 0 || subfileType === 2 || newSubfileType & 1) {
-          allImages.push(image);
-        }
-      }
-
-      allImages.sort((a, b) => a.getWidth() - b.getWidth());
-      for (let i = 0; i < allImages.length; ++i) {
-        const image = allImages[i];
-        const imgResX = (imgBBox[2] - imgBBox[0]) / image.getWidth();
-        const imgResY = (imgBBox[3] - imgBBox[1]) / image.getHeight();
-
-        usedImage = image;
-        if ((resX && resX > imgResX) || (resY && resY > imgResY)) {
-          break;
-        }
-      }
-    }
-
-    let wnd = imageWindow;
-    if (bbox) {
-      // TODO: calculate wnd from bbox
-    }
-
-    return usedImage.readRasters(Object.assign({}, options, {
-      window: wnd,
-    }));
-  }
-
-  /**
    * Parse a (Geo)TIFF file from the given source.
    * @param {object} source The source of data to parse from.
    * @param {object} options Additional options.
@@ -393,18 +397,118 @@ class GeoTIFF {
       dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
   }
+}
 
-  static async fromUrl(url, options = {}) {
-    return this.fromSource(makeFetchSource(url, options));
+export { GeoTIFF };
+export default GeoTIFF;
+
+/**
+ * Wrapper for GeoTIFF files that have external overviews.
+ */
+class MultiGeoTIFF extends GeoTIFFBase {
+  /**
+   * Construct a new MultiGeoTIFF from a main and several overview files.
+   * @param {GeoTIFF} mainFile The main GeoTIFF file.
+   * @param {GeoTIFF[]} overviewFiles An array of overview files.
+   */
+  constructor(mainFile, overviewFiles) {
+    super();
+    this.mainFile = mainFile;
+    this.overviewFiles = overviewFiles;
+    this.imageFiles = [mainFile].concat(overviewFiles);
+
+    this.fileDirectoriesPerFile = null;
+    this.fileDirectoriesPerFileParsing = null;
+    this.imageCount = null;
   }
 
-  static async fromArrayBuffer(arrayBuffer) {
-    return this.fromSource(makeBufferSource(arrayBuffer));
+  async parseFileDirectoriesPerFile() {
+    const requests = [this.mainFile.parseFileDirectories()]
+      .concat(this.overviewFiles.map(file => file.parseFileDirectories()));
+
+    this.fileDirectoriesPerFile = await Promise.all(requests);
+    return this.fileDirectoriesPerFile;
   }
 
-  static async fromFile(path) {
-    return this.fromSource(makeFileSource(path));
+  async getImage(index = 0) {
+    if (!this.fileDirectoriesPerFile) {
+      if (!this.fileDirectoriesPerFileParsing) {
+        this.fileDirectoriesPerFileParsing = this.parseFileDirectoriesPerFile();
+      }
+      this.fileDirectoriesPerFile = await this.fileDirectoriesPerFileParsing;
+    }
+
+    let relativeIndex = index;
+    for (let i = 0; i < this.fileDirectoriesPerFile.length; ++i) {
+      const fileDirectories = this.fileDirectoriesPerFile[i];
+      if (relativeIndex < fileDirectories.length) {
+        const file = this.imageFiles[i];
+        return new GeoTIFFImage(
+          fileDirectories[relativeIndex][0], fileDirectories[relativeIndex][1],
+          file.dataView, file.littleEndian, file.cache, file.source,
+        );
+      }
+      relativeIndex -= fileDirectories.length;
+    }
+    throw new RangeError('Invalid image index');
+  }
+
+  async getImageCount() {
+    if (!this.fileDirectoriesPerFile) {
+      if (!this.fileDirectoriesPerFileParsing) {
+        this.fileDirectoriesPerFileParsing = this.parseFileDirectoriesPerFile();
+      }
+      this.fileDirectoriesPerFile = await this.fileDirectoriesPerFileParsing;
+    }
+    return this.fileDirectoriesPerFile.reduce((count, ifds) => count + ifds.length, 0);
   }
 }
 
-export default GeoTIFF;
+export { MultiGeoTIFF };
+
+/**
+ * Creates a new GeoTIFF from a remote URL.
+ * @param {string} url The URL to access the image from
+ * @param {object} [options] Additional options to pass to the source.
+ *                           See {@link makeRemoteSource} for details.
+ * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ */
+export async function fromUrl(url, options = {}) {
+  return GeoTIFF.fromSource(makeRemoteSource(url, options));
+}
+
+/**
+ * Construct a new GeoTIFF from an ArrayBuffer.
+ * @param {ArrayBuffer} arrayBuffer The data to read the file from.
+ * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ */
+export async function fromArrayBuffer(arrayBuffer) {
+  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer));
+}
+
+/**
+ * Construct a GeoTIFF from a local file path. This uses the node
+ * filesystem API and is not available on browsers.
+ * @param {string} path The filepath to read from.
+ * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ */
+export async function fromFile(path) {
+  return GeoTIFF.fromSource(makeFileSource(path));
+}
+
+/**
+ * Construct a MultiGeoTIFF from the given URLs.
+ * @param {string} mainUrl The URL for the main file.
+ * @param {string[]} overviewUrls An array of URLs for the overview images.
+ * @param {object} [options] Additional options to pass to the source.
+ *                           See {@link makeRemoteSource} for details.
+ * @returns {Promise.<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
+ */
+export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
+  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options));
+  const overviewFiles = await Promise.all(
+    overviewUrls.map(url => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+  );
+
+  return new MultiGeoTIFF(mainFile, overviewFiles);
+}
