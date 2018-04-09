@@ -47,80 +47,6 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
  * @returns {Promise<Block>} The block of data.
  */
 
-// /**
-//  * BlockedSource - an abstraction of (remote) files.
-//  */
-// class BlockedSource {
-//   /**
-//    * @param {requestCallback} retrievalFunction Callback function to request data
-//    * @param {object} options Additional options
-//    * @param {object} options.blockSize Size of blocks to be fetched
-//    */
-//   constructor(retrievalFunction, { blockSize = 65535 } = {}) {
-//     this.retrievalFunction = retrievalFunction;
-//     this.blockSize = blockSize;
-
-//     this.blockRequests = new Map();
-//     this.blocks = new Map();
-//   }
-
-//   /**
-//    * Fetch a subset of the file.
-//    * @param {number} offset The offset within the file to read from.
-//    * @param {number} length The length in bytes to read from.
-//    * @returns {ArrayBuffer} The subset of the file.
-//    */
-//   async fetch(offset, length) {
-//     const top = offset + length;
-//     const blockIds = [];
-//     const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
-//     for (let current = firstBlockOffset; current < top; current += this.blockSize) {
-//       const blockId = Math.floor(current / this.blockSize);
-//       blockIds.push(blockId);
-//     }
-//     const blocks = await Promise.all(blockIds.map(blockId => this.fetchBlock(blockId)));
-//     return readRangeFromBlocks(blocks, offset, length);
-//   }
-
-//   /**
-//    * Fetch a single block, if it is not already within the cache.
-//    * @param {number} blockId The block identifier to fetch.
-//    * @returns {Promise<Block>} The requested block.
-//    */
-//   async fetchBlock(blockId) {
-//     let block = this.blocks.get(blockId);
-//     if (block) {
-//       return block;
-//     }
-//     let blockRequest = this.blockRequests.get(blockId);
-//     if (blockRequest) {
-//       return blockRequest;
-//     }
-
-//     // cache the request to fetch the block
-//     blockRequest = this.requestData(this.blockSize * blockId, this.blockSize);
-//     this.blockRequests.set(blockId, blockRequest);
-//     block = await blockRequest;
-//     this.blockRequests.delete(blockId);
-
-//     // cache the block itself
-//     this.blocks.set(blockId, block);
-//     return block;
-//   }
-
-//   async requestData(requestedOffset, requestedLength) {
-//     const response = await this.retrievalFunction(requestedOffset, requestedLength);
-//     if (!response.length) {
-//       response.length = response.data.byteLength;
-//     } else if (response.length !== response.data.byteLength) {
-//       response.data = response.data.slice(0, response.length);
-//     }
-//     response.top = response.offset + response.length;
-//     return response;
-//   }
-// }
-
-
 /*
  * Split a list of identifiers to form groups of coherent ones
  */
@@ -155,7 +81,7 @@ async function wait(milliseconds) {
 /**
  * BlockedSource - an abstraction of (remote) files.
  */
-class BlockedSource2 {
+class BlockedSource {
   /**
    * @param {requestCallback} retrievalFunction Callback function to request data
    * @param {object} options Additional options
@@ -281,12 +207,12 @@ class BlockedSource2 {
 }
 
 /**
- * Create a new source to
+ * Create a new source to read from a remote file using the fetch API.
  * @param {string} url The URL to send requests to.
  * @param {object} headers Additional headers to be sent to the server.
  */
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
-  return new BlockedSource2(async (offset, length) => {
+  return new BlockedSource(async (offset, length) => {
     const response = await fetch(url, {
       headers: Object.assign({},
         headers, {
@@ -318,6 +244,61 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
   }, { blockSize });
 }
 
+/**
+ * Create a new source to read from a remote file using the XHR API.
+ * @param {string} url The URL to send requests to.
+ * @param {object} headers Additional headers to be sent to the server.
+ */
+export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
+  return new BlockedSource(async (offset, length) => {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open('GET', url);
+      request.responseType = 'arraybuffer';
+
+      Object.entries(
+        Object.assign({},
+          headers, {
+            Range: `bytes=${offset}-${offset + length}`,
+          },
+        ),
+      ).forEach(([key, value]) => request.setRequestHeader(key, value));
+
+      request.onload = () => {
+        const data = request.response;
+        if (request.status === 206) {
+          resolve({
+            data,
+            offset,
+            length,
+          });
+        } else {
+          resolve({
+            data,
+            offset: 0,
+            length: data.byteLength,
+          });
+        }
+      };
+      request.onerror = reject;
+      request.send();
+    });
+  }, { blockSize });
+}
+
+/**
+ * Create a new source to read from a remote file.
+ * @param {string} url The URL to send requests to.
+ * @param {object} headers Additional headers to be sent to the server.
+ */
+export function makeRemoteSource(url, options) {
+  const { forceXHR } = options;
+  if (typeof fetch === 'function' && !forceXHR) {
+    return makeFetchSource(url, options);
+  }
+  return makeXHRSource(url, options);
+}
+
 export function makeBufferSource(arrayBuffer) {
   return {
     async fetch(offset, length) {
@@ -339,6 +320,20 @@ export function makeFileSource(path) {
       const fd = await fileOpen;
       const { buffer } = await readAsync(fd, new Uint8Array(length), 0, length, offset);
       return buffer.buffer;
+    },
+  };
+}
+
+export function makeFileReaderSource(file) {
+  return {
+    async read(offset, length) {
+      return new Promise((resolve, reject) => {
+        const blob = file.slice(offset, offset + length);
+        const reader = new FileReader();
+        reader.onload = event => resolve(event.target.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+      });
     },
   };
 }
