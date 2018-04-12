@@ -1,8 +1,11 @@
-import work from 'webworkify';
-import worker from './worker';
+import Worker from './decoder.worker';
 import { getDecoder } from './compression';
 
-const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : 1;
+const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
+
+/**
+ * @module pool
+ */
 
 /**
  * Pool for workers to decode chunks of the images.
@@ -18,11 +21,14 @@ class Pool {
   constructor(compression, size = defaultPoolSize) {
     this.compression = compression;
     this.workers = [];
+    this.idleWorkers = [];
+    this.waitQueue = [];
     this.decoder = null;
 
     for (let i = 0; i < size; ++i) {
-      const w = work(worker);
+      const w = new Worker();
       this.workers.push(w);
+      this.idleWorkers.push(w);
     }
 
     if (size === null || size < 1) {
@@ -43,11 +49,13 @@ class Pool {
     const currentWorker = await this.waitForWorker();
     return new Promise((resolve, reject) => {
       currentWorker.onmessage = (event) => {
-        this.workers.push(currentWorker);
+        // this.workers.push(currentWorker);
+        this.finishTask(currentWorker);
         resolve(event.data[0]);
       };
       currentWorker.onerror = (error) => {
-        this.workers.push(currentWorker);
+        // this.workers.push(currentWorker);
+        this.finishTask(currentWorker);
         reject(error);
       };
       currentWorker.postMessage([
@@ -57,18 +65,26 @@ class Pool {
   }
 
   async waitForWorker() {
-    const sleepTime = 10;
-    const waiter = (callback) => {
-      if (this.workers.length) {
-        callback(this.workers.pop());
-      } else {
-        setTimeout(waiter, sleepTime, callback);
-      }
-    };
-
-    return new Promise((resolve) => {
-      waiter(resolve);
+    const idleWorker = this.idleWorkers.pop();
+    if (idleWorker) {
+      return idleWorker;
+    }
+    const waiter = {};
+    const promise = new Promise((resolve) => {
+      waiter.resolve = resolve;
     });
+
+    this.waitQueue.push(waiter);
+    return promise;
+  }
+
+  async finishTask(currentWorker) {
+    const waiter = this.waitQueue.pop();
+    if (waiter) {
+      waiter.resolve(currentWorker);
+    } else {
+      this.idleWorkers.push(currentWorker);
+    }
   }
 
   destroy() {
