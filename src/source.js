@@ -1,5 +1,9 @@
 /* eslint-disable global-require */
 
+/**
+ * @module source
+ */
+
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
   const rangeData = new ArrayBuffer(rangeLength);
@@ -30,6 +34,19 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
 
   return rangeData;
 }
+
+/**
+ * Interface for Source objects.
+ * @interface Source
+ */
+
+/**
+ * The main method to retrieve the data from the source.
+ * @method
+ * @name Source#fetch
+ * @param {number} offset The offset to read from in the source
+ * @param {number} length The requested number of bytes
+ */
 
 /**
  * @typedef {object} Block
@@ -210,6 +227,7 @@ class BlockedSource {
  * Create a new source to read from a remote file using the fetch API.
  * @param {string} url The URL to send requests to.
  * @param {object} headers Additional headers to be sent to the server.
+ * @returns The constructed source
  */
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
   return new BlockedSource(async (offset, length) => {
@@ -248,6 +266,7 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
  * Create a new source to read from a remote file using the XHR API.
  * @param {string} url The URL to send requests to.
  * @param {object} headers Additional headers to be sent to the server.
+ * @returns The constructed source
  */
 export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
   return new BlockedSource(async (offset, length) => {
@@ -290,6 +309,7 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
  * Create a new source to read from a remote file.
  * @param {string} url The URL to send requests to.
  * @param {object} headers Additional headers to be sent to the server.
+ * @returns The constructed source
  */
 export function makeRemoteSource(url, options) {
   const { forceXHR } = options;
@@ -307,6 +327,11 @@ export function makeBufferSource(arrayBuffer) {
   };
 }
 
+/**
+ * Creates a new source using the node filesystem API.
+ * @param {string} path The path to the file in the local filesystem.
+ * @returns The constructed source
+ */
 export function makeFileSource(path) {
   const { promisify } = require('util');
   const { open, read } = require('fs');
@@ -324,9 +349,14 @@ export function makeFileSource(path) {
   };
 }
 
+/**
+ * Create a new source from a given file/blob.
+ * @param {Blob} file The file or blob to read from.
+ * @returns The constructed source
+ */
 export function makeFileReaderSource(file) {
   return {
-    async read(offset, length) {
+    async fetch(offset, length) {
       return new Promise((resolve, reject) => {
         const blob = file.slice(offset, offset + length);
         const reader = new FileReader();
