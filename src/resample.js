@@ -1,4 +1,8 @@
 /**
+ * @module resample
+ */
+
+/**
  * Resample the input arrays using nearest neighbor value selection.
  * @param {TypedArray[]} valueArrays The input arrays to resample
  * @param {number} inWidth The width of the input rasters
