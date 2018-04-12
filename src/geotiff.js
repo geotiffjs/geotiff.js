@@ -2,7 +2,7 @@ import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
-import { makeRemoteSource, makeBufferSource, makeFileSource } from './source';
+import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 
 
 function getFieldTypeLength(fieldType) {
@@ -494,6 +494,10 @@ export async function fromArrayBuffer(arrayBuffer) {
  */
 export async function fromFile(path) {
   return GeoTIFF.fromSource(makeFileSource(path));
+}
+
+export async function fromBlob(blob) {
+  return GeoTIFF.fromSource(makeFileReaderSource(blob));
 }
 
 /**
