@@ -1,3 +1,5 @@
+/* eslint max-len: ["error", { "code": 120 }] */
+
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { applyPredictor } from './predictor';
