@@ -199,9 +199,23 @@ class GeoTIFFBase {
       }
     }
 
-    const wnd = imageWindow;
+    let wnd = imageWindow;
     if (bbox) {
-      // TODO: calculate wnd from bbox
+      const [oX, oY] = firstImage.getOrigin();
+      const [imageResX, imageResY] = usedImage.getResolution(firstImage);
+
+      wnd = [
+        Math.round((bbox[0] - oX) / imageResX),
+        Math.round((bbox[1] - oY) / imageResY),
+        Math.round((bbox[2] - oX) / imageResX),
+        Math.round((bbox[3] - oY) / imageResY),
+      ];
+      wnd = [
+        Math.min(wnd[0], wnd[2]),
+        Math.min(wnd[1], wnd[3]),
+        Math.max(wnd[0], wnd[2]),
+        Math.max(wnd[1], wnd[3]),
+      ];
     }
 
     return usedImage.readRasters(Object.assign({}, options, {
