@@ -439,7 +439,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, poolSize } = {}) {
+  async readRGB({ window, poolSize, width, height, resampleMethod } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -452,13 +452,7 @@ class GeoTIFFImage {
       throw new Error('Invalid subsets');
     }
 
-    const width = imageWindow[2] - imageWindow[0];
-    const height = imageWindow[3] - imageWindow[1];
-
     const pi = this.fileDirectory.PhotometricInterpretation;
-
-    const bits = this.fileDirectory.BitsPerSample[0];
-    const max = 2 ** bits;
 
     if (pi === photometricInterpretations.RGB) {
       return this.readRasters({
@@ -491,27 +485,31 @@ class GeoTIFFImage {
       interleave: true,
       samples,
       poolSize,
+      width,
+      height,
+      resampleMethod,
     };
     const { fileDirectory } = this;
-    return this.readRasters(subOptions)
-      .then((raster) => {
-        switch (pi) {
-          case photometricInterpretations.WhiteIsZero:
-            return fromWhiteIsZero(raster, max, width, height);
-          case photometricInterpretations.BlackIsZero:
-            return fromBlackIsZero(raster, max, width, height);
-          case photometricInterpretations.Palette:
-            return fromPalette(raster, fileDirectory.ColorMap, width, height);
-          case photometricInterpretations.CMYK:
-            return fromCMYK(raster, width, height);
-          case photometricInterpretations.YCbCr:
-            return fromYCbCr(raster, width, height);
-          case photometricInterpretations.CIELab:
-            return fromCIELab(raster, width, height);
-          default:
-            throw new Error('Unsupported photometric interpretation.');
-        }
-      });
+    const raster = await this.readRasters(subOptions);
+
+    const max = 2 ** this.fileDirectory.BitsPerSample[0];
+
+    switch (pi) {
+      case photometricInterpretations.WhiteIsZero:
+        return fromWhiteIsZero(raster, max);
+      case photometricInterpretations.BlackIsZero:
+        return fromBlackIsZero(raster, max);
+      case photometricInterpretations.Palette:
+        return fromPalette(raster, fileDirectory.ColorMap);
+      case photometricInterpretations.CMYK:
+        return fromCMYK(raster);
+      case photometricInterpretations.YCbCr:
+        return fromYCbCr(raster);
+      case photometricInterpretations.CIELab:
+        return fromCIELab(raster);
+      default:
+        throw new Error('Unsupported photometric interpretation.');
+    }
   }
 
   /**

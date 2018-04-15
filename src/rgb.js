@@ -1,4 +1,5 @@
-export function fromWhiteIsZero(raster, max, width, height) {
+export function fromWhiteIsZero(raster, max) {
+  const { width, height } = raster;
   const rgbRaster = new Uint8Array(width * height * 3);
   let value;
   for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
@@ -10,7 +11,8 @@ export function fromWhiteIsZero(raster, max, width, height) {
   return rgbRaster;
 }
 
-export function fromBlackIsZero(raster, max, width, height) {
+export function fromBlackIsZero(raster, max) {
+  const { width, height } = raster;
   const rgbRaster = new Uint8Array(width * height * 3);
   let value;
   for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
@@ -22,7 +24,8 @@ export function fromBlackIsZero(raster, max, width, height) {
   return rgbRaster;
 }
 
-export function fromPalette(raster, colorMap, width, height) {
+export function fromPalette(raster, colorMap) {
+  const { width, height } = raster;
   const rgbRaster = new Uint8Array(width * height * 3);
   const greenOffset = colorMap.length / 3;
   const blueOffset = colorMap.length / 3 * 2;
@@ -35,7 +38,8 @@ export function fromPalette(raster, colorMap, width, height) {
   return rgbRaster;
 }
 
-export function fromCMYK(cmykRaster, width, height) {
+export function fromCMYK(cmykRaster) {
+  const { width, height } = cmykRaster;
   const rgbRaster = new Uint8Array(width * height * 3);
   for (let i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
     const c = cmykRaster[i];
@@ -50,7 +54,8 @@ export function fromCMYK(cmykRaster, width, height) {
   return rgbRaster;
 }
 
-export function fromYCbCr(yCbCrRaster, width, height) {
+export function fromYCbCr(yCbCrRaster) {
+  const { width, height } = yCbCrRaster;
   const rgbRaster = new Uint8Array(width * height * 3);
   for (let i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
     const y = yCbCrRaster[i];
@@ -70,7 +75,8 @@ const Zn = 1.08883;
 
 // from https://github.com/antimatter15/rgb-lab/blob/master/color.js
 
-export function fromCIELab(cieLabRaster, width, height) {
+export function fromCIELab(cieLabRaster) {
+  const { width, height } = cieLabRaster;
   const rgbRaster = new Uint8Array(width * height * 3);
 
   for (let i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
