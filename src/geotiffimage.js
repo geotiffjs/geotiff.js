@@ -269,10 +269,16 @@ class GeoTIFFImage {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
-    const minXTile = Math.floor(imageWindow[0] / tileWidth);
-    const maxXTile = Math.ceil(imageWindow[2] / tileWidth);
-    const minYTile = Math.floor(imageWindow[1] / tileHeight);
-    const maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+    const minXTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
+    const maxXTile = Math.min(
+      Math.ceil(imageWindow[2] / tileWidth),
+      Math.ceil(this.getWidth() / this.getTileWidth()),
+    );
+    const minYTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
+    const maxYTile = Math.min(
+      Math.ceil(imageWindow[3] / tileHeight),
+      Math.ceil(this.getHeight() / this.getTileHeight()),
+    );
     const windowWidth = imageWindow[2] - imageWindow[0];
 
     let bytesPerPixel = this.getBytesPerPixel();
@@ -355,6 +361,9 @@ class GeoTIFFImage {
       );
     }
 
+    valueArrays.width = width || imageWindow[2] - imageWindow[0];
+    valueArrays.height = height || imageWindow[3] - imageWindow[1];
+
     return valueArrays;
   }
 
@@ -373,19 +382,26 @@ class GeoTIFFImage {
    * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
    *                                         decode chunks. `null` means that the
    *                                         decoding is done in the main thread.
+   * @param {number} [width] The desired width of the output. When the width is no the
+   *                         same as the images, resampling will be performed.
+   * @param {number} [height] The desired height of the output. When the width is no the
+   *                          same as the images, resampling will be performed.
+   * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [fillValue] The value to use for parts of the image
+   *                                      outside of the images extent. When multiple
+   *                                      samples are requested, an array of fill values
+   *                                      can be passed.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  async readRasters({ window: wnd, samples = [], interleave, poolSize = null, width, height, resampleMethod } = {}) {
+  async readRasters({
+    window: wnd, samples = [], interleave, poolSize = null,
+    width, height, resampleMethod, fillValue,
+  } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
     const pool = new Pool(this.fileDirectory.Compression, poolSize);
 
     // check parameters
-    if (imageWindow[0] < 0 ||
-        imageWindow[1] < 0 ||
-        imageWindow[2] > this.getWidth() ||
-        imageWindow[3] > this.getHeight()) {
-      throw new Error('Select window is out of image bounds.');
-    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+    if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
       throw new Error('Invalid subsets');
     }
 
@@ -410,10 +426,19 @@ class GeoTIFFImage {
         Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
+      if (fillValue) {
+        valueArrays.fill(fillValue);
+      }
     } else {
       valueArrays = [];
       for (let i = 0; i < samples.length; ++i) {
-        valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+        const valueArray = this.getArrayForSample(samples[i], numPixels);
+        if (Array.isArray(fillValue) && i < fillValue.length) {
+          valueArray.fill(fillValue[i]);
+        } else if (fillValue && !Array.isArray(fillValue)) {
+          valueArray.fill(fillValue);
+        }
+        valueArrays.push(valueArray);
       }
     }
 
@@ -443,12 +468,7 @@ class GeoTIFFImage {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
-    if (imageWindow[0] < 0 ||
-        imageWindow[1] < 0 ||
-        imageWindow[2] > this.getWidth() ||
-        imageWindow[3] > this.getHeight()) {
-      throw new Error('Select window is out of image bounds.');
-    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+    if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
       throw new Error('Invalid subsets');
     }
 
