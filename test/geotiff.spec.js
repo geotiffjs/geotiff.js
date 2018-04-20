@@ -112,6 +112,8 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -135,6 +137,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -158,6 +163,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -181,6 +189,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -204,6 +215,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -227,6 +241,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -250,6 +267,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -273,6 +293,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -296,6 +319,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -319,6 +345,10 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
+
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -342,6 +372,9 @@ describe("mainTests", function() {
       expect(image.getWidth()).to.equal(539);
       expect(image.getHeight()).to.equal(448);
       expect(image.getSamplesPerPixel()).to.equal(15);
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
+      expect(image.getGeoKeys().GeogInvFlatteningGeoKey).to.be.an.instanceof(Float64Array);
 
       try {
         var allData = image.readRasters({window: [200, 200, 210, 210]});
@@ -507,6 +540,28 @@ describe("RGB-tests", function() {
           done();
         }, done);
       }, done);
+    });
+  });
+
+  it("should be able to get the origin and offset of images using tie points and scale", function(done) {
+    retrieve("stripped.tiff", done, function(tiff) {
+      var image = tiff.getImage();
+      expect(image.getResolution()).to.be.an('array');
+      expect(image.getOrigin()).to.be.an('array');
+      expect(image.getBoundingBox()).to.be.an('array');
+      done();
+    });
+  });
+
+  it("should be able to get the origin and offset of images using model transformation", function (done) {
+    retrieve("no_pixelscale_or_tiepoints.tiff", done, function (tiff) {
+      var image = tiff.getImage();
+      expect(image.getResolution()).to.be.an('array');
+      expect(image.getOrigin()).to.be.an('array');
+      expect(image.getBoundingBox()).to.be.an('array');
+      expect(image.getGeoKeys()).to.have.property("GeographicTypeGeoKey");
+      expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+      done();
     });
   });
 });
