@@ -329,20 +329,21 @@ var toArray = function (input) {
 
 var write_geotiff = function (data, metadata) {
 
-	var number_of_bands = data.length;
-
 	var isFlattened = typeof data[0] === 'number';
 
 	var height;
+	var number_of_bands;
 	var width;
 	var flattenedValues;
 
 	if (isFlattened) {
 		height = metadata.height || metadata.ImageLength;
 		width = metadata.width || metadata.ImageWidth;
+		number_of_bands = data.length / (height * width);	
 		flattenedValues = data;
 	}
 	else {
+		number_of_bands = data.length;
 		height = data[0].length;
 		width = data[0][0].length;
 		flattenedValues = [];
@@ -356,7 +357,9 @@ var write_geotiff = function (data, metadata) {
 	}
 
 	metadata.ImageLength = height;
+	delete metadata.height;
 	metadata.ImageWidth = width;
+	delete metadata.width;
 
 	//consult https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 
@@ -371,7 +374,7 @@ var write_geotiff = function (data, metadata) {
 	// The color space of the image data.
 	// 1=black is zero and 2=RGB. 
 	if (!metadata.PhotometricInterpretation) {
-		metadata.PhotometricInterpretation = metadata.bitsPerSample.length === 3 ? 2 : 1;
+		metadata.PhotometricInterpretation = metadata.BitsPerSample.length === 3 ? 2 : 1;
 	}
 	// For each strip, the byte offset of that strip.
 	//if (!metadata.StripOffsets) metadata.StripOffsets = [2000];  // assumes there's only 1 strip
@@ -384,8 +387,9 @@ var write_geotiff = function (data, metadata) {
 	//if (!metadata.RowsPerStrip) metadata.RowsPerStrip = [height]; // assumes there's only 1 strip
 	//metadata.RowsPerStrip = toArray(metadata.RowsPerStrip);
 
-	//if (!metadata.StripByteCounts) metadata.StripByteCounts = [height * width * 4]; // assumes 8-bit
-	//metadata.StripByteCounts = toArray(metadata.StripByteCounts);
+	if (!metadata.StripByteCounts) {
+		metadata.StripByteCounts = [height * width];
+	}
 
 	if (!metadata.PlanarConfiguration) {
 		metadata.PlanarConfiguration = [1]; //no compression
@@ -407,10 +411,40 @@ var write_geotiff = function (data, metadata) {
 	if (!metadata.ExtraSamples) {
 		metadata.ExtraSamples = [0];
 	}
+	
+	if (!metadata.GeoAsciiParams) {
+    	metadata.GeoAsciiParams = "WGS 84\u0000";
+	}
+	
+	if (!metadata.ModelPixelScale) {
+		// assumes raster takes up exactly the whole globe
+		metadata.ModelPixelScale = [360 / width, 180 / height, 0];
+	}
 
-	//if (!metadata.GTModelTypeGeoKey) metadata.GTModelTypeGeoKey = [0];
+	if (!metadata.ModelTiepoint) {
+		// assumes raster takes up exactly the whole globe
+		metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0];
+	}
+	
+	if (!metadata.SampleFormat) {
+		metadata.SampleFormat = [1];
+	}
 
-	//if (!metadata.GTModelTypeGeoKey) metadata.GTModelTypeGeoKey = [0];
+	if (!metadata.GTModelTypeGeoKey) {
+		metadata.GTModelTypeGeoKey = 2;
+	}
+
+	if (!metadata.GTRasterTypeGeoKey) {
+		metadata.GTRasterTypeGeoKey = 1;
+	}
+
+	if (!metadata.GeographicTypeGeoKey) {
+		metadata.GeographicTypeGeoKey = 4326;
+	}
+	
+	if (!metadata.GeogCitationGeoKey) {
+		metadata.GeogCitationGeoKey = "WGS 84";
+	}
 
 	[
 		"Compression",

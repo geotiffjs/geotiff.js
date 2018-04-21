@@ -568,6 +568,42 @@ describe("RGB-tests", function() {
 
 describe("writeTests", function() {
 
+it("should write pixel values and metadata with sensible defaults", function() {
+
+    var original_values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    var metadata = {
+      height: 3,
+      width: 3
+    };
+
+    var new_geotiff_as_binary_data = GeoTIFF.create(original_values, metadata);
+
+    var new_geotiff = GeoTIFF.parse(new_geotiff_as_binary_data);
+
+    var new_values = toArrayRecursively(new_geotiff.getImage().readRasters()[0]);
+
+    expect(JSON.stringify(new_values.slice(0,-1))).to.equal(JSON.stringify(original_values.slice(0,-1)));
+
+    var fileDirectory = new_geotiff.fileDirectories[0][0];
+    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
+    expect(fileDirectory.Compression).to.equal(1);
+    expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
+    expect(fileDirectory.ImageLength).to.equal(3);
+    expect(fileDirectory.ImageWidth).to.equal(3);
+    expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.PhotometricInterpretation).to.equal(1);
+    expect(fileDirectory.PlanarConfiguration).to.equal(1);
+    expect(normalize(fileDirectory.StripOffsets)).to.equal("[1000]"); //hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1]));
+    expect(fileDirectory.SamplesPerPixel).to.equal(1);
+    expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
+    expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
+
+
+  });
+
   it("should write flattened pixel values", function() {
 
     var original_values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
