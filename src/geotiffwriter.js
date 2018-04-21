@@ -374,16 +374,11 @@ var write_geotiff = function (data, metadata) {
 	if (!metadata.PhotometricInterpretation) {
 		metadata.PhotometricInterpretation = metadata.BitsPerSample.length === 3 ? 2 : 1;
 	}
-	// For each strip, the byte offset of that strip.
-	//if (!metadata.StripOffsets) metadata.StripOffsets = [2000];  // assumes there's only 1 strip
-	//metadata.StripOffsets = toArray(metadata.StripOffsets);
 
 	//The number of components per pixel.
 	if (!metadata.SamplesPerPixel) {
 		metadata.SamplesPerPixel = [number_of_bands];
 	}
-	//if (!metadata.RowsPerStrip) metadata.RowsPerStrip = [height]; // assumes there's only 1 strip
-	//metadata.RowsPerStrip = toArray(metadata.RowsPerStrip);
 
 	if (!metadata.StripByteCounts) {
 		// we are only writing one strip
@@ -409,8 +404,6 @@ var write_geotiff = function (data, metadata) {
 	});
 
 	if (!metadata.GeoKeyDirectory) {
-		// Header={KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
-		//     "GeoKeyDirectory": [1, 1, 0, 5, 1024, 0, 1, 2, 1025, 0, 1, 1, 2048, 0, 1, 4326, 2049, 34737, 7, 0, 2054, 0, 1, 9102],
 		var KeyDirectoryVersion = 1;
 		var KeyRevision = 1;
 		var MinorRevision = 0;
