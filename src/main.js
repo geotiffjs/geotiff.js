@@ -46,4 +46,3 @@ if (typeof window !== "undefined") {
 } else if (typeof self !== "undefined") {
   self["GeoTIFF"] = { create: create, parse: parse }; // jshint ignore:line
 }
-

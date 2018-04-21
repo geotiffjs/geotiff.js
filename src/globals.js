@@ -157,7 +157,7 @@ var fieldTagTypes = {
 	33922: "DOUBLE",
 	34665: "LONG",
 	34735: "SHORT",
-	34737: "ASCII" 
+	34737: "ASCII"
 };
 
 var arrayFields = [

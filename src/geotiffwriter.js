@@ -1,6 +1,6 @@
 'use strict';
 
-/* 
+/*
 	Some parts of this file are based on UTIF.js,
 	which was released under the MIT License.
 	You can view that here:
@@ -10,16 +10,15 @@
 
 var globals = require("./globals.js");
 
-var _ = require("lodash");
-var assign = _.assign;
-var endsWith = _.endsWith;
-var isUndefined = _.isUndefined;
-var forEach = _.forEach;
-var invert = _.invert;
-var map = _.map;
-var times = _.times;
+var utils = require("./utils");
+var assign = utils.assign;
+var endsWith = utils.endsWith;
+var forEach = utils.forEach;
+var invert = utils.invert;
+var times = utils.times;
 
-var code2typeName = globals.fieldTagTypes;
+var fieldTagTypes = globals.fieldTagTypes;
+
 var tagName2Code = invert(globals.fieldTagNames);
 var geoKeyName2Code = invert(globals.geoKeyNames);
 
@@ -31,16 +30,6 @@ var typeName2byte = invert(globals.fieldTypeNames);
 
 //config variables
 var num_bytes_in_ifd = 1000;
-
-
-var stringify = function (obj) {
-	if (obj.length) {
-		return JSON.stringify(map(obj));
-	}
-	else {
-		return JSON.stringify(obj);
-	}
-};
 
 var _binBE = {
 	nextZero: function (data, o) {
@@ -131,7 +120,7 @@ var _writeIFD = function (bin, data, offset, ifd) {
 
 		var tag = typeof key === "number" ? key : typeof key === "string" ? parseInt(key) : null;
 
-		var typeName = code2typeName[tag];
+		var typeName = fieldTagTypes[tag];
 		var typeNum = typeName2byte[typeName];
 
 		if (typeName == null || typeName === undefined || typeof typeName === "undefined") {
@@ -240,7 +229,7 @@ var encode_ifds = function (ifds) {
 		return data.slice(0, ifdo).buffer;
 	}
 	else {
-		// node hasn't implemented slice on Uint8Array yet 
+		// node hasn't implemented slice on Uint8Array yet
 		var result = new Uint8Array(ifdo);
 		for (var i = 0; i < ifdo; i++) {
 			result[i] = data[i];
@@ -260,21 +249,11 @@ var encodeImage = function (values, width, height, metadata) {
 	}
 
 	var ifd = {
-		256: [width],
-		257: [height],
-		258: [8, 8, 8, 8],
-		259: [1],
-		262: [2],
+		256: [width], // ImageWidth
+		257: [height], // ImageLength
 		273: [num_bytes_in_ifd], // strips offset
-		277: [4],
-		278: [height],
-		/* rows per strip */
-		279: [width * height * 4], // strip byte counts
-		284: [1],
-		286: [0],
-		287: [0],
-		305: "geotiff.js", // no array for ASCII(Z)
-		338: [1]
+		278: [height], // RowsPerStrip
+		305: "geotiff.js" // no array for ASCII(Z)
 	};
 
 	if (metadata) {
@@ -327,6 +306,21 @@ var toArray = function (input) {
 	}
 };
 
+var metadata_defaults = [
+	[ "Compression", 1 ], //no compression
+	[ "PlanarConfiguration", 1 ],
+	[ "XPosition", 0 ],
+	[ "YPosition", 0 ],
+	[ "ResolutionUnit", 1 ], // Code 1 for actual pixel count or 2 for pixels per inch.
+	[ "ExtraSamples", 0 ], // should this be an array??
+	[ "GeoAsciiParams", "WGS 84\u0000" ],
+	[ "ModelTiepoint", [0, 0, 0, -180, 90, 0] ], // raster fits whole globe
+	[ "GTModelTypeGeoKey", 2 ],
+	[ "GTRasterTypeGeoKey", 1 ],
+	[ "GeographicTypeGeoKey", 4326 ],
+	[ "GeogCitationGeoKey", "WGS 84"]
+];
+
 var write_geotiff = function (data, metadata) {
 
 	var isFlattened = typeof data[0] === 'number';
@@ -339,7 +333,7 @@ var write_geotiff = function (data, metadata) {
 	if (isFlattened) {
 		height = metadata.height || metadata.ImageLength;
 		width = metadata.width || metadata.ImageWidth;
-		number_of_bands = data.length / (height * width);	
+		number_of_bands = data.length / (height * width);
 		flattenedValues = data;
 	}
 	else {
@@ -367,12 +361,16 @@ var write_geotiff = function (data, metadata) {
 		metadata.BitsPerSample = times(number_of_bands, function (i) { return 8; });
 	}
 
-	if (!metadata.Compression) {
-		metadata.Compression = [1]; //no compression
-	}
+	metadata_defaults.forEach(tag => {
+		var key = tag[0];
+		if (!metadata[key]) {
+			var value = tag[1];
+			metadata[key] = value;
+		}
+	});
 
 	// The color space of the image data.
-	// 1=black is zero and 2=RGB. 
+	// 1=black is zero and 2=RGB.
 	if (!metadata.PhotometricInterpretation) {
 		metadata.PhotometricInterpretation = metadata.BitsPerSample.length === 3 ? 2 : 1;
 	}
@@ -388,62 +386,66 @@ var write_geotiff = function (data, metadata) {
 	//metadata.RowsPerStrip = toArray(metadata.RowsPerStrip);
 
 	if (!metadata.StripByteCounts) {
-		metadata.StripByteCounts = [height * width];
+		// we are only writing one strip
+		metadata.StripByteCounts = [number_of_bands * height * width];
 	}
 
-	if (!metadata.PlanarConfiguration) {
-		metadata.PlanarConfiguration = [1]; //no compression
-	}
-	if (!metadata.XPosition) {
-		metadata.XPosition = [0];
-	}
-	if (!metadata.YPosition) {
-		metadata.YPosition = [0];
-	}
-
-	// Code 1 for actual pixel count or 2 for pixels per inch.
-	if (!metadata.ResolutionUnit) {
-		metadata.ResolutionUnit = [1];
-	}
-
-
-	// For example, full-color RGB data normally has SamplesPerPixel=3. If SamplesPerPixel is greater than 3, then the ExtraSamples field describes the meaning of the extra samples. If SamplesPerPixel is, say, 5 then ExtraSamples will contain 2 values, one for each extra sample. ExtraSamples is typically used to include non-color information, such as opacity, in an image. The possible values for each item in the field's value are:
-	if (!metadata.ExtraSamples) {
-		metadata.ExtraSamples = [0];
-	}
-	
-	if (!metadata.GeoAsciiParams) {
-    	metadata.GeoAsciiParams = "WGS 84\u0000";
-	}
-	
 	if (!metadata.ModelPixelScale) {
 		// assumes raster takes up exactly the whole globe
 		metadata.ModelPixelScale = [360 / width, 180 / height, 0];
 	}
 
-	if (!metadata.ModelTiepoint) {
-		// assumes raster takes up exactly the whole globe
-		metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0];
-	}
-	
 	if (!metadata.SampleFormat) {
-		metadata.SampleFormat = [1];
+		metadata.SampleFormat = times(number_of_bands, function(i) { return 1; });
 	}
 
-	if (!metadata.GTModelTypeGeoKey) {
-		metadata.GTModelTypeGeoKey = 2;
+
+	var geoKeys = Object.keys(metadata)
+	.filter(function(key) {
+		return endsWith(key, "GeoKey");
+	})
+	.sort(function(a, b) {
+		return name2code[a] - name2code[b];
+	});
+
+	if (!metadata.GeoKeyDirectory) {
+		// Header={KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
+		//     "GeoKeyDirectory": [1, 1, 0, 5, 1024, 0, 1, 2, 1025, 0, 1, 1, 2048, 0, 1, 4326, 2049, 34737, 7, 0, 2054, 0, 1, 9102],
+		var KeyDirectoryVersion = 1;
+		var KeyRevision = 1;
+		var MinorRevision = 0;
+
+		var NumberOfKeys = geoKeys.length;
+
+		var GeoKeyDirectory = [ 1, 1, 0, NumberOfKeys ];
+		geoKeys.forEach(function(geoKey) {
+			var KeyID = Number(name2code[geoKey]);
+			GeoKeyDirectory.push(KeyID);
+
+			var Count;
+			var TIFFTagLocation;
+			var Value_Offset;
+			if (fieldTagTypes[KeyID] === "SHORT") {
+				Count = 1;
+				TIFFTagLocation = 0;
+				Value_Offset = metadata[geoKey];
+			} else if (geoKey === "GeogCitationGeoKey") {
+				Count = metadata.GeoAsciiParams.length;
+				TIFFTagLocation = Number(name2code.GeoAsciiParams);
+				Value_Offset = 0;
+			} else {
+				console.log("[geotiff.js] couldn't get TIFFTagLocation for " + geoKey);
+			}
+			GeoKeyDirectory.push(TIFFTagLocation);
+			GeoKeyDirectory.push(Count);
+			GeoKeyDirectory.push(Value_Offset);
+		});
+		metadata.GeoKeyDirectory = GeoKeyDirectory;
 	}
 
-	if (!metadata.GTRasterTypeGeoKey) {
-		metadata.GTRasterTypeGeoKey = 1;
-	}
-
-	if (!metadata.GeographicTypeGeoKey) {
-		metadata.GeographicTypeGeoKey = 4326;
-	}
-	
-	if (!metadata.GeogCitationGeoKey) {
-		metadata.GeogCitationGeoKey = "WGS 84";
+	// delete GeoKeys from metadata, because stored in GeoKeyDirectory tag
+	for (var geoKey in geoKeys) {
+		delete metadata[geoKey];
 	}
 
 	[
