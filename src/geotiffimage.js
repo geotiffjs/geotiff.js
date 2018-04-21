@@ -446,7 +446,7 @@ GeoTIFFImage.prototype = {
               for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
                 var value = 0;
-                if (pixelOffset < tileLength) {
+                if (pixelOffset < tileLength-1) {
                   value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
                 }
 
