@@ -132,10 +132,15 @@ class BlockedSource {
     const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
     const allBlockIds = [];
     const missingBlockIds = [];
+    const blockRequests = [];
+
     for (let current = firstBlockOffset; current < top; current += this.blockSize) {
       const blockId = Math.floor(current / this.blockSize);
       if (!this.blocks.has(blockId) && !this.blockRequests.has(blockId)) {
         missingBlockIds.push(blockId);
+      }
+      if (this.blockRequests.has(blockId)) {
+        blockRequests.push(this.blockRequests.get(blockId));
       }
       allBlockIds.push(blockId);
     }
@@ -205,6 +210,7 @@ class BlockedSource {
 
     // wait for all missing requests to finish
     await Promise.all(missingRequests);
+    await Promise.all(blockRequests);
 
     // now get all blocks for the request and return a summary buffer
     const blocks = allBlockIds.map(id => this.blocks.get(id));
