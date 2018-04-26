@@ -604,9 +604,12 @@ class GeoTIFFImage {
   /**
    * Returns the image resolution as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
+   * @param {GeoTIFFImage} [referenceImage=null] A reference image to calculate the resolution from
+   *                                             in cases when the current image does not have the
+   *                                             required tags on its own.
    * @returns {Array} The resolution as a vector
    */
-  getResolution() {
+  getResolution(referenceImage = null) {
     const modelPixelScale = this.fileDirectory.ModelPixelScale;
     const modelTransformation = this.fileDirectory.ModelTransformation;
 
@@ -623,6 +626,16 @@ class GeoTIFFImage {
         modelTransformation[10],
       ];
     }
+
+    if (referenceImage) {
+      const [refResX, refResY, refResZ] = referenceImage.getResolution();
+      return [
+        refResX * referenceImage.getWidth() / this.getWidth(),
+        refResY * referenceImage.getHeight() / this.getHeight(),
+        refResZ * referenceImage.getWidth() / this.getWidth(),
+      ];
+    }
+
     throw new Error('The image does not have an affine transformation.');
   }
 
