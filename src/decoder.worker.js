@@ -2,8 +2,10 @@
 
 import { getDecoder } from './compression';
 
+let fileDirectory = {};
+
 async function decode(self, compression, buffer) {
-  const decoder = getDecoder(compression);
+  const decoder = getDecoder(compression, fileDirectory);
   const result = await decoder.decodeBlock(buffer);
   self.postMessage([result], [result]);
 }
@@ -11,6 +13,9 @@ async function decode(self, compression, buffer) {
 self.addEventListener('message', (event) => {
   const [name, ...args] = event.data;
   switch (name) {
+    case 'init':
+      fileDirectory = args[1];
+      break;
     case 'decode':
       decode(self, ...args);
       break;

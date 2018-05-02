@@ -398,7 +398,7 @@ class GeoTIFFImage {
     width, height, resampleMethod, fillValue,
   } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
-    const pool = new Pool(this.fileDirectory.Compression, poolSize);
+    const pool = new Pool(this.fileDirectory.Compression, this.fileDirectory, poolSize);
 
     // check parameters
     if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {

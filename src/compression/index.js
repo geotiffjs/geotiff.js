@@ -1,9 +1,10 @@
 import RawDecoder from './raw';
 import LZWDecoder from './lzw';
+import JpegDecoder from './jpeg';
 import DeflateDecoder from './deflate';
 import PackbitsDecoder from './packbits';
 
-export function getDecoder(compression) {
+export function getDecoder(compression, fileDirectory) {
   switch (compression) {
     case undefined:
     case 1: // no compression
@@ -11,7 +12,10 @@ export function getDecoder(compression) {
     case 5: // LZW
       return new LZWDecoder();
     case 6: // JPEG
-      throw new Error('JPEG compression not supported.');
+      throw new Error('old style JPEG compression is not supported.');
+    case 7: // JPEG
+      // throw new Error('JPEG compression not supported.');
+      return new JpegDecoder(fileDirectory);
     case 8: // Deflate
       return new DeflateDecoder();
     // case 32946: // deflate ??
@@ -19,6 +23,6 @@ export function getDecoder(compression) {
     case 32773: // packbits
       return new PackbitsDecoder();
     default:
-      throw new Error(`Unknown compression method identifier: ${this.fileDirectory.Compression}`);
+      throw new Error(`Unknown compression method identifier: ${compression}`);
   }
 }

@@ -18,7 +18,7 @@ class Pool {
    *                      available. When this parameter is `null` or 0, then the
    *                      decoding will be done in the main thread.
    */
-  constructor(compression, size = defaultPoolSize) {
+  constructor(compression, fileDirectory, size = defaultPoolSize) {
     this.compression = compression;
     this.workers = [];
     this.idleWorkers = [];
@@ -27,12 +27,13 @@ class Pool {
 
     for (let i = 0; i < size; ++i) {
       const w = new Worker();
+      w.postMessage(['init', fileDirectory]);
       this.workers.push(w);
       this.idleWorkers.push(w);
     }
 
     if (size === null || size < 1) {
-      this.decoder = getDecoder(compression);
+      this.decoder = getDecoder(compression, fileDirectory);
     }
   }
 
