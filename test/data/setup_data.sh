@@ -34,5 +34,8 @@ convert rgb.tiff -colorspace YCbCr ycbcr.tif
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
 
+gdal_translate -of GTiff -co COMPRESS=JPEG rgb.tiff jpeg.tiff
+gdal_translate -of GTiff -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR rgb.tiff jpeg_ycbcr.tiff
+
 # modeltransformation tag
 wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff
