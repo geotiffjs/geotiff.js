@@ -513,23 +513,32 @@ class GeoTIFFImage {
     const raster = await this.readRasters(subOptions);
 
     const max = 2 ** this.fileDirectory.BitsPerSample[0];
-
+    let data;
     switch (pi) {
       case photometricInterpretations.WhiteIsZero:
-        return fromWhiteIsZero(raster, max);
+        data = fromWhiteIsZero(raster, max);
+        break;
       case photometricInterpretations.BlackIsZero:
-        return fromBlackIsZero(raster, max);
+        data = fromBlackIsZero(raster, max);
+        break;
       case photometricInterpretations.Palette:
-        return fromPalette(raster, fileDirectory.ColorMap);
+        data = fromPalette(raster, fileDirectory.ColorMap);
+        break;
       case photometricInterpretations.CMYK:
-        return fromCMYK(raster);
+        data = fromCMYK(raster);
+        break;
       case photometricInterpretations.YCbCr:
-        return fromYCbCr(raster);
+        data = fromYCbCr(raster);
+        break;
       case photometricInterpretations.CIELab:
-        return fromCIELab(raster);
+        data = fromCIELab(raster);
+        break;
       default:
         throw new Error('Unsupported photometric interpretation.');
     }
+    data.width = raster.width;
+    data.height = raster.height;
+    return data;
   }
 
   /**

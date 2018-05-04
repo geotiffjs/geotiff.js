@@ -56,7 +56,7 @@ export function fromCMYK(cmykRaster) {
 
 export function fromYCbCr(yCbCrRaster) {
   const { width, height } = yCbCrRaster;
-  const rgbRaster = new Uint8Array(width * height * 3);
+  const rgbRaster = new Uint8ClampedArray(width * height * 3);
   for (let i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
     const y = yCbCrRaster[i];
     const cb = yCbCrRaster[i + 1];
