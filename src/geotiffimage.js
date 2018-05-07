@@ -439,7 +439,6 @@ class GeoTIFFImage {
     const result = await this._readRaster(
       imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod,
     );
-    // pool.destroy();
     return result;
   }
 
