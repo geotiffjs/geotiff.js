@@ -5,7 +5,7 @@ import isNode from 'detect-node';
 import { expect } from 'chai';
 import 'isomorphic-fetch';
 
-import GeoTIFF from '../src/main';
+import { GeoTIFF } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 
 function createSource(filename) {
@@ -44,75 +44,74 @@ async function performRGBTest(tiff, options, comparisonRaster, maxDiff) {
   expect(Math.max.apply(null, diff)).to.be.at.most(maxDiff);
 }
 
-
 describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {
     expect(GeoTIFF).to.be.ok;
   });
 
   it('should work on stripped tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on tiled tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('tiled.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('tiled.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on band interleaved tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('interleave.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('interleave.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   // TODO: currently only the interleave.tiff is used, make own
   it('should work on band interleaved tiled tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('interleave.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('interleave.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on LZW compressed images', async () => {
-    const tiff = await GeoTIFF.parse(createSource('lzw.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('lzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('tiledplanarlzw.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('tiledplanarlzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on Int32 tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('int32.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('int32.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Int32Array);
   });
 
   it('should work on UInt32 tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('uint32.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('uint32.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint32Array);
   });
 
   it('should work on Float32 tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('float32.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('float32.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
   it('should work on Float64 tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('float64.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('float64.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);
   });
 
   it('should work on Float64 and lzw compressed tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('float64lzw.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('float64lzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);
   });
 
   it('should work on packbit compressed tiffs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('packbits.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('packbits.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work with BigTIFFs', async () => {
-    const tiff = await GeoTIFF.parse(createSource('bigtiff.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('bigtiff.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 });
@@ -120,30 +119,30 @@ describe('GeoTIFF', () => {
 describe('RGB-tests', () => {
   const options = { window: [250, 250, 300, 300], interleave: true };
   const comparisonRaster = (async () => {
-    const tiff = await GeoTIFF.parse(createSource('rgb.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('rgb.tiff'));
     const image = await tiff.getImage();
     return image.readRasters(options);
   })();
 
   it('should work with CMYK files', async () => {
-    const tiff = await GeoTIFF.parse(createSource('cmyk.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
     await performRGBTest(tiff, options, comparisonRaster, 1);
   });
 
   it('should work with YCbCr files', async () => {
-    const tiff = await GeoTIFF.parse(createSource('ycbcr.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource('ycbcr.tif'));
     await performRGBTest(tiff, options, comparisonRaster, 3);
   });
 
   it('should work with paletted files', async () => {
-    const tiff = await GeoTIFF.parse(createSource('rgb_paletted.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('rgb_paletted.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 15);
   });
 });
 
 describe('Geo metadata tests', async () => {
   it('should be able to get the origin and offset of images using tie points and scale', async () => {
-    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
     const image = await tiff.getImage();
     expect(image.getResolution()).to.be.an('array');
     expect(image.getOrigin()).to.be.an('array');
@@ -151,7 +150,7 @@ describe('Geo metadata tests', async () => {
   });
 
   it('should be able to get the origin and offset of images using model transformation', async () => {
-    const tiff = await GeoTIFF.parse(createSource('stripped.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
     const image = await tiff.getImage();
     expect(image.getResolution()).to.be.an('array');
     expect(image.getOrigin()).to.be.an('array');
