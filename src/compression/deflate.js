@@ -1,9 +1,9 @@
 import { inflate } from 'pako/lib/inflate';
-import AbstractDecoder from '../abstractdecoder';
+import BaseDecoder from './basedecoder';
 
 
-export default class DeflateDecoder extends AbstractDecoder {
+export default class DeflateDecoder extends BaseDecoder {
   decodeBlock(buffer) {
-    return Promise.resolve(inflate(new Uint8Array(buffer)).buffer);
+    return inflate(new Uint8Array(buffer)).buffer;
   }
 }

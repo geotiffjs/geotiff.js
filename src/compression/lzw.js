@@ -1,4 +1,5 @@
-import AbstractDecoder from '../abstractdecoder';
+import BaseDecoder from './basedecoder';
+
 
 const MIN_BITS = 9;
 const CLEAR_CODE = 256; // clear code
@@ -122,7 +123,7 @@ function decompress(input) {
   return new Uint8Array(result);
 }
 
-export default class LZWDecoder extends AbstractDecoder {
+export default class LZWDecoder extends BaseDecoder {
   decodeBlock(buffer) {
     return decompress(buffer, false).buffer;
   }

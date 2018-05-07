@@ -4,8 +4,8 @@ import JpegDecoder from './jpeg';
 import DeflateDecoder from './deflate';
 import PackbitsDecoder from './packbits';
 
-export function getDecoder(compression, fileDirectory) {
-  switch (compression) {
+export function getDecoder(fileDirectory) {
+  switch (fileDirectory.Compression) {
     case undefined:
     case 1: // no compression
       return new RawDecoder();
@@ -23,6 +23,6 @@ export function getDecoder(compression, fileDirectory) {
     case 32773: // packbits
       return new PackbitsDecoder();
     default:
-      throw new Error(`Unknown compression method identifier: ${compression}`);
+      throw new Error(`Unknown compression method identifier: ${fileDirectory.Compression}`);
   }
 }

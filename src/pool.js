@@ -1,5 +1,4 @@
 import Worker from './decoder.worker';
-import { getDecoder } from './compression';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
@@ -13,13 +12,11 @@ const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareCon
 class Pool {
   /**
    * @constructor
-   * @param {Number} compression The TIFF compression identifier.
    * @param {Number} size The size of the pool. Defaults to the number of CPUs
    *                      available. When this parameter is `null` or 0, then the
    *                      decoding will be done in the main thread.
    */
-  constructor(compression, fileDirectory, size = defaultPoolSize) {
-    this.compression = compression;
+  constructor(size = defaultPoolSize) {
     this.workers = [];
     this.idleWorkers = [];
     this.waitQueue = [];
@@ -27,13 +24,8 @@ class Pool {
 
     for (let i = 0; i < size; ++i) {
       const w = new Worker();
-      w.postMessage(['init', fileDirectory]);
       this.workers.push(w);
       this.idleWorkers.push(w);
-    }
-
-    if (size === null || size < 1) {
-      this.decoder = getDecoder(compression, fileDirectory);
     }
   }
 
@@ -42,11 +34,7 @@ class Pool {
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
    * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
    */
-  async decodeBlock(buffer) {
-    if (this.decoder) {
-      return Promise.resolve(this.decoder.decodeBlock(buffer));
-    }
-
+  async decode(fileDirectory, buffer) {
     const currentWorker = await this.waitForWorker();
     return new Promise((resolve, reject) => {
       currentWorker.onmessage = (event) => {
@@ -60,7 +48,7 @@ class Pool {
         reject(error);
       };
       currentWorker.postMessage([
-        'decode', this.compression, buffer,
+        'decode', fileDirectory, buffer,
       ], [buffer]);
     });
   }

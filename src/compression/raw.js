@@ -1,7 +1,8 @@
-import AbstractDecoder from '../abstractdecoder';
+import BaseDecoder from './basedecoder';
 
-export default class RawDecoder extends AbstractDecoder {
+
+export default class RawDecoder extends BaseDecoder {
   decodeBlock(buffer) {
-    return Promise.resolve(buffer);
+    return buffer;
   }
 }

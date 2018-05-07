@@ -3,7 +3,7 @@ import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
-
+import Pool from './pool';
 
 function getFieldTypeLength(fieldType) {
   switch (fieldType) {
@@ -530,3 +530,5 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
 }
+
+export { Pool };

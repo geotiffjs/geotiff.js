@@ -1,6 +1,7 @@
-import AbstractDecoder from '../abstractdecoder';
+import BaseDecoder from './basedecoder';
 
-export default class PackbitsDecoder extends AbstractDecoder {
+
+export default class PackbitsDecoder extends BaseDecoder {
   decodeBlock(buffer) {
     const dataView = new DataView(buffer);
     const out = [];
@@ -21,6 +22,6 @@ export default class PackbitsDecoder extends AbstractDecoder {
         i += header + 1;
       }
     }
-    return Promise.resolve(new Uint8Array(out).buffer);
+    return new Uint8Array(out).buffer;
   }
 }

@@ -2,8 +2,7 @@
 
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
-import { applyPredictor } from './predictor';
-import Pool from './pool';
+import { getDecoder } from './compression';
 import { resample } from './resample';
 
 function sum(array, start, end) {
@@ -221,10 +220,10 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {Pool} pool the decoder pool
+   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @returns {Promise.<ArrayBuffer>}
    */
-  async getTileOrStrip(x, y, sample, pool) {
+  async getTileOrStrip(x, y, sample, poolOrDecoder) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -246,11 +245,12 @@ class GeoTIFFImage {
     }
     const slice = await this.source.fetch(offset, byteCount);
 
+    // either use the provided pool or decoder to decode the data
     let request;
     if (tiles === null) {
-      request = pool.decodeBlock(slice);
+      request = poolOrDecoder.decode(this.fileDirectory, slice);
     } else if (!tiles[index]) {
-      request = pool.decodeBlock(slice);
+      request = poolOrDecoder.decode(this.fileDirectory, slice);
       tiles[index] = request;
     }
     return { x, y, sample, data: await request };
@@ -265,7 +265,7 @@ class GeoTIFFImage {
    * @param {Pool} pool The decoder pool
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -282,8 +282,6 @@ class GeoTIFFImage {
     const windowWidth = imageWindow[2] - imageWindow[0];
 
     let bytesPerPixel = this.getBytesPerPixel();
-
-    const predictor = this.fileDirectory.Predictor || 1;
 
     const srcSampleOffsets = [];
     const sampleReaders = [];
@@ -307,15 +305,10 @@ class GeoTIFFImage {
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sample);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, pool);
+          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
           promises.push(promise);
           promise.then((tile) => {
-            let buffer = tile.data;
-            if (predictor !== 1) {
-              buffer = applyPredictor(
-                buffer, predictor, tileWidth, tileHeight, this.fileDirectory.BitsPerSample,
-              );
-            }
+            const buffer = tile.data;
             const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
             const firstCol = tile.x * tileWidth;
@@ -379,7 +372,7 @@ class GeoTIFFImage {
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
+   * @param {Number} [pool=null] The size of the Worker-Pool used to
    *                                         decode chunks. `null` means that the
    *                                         decoding is done in the main thread.
    * @param {number} [width] The desired width of the output. When the width is no the
@@ -394,11 +387,10 @@ class GeoTIFFImage {
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
-    window: wnd, samples = [], interleave, poolSize = null,
+    window: wnd, samples = [], interleave, pool = null,
     width, height, resampleMethod, fillValue,
   } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
-    const pool = new Pool(this.fileDirectory.Compression, this.fileDirectory, poolSize);
 
     // check parameters
     if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
@@ -442,10 +434,12 @@ class GeoTIFFImage {
       }
     }
 
+    const poolOrDecoder = pool || getDecoder(this.fileDirectory);
+
     const result = await this._readRaster(
-      imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod,
+      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod,
     );
-    pool.destroy();
+    // pool.destroy();
     return result;
   }
 
@@ -464,7 +458,7 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, poolSize, width, height, resampleMethod } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -478,7 +472,8 @@ class GeoTIFFImage {
       return this.readRasters({
         window,
         interleave: true,
-        poolSize,
+        samples: [0, 1, 2],
+        pool,
       });
     }
 
@@ -504,7 +499,7 @@ class GeoTIFFImage {
       window: imageWindow,
       interleave: true,
       samples,
-      poolSize,
+      pool,
       width,
       height,
       resampleMethod,

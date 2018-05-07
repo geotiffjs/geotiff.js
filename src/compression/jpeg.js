@@ -1,3 +1,5 @@
+import BaseDecoder from './basedecoder';
+
 /* -*- tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 /*
@@ -873,8 +875,9 @@ class JpegStreamReader {
   }
 }
 
-export default class JpegDecoder {
+export default class JpegDecoder extends BaseDecoder {
   constructor(fileDirectory) {
+    super();
     this.reader = new JpegStreamReader();
     if (fileDirectory.JPEGTables) {
       this.reader.parse(fileDirectory.JPEGTables);
