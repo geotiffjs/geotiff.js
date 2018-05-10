@@ -8,6 +8,10 @@ Read (geospatial) metadata and raw array data from a wide variety of different
 
 Currently available functionality:
 
+  * Parsing TIFFs from various sources:
+    * remote (via `fetch` or XHR)
+    * from a local `ArrayBuffer`
+    * from the filesystem (on Browsers using the `FileReader` and on node using the filesystem functions)
   * Parsing the headers of all possible TIFF files
   * Rudimentary extraction of geospatial metadata
   * Reading raster data from:
@@ -22,8 +26,10 @@ Currently available functionality:
     * no compression
     * Packbits
     * LZW
-    * Deflate
-  * Subsetting via an image window and selected bands
+    * Deflate (with floating point or horizontal predictor support)
+    * JPEG
+  * Automatic selection of overview level to read from
+  * Subsetting via an image window or bounding box and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
   * Configurable tile/strip cache
   * Configurable Pool of workers to increase decoding efficiency
@@ -88,7 +94,7 @@ To do some in-browser testing do:
 npm start
 ```
 
-and navigate to `http://localhost:9000/test/`
+and navigate to `http://localhost:8090/test/`
 
 To build the library do:
 
@@ -100,107 +106,230 @@ The output is written to `dist/geotiff.browserify.js` and `dist/geotiff.browseri
 
 ## Usage
 
-geotiff.js works with both browserify style `require` and the global variable
-`GeoTIFF`:
+geotiff.js works with both `require` and the global variable `GeoTIFF`:
 
 ```javascript
-var GeoTIFF = require("geotiff");
+const GeoTIFF = require('geotiff');
+// or
+import GeoTIFF from 'geotiff';
 ```
 
 or:
 
 ```html
-<script src="dist/geotiff.browserify.js"></script>
+<script src="dist/geotiff.bundle.js"></script>
 <!-- or use the minified version:
-  <script src="dist/geotiff.browserify.min.js"></script>
+  <script src="dist/geotiff.bundle.min.js"></script>
 -->
 <script>
   console.log(GeoTIFF);
 </script>
 ```
 
-To actually open a GeoTIFF image use the `parse` function. It works with both
-`ArrayBuffer` and `String`:
+To parse a GeoTIFF, first a data source is required. To help with the development,
+there are shortcuts available. The following creates a source that reads from a
+remote GeoTIFF referenced by a URL:
 
 ```javascript
-var xhr = new XMLHttpRequest();
-xhr.open('GET', url, true);
-xhr.responseType = 'arraybuffer';
-xhr.onload = function(e) {
-  var tiff = GeoTIFF.parse(this.response);
+GeoTIFF.fromUrl(someUrl)
+  .then(tiff => { /* ... */});
+
+// or when using async/await
+(async function() {
+  const tiff = await GeoTIFF.fromUrl(someUrl);
   // ...
-}
-xhr.send();
+})()
 ```
 
-Similarly, the `fetch()` API can be used:
+Note: the interactions with geotiff.js objects are oftentimes asynchronous. For
+the sake of brevity we will only show the async/await syntax and not the
+`Promise` based one in the following examples.
+
+Accessing remote images is just one way to open TIFF images with geotiff.js. Other
+options are reading from a local `ArrayBuffer`:
 
 ```javascript
-fetch(url)
-  .then(function(response) { return response.arrayBuffer(); })
-  .then(function(data) {
-    const tiff = GeoTIFF.parse(data);
-    // ...
-  });
+// using local ArrayBuffer
+const response = await fetch(someUrl);
+const arrayBuffer = await response.arrayBuffer();
+const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
 ```
 
-When using the parser in node, you have to convert the `Buffer` to an
-`ArrayBuffer` first. See the following example for the conversion:
+or a `Blob`/`File`:
+
+```html
+<input type="file" id="file">
+<script>
+  const input = document.getElementById('file'):
+  input.onchange = async function() {
+    const tiff = await GeoTIFF.fromBlob(input.files[0]);
+  }
+</script>
+```
+
+Now that we have opened the TIFF file, we can inspect it. The TIFF is structured
+in a small header and a list of one or more images (Image File Directory, IFD to 
+use the TIFF nomenclature). To get one image by index the `getImage()` function
+must be used. This is again an asynchronous operation, as the IFDs are loaded
+lazily:
 
 ```javascript
-var GeoTIFF = require("geotiff");
-var fs = require("fs");
+const image = await tiff.getImage(); // by default, the first image is read.
+```
 
-fs.readFile(path, function(err, data) {
-  if (err) throw err;
-  dataArray = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-  var tiff = GeoTIFF.parse(dataArray);
-  // ...
+Now that we have obtained a `GeoTIFFImage` object we can inspect its metadata 
+(like size, tiling, number of samples, geographical information, etc.). All
+the metadata is parsed once the IFD is first parsed, thus the access to that
+is synchronous:
+
+```javascript
+const width = image.getWidth();
+const height = image.getHeight();
+const tileWidth = image.getTileWidth();
+const tileHeight = image.getTileHeight();
+const samplesPerPixel = getSamplesPerPixel();
+
+// when we are actually dealing with geo-data the following methods return
+// meaningful results:
+const origin = image.getOrigin();
+const resolution = image.getResolution();
+const bbox = image.getBoundingBox();
+```
+
+The actual raster data is not fetched and parsed automatically. This is because
+it is usually much more spacious and the decoding of the pixels can be time
+consuming due to the necessity of decompression.
+
+To read a whole image into one big array of arrays the following method call can be used:
+
+```javascript
+const data = await image.readRasters();
+```
+
+By default, the raster is split to a separate array for each component. For an RGB image
+for example, we'd get three arrays, one for red, green and blue.
+
+```javascript
+const [red, green, blue] = await image.readRasters();
+```
+
+If we want instead all the bands interleaved in one big array, we have to pass the
+`interleave: true` option:
+
+```javascript
+const [r0, g0, b0, r1, g1, b1, ...] = await image.readRasters({ interleave: true });
+```
+
+If we are only interested in a specific region of the image, the `window` option can be
+used to limit reading in that bounding box. Note: the bounding box is in 'image coordinates'
+not geographical ones:
+
+```javascript
+const left = 50;
+const top = 10;
+const right = 150;
+const bottom = 60;
+
+const data = await image.readRasters({ window: [left, top, right, bottom] });
+```
+
+This image window can go beyond the image bounds. In that case it might be usefull to supply
+a `fillValue: value` option (can also be an array, one value for each sample).
+
+It is also possible to just read specific samples for each pixel. For example, we can only
+read the red component from an RGB image:
+
+```javascript
+const [red] = await image.readRasters({ samples: [0] });
+```
+
+When you want your output in a specific size, you can use the `width` and `height` options.
+This defaults of course to the size of your supplied `window` or the image size if no
+`window` was supplied.
+
+As the data now needs to be resampled, a `resampleMethod` can be specified. This defaults to
+the nearest neighbour method, but also the `'bilinear'` method is supported:
+
+```javascript
+const data = await image.readRasters({ width: 40, height: 40, resampleMethod: 'bilinear' });
+```
+
+### Using decoder pools to improve parsing performance
+
+Decoding compressed images can be a time consuming process. To minimize this
+geotiff.js provides the `Pool` mechanism which uses WebWorkers to split the amount
+of work on multiple 'threads'.
+
+```javascript
+const pool = new GeoTIFF.Pool();
+const data = await image.readRasters({ pool });
+```
+
+It is possible to provide a pool size (i.e: number of workers), by default the number 
+of available processors is used.
+
+Because of the way WebWorker work (pun intended), there is a considerable overhead
+involved when using the `Pool`, as all the data must be copied and cannot be simply be 
+shared. But the benefits are two-fold. First: for larger image reads the overall time
+is still likely to be reduced and second: the main thread is relieved which helps to
+uphold responsiveness.
+
+Note: WebWorkers are only available in browsers. For node applications this feature
+is not available out of the box.
+
+### Dealing with visual data
+
+The TIFF specification provides various ways to encode visual data. In the 
+specification this is called photometric interpretation. The simplest case we
+already dealt with is the RGB one. Others are grayscale, paletted images, CMYK,
+YCbCr, and CIE L*a*b.
+
+geotiff.js provides a method to automatically convert these images to RGB:
+`readRGB()`. This method is very similar to the `readRasters` method with
+distinction that the `interleave` option is now always `true` and the
+`samples` are automatically chosen.
+
+```javascript
+const rgb = await image.readRGB({
+  // options...
 });
 ```
 
-Each TIFF file can be comprised of multiple "subfiles", containing the actual
-raster data. To get the actual images, use the `getImage` method:
+### Automatic image selection
+
+When dealing with images that have internal (or even external, see the next section) 
+overviews, `GeoTIFF` objects provide a separate `readRasters` method. This method
+works very similar to the method on the `GeoTIFFImage` objects with the same name.
+By default, it uses the larges image available (highest resolution), but when either
+`width`, `height`, `resX`, or `resY` are specified, then the best fitting image will
+be used for reading.
+
+Additionally, it allows the `bbox` instead of the `window` parameter. This works
+similarly, but uses geographic coordinates instead of pixel ones.
 
 ```javascript
-var image = tiff.getImage(); // or use .getImage(n) where n is between 0 and
-                             // tiff.getImageCount()
-
-console.log(image.getWidth(), image.getHeight(), image.getSamplesPerPixel());
+const data = await tiff.readRasters({
+  bbox: [10.34, 57.28, 13.34, 60.23],
+  resX: 0.1,
+  resY: 0.1
+});
 ```
 
-To actually read raster data the `readRasters` method does the job. It returns
-an `Array` of `TypedArrays` for each of the requested samples of the requested
-region:
+### External overviews
+
+Especially for certain kinds of high resolution images it is not uncommon to separate
+the highest resolution from the lower resolution overviews (usually using the `.ovr`
+extension). With geotiff.js it is possible to use files of this setup, just as you
+would use single-file images by taking advantage of the `MultiGeoTIFF` objects. They
+behave exactly the same as the before mentioned `GeoTIFF` objects: you can select
+images by index or read data using `readRasters`. Toget such a file use the `fromUrls`
+factory function:
 
 ```javascript
-var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
-var samples = [0, 1, 2, 3];
-image.readRasters({window: rasterWindow, samples: samples})
-  .then(function(rasters) {
-    for (var i = 0; i < rasters.length; ++i) {
-      console.log(rasters[i]);
-    }
-  });
-
-// to read all samples with no subsets:
-image.readRasters()
-  .then(function(rasters) {
-    // ...
-  });
-
-// to read the data in a single interleaved array:
-image.readRasters({interleave: true})
-  .then(function(raster) {
-    // ...
-  });
-```
-
-To read TIFF or geo-spatial metadata, the methods `.getFileDirectory()` and
-`.getGeoKeys()` provide the data:
-
-```javascript
-console.log(image.getFileDirectory(), image.getGeoKeys());
+const multiTiff = await GeoTIFF.fromUrls(
+  'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
+  ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
+);
 ```
 
 ## What to do with the data?
@@ -228,39 +357,6 @@ on the fly rendering of the data contained in a GeoTIFF.
 </script>
 ```
 
-## RGB-data
-
-When the TIFF file has color data stored, this can automatically extracted
-using the `readRGB` method. This always resolves with an `Uint8Array` with
-interleaved red, green, and blue values.
-
-This method translates CMYK and YCbCr colorspaces to RGB, supports
-color maps and two versions of grey-scale images (black is zero/white is zero).
-
-The following example shows how to display such data in a browsers canvas:
-
-    var parser = GeoTIFF.parse(data);
-    var image = parser.getImage();
-    image.readRGB()
-      .then(function(raster) {
-        var canvas = document.getElementById('canvas');
-        canvas.width = image.getWidth();
-        canvas.height = image.getHeight();
-        var ctx = canvas.getContext("2d");
-        var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
-        var data = imageData.data;
-        var o = 0;
-        for (var i = 0; i < raster.length; i+=3) {
-          data[o] = raster[i];
-          data[o+1] = raster[i+1];
-          data[o+2] = raster[i+2];
-          data[o+3] = 255;
-          o += 4;
-        }
-        ctx.putImageData(imageData, 0, 0);
-      }));
-
-
 ## BigTIFF support
 
 geotiff.js has a limited support for files in the BigTIFF format. The limitations
@@ -282,9 +378,6 @@ a reasonable support, the following is implemented:
   * Better support of geospatial parameters:
     * Parsing of EPSG identifiers
     * WKT representation
-    * Specifying of window in CRS coordinates
-  * Improving support of CIEL*a*b* images
-  * Support of "overview images" (i.e: images with reduced resolution)
 
 ## Contribution
 
