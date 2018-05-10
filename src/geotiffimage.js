@@ -372,9 +372,7 @@ class GeoTIFFImage {
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [pool=null] The size of the Worker-Pool used to
-   *                                         decode chunks. `null` means that the
-   *                                         decoding is done in the main thread.
+   * @param {Number} [pool=null] The optional decoder pool to use.
    * @param {number} [width] The desired width of the output. When the width is no the
    *                         same as the images, resampling will be performed.
    * @param {number} [height] The desired height of the output. When the width is no the
@@ -452,9 +450,12 @@ class GeoTIFFImage {
    *
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
-   *                                         decode chunks. `null` means that the
-   *                                         decoding is done in the main thread.
+   * @param {Number} [pool=null] The optional decoder pool to use.
+   * @param {number} [width] The desired width of the output. When the width is no the
+   *                         same as the images, resampling will be performed.
+   * @param {number} [height] The desired height of the output. When the width is no the
+   *                          same as the images, resampling will be performed.
+   * @param {string} [resampleMethod='nearest'] The desired resampling method.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
   async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {

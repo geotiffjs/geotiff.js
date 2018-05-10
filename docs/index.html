@@ -73,8 +73,10 @@
 <li>Packbits</li>
 <li>LZW</li>
 <li>Deflate (with floating point or horizontal predictor support)</li>
+<li>JPEG</li>
 </ul>
 </li>
+<li>Automatic selection of overview level to read from</li>
 <li>Subsetting via an image window or bounding box and selected bands</li>
 <li>Reading of samples into separate arrays or a single pixel-interleaved array</li>
 <li>Configurable tile/strip cache</li>
@@ -110,73 +112,134 @@ sudo apt-get install -y gdal-bin imagemagick</code></pre><p>When GDAL and ImageM
 sh setup_data.sh
 cd -</code></pre><p>To test the library (using PhantomJS, karma, mocha and chai) do the following:</p>
 <pre class="prettyprint source lang-bash"><code>npm test</code></pre><p>To do some in-browser testing do:</p>
-<pre class="prettyprint source lang-bash"><code>npm start</code></pre><p>and navigate to <code>http://localhost:9000/test/</code></p>
+<pre class="prettyprint source lang-bash"><code>npm start</code></pre><p>and navigate to <code>http://localhost:8090/test/</code></p>
 <p>To build the library do:</p>
 <pre class="prettyprint source lang-bash"><code>npm run build</code></pre><p>The output is written to <code>dist/geotiff.browserify.js</code> and <code>dist/geotiff.browserify.min.js</code>.</p>
-<h2>Usage</h2><p>geotiff.js works with both browserify style <code>require</code> and the global variable
-<code>GeoTIFF</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>var GeoTIFF = require(&quot;geotiff&quot;);</code></pre><p>or:</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;dist/geotiff.browserify.js&quot;>&lt;/script>
+<h2>Usage</h2><p>geotiff.js works with both <code>require</code> and the global variable <code>GeoTIFF</code>:</p>
+<pre class="prettyprint source lang-javascript"><code>const GeoTIFF = require('geotiff');
+// or
+import GeoTIFF from 'geotiff';</code></pre><p>or:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;dist/geotiff.bundle.js&quot;>&lt;/script>
 &lt;!-- or use the minified version:
-  &lt;script src=&quot;dist/geotiff.browserify.min.js&quot;>&lt;/script>
+  &lt;script src=&quot;dist/geotiff.bundle.min.js&quot;>&lt;/script>
 -->
 &lt;script>
   console.log(GeoTIFF);
-&lt;/script></code></pre><p>To actually open a GeoTIFF image use the <code>parse</code> function. It works with both
-<code>ArrayBuffer</code> and <code>String</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>var xhr = new XMLHttpRequest();
-xhr.open('GET', url, true);
-xhr.responseType = 'arraybuffer';
-xhr.onload = function(e) {
-  var tiff = GeoTIFF.parse(this.response);
+&lt;/script></code></pre><p>To parse a GeoTIFF, first a data source is required. To help with the development,
+there are shortcuts available. The following creates a source that reads from a
+remote GeoTIFF referenced by a URL:</p>
+<pre class="prettyprint source lang-javascript"><code>GeoTIFF.fromUrl(someUrl)
+  .then(tiff => { /* ... */});
+
+// or when using async/await
+(async function() {
+  const tiff = await GeoTIFF.fromUrl(someUrl);
   // ...
-}
-xhr.send();</code></pre><p>Similarly, the <code>fetch()</code> API can be used:</p>
-<pre class="prettyprint source lang-javascript"><code>fetch(url)
-  .then(function(response) { return response.arrayBuffer(); })
-  .then(function(data) {
-    const tiff = GeoTIFF.parse(data);
-    // ...
-  });</code></pre><p>When using the parser in node, you have to convert the <code>Buffer</code> to an
-<code>ArrayBuffer</code> first. See the following example for the conversion:</p>
-<pre class="prettyprint source lang-javascript"><code>var GeoTIFF = require(&quot;geotiff&quot;);
-var fs = require(&quot;fs&quot;);
+})()</code></pre><p>Note: the interactions with geotiff.js objects are oftentimes asynchronous. For
+the sake of brevity we will only show the async/await syntax and not the
+<code>Promise</code> based one in the following examples.</p>
+<p>Accessing remote images is just one way to open TIFF images with geotiff.js. Other
+options are reading from a local <code>ArrayBuffer</code>:</p>
+<pre class="prettyprint source lang-javascript"><code>// using local ArrayBuffer
+const response = await fetch(someUrl);
+const arrayBuffer = await response.arrayBuffer();
+const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);</code></pre><p>or a <code>Blob</code>/<code>File</code>:</p>
+<pre class="prettyprint source lang-html"><code>&lt;input type=&quot;file&quot; id=&quot;file&quot;>
+&lt;script>
+  const input = document.getElementById('file'):
+  input.onchange = async function() {
+    const tiff = await GeoTIFF.fromBlob(input.files[0]);
+  }
+&lt;/script></code></pre><p>Now that we have opened the TIFF file, we can inspect it. The TIFF is structured
+in a small header and a list of one or more images (Image File Directory, IFD to 
+use the TIFF nomenclature). To get one image by index the <code>getImage()</code> function
+must be used. This is again an asynchronous operation, as the IFDs are loaded
+lazily:</p>
+<pre class="prettyprint source lang-javascript"><code>const image = await tiff.getImage(); // by default, the first image is read.</code></pre><p>Now that we have obtained a <code>GeoTIFFImage</code> object we can inspect its metadata 
+(like size, tiling, number of samples, geographical information, etc.). All
+the metadata is parsed once the IFD is first parsed, thus the access to that
+is synchronous:</p>
+<pre class="prettyprint source lang-javascript"><code>const width = image.getWidth();
+const height = image.getHeight();
+const tileWidth = image.getTileWidth();
+const tileHeight = image.getTileHeight();
+const samplesPerPixel = getSamplesPerPixel();
 
-fs.readFile(path, function(err, data) {
-  if (err) throw err;
-  dataArray = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-  var tiff = GeoTIFF.parse(dataArray);
-  // ...
-});</code></pre><p>Each TIFF file can be comprised of multiple &quot;subfiles&quot;, containing the actual
-raster data. To get the actual images, use the <code>getImage</code> method:</p>
-<pre class="prettyprint source lang-javascript"><code>var image = tiff.getImage(); // or use .getImage(n) where n is between 0 and
-                             // tiff.getImageCount()
+// when we are actually dealing with geo-data the following methods return
+// meaningful results:
+const origin = image.getOrigin();
+const resolution = image.getResolution();
+const bbox = image.getBoundingBox();</code></pre><p>The actual raster data is not fetched and parsed automatically. This is because
+it is usually much more spacious and the decoding of the pixels can be time
+consuming due to the necessity of decompression.</p>
+<p>To read a whole image into one big array of arrays the following method call can be used:</p>
+<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();</code></pre><p>By default, the raster is split to a separate array for each component. For an RGB image
+for example, we'd get three arrays, one for red, green and blue.</p>
+<pre class="prettyprint source lang-javascript"><code>const [red, green, blue] = await image.readRasters();</code></pre><p>If we want instead all the bands interleaved in one big array, we have to pass the
+<code>interleave: true</code> option:</p>
+<pre class="prettyprint source lang-javascript"><code>const [r0, g0, b0, r1, g1, b1, ...] = await image.readRasters({ interleave: true });</code></pre><p>If we are only interested in a specific region of the image, the <code>window</code> option can be
+used to limit reading in that bounding box. Note: the bounding box is in 'image coordinates'
+not geographical ones:</p>
+<pre class="prettyprint source lang-javascript"><code>const left = 50;
+const top = 10;
+const right = 150;
+const bottom = 60;
 
-console.log(image.getWidth(), image.getHeight(), image.getSamplesPerPixel());</code></pre><p>To actually read raster data the <code>readRasters</code> method does the job. It returns
-an <code>Array</code> of <code>TypedArrays</code> for each of the requested samples of the requested
-region:</p>
-<pre class="prettyprint source lang-javascript"><code>var rasterWindow = [50, 50, 100, 100]; // left, top, right, bottom
-var samples = [0, 1, 2, 3];
-image.readRasters({window: rasterWindow, samples: samples})
-  .then(function(rasters) {
-    for (var i = 0; i &lt; rasters.length; ++i) {
-      console.log(rasters[i]);
-    }
-  });
-
-// to read all samples with no subsets:
-image.readRasters()
-  .then(function(rasters) {
-    // ...
-  });
-
-// to read the data in a single interleaved array:
-image.readRasters({interleave: true})
-  .then(function(raster) {
-    // ...
-  });</code></pre><p>To read TIFF or geo-spatial metadata, the methods <code>.getFileDirectory()</code> and
-<code>.getGeoKeys()</code> provide the data:</p>
-<pre class="prettyprint source lang-javascript"><code>console.log(image.getFileDirectory(), image.getGeoKeys());</code></pre><h2>What to do with the data?</h2><p>There is a nice HTML 5/WebGL based rendering library called
+const data = await image.readRasters({ window: [left, top, right, bottom] });</code></pre><p>This image window can go beyond the image bounds. In that case it might be usefull to supply
+a <code>fillValue: value</code> option (can also be an array, one value for each sample).</p>
+<p>It is also possible to just read specific samples for each pixel. For example, we can only
+read the red component from an RGB image:</p>
+<pre class="prettyprint source lang-javascript"><code>const [red] = await image.readRasters({ samples: [0] });</code></pre><p>When you want your output in a specific size, you can use the <code>width</code> and <code>height</code> options.
+This defaults of course to the size of your supplied <code>window</code> or the image size if no
+<code>window</code> was supplied.</p>
+<p>As the data now needs to be resampled, a <code>resampleMethod</code> can be specified. This defaults to
+the nearest neighbour method, but also the <code>'bilinear'</code> method is supported:</p>
+<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters({ width: 40, height: 40, resampleMethod: 'bilinear' });</code></pre><h3>Using decoder pools to improve parsing performance</h3><p>Decoding compressed images can be a time consuming process. To minimize this
+geotiff.js provides the <code>Pool</code> mechanism which uses WebWorkers to split the amount
+of work on multiple 'threads'.</p>
+<pre class="prettyprint source lang-javascript"><code>const pool = new GeoTIFF.Pool();
+const data = await image.readRasters({ pool });</code></pre><p>It is possible to provide a pool size (i.e: number of workers), by default the number 
+of available processors is used.</p>
+<p>Because of the way WebWorker work (pun intended), there is a considerable overhead
+involved when using the <code>Pool</code>, as all the data must be copied and cannot be simply be 
+shared. But the benefits are two-fold. First: for larger image reads the overall time
+is still likely to be reduced and second: the main thread is relieved which helps to
+uphold responsiveness.</p>
+<p>Note: WebWorkers are only available in browsers. For node applications this feature
+is not available out of the box.</p>
+<h3>Dealing with visual data</h3><p>The TIFF specification provides various ways to encode visual data. In the 
+specification this is called photometric interpretation. The simplest case we
+already dealt with is the RGB one. Others are grayscale, paletted images, CMYK,
+YCbCr, and CIE L<em>a</em>b.</p>
+<p>geotiff.js provides a method to automatically convert these images to RGB:
+<code>readRGB()</code>. This method is very similar to the <code>readRasters</code> method with
+distinction that the <code>interleave</code> option is now always <code>true</code> and the
+<code>samples</code> are automatically chosen.</p>
+<pre class="prettyprint source lang-javascript"><code>const rgb = await image.readRGB({
+  // options...
+});</code></pre><h3>Automatic image selection</h3><p>When dealing with images that have internal (or even external, see the next section) 
+overviews, <code>GeoTIFF</code> objects provide a separate <code>readRasters</code> method. This method
+works very similar to the method on the <code>GeoTIFFImage</code> objects with the same name.
+By default, it uses the larges image available (highest resolution), but when either
+<code>width</code>, <code>height</code>, <code>resX</code>, or <code>resY</code> are specified, then the best fitting image will
+be used for reading.</p>
+<p>Additionally, it allows the <code>bbox</code> instead of the <code>window</code> parameter. This works
+similarly, but uses geographic coordinates instead of pixel ones.</p>
+<pre class="prettyprint source lang-javascript"><code>const data = await tiff.readRasters({
+  bbox: [10.34, 57.28, 13.34, 60.23],
+  resX: 0.1,
+  resY: 0.1
+});</code></pre><h3>External overviews</h3><p>Especially for certain kinds of high resolution images it is not uncommon to separate
+the highest resolution from the lower resolution overviews (usually using the <code>.ovr</code>
+extension). With geotiff.js it is possible to use files of this setup, just as you
+would use single-file images by taking advantage of the <code>MultiGeoTIFF</code> objects. They
+behave exactly the same as the before mentioned <code>GeoTIFF</code> objects: you can select
+images by index or read data using <code>readRasters</code>. Toget such a file use the <code>fromUrls</code>
+factory function:</p>
+<pre class="prettyprint source lang-javascript"><code>const multiTiff = await GeoTIFF.fromUrls(
+  'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
+  ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
+);</code></pre><h2>What to do with the data?</h2><p>There is a nice HTML 5/WebGL based rendering library called
 <a href="https://github.com/santilland/plotty">plotty</a>, that allows for some really nice
 on the fly rendering of the data contained in a GeoTIFF.</p>
 <pre class="prettyprint source lang-html"><code>&lt;canvas id=&quot;plot&quot;>&lt;/canvas>
@@ -194,32 +257,7 @@ on the fly rendering of the data contained in a GeoTIFF.</p>
       });
       plot.render();
     });
-&lt;/script></code></pre><h2>RGB-data</h2><p>When the TIFF file has color data stored, this can automatically extracted
-using the <code>readRGB</code> method. This always resolves with an <code>Uint8Array</code> with
-interleaved red, green, and blue values.</p>
-<p>This method translates CMYK and YCbCr colorspaces to RGB, supports
-color maps and two versions of grey-scale images (black is zero/white is zero).</p>
-<p>The following example shows how to display such data in a browsers canvas:</p>
-<pre class="prettyprint source"><code>var parser = GeoTIFF.parse(data);
-var image = parser.getImage();
-image.readRGB()
-  .then(function(raster) {
-    var canvas = document.getElementById('canvas');
-    canvas.width = image.getWidth();
-    canvas.height = image.getHeight();
-    var ctx = canvas.getContext(&quot;2d&quot;);
-    var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
-    var data = imageData.data;
-    var o = 0;
-    for (var i = 0; i &lt; raster.length; i+=3) {
-      data[o] = raster[i];
-      data[o+1] = raster[i+1];
-      data[o+2] = raster[i+2];
-      data[o+3] = 255;
-      o += 4;
-    }
-    ctx.putImageData(imageData, 0, 0);
-  }));</code></pre><h2>BigTIFF support</h2><p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
+&lt;/script></code></pre><h2>BigTIFF support</h2><p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
 originate in the capabilities of current JavaScript implementations regarding
 64 bit integer parsers and structures: there are no functions to read 64 bit
 integers from a stream and no such typed arrays. As BigTIFF relies on 64 bit
@@ -237,11 +275,8 @@ pixel values.</li>
 <li>Better support of geospatial parameters:<ul>
 <li>Parsing of EPSG identifiers</li>
 <li>WKT representation</li>
-<li>Specifying of window in CRS coordinates</li>
 </ul>
 </li>
-<li>Improving support of CIEL*a*b* images</li>
-<li>Support of &quot;overview images&quot; (i.e: images with reduced resolution)</li>
 </ul>
 <h2>Contribution</h2><p>If you have an idea, found a bug or have a remark, please open a ticket, we will
 look into it ASAP.</p>
@@ -260,13 +295,13 @@ which is the aim of geotiff.js.</p></article>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Apr 12 2018 10:40:10 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

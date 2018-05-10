@@ -112,7 +112,8 @@
 
 
 <div class="description">
-    Construct a new GeoTIFF from an ArrayBuffer.
+    Construct a new GeoTIFF from an
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.
 </div>
 
 
@@ -205,7 +206,170 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line450">line 450</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line456">line 456</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The resulting GeoTIFF file.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromBlob"><span class="type-signature"></span>fromBlob<span class="signature">(blob)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Construct a GeoTIFF from an HTML
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a> or
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a>
+object.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blob</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Blob</span>
+|
+
+<span class="param-type">File</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The Blob or File object to read from.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line479">line 479</a>
     </li></ul></dd>
     
 
@@ -270,7 +434,8 @@
 
 <div class="description">
     Construct a GeoTIFF from a local file path. This uses the node
-filesystem API and is not available on browsers.
+<a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
+not available on browsers.
 </div>
 
 
@@ -363,7 +528,7 @@ filesystem API and is not available on browsers.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line460">line 460</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line467">line 467</a>
     </li></ul></dd>
     
 
@@ -564,7 +729,7 @@ filesystem API and is not available on browsers.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line441">line 441</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line446">line 446</a>
     </li></ul></dd>
     
 
@@ -755,7 +920,8 @@ filesystem API and is not available on browsers.
             
 
             <td class="description last">Additional options to pass to the source.
-                          See makeRemoteSource for details.</td>
+                          See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
+                          for details.</td>
         </tr>
 
     
@@ -796,7 +962,7 @@ filesystem API and is not available on browsers.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line476">line 476</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line492">line 492</a>
     </li></ul></dd>
     
 
@@ -862,13 +1028,13 @@ filesystem API and is not available on browsers.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Apr 12 2018 10:40:10 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

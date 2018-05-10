@@ -26,10 +26,11 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { photometricInterpretations, parseXml } from './globals';
+            <pre class="prettyprint source linenums"><code>/* eslint max-len: ["error", { "code": 120 }] */
+
+import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
-import { applyPredictor } from './predictor';
-import Pool from './pool';
+import { getDecoder } from './compression';
 import { resample } from './resample';
 
 function sum(array, start, end) {
@@ -247,10 +248,10 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {Pool} pool the decoder pool
+   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @returns {Promise.&lt;ArrayBuffer>}
    */
-  async getTileOrStrip(x, y, sample, pool) {
+  async getTileOrStrip(x, y, sample, poolOrDecoder) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -272,11 +273,12 @@ class GeoTIFFImage {
     }
     const slice = await this.source.fetch(offset, byteCount);
 
+    // either use the provided pool or decoder to decode the data
     let request;
     if (tiles === null) {
-      request = pool.decodeBlock(slice);
+      request = poolOrDecoder.decode(this.fileDirectory, slice);
     } else if (!tiles[index]) {
-      request = pool.decodeBlock(slice);
+      request = poolOrDecoder.decode(this.fileDirectory, slice);
       tiles[index] = request;
     }
     return { x, y, sample, data: await request };
@@ -291,19 +293,23 @@ class GeoTIFFImage {
    * @param {Pool} pool The decoder pool
    * @returns {Promise&lt;TypedArray[]>|Promise&lt;TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
-    const minXTile = Math.floor(imageWindow[0] / tileWidth);
-    const maxXTile = Math.ceil(imageWindow[2] / tileWidth);
-    const minYTile = Math.floor(imageWindow[1] / tileHeight);
-    const maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+    const minXTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
+    const maxXTile = Math.min(
+      Math.ceil(imageWindow[2] / tileWidth),
+      Math.ceil(this.getWidth() / this.getTileWidth()),
+    );
+    const minYTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
+    const maxYTile = Math.min(
+      Math.ceil(imageWindow[3] / tileHeight),
+      Math.ceil(this.getHeight() / this.getTileHeight()),
+    );
     const windowWidth = imageWindow[2] - imageWindow[0];
 
     let bytesPerPixel = this.getBytesPerPixel();
-
-    const predictor = this.fileDirectory.Predictor || 1;
 
     const srcSampleOffsets = [];
     const sampleReaders = [];
@@ -327,15 +333,10 @@ class GeoTIFFImage {
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sample);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, pool);
+          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
           promises.push(promise);
           promise.then((tile) => {
-            let buffer = tile.data;
-            if (predictor !== 1) {
-              buffer = applyPredictor(
-                buffer, predictor, tileWidth, tileHeight, this.fileDirectory.BitsPerSample,
-              );
-            }
+            const buffer = tile.data;
             const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
             const firstCol = tile.x * tileWidth;
@@ -381,6 +382,9 @@ class GeoTIFFImage {
       );
     }
 
+    valueArrays.width = width || imageWindow[2] - imageWindow[0];
+    valueArrays.height = height || imageWindow[3] - imageWindow[1];
+
     return valueArrays;
   }
 
@@ -396,22 +400,28 @@ class GeoTIFFImage {
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [options.poolSize=null] The size of the Worker-Pool used to
+   * @param {Number} [pool=null] The size of the Worker-Pool used to
    *                                         decode chunks. `null` means that the
    *                                         decoding is done in the main thread.
+   * @param {number} [width] The desired width of the output. When the width is no the
+   *                         same as the images, resampling will be performed.
+   * @param {number} [height] The desired height of the output. When the width is no the
+   *                          same as the images, resampling will be performed.
+   * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [fillValue] The value to use for parts of the image
+   *                                      outside of the images extent. When multiple
+   *                                      samples are requested, an array of fill values
+   *                                      can be passed.
    * @returns {Promise.&lt;(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  async readRasters({ window: wnd, samples = [], interleave, poolSize = null, width, height, resampleMethod } = {}) {
+  async readRasters({
+    window: wnd, samples = [], interleave, pool = null,
+    width, height, resampleMethod, fillValue,
+  } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
-    const pool = new Pool(this.fileDirectory.Compression, poolSize);
 
     // check parameters
-    if (imageWindow[0] &lt; 0 ||
-        imageWindow[1] &lt; 0 ||
-        imageWindow[2] > this.getWidth() ||
-        imageWindow[3] > this.getHeight()) {
-      throw new Error('Select window is out of image bounds.');
-    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+    if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
       throw new Error('Invalid subsets');
     }
 
@@ -436,17 +446,27 @@ class GeoTIFFImage {
         Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
+      if (fillValue) {
+        valueArrays.fill(fillValue);
+      }
     } else {
       valueArrays = [];
       for (let i = 0; i &lt; samples.length; ++i) {
-        valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+        const valueArray = this.getArrayForSample(samples[i], numPixels);
+        if (Array.isArray(fillValue) &amp;&amp; i &lt; fillValue.length) {
+          valueArray.fill(fillValue[i]);
+        } else if (fillValue &amp;&amp; !Array.isArray(fillValue)) {
+          valueArray.fill(fillValue);
+        }
+        valueArrays.push(valueArray);
       }
     }
 
+    const poolOrDecoder = pool || getDecoder(this.fileDirectory);
+
     const result = await this._readRaster(
-      imageWindow, samples, valueArrays, interleave, pool, width, height, resampleMethod,
+      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod,
     );
-    pool.destroy();
     return result;
   }
 
@@ -465,32 +485,22 @@ class GeoTIFFImage {
    *                                         decoding is done in the main thread.
    * @returns {Promise.&lt;TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, poolSize } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
-    if (imageWindow[0] &lt; 0 ||
-        imageWindow[1] &lt; 0 ||
-        imageWindow[2] > this.getWidth() ||
-        imageWindow[3] > this.getHeight()) {
-      throw new Error('Select window is out of image bounds.');
-    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+    if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
       throw new Error('Invalid subsets');
     }
 
-    const width = imageWindow[2] - imageWindow[0];
-    const height = imageWindow[3] - imageWindow[1];
-
     const pi = this.fileDirectory.PhotometricInterpretation;
-
-    const bits = this.fileDirectory.BitsPerSample[0];
-    const max = 2 ** bits;
 
     if (pi === photometricInterpretations.RGB) {
       return this.readRasters({
         window,
         interleave: true,
-        poolSize,
+        samples: [0, 1, 2],
+        pool,
       });
     }
 
@@ -516,28 +526,41 @@ class GeoTIFFImage {
       window: imageWindow,
       interleave: true,
       samples,
-      poolSize,
+      pool,
+      width,
+      height,
+      resampleMethod,
     };
     const { fileDirectory } = this;
-    return this.readRasters(subOptions)
-      .then((raster) => {
-        switch (pi) {
-          case photometricInterpretations.WhiteIsZero:
-            return fromWhiteIsZero(raster, max, width, height);
-          case photometricInterpretations.BlackIsZero:
-            return fromBlackIsZero(raster, max, width, height);
-          case photometricInterpretations.Palette:
-            return fromPalette(raster, fileDirectory.ColorMap, width, height);
-          case photometricInterpretations.CMYK:
-            return fromCMYK(raster, width, height);
-          case photometricInterpretations.YCbCr:
-            return fromYCbCr(raster, width, height);
-          case photometricInterpretations.CIELab:
-            return fromCIELab(raster, width, height);
-          default:
-            throw new Error('Unsupported photometric interpretation.');
-        }
-      });
+    const raster = await this.readRasters(subOptions);
+
+    const max = 2 ** this.fileDirectory.BitsPerSample[0];
+    let data;
+    switch (pi) {
+      case photometricInterpretations.WhiteIsZero:
+        data = fromWhiteIsZero(raster, max);
+        break;
+      case photometricInterpretations.BlackIsZero:
+        data = fromBlackIsZero(raster, max);
+        break;
+      case photometricInterpretations.Palette:
+        data = fromPalette(raster, fileDirectory.ColorMap);
+        break;
+      case photometricInterpretations.CMYK:
+        data = fromCMYK(raster);
+        break;
+      case photometricInterpretations.YCbCr:
+        data = fromYCbCr(raster);
+        break;
+      case photometricInterpretations.CIELab:
+        data = fromCIELab(raster);
+        break;
+      default:
+        throw new Error('Unsupported photometric interpretation.');
+    }
+    data.width = raster.width;
+    data.height = raster.height;
+    return data;
   }
 
   /**
@@ -612,9 +635,12 @@ class GeoTIFFImage {
   /**
    * Returns the image resolution as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
+   * @param {GeoTIFFImage} [referenceImage=null] A reference image to calculate the resolution from
+   *                                             in cases when the current image does not have the
+   *                                             required tags on its own.
    * @returns {Array} The resolution as a vector
    */
-  getResolution() {
+  getResolution(referenceImage = null) {
     const modelPixelScale = this.fileDirectory.ModelPixelScale;
     const modelTransformation = this.fileDirectory.ModelTransformation;
 
@@ -631,6 +657,16 @@ class GeoTIFFImage {
         modelTransformation[10],
       ];
     }
+
+    if (referenceImage) {
+      const [refResX, refResY, refResZ] = referenceImage.getResolution();
+      return [
+        refResX * referenceImage.getWidth() / this.getWidth(),
+        refResY * referenceImage.getHeight() / this.getHeight(),
+        refResZ * referenceImage.getWidth() / this.getWidth(),
+      ];
+    }
+
     throw new Error('The image does not have an affine transformation.');
   }
 
@@ -678,13 +714,13 @@ export default GeoTIFFImage;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Apr 12 2018 10:40:10 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

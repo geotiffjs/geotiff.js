@@ -125,10 +125,27 @@ function getValues(dataSlice, fieldType, count, offset) {
 
 class GeoTIFFBase {
   /**
-   * @param {object} options
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {Array} [options.bbox=whole image] the subset to read data from in
+   *                                           geographical coordinates.
+   * @param {Array} [options.samples=all samples] the selection of samples to read from.
+   * @param {Boolean} [options.interleave=false] whether the data shall be read
+   *                                             in one single array or separate
+   *                                             arrays.
+   * @param {Number} [pool=null] The optional decoder pool to use.
+   * @param {number} [width] The desired width of the output. When the width is no the
+   *                         same as the images, resampling will be performed.
+   * @param {number} [height] The desired height of the output. When the width is no the
+   *                          same as the images, resampling will be performed.
+   * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [fillValue] The value to use for parts of the image
+   *                                      outside of the images extent. When multiple
+   *                                      samples are requested, an array of fill values
+   *                                      can be passed.
    * @returns {Promise<TypedArray[]>}
    */
-  async readRaster(options) {
+  async readRasters(options) {
     const { window: imageWindow, width, height } = options;
     let { resX, resY, bbox } = options;
 
@@ -492,7 +509,8 @@ export async function fromUrl(url, options = {}) {
 }
 
 /**
- * Construct a new GeoTIFF from an ArrayBuffer.
+ * Construct a new GeoTIFF from an
+ * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
  * @param {ArrayBuffer} arrayBuffer The data to read the file from.
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
@@ -502,7 +520,8 @@ export async function fromArrayBuffer(arrayBuffer) {
 
 /**
  * Construct a GeoTIFF from a local file path. This uses the node
- * filesystem API and is not available on browsers.
+ * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
+ * not available on browsers.
  * @param {string} path The filepath to read from.
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
@@ -510,6 +529,14 @@ export async function fromFile(path) {
   return GeoTIFF.fromSource(makeFileSource(path));
 }
 
+/**
+ * Construct a GeoTIFF from an HTML
+ * [Blob]{@link https://developer.mozilla.org/en-US/docs/Web/API/Blob} or
+ * [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File}
+ * object.
+ * @param {Blob|File} blob The Blob or File object to read from.
+ * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ */
 export async function fromBlob(blob) {
   return GeoTIFF.fromSource(makeFileReaderSource(blob));
 }
@@ -519,7 +546,8 @@ export async function fromBlob(blob) {
  * @param {string} mainUrl The URL for the main file.
  * @param {string[]} overviewUrls An array of URLs for the overview images.
  * @param {object} [options] Additional options to pass to the source.
- *                           See {@link makeRemoteSource} for details.
+ *                           See [makeRemoteSource]{@link module:source.makeRemoteSource}
+ *                           for details.
  * @returns {Promise.<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
