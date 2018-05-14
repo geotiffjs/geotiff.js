@@ -2,7 +2,7 @@
   "name": "geotiff",
   "version": "0.4.1",
   "description": "GeoTIFF image decoding in JavaScript",
-  "repository": "https://github.com/constantinius/geotiff.js",
+  "repository": "https://github.com/geotiffjs/geotiff.js",
   "keywords": [
     "TIFF",
     "GeoTIFF",
@@ -43,11 +43,13 @@
     "worker-loader": "^1.1.1"
   },
   "scripts": {
-    "dev": "webpack-dev-server -d -w --content-base test --config webpack.conf.js",
-    "watch": "webpack -w --config webpack.conf.js",
-    "build": "webpack --config webpack.conf.js",
+    "dev": "webpack-dev-server -d -w --content-base test",
+    "watch": "webpack -d -w",
+    "build:clean": "rm -rf dist/*",
+    "build:dev": "webpack -d ",
+    "build:prod": "NODE_ENV=production webpack -p",
+    "build": "npm run build:clean ; npm run build:dev ; npm run build:prod",
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
-    "test-watch": "mocha --compilers js:babel-core/register --require babel-polyfill -w",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "prepublish": "npm run build"

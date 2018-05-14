@@ -1,11 +1,13 @@
 const path = require('path');
 
+const isProduction = (process.env.NODE_ENV === 'production');
+
 module.exports = {
   entry: './src/main',
 
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'geotiff.bundle.js',
+    filename: isProduction ? 'geotiff.bundle.min.js' : 'geotiff.bundle.js',
     library: 'GeoTIFF',
     libraryTarget: 'umd',
   },
@@ -17,9 +19,14 @@ module.exports = {
         use: {
           loader: 'worker-loader',
           options: {
+            name: isProduction ? '[hash].decoder.worker.min.js' : '[hash].decoder.worker.js',
             inline: true,
+            fallback: true,
           },
         },
+      }, {
+        test: /\.js$/,
+        use: 'babel-loader',
       },
     ],
   },
@@ -40,6 +47,5 @@ module.exports = {
     },
   },
 
-  devtool: 'source-map',
   cache: true,
 };
