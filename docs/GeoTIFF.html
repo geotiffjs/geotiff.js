@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFF<span class="signature">(rawData, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">The abstraction for a whole GeoTIFF file.</div>
+            <div class="class-description"><p>The abstraction for a whole GeoTIFF file.</p></div>
         
     
 </header>
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="GeoTIFF"><span class="type-signature"></span>new GeoTIFF<span class="signature">(rawData, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="GeoTIFF"><span class="type-signature"></span>new GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -87,13 +87,13 @@
 
         <tr>
             
-                <td class="name"><code>rawData</code></td>
+                <td class="name"><code>source</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">ArrayBuffer</span>
+<span class="param-type"><a href="Source.html">Source</a></span>
 
 
             
@@ -111,7 +111,101 @@
 
             
 
-            <td class="description last">the raw data stream of the file as an ArrayBuffer.</td>
+            <td class="description last"><p>The datasource to read from.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>littleEndian</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Whether the image uses little endian.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bigTiff</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Whether the image uses bigTIFF conventions.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>firstIFDOffset</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The numeric byte-offset from the start of the image
+                               to the first IFD.</p></td>
         </tr>
 
     
@@ -144,7 +238,7 @@
 
             
 
-            <td class="description last">further options.
+            <td class="description last"><p>further options.</p>
                 <h6>Properties</h6>
                 
 
@@ -206,7 +300,7 @@
                 </td>
             
 
-            <td class="description last">whether or not decoded tiles shall be cached.</td>
+            <td class="description last"><p>whether or not decoded tiles shall be cached.</p></td>
         </tr>
 
     
@@ -254,7 +348,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line209">line 209</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -284,6 +378,17 @@
 
     
     </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="GeoTIFFBase.html">GeoTIFFBase</a></li>
+    </ul>
+
 
     
 
@@ -316,7 +421,7 @@
 
 
 <div class="description">
-    Parse a (Geo)TIFF file from the given source.
+    <p>Parse a (Geo)TIFF file from the given source.</p>
 </div>
 
 
@@ -358,7 +463,7 @@
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">source~Source</span>
 
 
             
@@ -368,7 +473,7 @@
 
             
 
-            <td class="description last">The source of data to parse from.</td>
+            <td class="description last"><p>The source of data to parse from.</p></td>
         </tr>
 
     
@@ -391,7 +496,7 @@
 
             
 
-            <td class="description last">Additional options.</td>
+            <td class="description last"><p>Additional options.</p></td>
         </tr>
 
     
@@ -432,7 +537,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line343">line 343</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -474,7 +579,7 @@
 
 
 <div class="description">
-    Get the n-th internal subfile a an image. By default, the first is returned.
+    <p>Get the n-th internal subfile of an image. By default, the first is returned.</p>
 </div>
 
 
@@ -546,7 +651,7 @@
                 </td>
             
 
-            <td class="description last">the index of the image to return.</td>
+            <td class="description last"><p>the index of the image to return.</p></td>
         </tr>
 
     
@@ -587,7 +692,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line307">line 307</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line337">line 337</a>
     </li></ul></dd>
     
 
@@ -614,7 +719,7 @@
 
         
 <div class="param-desc">
-    the image at the given index
+    <p>the image at the given index</p>
 </div>
 
 
@@ -651,7 +756,7 @@
 
 
 <div class="description">
-    Returns the count of the internal subfiles.
+    <p>Returns the count of the internal subfiles.</p>
 </div>
 
 
@@ -695,7 +800,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line327">line 327</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line357">line 357</a>
     </li></ul></dd>
     
 
@@ -722,7 +827,7 @@
 
         
 <div class="param-desc">
-    the number of internal subfile images
+    <p>the number of internal subfile images</p>
 </div>
 
 
@@ -734,6 +839,585 @@
     <dd>
         
 <span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>, fillValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>(experimental) Reads raster data from the best fitting image. This function uses
+the image with the lowest resolution that is still a higher resolution than the
+requested resolution.
+When specified, the <code>bbox</code> option is translated to the <code>window</code> option and the
+<code>resX</code> and <code>resY</code> to <code>width</code> and <code>height</code> respectively.
+Then, the <a href="GeoTIFFImage.html#readRasters">readRasters</a> method of the selected
+image is called and the result returned.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>optional parameters</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>window</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    whole image
+                
+                </td>
+            
+
+            <td class="description last"><p>the subset to read data from.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bbox</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    whole image
+                
+                </td>
+            
+
+            <td class="description last"><p>the subset to read data from in
+                                          geographical coordinates.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>samples</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    all samples
+                
+                </td>
+            
+
+            <td class="description last"><p>the selection of samples to read from.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>interleave</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>whether the data shall be read
+                                            in one single array or separate
+                                            arrays.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pool</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>The optional decoder pool to use.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired width of the output. When the width is no the
+                        same as the images, resampling will be performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired height of the output. When the width is no the
+                         same as the images, resampling will be performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resampleMethod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'nearest'
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired resampling method.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fillValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">Array.&lt;Number></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The value to use for parts of the image
+                                     outside of the images extent. When multiple
+                                     samples are requested, an array of fill values
+                                     can be passed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="GeoTIFFBase.html#readRasters">GeoTIFFBase#readRasters</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line150">line 150</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>GeoTIFFImage.readRasters</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the decoded arrays as a promise</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
 
 
     </dd>
@@ -761,13 +1445,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:53:59 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

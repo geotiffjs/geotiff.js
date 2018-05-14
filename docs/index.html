@@ -173,7 +173,9 @@ const bbox = image.getBoundingBox();</code></pre><p>The actual raster data is no
 it is usually much more spacious and the decoding of the pixels can be time
 consuming due to the necessity of decompression.</p>
 <p>To read a whole image into one big array of arrays the following method call can be used:</p>
-<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();</code></pre><p>By default, the raster is split to a separate array for each component. For an RGB image
+<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();</code></pre><p>For convenience the result always has a <code>width</code> and <code>height</code> attribute:</p>
+<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();
+const { width, height } = data;</code></pre><p>By default, the raster is split to a separate array for each component. For an RGB image
 for example, we'd get three arrays, one for red, green and blue.</p>
 <pre class="prettyprint source lang-javascript"><code>const [red, green, blue] = await image.readRasters();</code></pre><p>If we want instead all the bands interleaved in one big array, we have to pass the
 <code>interleave: true</code> option:</p>
@@ -217,7 +219,7 @@ distinction that the <code>interleave</code> option is now always <code>true</co
 <code>samples</code> are automatically chosen.</p>
 <pre class="prettyprint source lang-javascript"><code>const rgb = await image.readRGB({
   // options...
-});</code></pre><h3>Automatic image selection</h3><p>When dealing with images that have internal (or even external, see the next section) 
+});</code></pre><h3>Automatic image selection (experimental)</h3><p>When dealing with images that have internal (or even external, see the next section) 
 overviews, <code>GeoTIFF</code> objects provide a separate <code>readRasters</code> method. This method
 works very similar to the method on the <code>GeoTIFFImage</code> objects with the same name.
 By default, it uses the larges image available (highest resolution), but when either
@@ -245,18 +247,23 @@ on the fly rendering of the data contained in a GeoTIFF.</p>
 <pre class="prettyprint source lang-html"><code>&lt;canvas id=&quot;plot&quot;>&lt;/canvas>
 &lt;script>
   // ...
-  var tiff = GeoTIFF.parse(data);
-  var image = tiff.getImage();
-  image.readRasters()
-    .then(function(rasters) {
-      var canvas = document.getElementById(&quot;plot&quot;);
-      var plot = new plotty.plot({
-        canvas: canvas, data: rasters[0],
-        width: image.getWidth(), height: image.getHeight(),
-        domain: [0, 256], colorScale: &quot;viridis&quot;
-      });
-      plot.render();
+
+  (async function() {
+    const tiff = await GeoTIFF.fromUrl(url);
+    const image = await tiff.getImage();
+    const data = await image.readRasters();
+
+    const canvas = document.getElementById(&quot;plot&quot;);
+    const plot = new plotty.plot({
+      canvas,
+      data: data[0],
+      width: image.getWidth(),
+      height: image.getHeight(),
+      domain: [0, 256],
+      colorScale: &quot;viridis&quot;
     });
+    plot.render();
+  })();
 &lt;/script></code></pre><h2>BigTIFF support</h2><p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
 originate in the capabilities of current JavaScript implementations regarding
 64 bit integer parsers and structures: there are no functions to read 64 bit
@@ -295,13 +302,13 @@ which is the aim of geotiff.js.</p></article>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:53:59 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

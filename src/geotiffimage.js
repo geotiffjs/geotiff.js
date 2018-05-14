@@ -66,6 +66,7 @@ class GeoTIFFImage {
    * @param {DataView} dataView The DataView for the underlying file.
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
+   * @param {Source} source The datasource to read from
    */
   constructor(fileDirectory, geoKeys, dataView, littleEndian, cache, source) {
     this.fileDirectory = fileDirectory;
@@ -256,8 +257,9 @@ class GeoTIFFImage {
     return { x, y, sample, data: await request };
   }
 
-  /*
+  /**
    * Internal read function.
+   * @private
    * @param {Array} imageWindow The image window in pixel coordinates
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into

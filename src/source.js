@@ -1,9 +1,5 @@
 /* eslint-disable global-require */
 
-/**
- * @module source
- */
-
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
   const rangeData = new ArrayBuffer(rangeLength);
@@ -41,9 +37,8 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
  */
 
 /**
- * The main method to retrieve the data from the source.
- * @method
- * @name Source#fetch
+ * @function Source#fetch
+ * @summary The main method to retrieve the data from the source.
  * @param {number} offset The offset to read from in the source
  * @param {number} length The requested number of bytes
  */
@@ -62,6 +57,10 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
  * @param {number} offset The offset within the file.
  * @param {number} length The desired length of data to be read.
  * @returns {Promise<Block>} The block of data.
+ */
+
+/**
+ * @module source
  */
 
 /*
@@ -97,6 +96,7 @@ async function wait(milliseconds) {
 
 /**
  * BlockedSource - an abstraction of (remote) files.
+ * @implements Source
  */
 class BlockedSource {
   /**
@@ -232,7 +232,9 @@ class BlockedSource {
 /**
  * Create a new source to read from a remote file using the fetch API.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
@@ -271,7 +273,9 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
 /**
  * Create a new source to read from a remote file using the XHR API.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
@@ -312,9 +316,11 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
- * Create a new source to read from a remote file.
+ * Create a new source to read from a remote file. Uses either XHR or fetch.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeRemoteSource(url, options) {
@@ -325,6 +331,12 @@ export function makeRemoteSource(url, options) {
   return makeXHRSource(url, options);
 }
 
+/**
+ * Create a new source to read from a local
+ * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
+ * @param {ArrayBuffer} arrayBuffer The ArrayBuffer to parse the GeoTIFF from.
+ * @returns The constructed source
+ */
 export function makeBufferSource(arrayBuffer) {
   return {
     async fetch(offset, length) {

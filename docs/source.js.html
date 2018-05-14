@@ -28,10 +28,6 @@
         <article>
             <pre class="prettyprint source linenums"><code>/* eslint-disable global-require */
 
-/**
- * @module source
- */
-
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
   const rangeData = new ArrayBuffer(rangeLength);
@@ -69,9 +65,8 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
  */
 
 /**
- * The main method to retrieve the data from the source.
- * @method
- * @name Source#fetch
+ * @function Source#fetch
+ * @summary The main method to retrieve the data from the source.
  * @param {number} offset The offset to read from in the source
  * @param {number} length The requested number of bytes
  */
@@ -90,6 +85,10 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
  * @param {number} offset The offset within the file.
  * @param {number} length The desired length of data to be read.
  * @returns {Promise&lt;Block>} The block of data.
+ */
+
+/**
+ * @module source
  */
 
 /*
@@ -125,6 +124,7 @@ async function wait(milliseconds) {
 
 /**
  * BlockedSource - an abstraction of (remote) files.
+ * @implements Source
  */
 class BlockedSource {
   /**
@@ -260,7 +260,9 @@ class BlockedSource {
 /**
  * Create a new source to read from a remote file using the fetch API.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
@@ -299,7 +301,9 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
 /**
  * Create a new source to read from a remote file using the XHR API.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
@@ -340,9 +344,11 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
- * Create a new source to read from a remote file.
+ * Create a new source to read from a remote file. Uses either XHR or fetch.
  * @param {string} url The URL to send requests to.
- * @param {object} headers Additional headers to be sent to the server.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
  */
 export function makeRemoteSource(url, options) {
@@ -353,6 +359,12 @@ export function makeRemoteSource(url, options) {
   return makeXHRSource(url, options);
 }
 
+/**
+ * Create a new source to read from a local
+ * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
+ * @param {ArrayBuffer} arrayBuffer The ArrayBuffer to parse the GeoTIFF from.
+ * @returns The constructed source
+ */
 export function makeBufferSource(arrayBuffer) {
   return {
     async fetch(offset, length) {
@@ -411,13 +423,13 @@ export function makeFileReaderSource(file) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="module-source-Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 10 2018 22:41:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:53:59 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

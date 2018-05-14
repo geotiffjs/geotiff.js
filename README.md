@@ -206,6 +206,13 @@ To read a whole image into one big array of arrays the following method call can
 const data = await image.readRasters();
 ```
 
+For convenience the result always has a `width` and `height` attribute:
+
+```javascript
+const data = await image.readRasters();
+const { width, height } = data;
+```
+
 By default, the raster is split to a separate array for each component. For an RGB image
 for example, we'd get three arrays, one for red, green and blue.
 
@@ -295,7 +302,7 @@ const rgb = await image.readRGB({
 });
 ```
 
-### Automatic image selection
+### Automatic image selection (experimental)
 
 When dealing with images that have internal (or even external, see the next section) 
 overviews, `GeoTIFF` objects provide a separate `readRasters` method. This method
@@ -342,18 +349,23 @@ on the fly rendering of the data contained in a GeoTIFF.
 <canvas id="plot"></canvas>
 <script>
   // ...
-  var tiff = GeoTIFF.parse(data);
-  var image = tiff.getImage();
-  image.readRasters()
-    .then(function(rasters) {
-      var canvas = document.getElementById("plot");
-      var plot = new plotty.plot({
-        canvas: canvas, data: rasters[0],
-        width: image.getWidth(), height: image.getHeight(),
-        domain: [0, 256], colorScale: "viridis"
-      });
-      plot.render();
+
+  (async function() {
+    const tiff = await GeoTIFF.fromUrl(url);
+    const image = await tiff.getImage();
+    const data = await image.readRasters();
+
+    const canvas = document.getElementById("plot");
+    const plot = new plotty.plot({
+      canvas,
+      data: data[0],
+      width: image.getWidth(),
+      height: image.getHeight(),
+      domain: [0, 256],
+      colorScale: "viridis"
     });
+    plot.render();
+  })();
 </script>
 ```
 

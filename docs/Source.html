@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Pool</title>
+    <title>JSDoc: Interface: Source</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Pool</h1>
+    <h1 class="page-title">Interface: Source</h1>
 
     
 
@@ -28,10 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-pool.html">pool</a>~</span>Pool<span class="signature">(size)</span><span class="type-signature"></span></h2>
-        
-            <div class="class-description"><p>Pool for workers to decode chunks of the images.</p></div>
+        <h2>Source</h2>
         
     
 </header>
@@ -40,80 +37,10 @@
     <div class="container-overview">
     
         
-
-    
-    <h2>Constructor</h2>
-    
-
-    
-    <h4 class="name" id="Pool"><span class="type-signature"></span>new Pool<span class="signature">(size)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
+            <div class="description"><p>Interface for Source objects.</p></div>
         
 
         
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>size</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The size of the pool. Defaults to the number of CPUs
-                     available. When this parameter is <code>null</code> or 0, then the
-                     decoding will be done in the main thread.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
 
 
 <dl class="details">
@@ -145,7 +72,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line12">line 12</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line34">line 34</a>
     </li></ul></dd>
     
 
@@ -157,22 +84,7 @@
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
     
     </div>
 
@@ -199,16 +111,14 @@
     
 
     
-    <h4 class="name" id="decode"><span class="type-signature">(async) </span>decode<span class="signature">(buffer)</span><span class="type-signature"> &rarr; {Promise.&lt;ArrayBuffer>}</span></h4>
+    <h4 class="name" id="fetch"><span class="type-signature"></span>fetch<span class="signature">(offset, length)</span><span class="type-signature"></span></h4>
     
 
     
+    <p class="summary"><p>The main method to retrieve the data from the source.</p></p>
+    
 
 
-
-<div class="description">
-    <p>Decode the given block of bytes with the set compression method.</p>
-</div>
 
 
 
@@ -243,13 +153,13 @@
 
         <tr>
             
-                <td class="name"><code>buffer</code></td>
+                <td class="name"><code>offset</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">ArrayBuffer</span>
+<span class="param-type">number</span>
 
 
             
@@ -259,7 +169,30 @@
 
             
 
-            <td class="description last"><p>the array buffer of bytes to decode.</p></td>
+            <td class="description last"><p>The offset to read from in the source</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The requested number of bytes</p></td>
         </tr>
 
     
@@ -300,7 +233,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line37">line 37</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
@@ -323,28 +256,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>the decoded result as a <code>Promise</code></p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;ArrayBuffer></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 

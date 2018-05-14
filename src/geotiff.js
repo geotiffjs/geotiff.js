@@ -125,6 +125,14 @@ function getValues(dataSlice, fieldType, count, offset) {
 
 class GeoTIFFBase {
   /**
+   * (experimental) Reads raster data from the best fitting image. This function uses
+   * the image with the lowest resolution that is still a higher resolution than the
+   * requested resolution.
+   * When specified, the `bbox` option is translated to the `window` option and the
+   * `resX` and `resY` to `width` and `height` respectively.
+   * Then, the [readRasters]{@link GeoTIFFImage#readRasters} method of the selected
+   * image is called and the result returned.
+   * @see GeoTIFFImage.readRasters
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.bbox=whole image] the subset to read data from in
@@ -134,18 +142,18 @@ class GeoTIFFBase {
    *                                             in one single array or separate
    *                                             arrays.
    * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {number} [width] The desired width of the output. When the width is no the
+   * @param {Number} [width] The desired width of the output. When the width is no the
    *                         same as the images, resampling will be performed.
-   * @param {number} [height] The desired height of the output. When the width is no the
+   * @param {Number} [height] The desired height of the output. When the width is no the
    *                          same as the images, resampling will be performed.
-   * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [fillValue] The value to use for parts of the image
+   * @param {String} [resampleMethod='nearest'] The desired resampling method.
+   * @param {Number|Number[]} [fillValue] The value to use for parts of the image
    *                                      outside of the images extent. When multiple
    *                                      samples are requested, an array of fill values
    *                                      can be passed.
-   * @returns {Promise<TypedArray[]>}
+   * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
-  async readRasters(options) {
+  async readRasters(options = {}) {
     const { window: imageWindow, width, height } = options;
     let { resX, resY, bbox } = options;
 
@@ -244,11 +252,16 @@ class GeoTIFFBase {
 
 /**
  * The abstraction for a whole GeoTIFF file.
+ * @augments GeoTIFFBase
  */
 class GeoTIFF extends GeoTIFFBase {
   /**
    * @constructor
-   * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+   * @param {Source} source The datasource to read from.
+   * @param {Boolean} littleEndian Whether the image uses little endian.
+   * @param {Boolean} bigTiff Whether the image uses bigTIFF conventions.
+   * @param {Number} firstIFDOffset The numeric byte-offset from the start of the image
+   *                                to the first IFD.
    * @param {Object} [options] further options.
    * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
    */
@@ -351,7 +364,7 @@ class GeoTIFF extends GeoTIFFBase {
   }
 
   /**
-   * Get the n-th internal subfile a an image. By default, the first is returned.
+   * Get the n-th internal subfile of an image. By default, the first is returned.
    *
    * @param {Number} [index=0] the index of the image to return.
    * @returns {GeoTIFFImage} the image at the given index
@@ -392,7 +405,8 @@ class GeoTIFF extends GeoTIFFBase {
 
   /**
    * Parse a (Geo)TIFF file from the given source.
-   * @param {object} source The source of data to parse from.
+   *
+   * @param {source~Source} source The source of data to parse from.
    * @param {object} options Additional options.
    */
   static async fromSource(source, options) {
@@ -411,12 +425,12 @@ class GeoTIFF extends GeoTIFFBase {
 
     const magicNumber = dataView.getUint16(2, littleEndian);
     let bigTiff;
-    if (dataView.getUint16(2, littleEndian) === 42) {
+    if (magicNumber === 42) {
       bigTiff = false;
     } else if (magicNumber === 43) {
       bigTiff = true;
-      const offsetBytesize = dataView.getUint16(4, littleEndian);
-      if (offsetBytesize !== 8) {
+      const offsetByteSize = dataView.getUint16(4, littleEndian);
+      if (offsetByteSize !== 8) {
         throw new Error('Unsupported offset byte-size.');
       }
     } else {
@@ -435,6 +449,7 @@ export default GeoTIFF;
 
 /**
  * Wrapper for GeoTIFF files that have external overviews.
+ * @augments GeoTIFFBase
  */
 class MultiGeoTIFF extends GeoTIFFBase {
   /**
@@ -461,6 +476,12 @@ class MultiGeoTIFF extends GeoTIFFBase {
     return this.fileDirectoriesPerFile;
   }
 
+  /**
+   * Get the n-th internal subfile of an image. By default, the first is returned.
+   *
+   * @param {Number} [index=0] the index of the image to return.
+   * @returns {GeoTIFFImage} the image at the given index
+   */
   async getImage(index = 0) {
     if (!this.fileDirectoriesPerFile) {
       if (!this.fileDirectoriesPerFileParsing) {
@@ -484,6 +505,11 @@ class MultiGeoTIFF extends GeoTIFFBase {
     throw new RangeError('Invalid image index');
   }
 
+  /**
+   * Returns the count of the internal subfiles.
+   *
+   * @returns {Number} the number of internal subfile images
+   */
   async getImageCount() {
     if (!this.fileDirectoriesPerFile) {
       if (!this.fileDirectoriesPerFileParsing) {
