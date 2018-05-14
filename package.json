@@ -12,7 +12,6 @@
   "main": "src/main.js",
   "dependencies": {
     "pako": "^1.0.3",
-    "webworkify": "^1.4.0",
     "xmldom": "0.1.*"
   },
   "devDependencies": {
