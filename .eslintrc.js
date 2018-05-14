@@ -32,6 +32,7 @@ module.exports = {
       'LabeledStatement',
       'WithStatement',
     ],
+    'no-console': 0,
     'no-bitwise': 0,
     'import/prefer-default-export': 0,
     'prefer-default-export': 0,

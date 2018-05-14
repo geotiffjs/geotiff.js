@@ -32,49 +32,49 @@ export default class DataSlice {
 
   readUint8(offset) {
     return this._dataView.getUint8(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readInt8(offset) {
     return this._dataView.getInt8(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readUint16(offset) {
     return this._dataView.getUint16(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readInt16(offset) {
     return this._dataView.getInt16(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readUint32(offset) {
     return this._dataView.getUint32(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readInt32(offset) {
     return this._dataView.getInt32(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readFloat32(offset) {
     return this._dataView.getFloat32(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
   readFloat64(offset) {
     return this._dataView.getFloat64(
-      offset - this._sliceOffset, this._littleEndian
+      offset - this._sliceOffset, this._littleEndian,
     );
   }
 
