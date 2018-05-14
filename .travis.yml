@@ -6,12 +6,11 @@ before_install:
     - sudo apt-get update
     - sudo apt-get install -y gdal-bin python-gdal imagemagick
 before_script:
-    - npm install -g grunt-cli
     - mkdir -p test/data
     - pushd test/data
     - sh setup_data.sh
     - popd
 script:
-    - grunt test
+    - npm test
 notifications:
     email: false
