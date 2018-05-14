@@ -17,6 +17,7 @@ gdal_translate -of GTiff -co COMPRESS=LZW -co TILED=YES -co BLOCKXSIZE=32 -co BL
 gdal_translate -of GTiff -co COMPRESS=LZW -ot Float64 stripped.tiff float64lzw.tiff
 gdal_translate -of GTiff -co COMPRESS=LZW -co PREDICTOR=2 stripped.tiff lzw_predictor.tiff
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
+gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
 
 # overviews
 cp stripped.tiff overviews.tiff
@@ -32,6 +33,9 @@ rgb2pct.py rgb.tiff rgb_paletted.tiff
 convert rgb.tiff -colorspace YCbCr ycbcr.tif
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
+
+gdal_translate -of GTiff -co COMPRESS=JPEG rgb.tiff jpeg.tiff
+gdal_translate -of GTiff -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR rgb.tiff jpeg_ycbcr.tiff
 
 # modeltransformation tag
 wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff

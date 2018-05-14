@@ -1,6 +1,4 @@
-"use strict";
-
-var fieldTagNames = {
+export const fieldTagNames = {
   // TIFF Baseline
   0x013B: 'Artist',
   0x0102: 'BitsPerSample',
@@ -117,16 +115,17 @@ var fieldTagNames = {
   0x85D8: 'ModelTransformation',
   0x87AF: 'GeoKeyDirectory',
   0x87B0: 'GeoDoubleParams',
-  0x87B1: 'GeoAsciiParams'
+  0x87B1: 'GeoAsciiParams',
 };
 
-var key;
-var fieldTags = {};
-for (key in fieldTagNames) {
-  fieldTags[fieldTagNames[key]] = parseInt(key);
+export const fieldTags = {};
+for (const key in fieldTagNames) {
+  if (fieldTagNames.hasOwnProperty(key)) {
+    fieldTags[fieldTagNames[key]] = parseInt(key, 10);
+  }
 }
 
-var arrayFields = [
+export const arrayFields = [
   fieldTags.BitsPerSample,
   fieldTags.ExtraSamples,
   fieldTags.SampleFormat,
@@ -134,10 +133,10 @@ var arrayFields = [
   fieldTags.StripOffsets,
   fieldTags.StripRowCounts,
   fieldTags.TileByteCounts,
-  fieldTags.TileOffsets
+  fieldTags.TileOffsets,
 ];
 
-var fieldTypeNames = {
+export const fieldTypeNames = {
   0x0001: 'BYTE',
   0x0002: 'ASCII',
   0x0003: 'SHORT',
@@ -153,15 +152,17 @@ var fieldTypeNames = {
   // introduced by BigTIFF
   0x0010: 'LONG8',
   0x0011: 'SLONG8',
-  0x0012: 'IFD8'
+  0x0012: 'IFD8',
 };
 
-var fieldTypes = {};
-for (key in fieldTypeNames) {
-  fieldTypes[fieldTypeNames[key]] = parseInt(key);
+export const fieldTypes = {};
+for (const key in fieldTypeNames) {
+  if (fieldTypeNames.hasOwnProperty(key)) {
+    fieldTypes[fieldTypeNames[key]] = parseInt(key, 10);
+  }
 }
 
-var photometricInterpretations = {
+export const photometricInterpretations = {
   WhiteIsZero: 0,
   BlackIsZero: 1,
   RGB: 2,
@@ -171,10 +172,10 @@ var photometricInterpretations = {
   YCbCr: 6,
 
   CIELab: 8,
-  ICCLab: 9
+  ICCLab: 9,
 };
 
-var geoKeyNames = {
+export const geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
   1026: 'GTCitationGeoKey',
@@ -221,45 +222,33 @@ var geoKeyNames = {
   4096: 'VerticalCSTypeGeoKey',
   4097: 'VerticalCitationGeoKey',
   4098: 'VerticalDatumGeoKey',
-  4099: 'VerticalUnitsGeoKey'
+  4099: 'VerticalUnitsGeoKey',
 };
 
-var geoKeys = {};
-for (key in geoKeyNames) {
-  geoKeys[geoKeyNames[key]] = parseInt(key);
+export const geoKeys = {};
+for (const key in geoKeyNames) {
+  if (geoKeyNames.hasOwnProperty(key)) {
+    geoKeys[geoKeyNames[key]] = parseInt(key, 10);
+  }
 }
 
-var parseXml;
+export let parseXml; // eslint-disable-line
 // node.js version
-if (typeof window === "undefined") {
-  parseXml = function(xmlStr) {
+if (typeof window === 'undefined') {
+  parseXml = function (xmlStr) {
     // requires xmldom module
-    var DOMParser = require('xmldom').DOMParser;
-    return ( new DOMParser() ).parseFromString(xmlStr, "text/xml");
+    const { DOMParser } = require('xmldom'); // eslint-disable-line global-require
+    return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
-}
-else if (typeof window.DOMParser !== "undefined") {
-  parseXml = function(xmlStr) {
-    return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+} else if (typeof window.DOMParser !== 'undefined') {
+  parseXml = function (xmlStr) {
+    return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
-}
-else if (typeof window.ActiveXObject !== "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
-  parseXml = function(xmlStr) {
-    var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
-    xmlDoc.async = "false";
+} else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
+  parseXml = function (xmlStr) {
+    const xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
+    xmlDoc.async = 'false';
     xmlDoc.loadXML(xmlStr);
     return xmlDoc;
   };
 }
-
-module.exports = {
-  fieldTags: fieldTags,
-  fieldTagNames: fieldTagNames,
-  arrayFields: arrayFields,
-  fieldTypes: fieldTypes,
-  fieldTypeNames: fieldTypeNames,
-  photometricInterpretations: photometricInterpretations,
-  geoKeys: geoKeys,
-  geoKeyNames: geoKeyNames,
-  parseXml: parseXml
-};

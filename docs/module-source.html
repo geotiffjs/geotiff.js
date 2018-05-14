@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Module: source</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Module: source</h1>
 
     
 
@@ -28,7 +28,6 @@
 
 <header>
     
-        <h2></h2>
         
     
 </header>
@@ -39,45 +38,6 @@
         
 
         
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
     
     </div>
 
@@ -85,6 +45,13 @@
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-source-BlockedSource.html">BlockedSource</a></dt>
+            <dd></dd>
+        </dl>
     
 
     
@@ -104,7 +71,7 @@
     
 
     
-    <h4 class="name" id="fromArrayBuffer"><span class="type-signature"></span>fromArrayBuffer<span class="signature">(arrayBuffer)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id=".makeBufferSource"><span class="type-signature">(static) </span>makeBufferSource<span class="signature">(arrayBuffer)</span><span class="type-signature"></span></h4>
     
 
     
@@ -112,7 +79,7 @@
 
 
 <div class="description">
-    <p>Construct a new GeoTIFF from an
+    <p>Create a new source to read from a local
 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
 </div>
 
@@ -165,7 +132,7 @@
 
             
 
-            <td class="description last"><p>The data to read the file from.</p></td>
+            <td class="description last"><p>The ArrayBuffer to parse the GeoTIFF from.</p></td>
         </tr>
 
     
@@ -206,7 +173,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line499">line 499</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line327">line 327</a>
     </li></ul></dd>
     
 
@@ -233,22 +200,10 @@
 
         
 <div class="param-desc">
-    <p>The resulting GeoTIFF file.</p>
+    <p>The constructed source</p>
 </div>
 
 
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
 
     
 
@@ -262,7 +217,7 @@
     
 
     
-    <h4 class="name" id="fromBlob"><span class="type-signature"></span>fromBlob<span class="signature">(blob)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id=".makeFetchSource"><span class="type-signature">(static) </span>makeFetchSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -270,329 +225,7 @@
 
 
 <div class="description">
-    <p>Construct a GeoTIFF from an HTML
-<a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a> or
-<a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a>
-object.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>blob</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Blob</span>
-|
-
-<span class="param-type">File</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The Blob or File object to read from.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line522">line 522</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>The resulting GeoTIFF file.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="fromFile"><span class="type-signature"></span>fromFile<span class="signature">(path)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Construct a GeoTIFF from a local file path. This uses the node
-<a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
-not available on browsers.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The filepath to read from.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line510">line 510</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>The resulting GeoTIFF file.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="fromUrl"><span class="type-signature"></span>fromUrl<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Creates a new GeoTIFF from a remote URL.</p>
+    <p>Create a new source to read from a remote file using the fetch API.</p>
 </div>
 
 
@@ -654,7 +287,7 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>The URL to access the image from</p></td>
+            <td class="description last"><p>The URL to send requests to.</p></td>
         </tr>
 
     
@@ -662,6 +295,93 @@ not available on browsers.</p>
         <tr>
             
                 <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blockSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The block size to use.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
             
 
             <td class="type">
@@ -687,8 +407,14 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>Additional options to pass to the source.
-                          See makeRemoteSource for details.</p></td>
+            <td class="description last"><p>Additional headers to be sent to the server.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -729,7 +455,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line489">line 489</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -756,22 +482,10 @@ not available on browsers.</p>
 
         
 <div class="param-desc">
-    <p>The resulting GeoTIFF file.</p>
+    <p>The constructed source</p>
 </div>
 
 
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
 
     
 
@@ -785,7 +499,7 @@ not available on browsers.</p>
     
 
     
-    <h4 class="name" id="fromUrls"><span class="type-signature"></span>fromUrls<span class="signature">(mainUrl, overviewUrls, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>>}</span></h4>
+    <h4 class="name" id=".makeFileReaderSource"><span class="type-signature">(static) </span>makeFileReaderSource<span class="signature">(file)</span><span class="type-signature"></span></h4>
     
 
     
@@ -793,7 +507,297 @@ not available on browsers.</p>
 
 
 <div class="description">
-    <p>Construct a MultiGeoTIFF from the given URLs.</p>
+    <p>Create a new source from a given file/blob.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Blob</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The file or blob to read from.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The constructed source</p>
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".makeFileSource"><span class="type-signature">(static) </span>makeFileSource<span class="signature">(path)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Creates a new source using the node filesystem API.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>path</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The path to the file in the local filesystem.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line340">line 340</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The constructed source</p>
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".makeRemoteSource"><span class="type-signature">(static) </span>makeRemoteSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Create a new source to read from a remote file. Uses either XHR or fetch.</p>
 </div>
 
 
@@ -831,7 +835,7 @@ not available on browsers.</p>
 
         <tr>
             
-                <td class="name"><code>mainUrl</code></td>
+                <td class="name"><code>url</code></td>
             
 
             <td class="type">
@@ -855,20 +859,20 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>The URL for the main file.</p></td>
+            <td class="description last"><p>The URL to send requests to.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>overviewUrls</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">Object</span>
 
 
             
@@ -876,6 +880,8 @@ not available on browsers.</p>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -886,14 +892,68 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>An array of URLs for the overview images.</p></td>
+            <td class="description last"><p>Additional options.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blockSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The block size to use.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>headers</code></td>
             
 
             <td class="type">
@@ -919,9 +979,14 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>Additional options to pass to the source.
-                          See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
-                          for details.</p></td>
+            <td class="description last"><p>Additional headers to be sent to the server.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -962,7 +1027,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line535">line 535</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line313">line 313</a>
     </li></ul></dd>
     
 
@@ -989,23 +1054,11 @@ not available on browsers.</p>
 
         
 <div class="param-desc">
-    <p>The resulting MultiGeoTIFF file.</p>
+    <p>The constructed source</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
-
     
 
 
@@ -1013,184 +1066,12 @@ not available on browsers.</p>
 
 
         
-    
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
-
-        
-                
-<h4 class="name" id="Block">Block</h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">object</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
             
 
-            <td class="type">
-            
-                
-<span class="param-type">ArrayBuffer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual data of the block.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>offset</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual offset of the block within the file.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>length</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual size of the block in bytes.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
     
 
     
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line46">line 46</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-            
-                
-
-    
-
-    
-    <h4 class="name" id="requestCallback"><span class="type-signature">(async) </span>requestCallback<span class="signature">(offset, length)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#Block">Block</a>>}</span></h4>
+    <h4 class="name" id=".makeXHRSource"><span class="type-signature">(static) </span>makeXHRSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1198,7 +1079,7 @@ not available on browsers.</p>
 
 
 <div class="description">
-    <p>Callback type for sources to request patches of data.</p>
+    <p>Create a new source to read from a remote file using the XHR API.</p>
 </div>
 
 
@@ -1222,6 +1103,8 @@ not available on browsers.</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1234,46 +1117,158 @@ not available on browsers.</p>
 
         <tr>
             
-                <td class="name"><code>offset</code></td>
+                <td class="name"><code>url</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>The offset within the file.</p></td>
+            <td class="description last"><p>The URL to send requests to.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>length</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>The desired length of data to be read.</p></td>
+            <td class="description last"><p>Additional options.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blockSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The block size to use.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional headers to be sent to the server.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1314,7 +1309,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line53">line 53</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line272">line 272</a>
     </li></ul></dd>
     
 
@@ -1341,22 +1336,10 @@ not available on browsers.</p>
 
         
 <div class="param-desc">
-    <p>The block of data.</p>
+    <p>The constructed source</p>
 </div>
 
 
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;<a href="global.html#Block">Block</a>></span>
-
-
-    </dd>
-</dl>
 
     
 
@@ -1364,7 +1347,9 @@ not available on browsers.</p>
 
 
 
-            
+        
+    
+
     
 
     
@@ -1384,7 +1369,7 @@ not available on browsers.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:53:59 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:54:00 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

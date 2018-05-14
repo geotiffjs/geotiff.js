@@ -1,14 +1,9 @@
-"use strict";
+import { inflate } from 'pako/lib/inflate';
+import BaseDecoder from './basedecoder';
 
-var AbstractDecoder = require("../abstractdecoder.js");
-var pakoInflate = require('pako/lib/inflate').inflate;
 
-function DeflateDecoder() { }
-
-DeflateDecoder.prototype = Object.create(AbstractDecoder.prototype);
-DeflateDecoder.prototype.constructor = DeflateDecoder;
-DeflateDecoder.prototype.decodeBlock = function(buffer) {
-  return pakoInflate(new Uint8Array(buffer)).buffer;
-};
-
-module.exports = DeflateDecoder;
+export default class DeflateDecoder extends BaseDecoder {
+  decodeBlock(buffer) {
+    return inflate(new Uint8Array(buffer)).buffer;
+  }
+}
