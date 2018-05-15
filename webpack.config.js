@@ -26,6 +26,7 @@ module.exports = {
         },
       }, {
         test: /\.js$/,
+        exclude: /node_modules/,
         use: 'babel-loader',
       },
     ],
@@ -46,6 +47,5 @@ module.exports = {
       errors: true,
     },
   },
-
   cache: true,
 };
