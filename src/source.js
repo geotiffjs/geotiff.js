@@ -354,8 +354,8 @@ function openAsync(path, flags, mode = undefined) {
       } else {
         resolve(fd);
       }
-    })
-  })
+    });
+  });
 }
 
 function readAsync(fd, readBuffer, offset, length, position) {
@@ -366,8 +366,8 @@ function readAsync(fd, readBuffer, offset, length, position) {
       } else {
         resolve({ bytesRead, buffer });
       }
-    })
-  })
+    });
+  });
 }
 
 /**
