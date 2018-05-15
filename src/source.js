@@ -1,4 +1,4 @@
-/* eslint-disable global-require */
+const { open, read } = require('fs');
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
@@ -345,17 +345,37 @@ export function makeBufferSource(arrayBuffer) {
   };
 }
 
+
+function openAsync(path, flags, mode = undefined) {
+  return new Promise((resolve, reject) => {
+    open(path, flags, mode, (err, fd) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(fd);
+      }
+    })
+  })
+}
+
+function readAsync(fd, readBuffer, offset, length, position) {
+  return new Promise((resolve, reject) => {
+    read(fd, readBuffer, offset, length, position, (err, bytesRead, buffer) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ bytesRead, buffer });
+      }
+    })
+  })
+}
+
 /**
  * Creates a new source using the node filesystem API.
  * @param {string} path The path to the file in the local filesystem.
  * @returns The constructed source
  */
 export function makeFileSource(path) {
-  const { promisify } = require('util');
-  const { open, read } = require('fs');
-  const openAsync = promisify(open);
-  const readAsync = promisify(read);
-
   const fileOpen = openAsync(path, 'r');
 
   return {
