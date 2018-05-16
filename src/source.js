@@ -1,4 +1,6 @@
-const { open, read } = require('fs');
+import { Buffer } from 'buffer';
+import { open, read } from 'fs';
+
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
@@ -358,9 +360,9 @@ function openAsync(path, flags, mode = undefined) {
   });
 }
 
-function readAsync(fd, readBuffer, offset, length, position) {
+function readAsync(...args) {
   return new Promise((resolve, reject) => {
-    read(fd, readBuffer, offset, length, position, (err, bytesRead, buffer) => {
+    read(...args, (err, bytesRead, buffer) => {
       if (err) {
         reject(err);
       } else {
@@ -381,7 +383,7 @@ export function makeFileSource(path) {
   return {
     async fetch(offset, length) {
       const fd = await fileOpen;
-      const { buffer } = await readAsync(fd, new Uint8Array(length), 0, length, offset);
+      const { buffer } = await readAsync(fd, Buffer.alloc(length), 0, length, offset);
       return buffer.buffer;
     },
   };

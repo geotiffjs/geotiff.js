@@ -34,6 +34,7 @@ module.exports = {
 
   node: {
     fs: 'empty',
+    buffer: 'empty',
   },
 
   devServer: {
