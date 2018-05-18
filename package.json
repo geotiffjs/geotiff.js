@@ -9,7 +9,7 @@
     "image",
     "raster"
   ],
-  "main": "src/main.js",
+  "main": "dist/main.js",
   "dependencies": {
     "pako": "^1.0.3",
     "xmldom": "0.1.*"
@@ -46,9 +46,10 @@
     "dev": "webpack-dev-server -d -w --content-base test",
     "watch": "webpack -d -w",
     "build:clean": "rm -rf dist/*",
-    "build:dev": "webpack -d ",
-    "build:prod": "NODE_ENV=production webpack -p",
-    "build": "npm run build:clean ; npm run build:dev ; npm run build:prod",
+    "bundle:dev": "webpack -d ",
+    "bundle:prod": "NODE_ENV=production webpack -p",
+    "build:babel": "babel src/ -d dist",
+    "build": "npm run build:clean ; npm run bundle:dev ; npm run bundle:prod ; npm run build:babel",
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
