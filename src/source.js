@@ -1,5 +1,8 @@
 import { Buffer } from 'buffer';
 import { open, read } from 'fs';
+import http from 'http';
+import https from 'https';
+import urlMod from 'url';
 
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
@@ -318,9 +321,49 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
+ * Create a new source to read from a remote file using the node `http` API.
+ * @param {string} url The URL to send requests to.
+ * @param {Object} [options] Additional options.
+ * @param {Number} [options.blockSize] The block size to use.
+ * @param {object} [options.headers] Additional headers to be sent to the server.
+ */
+export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
+  return new BlockedSource(async (offset, length) => new Promise((resolve, reject) => {
+    const parsed = urlMod.parse(url);
+    const request = (parsed.protocol === 'http:' ? http : https).get(
+      Object.assign({}, parsed, {
+        headers: Object.assign({},
+          headers, {
+            Range: `bytes=${offset}-${offset + length}`,
+          },
+        ),
+      }), (result) => {
+        const chunks = [];
+        // collect chunks
+        result.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+
+        // concatenate all chunks and resolve the promise with the resulting buffer
+        result.on('end', () => {
+          const data = Buffer.concat(chunks).buffer;
+          resolve({
+            data,
+            offset,
+            length: data.byteLength,
+          });
+        });
+      },
+    );
+    request.on('error', reject);
+  }), { blockSize });
+}
+
+/**
  * Create a new source to read from a remote file. Uses either XHR or fetch.
  * @param {string} url The URL to send requests to.
  * @param {Object} [options] Additional options.
+ * @param {Boolean} [options.forceXHR] Force the usage of XMLHttpRequest.
  * @param {Number} [options.blockSize] The block size to use.
  * @param {object} [options.headers] Additional headers to be sent to the server.
  * @returns The constructed source
@@ -329,8 +372,12 @@ export function makeRemoteSource(url, options) {
   const { forceXHR } = options;
   if (typeof fetch === 'function' && !forceXHR) {
     return makeFetchSource(url, options);
+  } else if (typeof XMLHttpRequest !== 'undefined') {
+    return makeXHRSource(url, options);
+  } else if (http.get) {
+    return makeHttpSource(url, options);
   }
-  return makeXHRSource(url, options);
+  throw new Error('No remote source available');
 }
 
 /**

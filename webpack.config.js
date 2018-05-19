@@ -35,6 +35,8 @@ module.exports = {
   node: {
     fs: 'empty',
     buffer: 'empty',
+    http: 'empty',
+    url: 'empty',
   },
 
   devServer: {
