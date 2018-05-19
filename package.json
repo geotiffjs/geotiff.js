@@ -49,6 +49,7 @@
     "bundle:dev": "webpack -d ",
     "bundle:prod": "NODE_ENV=production webpack -p",
     "build:babel": "babel src/ -d dist",
+    "build:babel:watch": "babel src/ -d dist -w",
     "build": "npm run build:clean ; npm run bundle:dev ; npm run bundle:prod ; npm run build:babel",
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
