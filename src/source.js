@@ -235,7 +235,8 @@ class BlockedSource {
 }
 
 /**
- * Create a new source to read from a remote file using the fetch API.
+ * Create a new source to read from a remote file using the
+ * [fetch]{@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API} API.
  * @param {string} url The URL to send requests to.
  * @param {Object} [options] Additional options.
  * @param {Number} [options.blockSize] The block size to use.
@@ -276,7 +277,8 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
- * Create a new source to read from a remote file using the XHR API.
+ * Create a new source to read from a remote file using the
+ * [XHR]{@link https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest} API.
  * @param {string} url The URL to send requests to.
  * @param {Object} [options] Additional options.
  * @param {Number} [options.blockSize] The block size to use.
@@ -321,7 +323,8 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
- * Create a new source to read from a remote file using the node `http` API.
+ * Create a new source to read from a remote file using the node
+ * [http]{@link https://nodejs.org/api/http.html} API.
  * @param {string} url The URL to send requests to.
  * @param {Object} [options] Additional options.
  * @param {Number} [options.blockSize] The block size to use.
@@ -360,7 +363,7 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
 }
 
 /**
- * Create a new source to read from a remote file. Uses either XHR or fetch.
+ * Create a new source to read from a remote file. Uses either XHR, fetch or nodes http API.
  * @param {string} url The URL to send requests to.
  * @param {Object} [options] Additional options.
  * @param {Boolean} [options.forceXHR] Force the usage of XMLHttpRequest.

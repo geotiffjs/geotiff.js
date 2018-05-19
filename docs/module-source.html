@@ -173,7 +173,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line327">line 327</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -225,7 +225,8 @@
 
 
 <div class="description">
-    <p>Create a new source to read from a remote file using the fetch API.</p>
+    <p>Create a new source to read from a remote file using the
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">fetch</a> API.</p>
 </div>
 
 
@@ -455,7 +456,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line235">line 235</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line240">line 240</a>
     </li></ul></dd>
     
 
@@ -600,7 +601,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line362">line 362</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line428">line 428</a>
     </li></ul></dd>
     
 
@@ -745,7 +746,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line340">line 340</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line411">line 411</a>
     </li></ul></dd>
     
 
@@ -789,7 +790,7 @@
     
 
     
-    <h4 class="name" id=".makeRemoteSource"><span class="type-signature">(static) </span>makeRemoteSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".makeHttpSource"><span class="type-signature">(static) </span>makeHttpSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -797,7 +798,8 @@
 
 
 <div class="description">
-    <p>Create a new source to read from a remote file. Uses either XHR or fetch.</p>
+    <p>Create a new source to read from a remote file using the node
+<a href="https://nodejs.org/api/http.html">http</a> API.</p>
 </div>
 
 
@@ -1027,7 +1029,312 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line313">line 313</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line319">line 319</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".makeRemoteSource"><span class="type-signature">(static) </span>makeRemoteSource<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Create a new source to read from a remote file. Uses either XHR, fetch or nodes http API.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The URL to send requests to.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>forceXHR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Force the usage of XMLHttpRequest.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>blockSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The block size to use.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional headers to be sent to the server.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line356">line 356</a>
     </li></ul></dd>
     
 
@@ -1079,7 +1386,8 @@
 
 
 <div class="description">
-    <p>Create a new source to read from a remote file using the XHR API.</p>
+    <p>Create a new source to read from a remote file using the
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XHR</a> API.</p>
 </div>
 
 
@@ -1309,7 +1617,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line272">line 272</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line278">line 278</a>
     </li></ul></dd>
     
 
@@ -1369,7 +1677,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon May 14 2018 13:54:00 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
