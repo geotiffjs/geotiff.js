@@ -443,6 +443,132 @@ class GeoTIFFImage {
   }
 
   /**
+   * Returns the decoded strip or tile.
+   * @param {Number} x the strip or tile x-offset
+   * @param {Number} y the tile y-offset (0 for stripped images)
+   * @param {Number} sample the sample to get for separated samples
+   * @returns {Promise.<ArrayBuffer>}
+   */
+  async getTileOrStripBuffer(x, y, sample) {
+    const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
+    const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
+    let index;
+    if (this.planarConfiguration === 1) {
+      index = (y * numTilesPerRow) + x;
+    } else if (this.planarConfiguration === 2) {
+      index = (sample * numTilesPerRow * numTilesPerCol) + (y * numTilesPerRow) + x;
+    }
+
+    let offset;
+    let byteCount;
+    if (this.isTiled) {
+      offset = this.fileDirectory.TileOffsets[index];
+      byteCount = this.fileDirectory.TileByteCounts[index];
+    } else {
+      offset = this.fileDirectory.StripOffsets[index];
+      byteCount = this.fileDirectory.StripByteCounts[index];
+    }
+    console.log(x, y, offset, byteCount);
+    const slice = this.source.fetch(offset, byteCount);
+    return { x, y, sample, data: await slice };
+  }
+
+  /**
+   * Internal read function.
+   * @private
+   * @param {Array} imageWindow The image window in pixel coordinates
+   * @param {Array} samples The selected samples (0-based indices)
+   * @returns {Promise<Array[]>|Promise<Array>}
+   */
+  async _readTileBuffer(imageWindow) {
+    const tileWidth = this.getTileWidth();
+    const tileHeight = this.getTileHeight();
+
+    const minXTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
+    const maxXTile = Math.min(
+      Math.ceil(imageWindow[2] / tileWidth),
+      Math.ceil(this.getWidth() / this.getTileWidth()),
+    );
+    const minYTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
+    const maxYTile = Math.min(
+      Math.ceil(imageWindow[3] / tileHeight),
+      Math.ceil(this.getHeight() / this.getTileHeight()),
+    );
+
+    const samples = [];
+    for (let i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
+      samples.push(i);
+    }
+
+    const srcSampleOffsets = [];
+    const sampleReaders = [];
+    for (let i = 0; i < samples.length; ++i) {
+      if (this.planarConfiguration === 1) {
+        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+      } else {
+        srcSampleOffsets.push(0);
+      }
+      sampleReaders.push(this.getReaderForSample(samples[i]));
+    }
+
+    const promises = [];
+    for (let yTile = minYTile; yTile < maxYTile; ++yTile) {
+      for (let xTile = minXTile; xTile < maxXTile; ++xTile) {
+        for (let sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+          const sample = samples[sampleIndex];
+          const promise = this.getTileOrStripBuffer(xTile, yTile, sample);
+          promises.push(promise);
+        }
+      }
+    }
+
+    const results = await Promise.all(promises)
+      .then((tiles) => {
+        return tiles;
+      });
+
+    return results;
+  }
+
+  /**
+   * Reads raster data from the image. This function reads all selected samples
+   * into separate arrays of the correct type for that sample or into a single
+   * combined array when `interleave` is set. When provided, only a subset
+   * of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {Array} [options.samples=all samples] the selection of samples to read from.
+   * @param {Boolean} [options.interleave=false] whether the data shall be read
+   *                                             in one single array or separate
+   *                                             arrays.
+   * @param {Number} [pool=null] The optional decoder pool to use.
+   * @param {number} [width] The desired width of the output. When the width is no the
+   *                         same as the images, resampling will be performed.
+   * @param {number} [height] The desired height of the output. When the width is no the
+   *                          same as the images, resampling will be performed.
+   * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [fillValue] The value to use for parts of the image
+   *                                      outside of the images extent. When multiple
+   *                                      samples are requested, an array of fill values
+   *                                      can be passed.
+   * @returns {Promise.<(Array|Array[])>} the decoded arrays as a promise
+   */
+  async readTileBuffer({
+    window: wnd,
+  } = {}) {
+    const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
+
+    // check parameters
+    if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error('Invalid subsets');
+    }
+
+    const result = await this._readTileBuffer(imageWindow);
+    return result;
+  }
+
+  /**
    * Reads raster data from the image as RGB. The result is always an
    * interleaved typed array.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
