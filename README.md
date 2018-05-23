@@ -37,7 +37,7 @@ Currently available functionality:
   * Limited [bigTIFF](http://bigtiff.org/#FILE_FORMAT) support
   * Automated testing via PhantomJS
 
-Further documentation can be found [here](http://constantinius.github.io/geotiff.js/).
+Further documentation can be found [here](https://geotiffjs.github.io/geotiff.js/).
 
 ## Example Usage
 
