@@ -350,10 +350,13 @@ class GeoTIFFImage {
 
     if ((width && (imageWindow[2] - imageWindow[0]) !== width)
         || (height && (imageWindow[3] - imageWindow[1]) !== height)) {
-      return resample(
-        valueArrays, imageWindow[2] - imageWindow[0], imageWindow[3] - imageWindow[1],
+      const resampled = resample(
+        interleave ? [valueArrays] : valueArrays,
+        imageWindow[2] - imageWindow[0],
+        imageWindow[3] - imageWindow[1],
         width, height, resampleMethod,
       );
+      return interleave ? resampled[0] : resampled;
     }
 
     valueArrays.width = width || imageWindow[2] - imageWindow[0];
