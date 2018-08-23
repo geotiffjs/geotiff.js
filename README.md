@@ -356,15 +356,16 @@ const arrayBuffer = await writeArrayBuffer(values, metadata);
 
 You can also customize the metadata using names found in the [TIFF Spec](https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml) and [GeoTIFF spec](https://cdn.earthdata.nasa.gov/conduit/upload/6852/geotiff-1.8.1-1995-10-31.pdf).
 ```javascript
-var GeoTIFF = require("geotiff");
-var values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-var metadata = {
+import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
   height: 3,
   ModelPixelScale: [0.031355, 0.031355, 0],
   ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],  
   width: 3
 };
-var arrayBuffer = GeoTIFF.create(values, metadata);
+const arrayBuffer = await writeArrayBuffer(values, metadata);
 ```
 
 ## What to do with the data?
