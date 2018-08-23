@@ -1,84 +1,78 @@
-
-var assign = function(target, source) {
-	for (var key in source) {
-		if (source.hasOwnProperty(key)) {
-			target[key] = source[key];
-		}
-	}
-};
-
-var chunk = function(iterable, length) {
-    var results = [];
-    var length_of_iterable = iterable.length;
-    for (var i = 0; i < length_of_iterable; i+=length) {
-				var chunk = [];
-				for (var ci = i; ci < i + length; ci++) {
-					chunk.push(iterable[ci]);
-				}
-				results.push(chunk);
+export function assign(target, source) {
+  for (const key in source) {
+    if (source.hasOwnProperty(key)) {
+      target[key] = source[key];
     }
-    return results;
-};
+  }
+}
 
-var endsWith = function(string, expected_ending) {
-	if (string.length < expected_ending.length) {
-		return false;
-	} else {
-		var actual_ending = string.substr(string.length - expected_ending.length);
-		return actual_ending === expected_ending;
-	}
-};
-
-var forEach = function(iterable, func) {
-	var length = iterable.length;
-	for (var i = 0; i < length; i++) {
-		func(iterable[i], i);
-	}
-};
-
-var invert = function(old_obj) {
-	var new_obj = {};
-	for (var key in old_obj) {
-		if (old_obj.hasOwnProperty(key)) {
-			var value = old_obj[key];
-			new_obj[value] = key;
-		}
-	}
-	return new_obj;
-};
-
-var range = function(n) {
-    var results = [];
-    for (var i = 0; i < n; i++) {
-        results.push(i);
+export function chunk(iterable, length) {
+  const results = [];
+  const lengthOfIterable = iterable.length;
+  for (let i = 0; i < lengthOfIterable; i += length) {
+    const chunked = [];
+    for (let ci = i; ci < i + length; ci++) {
+      chunked.push(iterable[ci]);
     }
-    return results;
-};
+    results.push(chunked);
+  }
+  return results;
+}
 
-var times = function(times, func) {
-    var results = [];
-    for (var i = 0; i < times; i++){
-        results.push(func(i));
+export function endsWith(string, expectedEnding) {
+  if (string.length < expectedEnding.length) {
+    return false;
+  }
+  const actualEnding = string.substr(string.length - expectedEnding.length);
+  return actualEnding === expectedEnding;
+}
+
+export function forEach(iterable, func) {
+  const { length } = iterable;
+  for (let i = 0; i < length; i++) {
+    func(iterable[i], i);
+  }
+}
+
+export function invert(oldObj) {
+  const newObj = {};
+  for (const key in oldObj) {
+    if (oldObj.hasOwnProperty(key)) {
+      const value = oldObj[key];
+      newObj[value] = key;
     }
-    return results;
-};
+  }
+  return newObj;
+}
 
-var toArray = function(iterable) {
-    var results = [];
-    var length = iterable.length;
-    for (var i = 0; i < length; i++) {
-        results.push(iterable[i]);
-    }
-    return results;
-};
+export function range(n) {
+  const results = [];
+  for (let i = 0; i < n; i++) {
+    results.push(i);
+  }
+  return results;
+}
 
-module.exports = {
-  assign: assign,
-  chunk: chunk,
-  endsWith: endsWith,
-  forEach: forEach,
-  invert: invert,
-  range: range,
-  times: times,
-  toArray: toArray,
-};
+export function times(numTimes, func) {
+  const results = [];
+  for (let i = 0; i < numTimes; i++) {
+    results.push(func(i));
+  }
+  return results;
+}
+
+export function toArray(iterable) {
+  const results = [];
+  const { length } = iterable;
+  for (let i = 0; i < length; i++) {
+    results.push(iterable[i]);
+  }
+  return results;
+}
+
+export function toArrayRecursively(input) {
+  if (input.length) {
+    return toArray(input).map(toArrayRecursively);
+  }
+  return input;
+}

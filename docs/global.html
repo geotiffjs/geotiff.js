@@ -87,7 +87,9 @@
 
     
 
-     
+    
+
+    
 
     
 
@@ -101,14 +103,17 @@
 
     
 
-    <h4 class="name" id="parse"><span class="type-signature"></span>parse<span class="signature">(data, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="GeoTIFF.html">GeoTIFF</a>}</span></h4>
+    
+    <h4 class="name" id="fromArrayBuffer"><span class="type-signature"></span>fromArrayBuffer<span class="signature">(arrayBuffer)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Main parsing function for GeoTIFF files.
+    <p>Construct a new GeoTIFF from an
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
 </div>
 
 
@@ -132,8 +137,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -146,15 +149,12 @@
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>arrayBuffer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-|
-
 <span class="param-type">ArrayBuffer</span>
 
 
@@ -162,120 +162,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">Raw data to parse the GeoTIFF from.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">further options.
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>cache</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">whether or not decoded tiles shall be cached.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>The data to read the file from.</p></td>
         </tr>
 
     
@@ -316,7 +206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="main.js.html">main.js</a>, <a href="main.js.html#line12">line 12</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line499">line 499</a>
     </li></ul></dd>
     
 
@@ -343,7 +233,7 @@
 
         
 <div class="param-desc">
-    the parsed geotiff file.
+    <p>The resulting GeoTIFF file.</p>
 </div>
 
 
@@ -354,7 +244,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="GeoTIFF.html">GeoTIFF</a></span>
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
     </dd>
@@ -364,9 +254,1117 @@
 
 
 
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromBlob"><span class="type-signature"></span>fromBlob<span class="signature">(blob)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Construct a GeoTIFF from an HTML
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a> or
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a>
+object.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>blob</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Blob</span>
+|
+
+<span class="param-type">File</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The Blob or File object to read from.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line522">line 522</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting GeoTIFF file.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromFile"><span class="type-signature"></span>fromFile<span class="signature">(path)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Construct a GeoTIFF from a local file path. This uses the node
+<a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
+not available on browsers.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>path</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The filepath to read from.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line510">line 510</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting GeoTIFF file.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromUrl"><span class="type-signature"></span>fromUrl<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Creates a new GeoTIFF from a remote URL.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The URL to access the image from</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options to pass to the source.
+                          See makeRemoteSource for details.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line489">line 489</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting GeoTIFF file.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromUrls"><span class="type-signature"></span>fromUrls<span class="signature">(mainUrl, overviewUrls, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Construct a MultiGeoTIFF from the given URLs.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mainUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The URL for the main file.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>overviewUrls</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An array of URLs for the overview images.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options to pass to the source.
+                          See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
+                          for details.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line535">line 535</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting MultiGeoTIFF file.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
         
     
 
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="Block">Block</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ArrayBuffer</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The actual data of the block.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The actual offset of the block within the file.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The actual size of the block in bytes.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+
+    
+
+    
+    <h4 class="name" id="requestCallback"><span class="type-signature">(async) </span>requestCallback<span class="signature">(offset, length)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#Block">Block</a>>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Callback type for sources to request patches of data.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The offset within the file.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The desired length of data to be read.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The block of data.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#Block">Block</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
     
 
     
@@ -380,13 +1378,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Apr 08 2017 13:52:20 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

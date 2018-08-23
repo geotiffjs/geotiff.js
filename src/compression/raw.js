@@ -1,13 +1,8 @@
-"use strict";
+import BaseDecoder from './basedecoder';
 
-var AbstractDecoder = require("../abstractdecoder.js");
 
-function RawDecoder() { }
-
-RawDecoder.prototype = Object.create(AbstractDecoder.prototype);
-RawDecoder.prototype.constructor = RawDecoder;
-RawDecoder.prototype.decodeBlock = function(buffer) {
-  return buffer;
-};
-
-module.exports = RawDecoder;
+export default class RawDecoder extends BaseDecoder {
+  decodeBlock(buffer) {
+    return buffer;
+  }
+}
