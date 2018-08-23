@@ -339,16 +339,19 @@ const multiTiff = await GeoTIFF.fromUrls(
 );
 ```
 
-## Writing GeoTIFFs (Beta Version)
-You can write GeoTIFFs by calling the create function.
+### Writing GeoTIFFs (Beta Version)
+You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
+This function returns an ArrayBuffer which you can then save as a .tif file.
+:warning: writeArrayBuffer currently writes the values uncompressed
 ```javascript
-var GeoTIFF = require("geotiff");
-var values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-var metadata = {
+import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
   height: 3,
   width: 3
 };
-var arrayBuffer = GeoTIFF.create(values, metadata);
+const arrayBuffer = await writeArrayBuffer(values, metadata);
 ```
 
 You can also customize the metadata using names found in the [TIFF Spec](https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml) and [GeoTIFF spec](https://cdn.earthdata.nasa.gov/conduit/upload/6852/geotiff-1.8.1-1995-10-31.pdf).
