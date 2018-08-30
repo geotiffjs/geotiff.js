@@ -3,7 +3,7 @@
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
-import { resample } from './resample';
+import { resample, resampleInterleaved } from './resample';
 
 function sum(array, start, end) {
   let s = 0;
@@ -350,13 +350,28 @@ class GeoTIFFImage {
 
     if ((width && (imageWindow[2] - imageWindow[0]) !== width)
         || (height && (imageWindow[3] - imageWindow[1]) !== height)) {
-      const resampled = resample(
-        interleave ? [valueArrays] : valueArrays,
-        imageWindow[2] - imageWindow[0],
-        imageWindow[3] - imageWindow[1],
-        width, height, resampleMethod,
-      );
-      return interleave ? resampled[0] : resampled;
+      let resampled;
+      if (interleave) {
+        resampled = resampleInterleaved(
+          valueArrays,
+          imageWindow[2] - imageWindow[0],
+          imageWindow[3] - imageWindow[1],
+          width, height,
+          samples.length,
+          resampleMethod,
+        );
+      } else {
+        resampled = resample(
+          valueArrays,
+          imageWindow[2] - imageWindow[0],
+          imageWindow[3] - imageWindow[1],
+          width, height,
+          resampleMethod,
+        );
+      }
+      resampled.width = width;
+      resampled.height = height;
+      return resampled;
     }
 
     valueArrays.width = width || imageWindow[2] - imageWindow[0];
