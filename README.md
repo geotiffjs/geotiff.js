@@ -187,7 +187,7 @@ const width = image.getWidth();
 const height = image.getHeight();
 const tileWidth = image.getTileWidth();
 const tileHeight = image.getTileHeight();
-const samplesPerPixel = getSamplesPerPixel();
+const samplesPerPixel = image.getSamplesPerPixel();
 
 // when we are actually dealing with geo-data the following methods return
 // meaningful results:
