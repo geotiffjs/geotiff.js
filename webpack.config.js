@@ -36,7 +36,6 @@ module.exports = {
     fs: 'empty',
     buffer: 'empty',
     http: 'empty',
-    url: 'empty',
   },
 
   devServer: {
