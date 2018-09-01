@@ -1,9 +1,11 @@
 import { Buffer } from 'buffer';
-import { open, read } from 'fs';
+import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import urlMod from 'url';
 
+const open = fs.open
+const read = fs.read
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
