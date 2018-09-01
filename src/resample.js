@@ -19,7 +19,7 @@ export function resampleNearest(valueArrays, inWidth, inHeight, outWidth, outHei
   const relX = inWidth / outWidth;
   const relY = inHeight / outHeight;
   return valueArrays.map((array) => {
-    const newArray = copyNewSize(outWidth, outHeight);
+    const newArray = copyNewSize(array, outWidth, outHeight);
     for (let y = 0; y < outHeight; ++y) {
       const cy = Math.min(Math.round(relY * y), inHeight - 1);
       for (let x = 0; x < outWidth; ++x) {
@@ -52,7 +52,7 @@ export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHe
   const relY = inHeight / outHeight;
 
   return valueArrays.map((array) => {
-    const newArray = copyNewSize(outWidth, outHeight);
+    const newArray = copyNewSize(array, outWidth, outHeight);
     for (let y = 0; y < outHeight; ++y) {
       const rawY = relY * y;
 
@@ -121,7 +121,7 @@ export function resampleNearestInterleaved(
   const relX = inWidth / outWidth;
   const relY = inHeight / outHeight;
 
-  const newArray = copyNewSize(outWidth, outHeight, samples);
+  const newArray = copyNewSize(valueArray, outWidth, outHeight, samples);
   for (let y = 0; y < outHeight; ++y) {
     const cy = Math.min(Math.round(relY * y), inHeight - 1);
     for (let x = 0; x < outWidth; ++x) {
@@ -150,7 +150,7 @@ export function resampleBilinearInterleaved(
   valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
   const relX = inWidth / outWidth;
   const relY = inHeight / outHeight;
-  const newArray = copyNewSize(outWidth, outHeight, samples);
+  const newArray = copyNewSize(valueArray, outWidth, outHeight, samples);
   for (let y = 0; y < outHeight; ++y) {
     const rawY = relY * y;
 
