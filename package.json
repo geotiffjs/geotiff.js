@@ -15,6 +15,7 @@
     "xmldom": "0.1.*"
   },
   "devDependencies": {
+    "adm-zip": "^0.4.11",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.1.1",
@@ -33,11 +34,16 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
     "express": "^4.16.3",
+    "extract-zip": "^1.6.7",
     "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.5.5",
     "jsdoc-babel": "^0.2.1",
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
+    "node-wget": "^0.4.2",
+    "shelljs": "^0.8.2",
+    "shx": "^0.3.2",
+    "unzip": "^0.1.11",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1",
     "worker-loader": "^1.1.1"
@@ -45,7 +51,7 @@
   "scripts": {
     "dev": "webpack-dev-server -d -w --content-base test",
     "watch": "webpack -d -w",
-    "build:clean": "rm -rf dist/*",
+    "build:clean": "shx rm -rf dist/*",
     "bundle:dev": "webpack -d ",
     "bundle:prod": "NODE_ENV=production webpack -p",
     "build:babel": "babel src/ -d dist",
@@ -53,7 +59,7 @@
     "build": "npm run build:clean ; npm run bundle:dev ; npm run bundle:prod ; npm run build:babel",
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
-    "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
+    "docs": "shx rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "prepublish": "npm run build"
   },
   "author": "Fabian Schindler",
