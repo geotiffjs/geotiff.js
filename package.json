@@ -1,6 +1,6 @@
 {
   "name": "geotiff",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": "https://github.com/geotiffjs/geotiff.js",
   "keywords": [
