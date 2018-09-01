@@ -15,7 +15,6 @@
     "xmldom": "0.1.*"
   },
   "devDependencies": {
-    "adm-zip": "^0.4.11",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.1.1",
@@ -44,7 +43,6 @@
     "node-wget": "^0.4.2",
     "shelljs": "^0.8.2",
     "shx": "^0.3.2",
-    "unzip": "^0.1.11",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1",
     "worker-loader": "^1.1.1"
