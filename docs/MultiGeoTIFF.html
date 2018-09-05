@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: GeoTIFF</title>
+    <title>JSDoc: Class: MultiGeoTIFF</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: GeoTIFF</h1>
+    <h1 class="page-title">Class: MultiGeoTIFF</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>MultiGeoTIFF<span class="signature">(mainFile, overviewFiles)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description"><p>The abstraction for a whole GeoTIFF file.</p></div>
+            <div class="class-description"><p>Wrapper for GeoTIFF files that have external overviews.</p></div>
         
     
 </header>
@@ -45,12 +45,16 @@
     
 
     
-    <h4 class="name" id="GeoTIFF"><span class="type-signature"></span>new GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="MultiGeoTIFF"><span class="type-signature"></span>new MultiGeoTIFF<span class="signature">(mainFile, overviewFiles)</span><span class="type-signature"></span></h4>
     
 
     
 
 
+
+<div class="description">
+    <p>Construct a new MultiGeoTIFF from a main and several overview files.</p>
+</div>
 
 
 
@@ -73,8 +77,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -87,227 +89,46 @@
 
         <tr>
             
-                <td class="name"><code>source</code></td>
+                <td class="name"><code>mainFile</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Source.html">Source</a></span>
+<span class="param-type"><a href="GeoTIFF.html">GeoTIFF</a></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last"><p>The datasource to read from.</p></td>
+            <td class="description last"><p>The main GeoTIFF file.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>littleEndian</code></td>
+                <td class="name"><code>overviewFiles</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Array.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last"><p>Whether the image uses little endian.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>bigTiff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Whether the image uses bigTIFF conventions.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>firstIFDOffset</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The numeric byte-offset from the start of the image
-                               to the first IFD.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>further options.</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>cache</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>whether or not decoded tiles shall be cached.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>An array of overview files.</p></td>
         </tr>
 
     
@@ -348,7 +169,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line235">line 235</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line414">line 414</a>
     </li></ul></dd>
     
 
@@ -406,164 +227,6 @@
 
     
         <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".fromSource"><span class="type-signature">(async, static) </span>fromSource<span class="signature">(source, options)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Parse a (Geo)TIFF file from the given source.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>source</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">source~Source</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The source of data to parse from.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional options.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line374">line 374</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         
             
@@ -692,7 +355,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line337">line 337</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line444">line 444</a>
     </li></ul></dd>
     
 
@@ -800,7 +463,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line357">line 357</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line469">line 469</a>
     </li></ul></dd>
     
 

@@ -28,7 +28,9 @@
 
 <header>
     
-        <h2>GeoTIFFImage</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian, cache, source)</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description"><p>GeoTIFF sub-file image.</p></div>
         
     
 </header>
@@ -39,16 +41,16 @@
         
 
     
+    <h2>Constructor</h2>
+    
 
-    <h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>new GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian, cache)</span><span class="type-signature"></span></h4>
+    
+    <h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>new GeoTIFFImage<span class="signature">(fileDirectory, geoKeys, dataView, littleEndian, cache, source)</span><span class="type-signature"></span></h4>
+    
 
     
 
 
-
-<div class="description">
-    GeoTIFF sub-file image.
-</div>
 
 
 
@@ -99,7 +101,7 @@
 
             
 
-            <td class="description last">The parsed file directory</td>
+            <td class="description last"><p>The parsed file directory</p></td>
         </tr>
 
     
@@ -122,7 +124,7 @@
 
             
 
-            <td class="description last">The parsed geo-keys</td>
+            <td class="description last"><p>The parsed geo-keys</p></td>
         </tr>
 
     
@@ -145,7 +147,7 @@
 
             
 
-            <td class="description last">The DataView for the underlying file.</td>
+            <td class="description last"><p>The DataView for the underlying file.</p></td>
         </tr>
 
     
@@ -168,7 +170,7 @@
 
             
 
-            <td class="description last">Whether the file is encoded in little or big endian</td>
+            <td class="description last"><p>Whether the file is encoded in little or big endian</p></td>
         </tr>
 
     
@@ -191,7 +193,30 @@
 
             
 
-            <td class="description last">Whether or not decoded tiles shall be cached</td>
+            <td class="description last"><p>Whether or not decoded tiles shall be cached</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Source.html">Source</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The datasource to read from</p></td>
         </tr>
 
     
@@ -232,7 +257,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line62">line 62</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line64">line 64</a>
     </li></ul></dd>
     
 
@@ -242,6 +267,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -267,7 +294,9 @@
 
     
 
-     
+    
+
+    
 
     
 
@@ -281,16 +310,18 @@
 
     
 
+    
     <h4 class="name" id="getBoundingBox"><span class="type-signature"></span>getBoundingBox<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Returns the image bounding box as an array of 4 values: min-x, min-y,
+    <p>Returns the image bounding box as an array of 4 values: min-x, min-y,
 max-x and max-y. When the image has no affine transformation, then an
-exception is thrown.
+exception is thrown.</p>
 </div>
 
 
@@ -334,7 +365,7 @@ exception is thrown.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line850">line 850</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line622">line 622</a>
     </li></ul></dd>
     
 
@@ -361,7 +392,7 @@ exception is thrown.
 
         
 <div class="param-desc">
-    The bounding box
+    <p>The bounding box</p>
 </div>
 
 
@@ -382,950 +413,24 @@ exception is thrown.
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="getBytesPerPixel"><span class="type-signature"></span>getBytesPerPixel<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
-
     
-
-
-
-<div class="description">
-    Calculates the number of bytes for each pixel across all samples. Only full
-bytes are supported, an exception is thrown when this is not the case.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line154">line 154</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the bytes per pixel
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Number</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getFileDirectory"><span class="type-signature"></span>getFileDirectory<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
 
     
 
 
 
 <div class="description">
-    Returns the associated parsed file directory.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line103">line 103</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the parsed file directory
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getGDALMetadata"><span class="type-signature"></span>getGDALMetadata<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the parsed GDAL metadata items.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line787">line 787</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getGeoKeys"><span class="type-signature"></span>getGeoKeys<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the associated parsed geo keys.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line110">line 110</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the parsed geo keys
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getHeight"><span class="type-signature"></span>getHeight<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the height of the image.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line124">line 124</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the height of the image
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Number</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getOrigin"><span class="type-signature"></span>getOrigin<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the image origin as a XYZ-vector. When the image has no affine
-transformation, then an exception is thrown.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line810">line 810</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    The origin as a vector
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getResolution"><span class="type-signature"></span>getResolution<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the image resolution as a XYZ-vector. When the image has no affine
-transformation, then an exception is thrown.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line824">line 824</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    The resolution as a vector
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getSamplesPerPixel"><span class="type-signature"></span>getSamplesPerPixel<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the number of samples per pixel.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line131">line 131</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the number of samples per pixel
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Number</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getTiePoints"><span class="type-signature"></span>getTiePoints<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns an array of tiepoints.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line764">line 764</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;Object></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getTileHeight"><span class="type-signature"></span>getTileHeight<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the height of each tile.
+    <p>Calculates the number of bytes for each pixel across all samples. Only full
+bytes are supported, an exception is thrown when this is not the case.</p>
 </div>
 
 
@@ -1396,7 +501,7 @@ transformation, then an exception is thrown.
 
         
 <div class="param-desc">
-    the height of each tile
+    <p>the bytes per pixel</p>
 </div>
 
 
@@ -1417,19 +522,1060 @@ transformation, then an exception is thrown.
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id="getTileOrStrip"><span class="type-signature"></span>getTileOrStrip<span class="signature">(x, y, plane)</span><span class="type-signature"> &rarr; {Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array}</span></h4>
+    
+    <h4 class="name" id="getFileDirectory"><span class="type-signature"></span>getFileDirectory<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Returns the decoded strip or tile.
+    <p>Returns the associated parsed file directory.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line94">line 94</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the parsed file directory</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getGDALMetadata"><span class="type-signature"></span>getGDALMetadata<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the parsed GDAL metadata items.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line551">line 551</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getGeoKeys"><span class="type-signature"></span>getGeoKeys<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the associated parsed geo keys.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line101">line 101</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the parsed geo keys</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getHeight"><span class="type-signature"></span>getHeight<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the height of the image.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line115">line 115</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the height of the image</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getOrigin"><span class="type-signature"></span>getOrigin<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the image origin as a XYZ-vector. When the image has no affine
+transformation, then an exception is thrown.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line571">line 571</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The origin as a vector</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getResolution"><span class="type-signature"></span>getResolution<span class="signature">(referenceImage<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the image resolution as a XYZ-vector. When the image has no affine
+transformation, then an exception is thrown.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>referenceImage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="GeoTIFFImage.html">GeoTIFFImage</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>A reference image to calculate the resolution from
+                                            in cases when the current image does not have the
+                                            required tags on its own.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line590">line 590</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resolution as a vector</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getSamplesPerPixel"><span class="type-signature"></span>getSamplesPerPixel<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the number of samples per pixel.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the number of samples per pixel</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTiePoints"><span class="type-signature"></span>getTiePoints<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns an array of tiepoints.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line528">line 528</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTileHeight"><span class="type-signature"></span>getTileHeight<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the height of each tile.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line136">line 136</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the height of each tile</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTileOrStrip"><span class="type-signature">(async) </span>getTileOrStrip<span class="signature">(x, y, sample, poolOrDecoder)</span><span class="type-signature"> &rarr; {Promise.&lt;ArrayBuffer>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the decoded strip or tile.</p>
 </div>
 
 
@@ -1481,7 +1627,7 @@ transformation, then an exception is thrown.
 
             
 
-            <td class="description last">the strip or tile x-offset</td>
+            <td class="description last"><p>the strip or tile x-offset</p></td>
         </tr>
 
     
@@ -1504,14 +1650,14 @@ transformation, then an exception is thrown.
 
             
 
-            <td class="description last">the tile y-offset (0 for stripped images)</td>
+            <td class="description last"><p>the tile y-offset (0 for stripped images)</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>plane</code></td>
+                <td class="name"><code>sample</code></td>
             
 
             <td class="type">
@@ -1527,7 +1673,33 @@ transformation, then an exception is thrown.
 
             
 
-            <td class="description last">the planar configuration (1: "chunky", 2: "separate samples")</td>
+            <td class="description last"><p>the sample to get for separated samples</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>poolOrDecoder</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Pool</span>
+|
+
+<span class="param-type">AbstractDecoder</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the decoder or decoder pool</p></td>
         </tr>
 
     
@@ -1568,7 +1740,7 @@ transformation, then an exception is thrown.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line232">line 232</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line230">line 230</a>
     </li></ul></dd>
     
 
@@ -1602,28 +1774,7 @@ transformation, then an exception is thrown.
     </dt>
     <dd>
         
-<span class="param-type">Int8Array</span>
-|
-
-<span class="param-type">Uint8Array</span>
-|
-
-<span class="param-type">Int16Array</span>
-|
-
-<span class="param-type">Uint16Array</span>
-|
-
-<span class="param-type">Int32Array</span>
-|
-
-<span class="param-type">Uint32Array</span>
-|
-
-<span class="param-type">Float32Array</span>
-|
-
-<span class="param-type">Float64Array</span>
+<span class="param-type">Promise.&lt;ArrayBuffer></span>
 
 
     </dd>
@@ -1633,19 +1784,23 @@ transformation, then an exception is thrown.
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="getTileWidth"><span class="type-signature"></span>getTileWidth<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Returns the width of each tile.
+    <p>Returns the width of each tile.</p>
 </div>
 
 
@@ -1689,7 +1844,7 @@ transformation, then an exception is thrown.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line138">line 138</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
@@ -1716,7 +1871,7 @@ transformation, then an exception is thrown.
 
         
 <div class="param-desc">
-    the width of each tile
+    <p>the width of each tile</p>
 </div>
 
 
@@ -1737,19 +1892,23 @@ transformation, then an exception is thrown.
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="getWidth"><span class="type-signature"></span>getWidth<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Returns the width of the image.
+    <p>Returns the width of the image.</p>
 </div>
 
 
@@ -1793,7 +1952,7 @@ transformation, then an exception is thrown.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line117">line 117</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -1820,7 +1979,7 @@ transformation, then an exception is thrown.
 
         
 <div class="param-desc">
-    the width of the image
+    <p>the width of the image</p>
 </div>
 
 
@@ -1841,19 +2000,23 @@ transformation, then an exception is thrown.
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="pixelIsArea"><span class="type-signature"></span>pixelIsArea<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Returns whether or not the pixels of the image depict an area (or point).
+    <p>Returns whether or not the pixels of the image depict an area (or point).</p>
 </div>
 
 
@@ -1897,7 +2060,7 @@ transformation, then an exception is thrown.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line840">line 840</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line612">line 612</a>
     </li></ul></dd>
     
 
@@ -1924,7 +2087,7 @@ transformation, then an exception is thrown.
 
         
 <div class="param-desc">
-    Whether the pixels are a point
+    <p>Whether the pixels are a point</p>
 </div>
 
 
@@ -1945,21 +2108,26 @@ transformation, then an exception is thrown.
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id="readRasters"><span class="type-signature"></span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {TypedArray|Array.&lt;TypedArray>|null}</span></h4>
+    
+    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>, fillValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Reads raster data from the image. This function reads all selected samples
-into separate arrays of the correct type for that sample. When provided,
-only a subset of the raster is read for each sample.
+    <p>Reads raster data from the image. This function reads all selected samples
+into separate arrays of the correct type for that sample or into a single
+combined array when <code>interleave</code> is set. When provided, only a subset
+of the raster is read for each sample.</p>
 </div>
 
 
@@ -1986,6 +2154,8 @@ only a subset of the raster is read for each sample.
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -2022,8 +2192,12 @@ only a subset of the raster is read for each sample.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last">optional parameters
+            <td class="description last"><p>optional parameters</p>
                 <h6>Properties</h6>
                 
 
@@ -2085,7 +2259,7 @@ only a subset of the raster is read for each sample.
                 </td>
             
 
-            <td class="description last">the subset to read data from.</td>
+            <td class="description last"><p>the subset to read data from.</p></td>
         </tr>
 
     
@@ -2124,7 +2298,7 @@ only a subset of the raster is read for each sample.
                 </td>
             
 
-            <td class="description last">the selection of samples to read from.</td>
+            <td class="description last"><p>the selection of samples to read from.</p></td>
         </tr>
 
     
@@ -2163,9 +2337,9 @@ only a subset of the raster is read for each sample.
                 </td>
             
 
-            <td class="description last">whether the data shall be read
+            <td class="description last"><p>whether the data shall be read
                                             in one single array or separate
-                                            arrays.</td>
+                                            arrays.</p></td>
         </tr>
 
     
@@ -2179,13 +2353,13 @@ only a subset of the raster is read for each sample.
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>pool</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="GeoTIFFImage.html#~readCallback">GeoTIFFImage~readCallback</a></span>
+<span class="param-type">Number</span>
 
 
             
@@ -2204,24 +2378,27 @@ only a subset of the raster is read for each sample.
             
 
             
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
 
-            <td class="description last">the success callback. this
-                                              parameter is mandatory for
-                                              asynchronous decoders (some
-                                              compression mechanisms).</td>
+            <td class="description last"><p>The optional decoder pool to use.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>callbackError</code></td>
+                <td class="name"><code>width</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="GeoTIFFImage.html#~readErrorCallback">GeoTIFFImage~readErrorCallback</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -2240,8 +2417,133 @@ only a subset of the raster is read for each sample.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last">the error callback</td>
+            <td class="description last"><p>The desired width of the output. When the width is no the
+                        same as the images, resampling will be performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired height of the output. When the width is no the
+                         same as the images, resampling will be performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resampleMethod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'nearest'
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired resampling method.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fillValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">Array.&lt;number></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The value to use for parts of the image
+                                     outside of the images extent. When multiple
+                                     samples are requested, an array of fill values
+                                     can be passed.</p></td>
         </tr>
 
     
@@ -2282,7 +2584,7 @@ only a subset of the raster is read for each sample.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line538">line 538</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line375">line 375</a>
     </li></ul></dd>
     
 
@@ -2309,10 +2611,7 @@ only a subset of the raster is read for each sample.
 
         
 <div class="param-desc">
-    in synchonous cases, the decoded
-                                          array(s) is/are returned. In
-                                          asynchronous cases, nothing is
-                                          returned.
+    <p>the decoded arrays as a promise</p>
 </div>
 
 
@@ -2323,13 +2622,7 @@ only a subset of the raster is read for each sample.
     </dt>
     <dd>
         
-<span class="param-type">TypedArray</span>
-|
-
-<span class="param-type">Array.&lt;TypedArray></span>
-|
-
-<span class="param-type">null</span>
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
 
 
     </dd>
@@ -2339,24 +2632,28 @@ only a subset of the raster is read for each sample.
 
 
 
+
+
         
             
 
     
 
-    <h4 class="name" id="readRGB"><span class="type-signature"></span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, callback, callbackError<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+    <h4 class="name" id="readRGB"><span class="type-signature">(async) </span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    
 
     
 
 
 
 <div class="description">
-    Reads raster data from the image as RGB. The result is always an
+    <p>Reads raster data from the image as RGB. The result is always an
 interleaved typed array.
 Colorspaces other than RGB will be transformed to RGB, color maps expanded.
 When no other method is applicable, the first sample is used to produce a
 greayscale image.
-When provided, only a subset of the raster is read for each sample.
+When provided, only a subset of the raster is read for each sample.</p>
 </div>
 
 
@@ -2383,6 +2680,8 @@ When provided, only a subset of the raster is read for each sample.
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -2419,8 +2718,12 @@ When provided, only a subset of the raster is read for each sample.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last">optional parameters
+            <td class="description last"><p>optional parameters</p>
                 <h6>Properties</h6>
                 
 
@@ -2482,7 +2785,7 @@ When provided, only a subset of the raster is read for each sample.
                 </td>
             
 
-            <td class="description last">the subset to read data from.</td>
+            <td class="description last"><p>the subset to read data from.</p></td>
         </tr>
 
     
@@ -2496,45 +2799,13 @@ When provided, only a subset of the raster is read for each sample.
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>pool</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="GeoTIFFImage.html#~readCallback">GeoTIFFImage~readCallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the success callback. this
-                                            parameter is mandatory.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callbackError</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="GeoTIFFImage.html#~readErrorCallback">GeoTIFFImage~readErrorCallback</a></span>
+<span class="param-type">Number</span>
 
 
             
@@ -2553,284 +2824,129 @@ When provided, only a subset of the raster is read for each sample.
             
 
             
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
 
-            <td class="description last">the error callback</td>
+            <td class="description last"><p>The optional decoder pool to use.</p></td>
         </tr>
 
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line653">line 653</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
-
-        
-                
-
-    
-
-    <h4 class="name" id="~readCallback"><span class="type-signature"></span>readCallback<span class="signature">(array)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    This callback is called upon successful reading of a GeoTIFF image. The
-resulting arrays are passed as a single argument.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>array</code></td>
+                <td class="name"><code>width</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">TypedArray</span>
-|
-
-<span class="param-type">Array.&lt;TypedArray></span>
+<span class="param-type">number</span>
 
 
             
             </td>
 
             
-
-            
-
-            <td class="description last">the requested data as a either a
-                                         single typed array or a list of
-                                         typed arrays, depending on the
-                                         'interleave' option.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line500">line 500</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
+                <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
-    
+                
 
-    <h4 class="name" id="~readErrorCallback"><span class="type-signature"></span>readErrorCallback<span class="signature">(error)</span><span class="type-signature"></span></h4>
+                
+                </td>
+            
 
-    
+            
+                <td class="default">
+                
+                </td>
+            
 
+            <td class="description last"><p>The desired width of the output. When the width is no the
+                        same as the images, resampling will be performed.</p></td>
+        </tr>
 
-
-<div class="description">
-    This callback is called upon encountering an error while reading of a
-GeoTIFF image
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>error</code></td>
+                <td class="name"><code>height</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Error</span>
+<span class="param-type">number</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last">the encountered error</td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired height of the output. When the width is no the
+                         same as the images, resampling will be performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resampleMethod</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'nearest'
+                
+                </td>
+            
+
+            <td class="description last"><p>The desired resampling method.</p></td>
         </tr>
 
     
@@ -2871,7 +2987,7 @@ GeoTIFF image
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line510">line 510</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line446">line 446</a>
     </li></ul></dd>
     
 
@@ -2894,10 +3010,36 @@ GeoTIFF image
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the RGB array as a Promise</p>
+</div>
 
 
 
-            
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
     
 
     
@@ -2911,13 +3053,13 @@ GeoTIFF image
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li></ul><h3>Global</h3><ul><li><a href="global.html#parse">parse</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Apr 08 2017 13:52:20 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
