@@ -88,6 +88,11 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on deflate compressed images with predictor and big strips', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_big_strips.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on tiled deflate compressed images with predictor', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_tiled.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
