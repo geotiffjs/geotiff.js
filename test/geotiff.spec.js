@@ -126,7 +126,7 @@ describe('GeoTIFF', () => {
   it('should work on Float64 and lzw compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float64lzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);
-  });
+  }).timeout(4000);
 
   it('should work on packbit compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('packbits.tiff'));
