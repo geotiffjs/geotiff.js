@@ -25,9 +25,12 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
 
   const allData = await image.readRasters({ window: [200, 200, 210, 210] });
+  const brData = await image.readRasters({ window: [width - 10, height - 10, width, height] });
   const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
+  expect(brData).to.have.length(sampleCount);
+  expect(brData[0]).to.be.an.instanceof(type);
   expect(data[0]).to.deep.equal(allData[5]);
 }
 
