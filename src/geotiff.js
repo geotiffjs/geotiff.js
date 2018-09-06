@@ -5,6 +5,11 @@ import DataSlice from './dataslice';
 import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
 
+import * as globals from './globals';
+export { globals };
+import * as rgb from './rgb';
+export { rgb };
+
 function getFieldTypeLength(fieldType) {
   switch (fieldType) {
     case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
