@@ -51,6 +51,9 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
   const stride = bitsPerSample.length;
 
   for (let i = 0; i < height; ++i) {
+    // Last strip will be truncated if height % stripHeight != 0
+    if (i * stride * width * bytesPerSample >= block.byteLength)
+      break;
     let row;
     if (predictor === 2) { // horizontal prediction
       switch (bitsPerSample[0]) {
