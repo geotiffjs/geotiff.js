@@ -78,6 +78,21 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on deflate compressed images', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on tiled deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_tiled.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('tiledplanarlzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
