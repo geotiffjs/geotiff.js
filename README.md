@@ -1,5 +1,5 @@
 # geotiff.js
-[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![Dependency Status](https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat)](https://www.versioneye.com/user/projects/566af91d4e049b0041000083) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff)
+[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![Dependency Status](https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat)](https://www.versioneye.com/user/projects/566af91d4e049b0041000083) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
 
 Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.
