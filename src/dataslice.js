@@ -81,24 +81,24 @@ export default class DataSlice {
   readUint64(offset) {
     const left = this.readUint32(offset);
     const right = this.readUint32(offset + 4);
-    if (this._littleEndian) {
-      return (left << 32) | right;
+    if (!this._littleEndian) {
+      return Number(BigInt(left << 32) | BigInt(right));
     }
-    return (right << 32) | left;
+    return Number(BigInt(right << 32) | BigInt(left));
   }
 
   readInt64(offset) {
     let left;
     let right;
-    if (this._littleEndian) {
+    if (!this._littleEndian) {
       left = this.readInt32(offset);
       right = this.readUint32(offset + 4);
 
-      return (left << 32) | right;
+      return Number(BigInt(left << 32) | BigInt(right));
     }
     left = this.readUint32(offset - this._sliceOffset);
     right = this.readInt32(offset - this._sliceOffset + 4);
-    return (right << 32) | left;
+    return Number(BigInt(right << 32) | BigInt(left));
   }
 
   readOffset(offset) {
