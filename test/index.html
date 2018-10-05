@@ -8,43 +8,41 @@
 <select id="bands">
 </select>
 
+<script src="geotiff.bundle.js"></script>
 <script src="lib/plotty.min.js"></script>
 
-<script type="module">
-
-import * as GeoTiff from "../dist/geotiff.bundle.js"
+<script>
 
 var imageWindow = [0, 0, 500, 500];
 
 var tiffs = [
-  // "stripped.tiff",
-  // "tiled.tiff",
-  // "tiledplanar.tiff",
-  // "float32.tiff",
-  // "uint32.tiff",
-  // "int32.tiff",
-  // "float64.tiff",
-  // "lzw.tiff",
-  // "tiledplanarlzw.tiff",
-   "float64lzw.tiff",
-  // "lzw_predictor.tiff",
-  // "deflate.tiff",
-  // "deflate_predictor.tiff",
-  // "deflate_predictor_tiled.tiff",
-  "lzw2.tiff"
+  "stripped.tiff",
+  "tiled.tiff",
+  "tiledplanar.tiff",
+  "float32.tiff",
+  "uint32.tiff",
+  "int32.tiff",
+  "float64.tiff",
+  "lzw.tiff",
+  "tiledplanarlzw.tiff",
+  "float64lzw.tiff",
+  "lzw_predictor.tiff",
+  "deflate.tiff",
+  "deflate_predictor.tiff",
+  "deflate_predictor_tiled.tiff",
 ];
 
 var rgbtiffs = [
     "stripped.tiff",
-    // "rgb.tiff",
-    // "BigTIFF.tif",
-    // "rgb_paletted.tiff",
-    // "cmyk.tif",
-    // "ycbcr.tif",
-    // "cielab.tif",
-    // "5ae862e00b093000130affda.tif",
-    // "jpeg.tiff",
-    // "jpeg_ycbcr.tiff",
+    "rgb.tiff",
+    "BigTIFF.tif",
+    "rgb_paletted.tiff",
+    "cmyk.tif",
+    "ycbcr.tif",
+    "cielab.tif",
+    "5ae862e00b093000130affda.tif",
+    "jpeg.tiff",
+    "jpeg_ycbcr.tiff",
 ]
 
 
@@ -101,9 +99,7 @@ tiffs.forEach(function(filename) {
           image.readRasters({ samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)], poolSize: 8 })
             .then(function (rasters) {
               var canvas = document.getElementById(filename);
-              //plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
-              plot = new plotty.plot(canvas, rasters[0], width, height, [0,5], "viridis", false);
-
+              plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
               plot.render();
             });
         });
@@ -116,7 +112,7 @@ tiffs.forEach(function(filename) {
           .then(function (rasters) {
             console.timeEnd("readRasters " + filename);
             var canvas = document.getElementById(filename);
-            plot = new plotty.plot(canvas, rasters[0], width, height, [-2, 1], "viridis", false);
+            plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
             plot.render();
           });
       });
