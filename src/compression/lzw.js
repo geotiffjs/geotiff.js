@@ -90,7 +90,9 @@ function decompress(input) {
         code = getNext(array);
       }
       if (code > CLEAR_CODE) {
-        throw new Error(`corrupted code at scanline ${code}`);
+        console.warn(`corrupted code at scanline ${code}`)
+        break;
+        //throw new Error(`corrupted code at scanline ${code}`);
       }
       if (code === EOI_CODE) {
         break;
