@@ -125,6 +125,40 @@ for (const key in fieldTagNames) {
   }
 }
 
+export const fieldTagTypes = {
+  256: 'SHORT',
+  257: 'SHORT',
+  258: 'SHORT',
+  259: 'SHORT',
+  262: 'SHORT',
+  273: 'LONG',
+  274: 'SHORT',
+  277: 'SHORT',
+  278: 'LONG',
+  279: 'LONG',
+  282: 'RATIONAL',
+  283: 'RATIONAL',
+  284: 'SHORT',
+  286: 'SHORT',
+  287: 'RATIONAL',
+  296: 'SHORT',
+  305: 'ASCII',
+  306: 'ASCII',
+  338: 'SHORT',
+  339: 'SHORT',
+  513: 'LONG',
+  514: 'LONG',
+  1024: 'SHORT',
+  1025: 'SHORT',
+  2048: 'SHORT',
+  2049: 'ASCII',
+  33550: 'DOUBLE',
+  33922: 'DOUBLE',
+  34665: 'LONG',
+  34735: 'SHORT',
+  34737: 'ASCII',
+};
+
 export const arrayFields = [
   fieldTags.BitsPerSample,
   fieldTags.ExtraSamples,
@@ -252,3 +286,4 @@ if (typeof window === 'undefined') {
     return xmlDoc;
   };
 }
+

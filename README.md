@@ -339,6 +339,35 @@ const multiTiff = await GeoTIFF.fromUrls(
 );
 ```
 
+### Writing GeoTIFFs (Beta Version)
+You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
+This function returns an ArrayBuffer which you can then save as a .tif file.
+:warning: writeArrayBuffer currently writes the values uncompressed
+```javascript
+import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
+  height: 3,
+  width: 3
+};
+const arrayBuffer = await writeArrayBuffer(values, metadata);
+```
+
+You can also customize the metadata using names found in the [TIFF Spec](https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml) and [GeoTIFF spec](https://cdn.earthdata.nasa.gov/conduit/upload/6852/geotiff-1.8.1-1995-10-31.pdf).
+```javascript
+import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
+  height: 3,
+  ModelPixelScale: [0.031355, 0.031355, 0],
+  ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],  
+  width: 3
+};
+const arrayBuffer = await writeArrayBuffer(values, metadata);
+```
+
 ## What to do with the data?
 
 There is a nice HTML 5/WebGL based rendering library called

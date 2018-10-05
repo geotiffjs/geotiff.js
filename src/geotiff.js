@@ -4,6 +4,7 @@ import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
+import { writeGeotiff } from './geotiffwriter';
 
 import * as globals from './globals';
 export { globals };
@@ -588,6 +589,15 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
+}
+
+/**
+ * Main creating function for GeoTIFF files.
+ * @param {(Array)} array of pixel values
+ * @returns {metadata} metadata
+ */
+export async function writeArrayBuffer(values, metadata) {
+  return writeGeotiff(values, metadata);
 }
 
 export { Pool };
