@@ -494,6 +494,8 @@ class GeoTIFFImage {
         interleave: true,
         samples: [0, 1, 2],
         pool,
+        width,
+        height
       });
     }
 
