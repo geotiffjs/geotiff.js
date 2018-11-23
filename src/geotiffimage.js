@@ -16,31 +16,27 @@ function sum(array, start, end) {
 function arrayForType(format, bitsPerSample, size) {
   switch (format) {
     case 1: // unsigned integer data
-      switch (bitsPerSample) {
-        case 8:
-          return new Uint8Array(size);
-        case 16:
-          return new Uint16Array(size);
-        case 32:
-          return new Uint32Array(size);
-        default:
-          break;
+      if (bitsPerSample <= 8) {
+        return new Uint8Array(size);
+      } else if (bitsPerSample <= 16) {
+        return new Uint16Array(size);
+      } else if (bitsPerSample <= 32) {
+        return new Uint32Array(size);
       }
       break;
     case 2: // twos complement signed integer data
-      switch (bitsPerSample) {
-        case 8:
-          return new Int8Array(size);
-        case 16:
-          return new Int16Array(size);
-        case 32:
-          return new Int32Array(size);
-        default:
-          break;
+      if (bitsPerSample === 8) {
+        return new Int8Array(size);
+      } else if (bitsPerSample === 16) {
+        return new Int16Array(size);
+      } else if (bitsPerSample === 32) {
+        return new Int32Array(size);
       }
       break;
     case 3: // floating point data
       switch (bitsPerSample) {
+        case 16:
+        case 24:
         case 32:
           return new Float32Array(size);
         case 64:
@@ -53,6 +49,37 @@ function arrayForType(format, bitsPerSample, size) {
       break;
   }
   throw Error('Unsupported data format/bitsPerSample');
+}
+
+function needsNormalization(format, bitsPerSample) {
+  if ((format === 1 || format === 2) && bitsPerSample <= 32 && bitsPerSample % 8 === 0) {
+    return false;
+  } else if (format === 3 && (bitsPerSample === 32 || bitsPerSample === 64)) {
+    return false;
+  }
+  return true;
+}
+
+function normalizeArray(inBuffer, size, format, bitsPerSample) {
+  const outArray = arrayForType(format, bitsPerSample, size);
+  const view = new DataView(inBuffer);
+  const mask = parseInt('1'.repeat(bitsPerSample), 2);
+
+  if (format === 1) { // unsigned integer
+    for (let i = 0, bitOffset = 0; i < size; ++i, bitOffset += bitsPerSample) {
+      const byteOffset = Math.floor(bitOffset / 8);
+      const innerBitOffset = bitOffset % 8;
+      if (innerBitOffset + bitsPerSample <= 8) {
+        outArray[i] = (view.getUint8(byteOffset) >> (8 - bitsPerSample) - innerBitOffset) & mask;
+      } else if (innerBitOffset + bitsPerSample <= 16) {
+        outArray[i] = (view.getUint16(byteOffset) >> (16 - bitsPerSample) - innerBitOffset) & mask;
+      } else {
+        outArray[i] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & mask;
+      }
+    }
+  }
+
+  return outArray.buffer;
 }
 
 /**
@@ -140,17 +167,18 @@ class GeoTIFFImage {
    * @returns {Number} the bytes per pixel
    */
   getBytesPerPixel() {
-    let bitsPerSample = 0;
+    // let bitsPerSample = 0;
+    let bytes = 0;
     for (let i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
       const bits = this.fileDirectory.BitsPerSample[i];
-      if ((bits % 8) !== 0) {
-        throw new Error(`Sample bit-width of ${bits} is not supported.`);
-      } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
-        throw new Error('Differing size of samples in a pixel are not supported.');
-      }
-      bitsPerSample += bits;
+      // if ((bits % 8) !== 0) {
+      //   throw new Error(`Sample bit-width of ${bits} is not supported.`);
+      // } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
+      //   throw new Error('Differing size of samples in a pixel are not supported.');
+      // }
+      bytes += Math.ceil(bits / 8);
     }
-    return bitsPerSample / 8;
+    return bytes;
   }
 
   getSampleByteSize(i) {
@@ -170,27 +198,21 @@ class GeoTIFFImage {
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
-        switch (bitsPerSample) {
-          case 8:
-            return DataView.prototype.getUint8;
-          case 16:
-            return DataView.prototype.getUint16;
-          case 32:
-            return DataView.prototype.getUint32;
-          default:
-            break;
+        if (bitsPerSample <= 8) {
+          return DataView.prototype.getUint8;
+        } else if (bitsPerSample <= 16) {
+          return DataView.prototype.getUint16;
+        } else if (bitsPerSample <= 32) {
+          return DataView.prototype.getUint32;
         }
         break;
       case 2: // twos complement signed integer data
-        switch (bitsPerSample) {
-          case 8:
-            return DataView.prototype.getInt8;
-          case 16:
-            return DataView.prototype.getInt16;
-          case 32:
-            return DataView.prototype.getInt32;
-          default:
-            break;
+        if (bitsPerSample <= 8) {
+          return DataView.prototype.getInt8;
+        } else if (bitsPerSample <= 16) {
+          return DataView.prototype.getInt16;
+        } else if (bitsPerSample <= 32) {
+          return DataView.prototype.getInt32;
         }
         break;
       case 3:
@@ -209,10 +231,18 @@ class GeoTIFFImage {
     throw Error('Unsupported data format/bitsPerSample');
   }
 
-  getArrayForSample(sampleIndex, size) {
-    const format = this.fileDirectory.SampleFormat ?
+  getSampleFormat(sampleIndex = 0) {
+    return this.fileDirectory.SampleFormat ?
       this.fileDirectory.SampleFormat[sampleIndex] : 1;
-    const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+  }
+
+  getBitsPerSample(sampleIndex = 0) {
+    return this.fileDirectory.BitsPerSample[sampleIndex];
+  }
+
+  getArrayForSample(sampleIndex, size) {
+    const format = this.getSampleFormat(sampleIndex);
+    const bitsPerSample = this.getBitsPerSample(sampleIndex);
     return arrayForType(format, bitsPerSample, size);
   }
 
@@ -310,7 +340,19 @@ class GeoTIFFImage {
           const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
           promises.push(promise);
           promise.then((tile) => {
-            const buffer = tile.data;
+            let buffer = tile.data;
+
+            const format = this.getSampleFormat();
+            const bitsPerSample = this.getBitsPerSample();
+            if (needsNormalization(format, bitsPerSample)) {
+              buffer = normalizeArray(buffer,
+                this.planarConfiguration === 2 ?
+                  tileHeight * tileWidth :
+                  tileHeight * tileWidth * this.getSamplesPerPixel(),
+                format, bitsPerSample,
+              );
+            }
+
             const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
             const firstCol = tile.x * tileWidth;
