@@ -1,5 +1,7 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
+import { getFloat16 } from '@petamoriken/float16';
+
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
@@ -36,7 +38,6 @@ function arrayForType(format, bitsPerSample, size) {
     case 3: // floating point data
       switch (bitsPerSample) {
         case 16:
-        case 24:
         case 32:
           return new Float32Array(size);
         case 64:
@@ -54,7 +55,7 @@ function arrayForType(format, bitsPerSample, size) {
 function needsNormalization(format, bitsPerSample) {
   if ((format === 1 || format === 2) && bitsPerSample <= 32 && bitsPerSample % 8 === 0) {
     return false;
-  } else if (format === 3 && (bitsPerSample === 32 || bitsPerSample === 64)) {
+  } else if (format === 3 && (bitsPerSample === 16 || bitsPerSample === 32 || bitsPerSample === 64)) {
     return false;
   }
   return true;
@@ -217,6 +218,10 @@ class GeoTIFFImage {
         break;
       case 3:
         switch (bitsPerSample) {
+          case 16:
+            return function (offset, littleEndian) {
+              return getFloat16(this, offset, littleEndian);
+            };
           case 32:
             return DataView.prototype.getFloat32;
           case 64:
