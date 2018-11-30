@@ -9,12 +9,36 @@ import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 
+function counter(array) {
+  return array.reduce((counts, value) => {
+    if (counts[value] === undefined) {
+      counts[value] = 1;
+    } else {
+      counts[value]++
+    }
+    return counts;
+  }, {});
+}
 
 function createSource(filename) {
   if (isNode) {
     return makeFileSource(`test/data/${filename}`);
   }
   return makeFetchSource(`test/data/${filename}`);
+}
+
+async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts) {
+  const image = await tiff.getImage();
+  expect(image).to.be.ok;
+  expect(image.getWidth()).to.equal(width);
+  expect(image.getHeight()).to.equal(height);
+  expect(image.getSamplesPerPixel()).to.equal(sampleCount);
+
+  const allData = await image.readRasters();
+  const actualCounts = counter(allData[0]);
+  for (let pixelValue in expectedCounts) {
+    expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue])
+  }
 }
 
 async function performTiffTests(tiff, width, height, sampleCount, type) {
@@ -73,6 +97,21 @@ function getMockMetaData(height, width) {
     "GeogCitationGeoKey": "WGS 84"
   };
 }
+
+describe('n-bit tests', () => {
+  /*
+  it('should parse 1-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('1bit.tiff'));
+    await performNBitTests(tiff, 13939, 11380, 1, Uint8Array);
+  });
+  */
+
+  it('should parse 2-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('2bit.tiff'));
+    const expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
+    await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts);
+  });
+});
 
 describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {
