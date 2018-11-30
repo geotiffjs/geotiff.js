@@ -151,6 +151,48 @@ describe('n-bit tests', () => {
     const expectedCounts = { 0: 85103, 127: 156360 };
     await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
   });
+
+  it('should parse 9-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('9-bit.tif'));
+    const expectedCounts = { 0: 85103, 511: 156110 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 10-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('10-bit.tif'));
+    const expectedCounts = { 0: 85103, 1023: 154331 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 11-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('11-bit.tif'));
+    const expectedCounts = { 0: 85103, 2047: 143532 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 12-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('12-bit.tif'));
+    const expectedCounts = { 0: 85103, 4095: 115233 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 13-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('13-bit.tif'));
+    const expectedCounts = { 0: 85103, 8191: 31658 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 14-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('14-bit.tif'));
+    const expectedCounts = { 0: 85103, 16383: 7832 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
+
+  it('should parse 15-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('15-bit.tif'));
+    const expectedCounts = { 0: 85103, 32767: 2032 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+  });
 });
 
 describe('GeoTIFF', () => {
@@ -397,7 +439,7 @@ describe("writeTests", function() {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
 
     const image = await newGeoTiff.getImage();
-    const rasters = await image.readRasters();    
+    const rasters = await image.readRasters();
 
     const newValues = toArrayRecursively(rasters[0]);
 
