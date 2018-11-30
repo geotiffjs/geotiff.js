@@ -34,10 +34,12 @@ async function performNBitTests(tiff, width, height, sampleCount, type, expected
   expect(image.getHeight()).to.equal(height);
   expect(image.getSamplesPerPixel()).to.equal(sampleCount);
 
-  const allData = await image.readRasters();
-  const actualCounts = counter(allData[0]);
+  // only sample the first band
+  const rasters = await image.readRasters({ samples: [0] });
+  const data = rasters[0];
+  const actualCounts = counter(data);
   for (let pixelValue in expectedCounts) {
-    expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue])
+    expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
   }
 }
 
@@ -99,17 +101,55 @@ function getMockMetaData(height, width) {
 }
 
 describe('n-bit tests', () => {
-  /*
+
+  const expectedWidth = 539;
+  const expectedHeight = 448;
+  const expectedSampleCount = 15;
+
   it('should parse 1-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('1bit.tiff'));
-    await performNBitTests(tiff, 13939, 11380, 1, Uint8Array);
+    const tiff = await GeoTIFF.fromSource(createSource('1-bit.tif'));
+    const expectedCounts = { 0: 85103, 1: 156369 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
   });
-  */
 
   it('should parse 2-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('2bit.tiff'));
-    const expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
+    let tiff = await GeoTIFF.fromSource(createSource('2-bit.tif'));
+    let expectedCounts = { 0: 85103, 3: 156369 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+
+    tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
+    expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
     await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts);
+  });
+
+  it('should parse 3-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('3-bit.tif'));
+    const expectedCounts = { 0: 85103, 7: 156369 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+  });
+
+  it('should parse 4-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('4-bit.tif'));
+    const expectedCounts = { 0: 85103, 9: 1, 15: 156368 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+  });
+
+  it('should parse 5-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('5-bit.tif'));
+    const expectedCounts = { 0: 85103, 9: 1, 31: 156368 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+  });
+
+  it('should parse 6-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('6-bit.tif'));
+    const expectedCounts = { 0: 85103, 63: 156364 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+  });
+
+  it('should parse 7-bit tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('7-bit.tif'));
+    const expectedCounts = { 0: 85103, 127: 156360 };
+    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
   });
 });
 
