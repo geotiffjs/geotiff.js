@@ -27,6 +27,11 @@ function createSource(filename) {
   return makeFetchSource(`test/data/${filename}`);
 }
 
+async function loadAndPerformNBitTests(nbits, width, height, sampleCount, type, expectedCounts) {
+  const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit.tif`));
+  performNBitTests(tiff, width, height, sampleCount, type, expectedCounts);
+}
+
 async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts) {
   const image = await tiff.getImage();
   expect(image).to.be.ok;
@@ -106,92 +111,92 @@ describe('n-bit tests', () => {
   const expectedHeight = 448;
   const expectedSampleCount = 15;
 
+  async function testDerivedTiff(nbits, expectedCounts, type) {
+    await loadAndPerformNBitTests(nbits, expectedWidth, expectedHeight, expectedSampleCount, type, expectedCounts);
+  }
+
   it('should parse 1-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('1-bit.tif'));
     const expectedCounts = { 0: 85103, 1: 156369 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(1, expectedCounts, Uint8Array);
   });
 
   it('should parse 2-bit tiffs', async () => {
-    let tiff = await GeoTIFF.fromSource(createSource('2-bit.tif'));
     let expectedCounts = { 0: 85103, 3: 156369 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(2, expectedCounts, Uint8Array);
 
-    tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
+    const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
     expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
     await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts);
   });
 
   it('should parse 3-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('3-bit.tif'));
     const expectedCounts = { 0: 85103, 7: 156369 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(3, expectedCounts, Uint8Array);
   });
 
   it('should parse 4-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('4-bit.tif'));
     const expectedCounts = { 0: 85103, 9: 1, 15: 156368 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(4, expectedCounts, Uint8Array);
   });
 
   it('should parse 5-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('5-bit.tif'));
     const expectedCounts = { 0: 85103, 9: 1, 31: 156368 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(5, expectedCounts, Uint8Array);
   });
 
   it('should parse 6-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('6-bit.tif'));
     const expectedCounts = { 0: 85103, 63: 156364 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(6, expectedCounts, Uint8Array);
   });
 
   it('should parse 7-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('7-bit.tif'));
     const expectedCounts = { 0: 85103, 127: 156360 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint8Array, expectedCounts);
+    testDerivedTiff(7, expectedCounts, Uint8Array);
   });
 
   it('should parse 9-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('9-bit.tif'));
     const expectedCounts = { 0: 85103, 511: 156110 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(9, expectedCounts, Uint16Array);
   });
 
   it('should parse 10-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('10-bit.tif'));
     const expectedCounts = { 0: 85103, 1023: 154331 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(10, expectedCounts, Uint16Array);
   });
 
   it('should parse 11-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('11-bit.tif'));
     const expectedCounts = { 0: 85103, 2047: 143532 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(11, expectedCounts, Uint16Array);
   });
 
   it('should parse 12-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('12-bit.tif'));
     const expectedCounts = { 0: 85103, 4095: 115233 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(12, expectedCounts, Uint16Array);
   });
 
   it('should parse 13-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('13-bit.tif'));
     const expectedCounts = { 0: 85103, 8191: 31658 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(13, expectedCounts, Uint16Array);
   });
 
   it('should parse 14-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('14-bit.tif'));
     const expectedCounts = { 0: 85103, 16383: 7832 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(14, expectedCounts, Uint16Array);
   });
 
   it('should parse 15-bit tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('15-bit.tif'));
     const expectedCounts = { 0: 85103, 32767: 2032 };
-    await performNBitTests(tiff, expectedWidth, expectedHeight, expectedSampleCount, Uint16Array, expectedCounts);
+    testDerivedTiff(15, expectedCounts, Uint16Array);
+  });
+
+  it('should parse 16-bit tiffs', async () => {
+    const expectedCounts = { 0: 85103, 6198: 67 };
+    testDerivedTiff(16, expectedCounts, Uint16Array);
+  });
+
+  it('should parse 17-bit tiffs', async () => {
+    const expectedCounts = { 0: 85103 };
+    testDerivedTiff(17, expectedCounts, Uint32Array);
   });
 });
 
