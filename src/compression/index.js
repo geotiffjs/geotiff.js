@@ -14,12 +14,10 @@ export function getDecoder(fileDirectory) {
     case 6: // JPEG
       throw new Error('old style JPEG compression is not supported.');
     case 7: // JPEG
-      // throw new Error('JPEG compression not supported.');
       return new JpegDecoder(fileDirectory);
-    case 8: // Deflate
+    case 8: // Deflate as recognized by Adobe
+    case 32946: // Deflate GDAL default
       return new DeflateDecoder();
-    // case 32946: // deflate ??
-    //  throw new Error("Deflate compression not supported.");
     case 32773: // packbits
       return new PackbitsDecoder();
     default:
