@@ -48,8 +48,33 @@ export default class DataView64 {
     return this._dataView.getInt16(offset, littleEndian);
   }
 
+  /*
+    Why have this?
+    Sometimes you want to read the remaining 3 bytes in an ArrayBuffer and
+    thus running getUint32 would exceed the length of the ArrayBuffer
+
+    Note: I'm not sure this can handle different endianness
+  */
+  getUint24(offset) {
+	  return (this._dataView.getUint16(offset) << 8) + this._dataView.getUint8(offset + 2);
+  }
+
   getUint32(offset, littleEndian) {
     return this._dataView.getUint32(offset, littleEndian);
+  }
+
+  /*
+    To Do: Implement litleEndian?
+  */
+  getUint40(offset, littleEndian) {
+	  return (this._dataView.getUint32(offset) << 8) + this._dataView.getUint8(offset + 4);
+  }
+
+  /*
+    To Do: Implement litleEndian?
+  */
+  getUint48(offset, littleEndian) {
+	  return (this._dataView.getUint32(offset) << 16) + this._dataView.getUint16(offset + 4);
   }
 
   getInt32(offset, littleEndian) {

@@ -76,3 +76,38 @@ export function toArrayRecursively(input) {
   }
   return input;
 }
+
+export function getUint24(dataView, pos) {
+	return (dataView.getUint16(pos) << 8) + dataView.getUint8(pos+2);
+}
+
+export function getBits(buffer) {
+  let bits = [];
+  const mask = parseInt('1'.repeat(8), 2);
+  (new Uint8Array(buffer)).forEach(v => {
+    //console.log("original:", v.toString(2));
+    //console.log("padded  :", padLeft(v.toString(2), 8));
+    Array.from(padLeft(v.toString(2), 8)).forEach((bit, i) => {
+      bits.push(bit);
+    });
+  });
+  console.log("bits.length:", bits.length);
+  return bits;
+}
+
+export function logBits(bits) {
+  let text = "";
+  bits.forEach((bit, i) => {
+    if (i % 136 === 0) {
+      text += "\n";
+    } else if (i % 8 === 0) {
+      text += " ";
+    }
+    text += bit;
+  });
+  console.log(text);
+}
+
+export function padLeft(string, target) {
+  return "0".repeat(target - string.length) + string;
+}

@@ -2,12 +2,44 @@
 /* eslint-disable global-require */
 
 import isNode from 'detect-node';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import 'isomorphic-fetch';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
+import { writeFileSync } from 'fs';
+import histograms from './histograms.json';
+
+async function dump(filename) {
+  const tiff = await GeoTIFF.fromSource(createSource(filename));
+  const image = await tiff.getImage();
+  const rasters = await image.readRasters();
+  const width = image.getWidth();
+  const height = image.getHeight();
+  let output = '';
+  rasters.forEach((band, bandid) => {
+    if (bandid === 0) {
+      band.forEach((cell, cellid) => {
+        const rowid = Math.floor(cellid / width);
+        const colid = cellid % width;
+        output += bandid + ":" + rowid + ":" + colid + " >> " + cell + "\n";
+      })
+    }
+  })
+  writeFileSync("/tmp/dumped" + filename.replace(".","-") + "-via-geotiff-js.txt", output, 'utf-8');
+}
+
+function max(data) {
+  let maxValue = data[0];
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i];
+    if (value > maxValue) {
+      maxValue = value;
+    }
+  }
+  return maxValue;
+}
 
 function counter(array) {
   return array.reduce((counts, value) => {
@@ -28,23 +60,42 @@ function createSource(filename) {
 }
 
 async function loadAndPerformNBitTests(nbits, width, height, sampleCount, type, expectedCounts) {
-  const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit.tif`));
-  performNBitTests(tiff, width, height, sampleCount, type, expectedCounts);
+  const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit-stripped.tif`));
+  await performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits);
+  //const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit-tiled.tif`));
+  //await performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits);
 }
 
-async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts) {
-  const image = await tiff.getImage();
-  expect(image).to.be.ok;
-  expect(image.getWidth()).to.equal(width);
-  expect(image.getHeight()).to.equal(height);
-  expect(image.getSamplesPerPixel()).to.equal(sampleCount);
+async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits) {
+  try {
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(width);
+    expect(image.getHeight()).to.equal(height);
+    expect(image.getSamplesPerPixel()).to.equal(sampleCount);
 
-  // only sample the first band
-  const rasters = await image.readRasters({ samples: [0] });
-  const data = rasters[0];
-  const actualCounts = counter(data);
-  for (let pixelValue in expectedCounts) {
-    expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
+    // only sample the first band
+    const rasters = await image.readRasters({ samples: [0] });
+    const data = rasters[0];
+    console.log(nbits,"data is",data);
+    const actualCounts = counter(data);
+    const maxValue = max(data);
+    console.log("maxValue:", maxValue);
+    expect(maxValue).to.be.below(Math.pow(2, nbits));
+    console.log("count of maxValue is:", actualCounts[maxValue]);
+    for (let pixelValue in expectedCounts) {
+      try {
+        expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
+      } catch (error) {
+        console.log();
+        console.log("nbits:", nbits);
+        console.log("expectedCounts", expectedCounts);
+        console.log("actualCounts:", actualCounts);
+        process.exit();
+      }
+    }
+  } catch (error) {
+    throw Error(error);
   }
 }
 
@@ -107,99 +158,146 @@ function getMockMetaData(height, width) {
 
 describe('n-bit tests', () => {
 
-  const expectedWidth = 539;
-  const expectedHeight = 448;
-  const expectedSampleCount = 15;
+  const expectedWidth = 5;
+  const expectedHeight = 5;
+  const expectedSampleCount = 1;
 
-  async function testDerivedTiff(nbits, expectedCounts, type) {
-    await loadAndPerformNBitTests(nbits, expectedWidth, expectedHeight, expectedSampleCount, type, expectedCounts);
+  async function testDerivedTiff(nbits, type) {
+    const expectedCounts = histograms[nbits];
+    return loadAndPerformNBitTests(nbits, expectedWidth, expectedHeight, expectedSampleCount, type, expectedCounts);
   }
 
   it('should parse 1-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 1: 156369 };
-    testDerivedTiff(1, expectedCounts, Uint8Array);
+    testDerivedTiff(1, Uint8Array);
   });
 
   it('should parse 2-bit tiffs', async () => {
-    let expectedCounts = { 0: 85103, 3: 156369 };
-    testDerivedTiff(2, expectedCounts, Uint8Array);
+    testDerivedTiff(2, Uint8Array);
 
-    const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
-    expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
-    await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts);
+    //const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
+    //expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
+    //await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts, 2);
   });
-
   it('should parse 3-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 7: 156369 };
-    testDerivedTiff(3, expectedCounts, Uint8Array);
+    return testDerivedTiff(3, Uint8Array);
   });
 
   it('should parse 4-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 9: 1, 15: 156368 };
-    testDerivedTiff(4, expectedCounts, Uint8Array);
+    return testDerivedTiff(4, Uint8Array);
   });
 
   it('should parse 5-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 9: 1, 31: 156368 };
-    testDerivedTiff(5, expectedCounts, Uint8Array);
+    return testDerivedTiff(5, Uint8Array);
   });
 
   it('should parse 6-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 63: 156364 };
-    testDerivedTiff(6, expectedCounts, Uint8Array);
+    return testDerivedTiff(6, Uint8Array);
   });
 
   it('should parse 7-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 127: 156360 };
-    testDerivedTiff(7, expectedCounts, Uint8Array);
+    return testDerivedTiff(7, Uint8Array);
   });
 
   it('should parse 9-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 511: 156110 };
-    testDerivedTiff(9, expectedCounts, Uint16Array);
+    return testDerivedTiff(9, Uint16Array);
   });
 
   it('should parse 10-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 1023: 154331 };
-    testDerivedTiff(10, expectedCounts, Uint16Array);
+    return testDerivedTiff(10, Uint16Array);
   });
 
   it('should parse 11-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 2047: 143532 };
-    testDerivedTiff(11, expectedCounts, Uint16Array);
+    return testDerivedTiff(11, Uint16Array);
   });
 
   it('should parse 12-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 4095: 115233 };
-    testDerivedTiff(12, expectedCounts, Uint16Array);
+    return testDerivedTiff(12, Uint16Array);
   });
 
   it('should parse 13-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 8191: 31658 };
-    testDerivedTiff(13, expectedCounts, Uint16Array);
+    return testDerivedTiff(13, Uint16Array);
   });
 
   it('should parse 14-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 16383: 7832 };
-    testDerivedTiff(14, expectedCounts, Uint16Array);
+    return testDerivedTiff(14, Uint16Array);
   });
 
   it('should parse 15-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 32767: 2032 };
-    testDerivedTiff(15, expectedCounts, Uint16Array);
+    return testDerivedTiff(15, Uint16Array);
   });
 
   it('should parse 16-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103, 6198: 67 };
-    testDerivedTiff(16, expectedCounts, Uint16Array);
+    return testDerivedTiff(16, Uint16Array);
   });
 
   it('should parse 17-bit tiffs', async () => {
-    const expectedCounts = { 0: 85103 };
-    testDerivedTiff(17, expectedCounts, Uint32Array);
+    return testDerivedTiff(17, Uint32Array);
   });
+
+  it('should parse 18-bit tiffs', async () => {
+    return testDerivedTiff(18, Uint32Array);
+  });
+
+  it('should parse 19-bit tiffs', async () => {
+    return testDerivedTiff(19, Uint32Array);
+  });
+
+  it('should parse 20-bit tiffs', async () => {
+    return testDerivedTiff(20, Uint32Array);
+  });
+
+  it('should parse 21-bit tiffs', async () => {
+    return testDerivedTiff(21, Uint32Array);
+  });
+
+  it('should parse 22-bit tiffs', async () => {
+    return testDerivedTiff(22, Uint32Array);
+  });
+
+  it('should parse 23-bit tiffs', async () => {
+    return testDerivedTiff(23, Uint32Array);
+  });
+
+  it('should parse 24-bit tiffs', async () => {
+    return testDerivedTiff(24, Uint32Array);
+  });
+
+  it('should parse 25-bit tiffs', async () => {
+    return testDerivedTiff(25, Uint32Array);
+  });
+
+  it('should parse 26-bit tiffs', async () => {
+    return testDerivedTiff(26, Uint32Array);
+  });
+
+  it('should parse 27-bit tiffs', async () => {
+    return testDerivedTiff(27, Uint32Array);
+  });
+
+
+  it('should parse 28-bit tiffs', async () => {
+    return testDerivedTiff(28, Uint32Array);
+  });
+
+  it('should parse 29-bit tiffs', async () => {
+    return testDerivedTiff(29, Uint32Array);
+  });
+
+  it('should parse 30-bit tiffs', async () => {
+    return testDerivedTiff(30, Uint32Array);
+  });
+
+  it('should parse 31-bit tiffs', async () => {
+    return testDerivedTiff(31, Uint32Array);
+  });
+
+  it('should parse 32-bit tiffs', async () => {
+    return testDerivedTiff(32, Uint32Array);
+  });
+
 });
 
+/*
 describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {
     expect(GeoTIFF).to.be.ok;
@@ -518,3 +616,4 @@ describe("writeTests", function() {
   });
 
 });
+*/

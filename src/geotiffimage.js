@@ -6,6 +6,8 @@ import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
+import { getBits, getUint24, logBits } from './utils';
+import DataView64 from './dataview64';
 
 function sum(array, start, end) {
   let s = 0;
@@ -53,7 +55,7 @@ function arrayForType(format, bitsPerSample, size) {
 }
 
 function needsNormalization(format, bitsPerSample) {
-  if ((format === 1 || format === 2) && bitsPerSample <= 32 && bitsPerSample % 8 === 0) {
+  if ((format === 1 || format === 2) && (bitsPerSample === 8 || bitsPerSample === 16 || bitsPerSample === 32)) {
     return false;
   } else if (format === 3 && (bitsPerSample === 16 || bitsPerSample === 32 || bitsPerSample === 64)) {
     return false;
@@ -61,26 +63,82 @@ function needsNormalization(format, bitsPerSample) {
   return true;
 }
 
-function normalizeArray(inBuffer, size, format, bitsPerSample) {
-  const outArray = arrayForType(format, bitsPerSample, size);
-  const view = new DataView(inBuffer);
-  const mask = parseInt('1'.repeat(bitsPerSample), 2);
+function normalizeArray(inBuffer, size, format, bitsPerSample, height, width) {
+  try {
 
-  if (format === 1) { // unsigned integer
-    for (let i = 0, bitOffset = 0; i < size; ++i, bitOffset += bitsPerSample) {
-      const byteOffset = Math.floor(bitOffset / 8);
-      const innerBitOffset = bitOffset % 8;
-      if (innerBitOffset + bitsPerSample <= 8) {
-        outArray[i] = (view.getUint8(byteOffset) >> (8 - bitsPerSample) - innerBitOffset) & mask;
-      } else if (innerBitOffset + bitsPerSample <= 16) {
-        outArray[i] = (view.getUint16(byteOffset) >> (16 - bitsPerSample) - innerBitOffset) & mask;
-      } else {
-        outArray[i] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & mask;
+    ////console.log("starting normalizeArray");
+    const outArray = arrayForType(format, bitsPerSample, size);
+    const view = new DataView64(inBuffer);
+    const mask = parseInt('1'.repeat(bitsPerSample), 2);
+
+    if (format === 1) { // unsigned integer
+      const byteLength = inBuffer.byteLength;
+      const bytesPerRow = Math.ceil((bitsPerSample * width) / 8);
+      //console.log("bytesPerRow:", bytesPerRow);
+      for (let rowIndex = 0; rowIndex < height; rowIndex++) {
+        //console.log("\n\n\trowIndex:", rowIndex);
+        const rowByteOffset = rowIndex * bytesPerRow;
+        //console.log("\trowByteOffset:", rowByteOffset);
+        const rowBitsOffset = 8 * rowByteOffset;
+        //console.log("\trowBitsOffset:", rowBitsOffset);
+        for (let columnIndex = 0; columnIndex < width; columnIndex++) {
+          const bitOffset = bitsPerSample * columnIndex;
+          //console.log("\n\t\tbitOffset:", bitOffset);
+          const i = (rowIndex * width) + columnIndex;
+          //console.log("\t\ti:", i);
+          const byteOffset = rowByteOffset + Math.floor(bitOffset / 8);
+          //console.log("\t\tbyteOffset:", byteOffset);
+          const innerBitOffset = bitOffset % 8;
+          //console.log("\t\tinnerBitOffset:", innerBitOffset);
+          if (innerBitOffset + bitsPerSample <= 8) {
+            outArray[i] = (view.getUint8(byteOffset) >> (8 - bitsPerSample) - innerBitOffset) & mask;
+          } else if (innerBitOffset + bitsPerSample <= 16) {
+            outArray[i] = (view.getUint16(byteOffset) >> (16 - bitsPerSample) - innerBitOffset) & mask;
+          } else if (innerBitOffset + bitsPerSample <= 24 && byteOffset === byteLength - 3) {
+            outArray[i] = (view.getUint24(byteOffset) >> (24 - bitsPerSample) - innerBitOffset) & mask;
+          } else if (innerBitOffset + bitsPerSample <= 32) {
+            outArray[i] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & mask;
+          } else if (innerBitOffset + bitsPerSample <= 40) {
+            /*
+              I hate having to run getUint40 because it makes two calls,
+              but getUint64 isn't reliable because we will run into
+              'exceeds MAX_SAFE_INTEGER. Precision may be lost' errors
+            */
+            outArray[i] = (view.getUint40(byteOffset) >> (40 - bitsPerSample) - innerBitOffset) & mask;
+          } else if (innerBitOffset + bitsPerSample <= 48) {
+            outArray[i] = (view.getUint48(byteOffset) >> (48 - bitsPerSample) - innerBitOffset) & mask;
+          } else {
+            /*
+            console.log("running getUint64")
+            console.log("byteOffset:", byteOffset);
+            console.log("bitsPerSample:", bitsPerSample);
+            console.log("innerBitOffset:", innerBitOffset);
+            console.log("mask:", mask);
+            */
+            try {
+              outArray[i] = (view.getUint64(byteOffset) >> (64 - bitsPerSample) - innerBitOffset) & mask;
+              //console.log("\t\tgot:", view.getUint64(byteOffset));
+            } catch (error) {
+              console.log("\trowByteOffset:", rowByteOffset);
+              console.log("\trowBitsOffset:", rowBitsOffset);
+              console.log("byteOffset:", byteOffset);
+              console.log("inBuffer.byteLength:", inBuffer.byteLength);
+              console.log("columnIndex:", columnIndex);
+              console.log("width:", width);
+              console.error(error);
+              process.exit();
+            }
+          }
+          //console.log("\t\toutArray[i]:", outArray[i]);
+        }
       }
     }
-  }
 
-  return outArray.buffer;
+    return outArray.buffer;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 /**
@@ -168,16 +226,18 @@ class GeoTIFFImage {
    * @returns {Number} the bytes per pixel
    */
   getBytesPerPixel() {
-    // let bitsPerSample = 0;
     let bytes = 0;
     for (let i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
       const bits = this.fileDirectory.BitsPerSample[i];
-      // if ((bits % 8) !== 0) {
-      //   throw new Error(`Sample bit-width of ${bits} is not supported.`);
-      // } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
-      //   throw new Error('Differing size of samples in a pixel are not supported.');
-      // }
-      bytes += Math.ceil(bits / 8);
+      if (bits <= 8) {
+        bytes += 1;
+      } else if (bits <= 16) {
+        bytes += 2;
+      } else if (bits <= 32) {
+        bytes += 4;
+      } else if (bits <= 64) {
+        bytes += 8;
+      }
     }
     return bytes;
   }
@@ -303,19 +363,26 @@ class GeoTIFFImage {
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
   async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod) {
+    //console.log("\n\nstarting _readRaster");
     const tileWidth = this.getTileWidth();
+    //console.log("tileWidth:", tileWidth);
     const tileHeight = this.getTileHeight();
+    //console.log("tileHeight:", tileHeight);
 
     const minXTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
+    ////console.log("minXTile:", minXTile);
     const maxXTile = Math.min(
       Math.ceil(imageWindow[2] / tileWidth),
       Math.ceil(this.getWidth() / this.getTileWidth()),
     );
+    ////console.log("maxXTile:", maxXTile);
     const minYTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
+    ////console.log("minYTile:", minYTile);
     const maxYTile = Math.min(
       Math.ceil(imageWindow[3] / tileHeight),
       Math.ceil(this.getHeight() / this.getTileHeight()),
     );
+    ////console.log("maxYTile:", maxYTile);
     const windowWidth = imageWindow[2] - imageWindow[0];
 
     let bytesPerPixel = this.getBytesPerPixel();
@@ -346,15 +413,23 @@ class GeoTIFFImage {
           promises.push(promise);
           promise.then((tile) => {
             let buffer = tile.data;
+            //console.log("tile.data.byteLength", tile.data.byteLength);
+            //console.log("tile.data bitLength", tile.data.byteLength * 8);
+            //console.log(logBits(getBits(tile.data)));
+            ////console.log("srcSampleOffsets[si]:", srcSampleOffsets[si]);
 
             const format = this.getSampleFormat();
+            ////console.log("format:", format);
             const bitsPerSample = this.getBitsPerSample();
             if (needsNormalization(format, bitsPerSample)) {
               buffer = normalizeArray(buffer,
                 this.planarConfiguration === 2 ?
                   tileHeight * tileWidth :
                   tileHeight * tileWidth * this.getSamplesPerPixel(),
-                format, bitsPerSample,
+                format,
+                bitsPerSample,
+                this.getHeight(),
+                this.getWidth()
               );
             }
 
@@ -364,6 +439,7 @@ class GeoTIFFImage {
             const lastLine = (tile.y + 1) * tileHeight;
             const lastCol = (tile.x + 1) * tileWidth;
             const reader = sampleReaders[si];
+            ////console.log("reader:", reader);
 
             const ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
             const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
@@ -371,9 +447,11 @@ class GeoTIFFImage {
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 const pixelOffset = ((y * tileWidth) + x) * bytesPerPixel;
+                ////console.log("pixelOffset:", pixelOffset);
                 const value = reader.call(
                   dataView, pixelOffset + srcSampleOffsets[si], littleEndian,
                 );
+                ////console.log("read value:", value);
                 let windowCoordinate;
                 if (interleave) {
                   windowCoordinate =
