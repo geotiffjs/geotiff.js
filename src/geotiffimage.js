@@ -63,17 +63,17 @@ function needsNormalization(format, bitsPerSample) {
   return true;
 }
 
-function normalizeArray(inBuffer, size, format, bitsPerSample, height, width) {
+function normalizeArray(inBuffer, size, format, bitsPerSample, height, width, tileWidth, isTiled) {
   try {
 
-    ////console.log("starting normalizeArray");
+    //console.log("starting normalizeArray");
     const outArray = arrayForType(format, bitsPerSample, size);
     const view = new DataView64(inBuffer);
     const mask = parseInt('1'.repeat(bitsPerSample), 2);
 
     if (format === 1) { // unsigned integer
       const byteLength = inBuffer.byteLength;
-      const bytesPerRow = Math.ceil((bitsPerSample * width) / 8);
+      const bytesPerRow = isTiled ? tileWidth * bitsPerSample / 8 : Math.ceil((bitsPerSample * width) / 8);
       //console.log("bytesPerRow:", bytesPerRow);
       for (let rowIndex = 0; rowIndex < height; rowIndex++) {
         //console.log("\n\n\trowIndex:", rowIndex);
@@ -84,7 +84,8 @@ function normalizeArray(inBuffer, size, format, bitsPerSample, height, width) {
         for (let columnIndex = 0; columnIndex < width; columnIndex++) {
           const bitOffset = bitsPerSample * columnIndex;
           //console.log("\n\t\tbitOffset:", bitOffset);
-          const i = (rowIndex * width) + columnIndex;
+          // tilewidth is actually width when stripped and tileWidth when tiled
+          const i = isTiled ? (rowIndex * tileWidth) + columnIndex : (rowIndex * width) + columnIndex;
           //console.log("\t\ti:", i);
           const byteOffset = rowByteOffset + Math.floor(bitOffset / 8);
           //console.log("\t\tbyteOffset:", byteOffset);
@@ -108,28 +109,9 @@ function normalizeArray(inBuffer, size, format, bitsPerSample, height, width) {
           } else if (innerBitOffset + bitsPerSample <= 48) {
             outArray[i] = (view.getUint48(byteOffset) >> (48 - bitsPerSample) - innerBitOffset) & mask;
           } else {
-            /*
-            console.log("running getUint64")
-            console.log("byteOffset:", byteOffset);
-            console.log("bitsPerSample:", bitsPerSample);
-            console.log("innerBitOffset:", innerBitOffset);
-            console.log("mask:", mask);
-            */
-            try {
-              outArray[i] = (view.getUint64(byteOffset) >> (64 - bitsPerSample) - innerBitOffset) & mask;
-              //console.log("\t\tgot:", view.getUint64(byteOffset));
-            } catch (error) {
-              console.log("\trowByteOffset:", rowByteOffset);
-              console.log("\trowBitsOffset:", rowBitsOffset);
-              console.log("byteOffset:", byteOffset);
-              console.log("inBuffer.byteLength:", inBuffer.byteLength);
-              console.log("columnIndex:", columnIndex);
-              console.log("width:", width);
-              console.error(error);
-              process.exit();
-            }
+            outArray[i] = (view.getUint64(byteOffset) >> (64 - bitsPerSample) - innerBitOffset) & mask;
           }
-          //console.log("\t\toutArray[i]:", outArray[i]);
+          //console.log(`\t\toutArray[${i}]: ${outArray[i]}`);
         }
       }
     }
@@ -419,7 +401,8 @@ class GeoTIFFImage {
             ////console.log("srcSampleOffsets[si]:", srcSampleOffsets[si]);
 
             const format = this.getSampleFormat();
-            ////console.log("format:", format);
+            //console.log("format:", format);
+            //console.log("tileWidth", tileWidth);
             const bitsPerSample = this.getBitsPerSample();
             if (needsNormalization(format, bitsPerSample)) {
               buffer = normalizeArray(buffer,
@@ -429,7 +412,9 @@ class GeoTIFFImage {
                 format,
                 bitsPerSample,
                 this.getHeight(),
-                this.getWidth()
+                this.getWidth(),
+                tileWidth,
+                this.isTiled
               );
             }
 
@@ -439,7 +424,7 @@ class GeoTIFFImage {
             const lastLine = (tile.y + 1) * tileHeight;
             const lastCol = (tile.x + 1) * tileWidth;
             const reader = sampleReaders[si];
-            ////console.log("reader:", reader);
+            //console.log("reader:", reader);
 
             const ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
             const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
@@ -447,11 +432,11 @@ class GeoTIFFImage {
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
                 const pixelOffset = ((y * tileWidth) + x) * bytesPerPixel;
-                ////console.log("pixelOffset:", pixelOffset);
+                //console.log("pixelOffset:", pixelOffset);
                 const value = reader.call(
                   dataView, pixelOffset + srcSampleOffsets[si], littleEndian,
                 );
-                ////console.log("read value:", value);
+                //console.log("read value:", value);
                 let windowCoordinate;
                 if (interleave) {
                   windowCoordinate =

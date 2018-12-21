@@ -60,10 +60,11 @@ function createSource(filename) {
 }
 
 async function loadAndPerformNBitTests(nbits, width, height, sampleCount, type, expectedCounts) {
-  const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit-stripped.tif`));
-  await performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits);
-  //const tiff = await GeoTIFF.fromSource(createSource(`${nbits}-bit-tiled.tif`));
-  //await performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits);
+  const tiff1 = await GeoTIFF.fromSource(createSource(`${nbits}-bit-stripped.tif`));
+  await performNBitTests(tiff1, width, height, sampleCount, type, expectedCounts, nbits);
+
+  const tiff2 = await GeoTIFF.fromSource(createSource(`${nbits}-bit-tiled.tif`));
+  await performNBitTests(tiff2, width, height, sampleCount, type, expectedCounts, nbits);
 }
 
 async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits) {
@@ -77,12 +78,12 @@ async function performNBitTests(tiff, width, height, sampleCount, type, expected
     // only sample the first band
     const rasters = await image.readRasters({ samples: [0] });
     const data = rasters[0];
-    console.log(nbits,"data is",data);
+    //console.log(nbits,"data is",data);
     const actualCounts = counter(data);
     const maxValue = max(data);
-    console.log("maxValue:", maxValue);
+    //console.log("maxValue:", maxValue);
     expect(maxValue).to.be.below(Math.pow(2, nbits));
-    console.log("count of maxValue is:", actualCounts[maxValue]);
+    //console.log("count of maxValue is:", actualCounts[maxValue]);
     for (let pixelValue in expectedCounts) {
       try {
         expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
