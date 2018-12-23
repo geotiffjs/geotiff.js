@@ -67,7 +67,7 @@ async function loadAndPerformNBitTests(nbits, width, height, sampleCount, type, 
   await performNBitTests(tiff2, width, height, sampleCount, type, expectedCounts, nbits);
 }
 
-async function performNBitTests(tiff, width, height, sampleCount, type, expectedCounts, nbits) {
+async function performNBitTests(tiff, width, height, sampleCount, type, histograms, nbits) {
   try {
     const image = await tiff.getImage();
     expect(image).to.be.ok;
@@ -76,25 +76,27 @@ async function performNBitTests(tiff, width, height, sampleCount, type, expected
     expect(image.getSamplesPerPixel()).to.equal(sampleCount);
 
     // only sample the first band
-    const rasters = await image.readRasters({ samples: [0] });
-    const data = rasters[0];
-    //console.log(nbits,"data is",data);
-    const actualCounts = counter(data);
-    const maxValue = max(data);
-    //console.log("maxValue:", maxValue);
-    expect(maxValue).to.be.below(Math.pow(2, nbits));
-    //console.log("count of maxValue is:", actualCounts[maxValue]);
-    for (let pixelValue in expectedCounts) {
-      try {
-        expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
-      } catch (error) {
-        console.log();
-        console.log("nbits:", nbits);
-        console.log("expectedCounts", expectedCounts);
-        console.log("actualCounts:", actualCounts);
-        process.exit();
+    const rasters = await image.readRasters();
+    rasters.forEach((data, rasterIndex) => {
+      //console.log(nbits,"data is",data);
+      const actualCounts = counter(data);
+      const maxValue = max(data);
+      //console.log("maxValue:", maxValue);
+      expect(maxValue).to.be.below(Math.pow(2, nbits));
+      //console.log("count of maxValue is:", actualCounts[maxValue]);
+      const histogram = histograms[rasterIndex];
+      for (let pixelValue in histogram) {
+        try {
+          expect(actualCounts[pixelValue]).to.equal(histogram[pixelValue]);
+        } catch (error) {
+          console.log();
+          console.log("nbits:", nbits);
+          console.log("histogram", histogram);
+          console.log("actualCounts:", actualCounts);
+          process.exit();
+        }
       }
-    }
+    });
   } catch (error) {
     throw Error(error);
   }
@@ -176,7 +178,7 @@ describe('n-bit tests', () => {
     testDerivedTiff(2, Uint8Array);
 
     const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
-    const expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
+    const expectedCounts = [{ 0: 2995411, 1: 678749, 3: 1170288 }];
     await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts, 2);
   });
 
