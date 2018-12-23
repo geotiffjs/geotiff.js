@@ -46,22 +46,22 @@ wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff
 # create 1 to 7-bit rasters
 for NBITS in {1..8}
 do
- gdal_translate -b 1 -of GTiff -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
- gdal_translate -b 1 -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
 done
 
 # create 9 to 16-bit rasters
 for NBITS in {9..16}
 do
- gdal_translate -b 1 -of GTiff -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
- gdal_translate -b 1 -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
 done
 
 # create 17 to 32-bit rasters
 for NBITS in {17..32}
 do
- gdal_translate -b 1 -of GTiff -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
- gdal_translate -b 1 -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
 done
 
 # download another 2-bit raster

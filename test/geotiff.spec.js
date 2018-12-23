@@ -161,7 +161,7 @@ describe('n-bit tests', () => {
 
   const expectedWidth = 5;
   const expectedHeight = 5;
-  const expectedSampleCount = 1;
+  const expectedSampleCount = 15;
 
   async function testDerivedTiff(nbits, type) {
     const expectedCounts = histograms[nbits];
@@ -175,10 +175,12 @@ describe('n-bit tests', () => {
   it('should parse 2-bit tiffs', async () => {
     testDerivedTiff(2, Uint8Array);
 
-    //const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
-    //expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
-    //await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts, 2);
+    const tiff = await GeoTIFF.fromSource(createSource('another-2-bit.tiff'));
+    const expectedCounts = { 0: 2995411, 1: 678749, 3: 1170288 };
+    await performNBitTests(tiff, 2492, 1944, 1, Uint8Array, expectedCounts, 2);
   });
+
+
   it('should parse 3-bit tiffs', async () => {
     return testDerivedTiff(3, Uint8Array);
   });
@@ -274,8 +276,6 @@ describe('n-bit tests', () => {
   it('should parse 27-bit tiffs', async () => {
     return testDerivedTiff(27, Uint32Array);
   });
-
-
   it('should parse 28-bit tiffs', async () => {
     return testDerivedTiff(28, Uint32Array);
   });
@@ -298,8 +298,9 @@ describe('n-bit tests', () => {
 
 });
 
-/*
+
 describe('GeoTIFF', () => {
+
   it('geotiff.js module available', () => {
     expect(GeoTIFF).to.be.ok;
   });
@@ -313,6 +314,7 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('tiled.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
+
 
   it('should work on band interleaved tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('interleave.tiff'));
@@ -369,6 +371,7 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('bigtiff.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
+
 });
 
 describe('RGB-tests', () => {
@@ -617,4 +620,3 @@ describe("writeTests", function() {
   });
 
 });
-*/

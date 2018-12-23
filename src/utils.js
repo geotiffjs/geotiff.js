@@ -95,12 +95,14 @@ export function getBits(buffer) {
   return bits;
 }
 
-export function logBits(bits) {
+export function logBits(bits, bytesPerRow) {
+  const bitsPerRow = bytesPerRow * 8;
+  console.log("bitsPerRow:", bitsPerRow);
   let text = "";
   bits.forEach((bit, i) => {
-    if (i % 136 === 0) {
+    if (i % bitsPerRow === 0) {
       text += "\n";
-    } else if (i % 8 === 0) {
+    } else if ((i % bitsPerRow) % 55 === 0) {
       text += " ";
     }
     text += bit;

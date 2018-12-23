@@ -9,6 +9,10 @@ export default class DataView64 {
     return this._dataView.buffer;
   }
 
+  get byteLength() {
+    return this._dataView.byteLength;
+  }
+
   getUint64(offset, littleEndian) {
     const left = this.getUint32(offset, littleEndian);
     const right = this.getUint32(offset + 4, littleEndian);
