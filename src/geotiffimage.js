@@ -55,28 +55,19 @@ function arrayForType(format, bitsPerSample, size) {
 }
 
 function createUintReader(bitsPerSample) {
-  //////console.log("starting getReaderForSample with", bitsPerSample);
   const mask = parseInt('1'.repeat(bitsPerSample), 2);
-  //////console.log("mask:", mask);
-  return function (byteOffset, endian) {
-    try {
-      const bitOffset = byteOffset * 8;
-      ////console.log("bitOffset:", bitOffset);
-      const fullByteOffset = Math.floor(bitOffset / 8);
-      ////console.log("fullByteOffset:", fullByteOffset);
-      const innerBitOffset = bitOffset % 8;
-      ////console.log("innerBitOffset:", innerBitOffset);
-      const numBits = Math.ceil((innerBitOffset + bitsPerSample) / 8) * 8;
-      const functionName = `getUint${numBits}`;
-      ////console.log("functionName:", functionName);
-      //////console.log("this:", this);
-      const result = (this[functionName](fullByteOffset) >> (numBits - bitsPerSample) - innerBitOffset) & mask;
-      ////console.log("result:", result);
-      return result;
-    } catch (error) {
-      console.error("caught error:", error);
-      process.exit();
+  return function (byteOffset, littleEndian) {
+    if (!littleEndian) {
+      console.warn("geotiff.js has not been tested with Big Endian ${bitsPerSample}-bit files.  Use with caution");
     }
+    const bitOffset = byteOffset * 8;
+    const fullByteOffset = Math.floor(bitOffset / 8);
+    const innerBitOffset = bitOffset % 8;
+    const numBits = Math.ceil((innerBitOffset + bitsPerSample) / 8) * 8;
+    const functionName = `getUint${numBits}`;
+    const bits = this[functionName](fullByteOffset);
+    const shift = (numBits - bitsPerSample) - innerBitOffset;
+    return (bits >> shift) & mask;
   };
 }
 
