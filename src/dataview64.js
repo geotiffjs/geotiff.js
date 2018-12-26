@@ -9,6 +9,10 @@ export default class DataView64 {
     return this._dataView.buffer;
   }
 
+  get byteLength() {
+    return this._dataView.byteLength;
+  }
+
   getUint64(offset, littleEndian) {
     const left = this.getUint32(offset, littleEndian);
     const right = this.getUint32(offset + 4, littleEndian);
@@ -48,12 +52,24 @@ export default class DataView64 {
     return this._dataView.getInt16(offset, littleEndian);
   }
 
+  getUint24(offset) {
+    return (this._dataView.getUint16(offset) << 8) + this._dataView.getUint8(offset + 2);
+  }
+
   getUint32(offset, littleEndian) {
     return this._dataView.getUint32(offset, littleEndian);
   }
 
   getInt32(offset, littleEndian) {
     return this._dataView.getInt32(offset, littleEndian);
+  }
+
+  getUint40(offset, littleEndian) {
+    return (this._dataView.getUint32(offset) << 8) + this._dataView.getUint8(offset + 4);
+  }
+
+  getUint48(offset, littleEndian) {
+    return (this._dataView.getUint32(offset) << 16) + this._dataView.getUint16(offset + 4);
   }
 
   getFloat16(offset, littleEndian) {
