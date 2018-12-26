@@ -6,6 +6,7 @@ import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
+import DataView64 from './dataview64';
 
 function sum(array, start, end) {
   let s = 0;
@@ -52,35 +53,25 @@ function arrayForType(format, bitsPerSample, size) {
   throw Error('Unsupported data format/bitsPerSample');
 }
 
-function needsNormalization(format, bitsPerSample) {
-  if ((format === 1 || format === 2) && bitsPerSample <= 32 && bitsPerSample % 8 === 0) {
-    return false;
-  } else if (format === 3 && (bitsPerSample === 16 || bitsPerSample === 32 || bitsPerSample === 64)) {
-    return false;
-  }
-  return true;
+function createIntReader(bitsPerSample) {
+  throw Error(`Signed integer of NBITS ${bitsPerSample} isn't supported yet`);
 }
 
-function normalizeArray(inBuffer, size, format, bitsPerSample) {
-  const outArray = arrayForType(format, bitsPerSample, size);
-  const view = new DataView(inBuffer);
+function createUintReader(bitsPerSample) {
   const mask = parseInt('1'.repeat(bitsPerSample), 2);
-
-  if (format === 1) { // unsigned integer
-    for (let i = 0, bitOffset = 0; i < size; ++i, bitOffset += bitsPerSample) {
-      const byteOffset = Math.floor(bitOffset / 8);
-      const innerBitOffset = bitOffset % 8;
-      if (innerBitOffset + bitsPerSample <= 8) {
-        outArray[i] = (view.getUint8(byteOffset) >> (8 - bitsPerSample) - innerBitOffset) & mask;
-      } else if (innerBitOffset + bitsPerSample <= 16) {
-        outArray[i] = (view.getUint16(byteOffset) >> (16 - bitsPerSample) - innerBitOffset) & mask;
-      } else {
-        outArray[i] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & mask;
-      }
+  return function (byteOffset, littleEndian) {
+    if (!littleEndian) {
+      console.warn(`geotiff.js has not been tested with files with both Big Endian and NBITS=${bitsPerSample}.`);
     }
-  }
-
-  return outArray.buffer;
+    const bitOffset = byteOffset * 8;
+    const fullByteOffset = Math.floor(bitOffset / 8);
+    const innerBitOffset = bitOffset % 8;
+    const numBits = Math.ceil((innerBitOffset + bitsPerSample) / 8) * 8;
+    const functionName = `getUint${numBits}`;
+    const bits = this[functionName](fullByteOffset);
+    const shift = (numBits - bitsPerSample) - innerBitOffset;
+    return (bits >> shift) & mask;
+  };
 }
 
 /**
@@ -163,34 +154,39 @@ class GeoTIFFImage {
   }
 
   /**
-   * Calculates the number of bytes for each pixel across all samples. Only full
-   * bytes are supported, an exception is thrown when this is not the case.
-   * @returns {Number} the bytes per pixel
-   */
-  getBytesPerPixel() {
-    // let bitsPerSample = 0;
-    let bytes = 0;
-    for (let i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
-      const bits = this.fileDirectory.BitsPerSample[i];
-      // if ((bits % 8) !== 0) {
-      //   throw new Error(`Sample bit-width of ${bits} is not supported.`);
-      // } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
-      //   throw new Error('Differing size of samples in a pixel are not supported.');
-      // }
-      bytes += Math.ceil(bits / 8);
-    }
-    return bytes;
+    Returns the number of bits that form a row of pixels.  There's often an
+    extra padding of zeros when NBITS isn't equal to 8, 16, 32, or 64.
+    @returns {Number} the bits per row
+  */
+  getBitsPerRow(sample) {
+    return this.getBytesPerRow(sample) * 8;
   }
 
-  getSampleByteSize(i) {
+  /**
+    Returns the number of bytes that form a row of pixels.
+    @returns {Number} the bytes per row
+  */
+  getBytesPerRow(sample) {
+    const bitsPerPixel = this.planarConfiguration === 2 ? this.getSampleBitSize(sample) : this.getBitsPerPixel();
+    const width = this.isTiled ? this.getTileWidth() : this.getWidth();
+    const result = Math.ceil(bitsPerPixel * width / 8);
+    return result;
+  }
+
+  /**
+   * Calculates the number of bits for each pixel across all samples.
+   * @returns {Number} the bits per pixel
+   */
+  getBitsPerPixel() {
+    const sum = (accumulator, currentValue) => accumulator + currentValue;
+    return this.fileDirectory.BitsPerSample.reduce(sum);
+  }
+
+  getSampleBitSize(i) {
     if (i >= this.fileDirectory.BitsPerSample.length) {
       throw new RangeError(`Sample index ${i} is out of range.`);
     }
-    const bits = this.fileDirectory.BitsPerSample[i];
-    if ((bits % 8) !== 0) {
-      throw new Error(`Sample bit-width of ${bits} is not supported.`);
-    }
-    return (bits / 8);
+    return this.fileDirectory.BitsPerSample[i];
   }
 
   getReaderForSample(sampleIndex) {
@@ -199,21 +195,29 @@ class GeoTIFFImage {
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
-        if (bitsPerSample <= 8) {
-          return DataView.prototype.getUint8;
-        } else if (bitsPerSample <= 16) {
-          return DataView.prototype.getUint16;
-        } else if (bitsPerSample <= 32) {
-          return DataView.prototype.getUint32;
+        if (bitsPerSample === 8) {
+          return DataView64.prototype.getUint8;
+        } else if (bitsPerSample === 16) {
+          return DataView64.prototype.getUint16;
+        } else if (bitsPerSample === 32) {
+          return DataView64.prototype.getUint32;
+        } else if (bitsPerSample === 64) {
+          return DataView64.prototype.getUint64;
+        } else if (bitsPerSample < 64) {
+          return createUintReader(bitsPerSample);
         }
         break;
       case 2: // twos complement signed integer data
-        if (bitsPerSample <= 8) {
-          return DataView.prototype.getInt8;
-        } else if (bitsPerSample <= 16) {
-          return DataView.prototype.getInt16;
-        } else if (bitsPerSample <= 32) {
-          return DataView.prototype.getInt32;
+        if (bitsPerSample === 8) {
+          return DataView64.prototype.getInt8;
+        } else if (bitsPerSample === 16) {
+          return DataView64.prototype.getInt16;
+        } else if (bitsPerSample === 32) {
+          return DataView64.prototype.getInt32;
+        } else if (bitsPerSample === 64) {
+          return DataView64.prototype.getInt64;
+        } else if (bitsPerSample < 64) {
+          return createIntReader(bitsPerSample);
         }
         break;
       case 3:
@@ -223,9 +227,9 @@ class GeoTIFFImage {
               return getFloat16(this, offset, littleEndian);
             };
           case 32:
-            return DataView.prototype.getFloat32;
+            return DataView64.prototype.getFloat32;
           case 64:
-            return DataView.prototype.getFloat64;
+            return DataView64.prototype.getFloat64;
           default:
             break;
         }
@@ -318,13 +322,11 @@ class GeoTIFFImage {
     );
     const windowWidth = imageWindow[2] - imageWindow[0];
 
-    let bytesPerPixel = this.getBytesPerPixel();
-
     const srcSampleOffsets = [];
     const sampleReaders = [];
     for (let i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
-        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]));
       } else {
         srcSampleOffsets.push(0);
       }
@@ -339,26 +341,13 @@ class GeoTIFFImage {
         for (let sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
           const si = sampleIndex;
           const sample = samples[sampleIndex];
-          if (this.planarConfiguration === 2) {
-            bytesPerPixel = this.getSampleByteSize(sample);
-          }
+          const bitsPerPixel = this.planarConfiguration === 2 ? this.getSampleBitSize(sample) : this.getBitsPerPixel();
+          const bitsPerRow = this.getBitsPerRow(sample);
           const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
           promises.push(promise);
           promise.then((tile) => {
-            let buffer = tile.data;
-
-            const format = this.getSampleFormat();
-            const bitsPerSample = this.getBitsPerSample();
-            if (needsNormalization(format, bitsPerSample)) {
-              buffer = normalizeArray(buffer,
-                this.planarConfiguration === 2 ?
-                  tileHeight * tileWidth :
-                  tileHeight * tileWidth * this.getSamplesPerPixel(),
-                format, bitsPerSample,
-              );
-            }
-
-            const dataView = new DataView(buffer);
+            const buffer = tile.data;
+            const dataView = new DataView64(buffer);
             const firstLine = tile.y * tileHeight;
             const firstCol = tile.x * tileWidth;
             const lastLine = (tile.y + 1) * tileHeight;
@@ -370,10 +359,11 @@ class GeoTIFFImage {
 
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
-                const pixelOffset = ((y * tileWidth) + x) * bytesPerPixel;
-                const value = reader.call(
-                  dataView, pixelOffset + srcSampleOffsets[si], littleEndian,
-                );
+                const rowOffset = bitsPerRow * y;
+                const columnOffset = x * bitsPerPixel;
+                const pixelOffset = rowOffset + columnOffset;
+                const valueOffset = (pixelOffset + srcSampleOffsets[si]) / 8;
+                const value = reader.call(dataView, valueOffset, littleEndian);
                 let windowCoordinate;
                 if (interleave) {
                   windowCoordinate =
