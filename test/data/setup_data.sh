@@ -40,3 +40,27 @@ gdal_translate -of GTiff -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR rgb.tiff jpeg_y
 
 # modeltransformation tag
 wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff
+
+# create 1 to 8-bit rasters
+for NBITS in $(seq 1 8);
+do
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot Byte -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+done
+
+# create 9 to 16-bit rasters
+for NBITS in $(seq 9 16);
+do
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt16 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+done
+
+# create 17 to 32-bit rasters
+for NBITS in $(seq 17 32);
+do
+ gdal_translate -of GTiff -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-stripped.tif
+ gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 -co NBITS=$NBITS -ot UInt32 -outsize 5 5 stripped.tiff ${NBITS}-bit-tiled.tif
+done
+
+# download another 2-bit raster
+wget https://s3.amazonaws.com/geotiff.js/2bit.tiff -O another-2-bit.tiff
