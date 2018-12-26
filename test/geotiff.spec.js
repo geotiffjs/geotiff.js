@@ -8,7 +8,29 @@ import 'isomorphic-fetch';
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
+import histograms from './data/histograms.json';
 
+function max(data) {
+  let maxValue = data[0];
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i];
+    if (value > maxValue) {
+      maxValue = value;
+    }
+  }
+  return maxValue;
+}
+
+function counter(array) {
+  return array.reduce((counts, value) => {
+    if (counts[value] === undefined) {
+      counts[value] = 1;
+    } else {
+      counts[value]++
+    }
+    return counts;
+  }, {});
+}
 
 function createSource(filename) {
   if (isNode) {
@@ -17,7 +39,47 @@ function createSource(filename) {
   return makeFetchSource(`test/data/${filename}`);
 }
 
-async function performTiffTests(tiff, width, height, sampleCount, type) {
+async function testDerivedTiff(nbits, type) {
+  const width = 5;
+  const height = 5;
+  const sampleCount = 15;
+
+  const tiff1 = await GeoTIFF.fromSource(createSource(`${nbits}-bit-stripped.tif`));
+  await performNBitTests(tiff1, width, height, sampleCount, type, nbits);
+
+  const tiff2 = await GeoTIFF.fromSource(createSource(`${nbits}-bit-tiled.tif`));
+  await performNBitTests(tiff2, width, height, sampleCount, type, nbits);
+}
+
+function compareHistograms(actualCounts, expectedCounts) {
+  for (let pixelValue in expectedCounts) {
+    expect(actualCounts[pixelValue]).to.equal(expectedCounts[pixelValue]);
+  }
+}
+
+async function performNBitTests(tiff, width, height, sampleCount, type, nbits) {
+  try {
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(width);
+    expect(image.getHeight()).to.equal(height);
+    expect(image.getSamplesPerPixel()).to.equal(sampleCount);
+    const rasters = await image.readRasters();
+    rasters.forEach((data, rasterIndex) => {
+      const maxValue = max(data);
+      expect(maxValue).to.be.below(Math.pow(2, nbits));
+
+      const actualCounts = counter(data);
+      const expectedCounts = histograms[nbits][rasterIndex];
+      compareHistograms(actualCounts, expectedCounts);
+    });
+  } catch (error) {
+    throw Error(error);
+  }
+}
+
+async function performTiffTests(filename, width, height, sampleCount, type) {
+  const tiff = await GeoTIFF.fromSource(createSource(filename));
   const image = await tiff.getImage();
   expect(image).to.be.ok;
   expect(image.getWidth()).to.equal(width);
@@ -31,6 +93,12 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
   expect(data[0]).to.deep.equal(allData[5]);
+
+  allData.forEach((data, rasterIndex) => {
+    const actualCounts = counter(data);
+    const expectedCounts = histograms[filename][rasterIndex];
+    compareHistograms(actualCounts, expectedCounts);
+  });
 }
 
 async function performRGBTest(tiff, options, comparisonRaster, maxDiff) {
@@ -74,76 +142,194 @@ function getMockMetaData(height, width) {
   };
 }
 
+describe('n-bit tests', () => {
+
+  it('should parse 1-bit tiffs', async () => {
+    testDerivedTiff(1, Uint8Array);
+  });
+
+  it('should parse 2-bit tiffs', async () => {
+    testDerivedTiff(2, Uint8Array);
+  });
+
+  it('should parse 3-bit tiffs', async () => {
+    return testDerivedTiff(3, Uint8Array);
+  });
+
+  it('should parse 4-bit tiffs', async () => {
+    return testDerivedTiff(4, Uint8Array);
+  });
+
+  it('should parse 5-bit tiffs', async () => {
+    return testDerivedTiff(5, Uint8Array);
+  });
+
+  it('should parse 6-bit tiffs', async () => {
+    return testDerivedTiff(6, Uint8Array);
+  });
+
+  it('should parse 7-bit tiffs', async () => {
+    return testDerivedTiff(7, Uint8Array);
+  });
+
+  it('should parse 9-bit tiffs', async () => {
+    return testDerivedTiff(9, Uint16Array);
+  });
+
+  it('should parse 10-bit tiffs', async () => {
+    return testDerivedTiff(10, Uint16Array);
+  });
+
+  it('should parse 11-bit tiffs', async () => {
+    return testDerivedTiff(11, Uint16Array);
+  });
+
+  it('should parse 12-bit tiffs', async () => {
+    return testDerivedTiff(12, Uint16Array);
+  });
+
+  it('should parse 13-bit tiffs', async () => {
+    return testDerivedTiff(13, Uint16Array);
+  });
+
+  it('should parse 14-bit tiffs', async () => {
+    return testDerivedTiff(14, Uint16Array);
+  });
+
+  it('should parse 15-bit tiffs', async () => {
+    return testDerivedTiff(15, Uint16Array);
+  });
+
+  it('should parse 16-bit tiffs', async () => {
+    return testDerivedTiff(16, Uint16Array);
+  });
+
+  it('should parse 17-bit tiffs', async () => {
+    return testDerivedTiff(17, Uint32Array);
+  });
+
+  it('should parse 18-bit tiffs', async () => {
+    return testDerivedTiff(18, Uint32Array);
+  });
+
+  it('should parse 19-bit tiffs', async () => {
+    return testDerivedTiff(19, Uint32Array);
+  });
+
+  it('should parse 20-bit tiffs', async () => {
+    return testDerivedTiff(20, Uint32Array);
+  });
+
+  it('should parse 21-bit tiffs', async () => {
+    return testDerivedTiff(21, Uint32Array);
+  });
+
+  it('should parse 22-bit tiffs', async () => {
+    return testDerivedTiff(22, Uint32Array);
+  });
+
+  it('should parse 23-bit tiffs', async () => {
+    return testDerivedTiff(23, Uint32Array);
+  });
+
+  it('should parse 24-bit tiffs', async () => {
+    return testDerivedTiff(24, Uint32Array);
+  });
+
+  it('should parse 25-bit tiffs', async () => {
+    return testDerivedTiff(25, Uint32Array);
+  });
+
+  it('should parse 26-bit tiffs', async () => {
+    return testDerivedTiff(26, Uint32Array);
+  });
+
+  it('should parse 27-bit tiffs', async () => {
+    return testDerivedTiff(27, Uint32Array);
+  });
+  it('should parse 28-bit tiffs', async () => {
+    return testDerivedTiff(28, Uint32Array);
+  });
+
+  it('should parse 29-bit tiffs', async () => {
+    return testDerivedTiff(29, Uint32Array);
+  });
+
+  it('should parse 30-bit tiffs', async () => {
+    return testDerivedTiff(30, Uint32Array);
+  });
+
+  it('should parse 31-bit tiffs', async () => {
+    return testDerivedTiff(31, Uint32Array);
+  });
+
+  it('should parse 32-bit tiffs', async () => {
+    return testDerivedTiff(32, Uint32Array);
+  });
+
+});
+
+
 describe('GeoTIFF', () => {
+
   it('geotiff.js module available', () => {
     expect(GeoTIFF).to.be.ok;
   });
 
   it('should work on stripped tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('stripped.tiff', 539, 448, 15, Uint16Array);
   });
 
   it('should work on tiled tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('tiled.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('tiled.tiff', 539, 448, 15, Uint16Array);
   });
 
+
   it('should work on band interleaved tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('interleave.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('interleave.tiff', 539, 448, 15, Uint16Array);
   });
 
   // TODO: currently only the interleave.tiff is used, make own
   it('should work on band interleaved tiled tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('interleave.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('interleave.tiff', 539, 448, 15, Uint16Array);
   });
 
   it('should work on LZW compressed images', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('lzw.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('lzw.tiff', 539, 448, 15, Uint16Array);
   });
 
   it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('tiledplanarlzw.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('tiledplanarlzw.tiff', 539, 448, 15, Uint16Array);
   });
 
   it('should work on Int32 tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('int32.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Int32Array);
+    await performTiffTests('int32.tiff', 539, 448, 15, Int32Array);
   });
 
   it('should work on UInt32 tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('uint32.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint32Array);
+    await performTiffTests('uint32.tiff', 539, 448, 15, Uint32Array);
   });
 
   it('should work on Float32 tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('float32.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Float32Array);
+    await performTiffTests('float32.tiff', 539, 448, 15, Float32Array);
   });
 
   it('should work on Float64 tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('float64.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Float64Array);
+    await performTiffTests('float64.tiff', 539, 448, 15, Float64Array);
   });
 
   it('should work on Float64 and lzw compressed tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('float64lzw.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Float64Array);
+    await performTiffTests('float64lzw.tiff', 539, 448, 15, Float64Array);
   });
 
   it('should work on packbit compressed tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('packbits.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('packbits.tiff', 539, 448, 15, Uint16Array);
   });
 
   it('should work with BigTIFFs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('bigtiff.tiff'));
-    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    await performTiffTests('bigtiff.tiff', 539, 448, 15, Uint16Array);
   });
+
 });
 
 describe('RGB-tests', () => {
@@ -318,7 +504,7 @@ describe("writeTests", function() {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
 
     const image = await newGeoTiff.getImage();
-    const rasters = await image.readRasters();    
+    const rasters = await image.readRasters();
 
     const newValues = toArrayRecursively(rasters[0]);
 
