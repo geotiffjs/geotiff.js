@@ -131,7 +131,12 @@ class GeoTIFFImage {
    * @returns {Number} the height of each tile
    */
   getTileHeight() {
-    return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
+    if (this.isTiled) {
+      return this.fileDirectory.TileLength;
+    } else if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
+      return Math.min(this.fileDirectory.RowsPerStrip, this.getHeight());
+    }
+    return this.getHeight();
   }
 
   /**
