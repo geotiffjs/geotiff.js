@@ -70,7 +70,8 @@ function getMockMetaData(height, width) {
     "GTModelTypeGeoKey": 2,
     "GTRasterTypeGeoKey": 1,
     "GeographicTypeGeoKey": 4326,
-    "GeogCitationGeoKey": "WGS 84"
+    "GeogCitationGeoKey": "WGS 84",
+    "GDAL_NODATA": "0",
   };
 }
 
@@ -388,6 +389,7 @@ describe("writeTests", function() {
     expect(fileDirectory.SamplesPerPixel).to.equal(1);
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(height));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
+    expect(fileDirectory.GDAL_NODATA).to.equal("0\u0000");
 
   });
 
