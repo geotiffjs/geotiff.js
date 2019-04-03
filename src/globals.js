@@ -157,6 +157,7 @@ export const fieldTagTypes = {
   34665: 'LONG',
   34735: 'SHORT',
   34737: 'ASCII',
+  42113: 'ASCII',
 };
 
 export const arrayFields = [
