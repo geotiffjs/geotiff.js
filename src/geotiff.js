@@ -17,7 +17,7 @@ function getFieldTypeLength(fieldType) {
       return 1;
     case fieldTypes.SHORT: case fieldTypes.SSHORT:
       return 2;
-    case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT:
+    case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT: case fieldTypes.IFD:
       return 4;
     case fieldTypes.RATIONAL: case fieldTypes.SRATIONAL: case fieldTypes.DOUBLE:
     case fieldTypes.LONG8: case fieldTypes.SLONG8: case fieldTypes.IFD8:
@@ -77,7 +77,7 @@ function getValues(dataSlice, fieldType, count, offset) {
     case fieldTypes.SSHORT:
       values = new Int16Array(count); readMethod = dataSlice.readInt16;
       break;
-    case fieldTypes.LONG:
+    case fieldTypes.LONG: case fieldTypes.IFD:
       values = new Uint32Array(count); readMethod = dataSlice.readUint32;
       break;
     case fieldTypes.SLONG:
