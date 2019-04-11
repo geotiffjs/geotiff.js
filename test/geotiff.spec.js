@@ -149,6 +149,16 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
+  it('should work on Float32 compressed tiffs with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('float32deflate_predictor.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float32Array);
+  });
+
+  it('should work on Float32 compressed tiffs with floating-point predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('float32deflate_predictor_fp.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float32Array);
+  });
+
   it('should work on Float64 tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float64.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);

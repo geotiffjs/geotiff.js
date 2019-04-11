@@ -77,7 +77,7 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
       }
       decodeRowAcc(row, stride);
     } else if (predictor === 3) { // horizontal floating point
-      row = new Uint8Array(block, i * stride * width * bytesPerSample, width * bytesPerSample);
+      row = new Uint8Array(block, i * stride * width * bytesPerSample, stride * width * bytesPerSample);
       decodeRowFloatingPoint(row, stride, bytesPerSample);
     }
   }
