@@ -50,10 +50,10 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
   const bytesPerSample = bitsPerSample[0] / 8;
   const stride = bitsPerSample.length;
 
-  for (let i = 0; i < height; ++i) {
-    // Last strip will be truncated if height % stripHeight != 0
-    if (i * stride * width * bytesPerSample >= block.byteLength)
-      break;
+  // last strip might have less rows
+  const stripHeight = Math.min(height, block.byteLength / (stride * width * bytesPerSample));
+
+  for (let i = 0; i < stripHeight; ++i) {
     let row;
     if (predictor === 2) { // horizontal prediction
       switch (bitsPerSample[0]) {
@@ -75,7 +75,7 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
         default:
           throw new Error(`Predictor 2 not allowed with ${bitsPerSample[0]} bits per sample.`);
       }
-      decodeRowAcc(row, stride, bytesPerSample);
+      decodeRowAcc(row, stride);
     } else if (predictor === 3) { // horizontal floating point
       row = new Uint8Array(block, i * stride * width * bytesPerSample, width * bytesPerSample);
       decodeRowFloatingPoint(row, stride, bytesPerSample);
