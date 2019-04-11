@@ -55,7 +55,7 @@ To setup the repository do the following steps:
 
 ```bash
 # clone repo
-git clone https://github.com/constantinius/geotiff.js.git
+git clone https://github.com/geotiffjs/geotiff.js.git
 cd geotiff.js/
 
 # install development dependencies
@@ -91,10 +91,10 @@ npm test
 To do some in-browser testing do:
 
 ```bash
-npm start
+npm run dev
 ```
 
-and navigate to `http://localhost:8090/test/`
+and navigate to `http://localhost:8090`
 
 To build the library do:
 
