@@ -323,7 +323,7 @@ class GeoTIFFImage {
             const lastCol = (tile.x + 1) * tileWidth;
             const reader = sampleReaders[si];
 
-            const ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
+            const ymax = Math.min(dataView.byteLength / (tileWidth * bytesPerPixel), tileHeight - (lastLine - imageWindow[3]));
             const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
 
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
