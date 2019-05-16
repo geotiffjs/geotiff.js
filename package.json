@@ -13,6 +13,7 @@
   "dependencies": {
     "@petamoriken/float16": "^1.0.7",
     "content-type-parser": "^1.0.2",
+    "lru-cache": "^5.1.1",
     "pako": "^1.0.3",
     "parse-headers": "^2.0.2",
     "xmldom": "0.1.*"

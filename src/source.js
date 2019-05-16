@@ -3,6 +3,7 @@ import { open, read } from 'fs';
 import http from 'http';
 import https from 'https';
 import urlMod from 'url';
+import LRUCache from 'lru-cache';
 import { parseContentType, parseByteRanges, parseContentRange } from './httputils';
 
 
@@ -226,13 +227,16 @@ class BlockedSource {
   //   return readRangeFromBlocks(blocks, offset, length);
   // }
 
-  constructor(retrievalFunction, { blockSize = 65535, multiRanges = false, maxRanges = 2 } = {}) {
+  constructor(retrievalFunction, { blockSize = 65535, multiRanges = false, maxRanges = 2, cacheSize = 100 } = {}) {
     this.retrievalFunction = retrievalFunction;
     this.blockSize = blockSize;
     this.multiRanges = multiRanges;
     this.maxRanges = maxRanges;
 
     this.blocks = new Map();
+    this.blocks = new LRUCache({
+      max: cacheSize,
+    });
     this.blocksToFetch = [];
   }
 
