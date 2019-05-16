@@ -13,40 +13,76 @@
 
 <script>
 
-var imageWindow = [0, 0, 500, 500];
+
+
+// (async function () {
+//   const response = await fetch('data/tiled.tiff', {
+//     headers: {
+//       Range: 'bytes= 5-10, 20-30'
+//     }
+//   });
+
+//   console.log(response.headers.keys())
+
+//   const type = response.headers.get('content-type');
+
+//   const parts = type.split(';').map(s=> s.trim());
+//   const boundary = parts[1].split('=')[1]
+
+//   const body = await response.arrayBuffer();
+//   const ranges = GeoTIFF.parseByteRanges(body, boundary);
+// })();
+
+
+
+
+
+var imageWindow = null;
+imageWindow = [0, 0, 50, 500];
+// imageWindow = [0, 0, 10, 10];
+
+// imageWindow = [256, 256, 288, 288];
 
 var tiffs = [
-  "stripped.tiff",
+  // "1.tif",
+  // "1bit.tiff",
+  // "test.tiff",
+  // "UXO-S84.02_invert.tif",
+  // "stripped.tiff",
   "tiled.tiff",
-  "tiledplanar.tiff",
-  "float32.tiff",
-  "uint32.tiff",
-  "int32.tiff",
-  "float64.tiff",
-  "lzw.tiff",
-  "tiledplanarlzw.tiff",
-  "float64lzw.tiff",
-  "lzw_predictor.tiff",
-  "deflate.tiff",
-  "deflate_predictor.tiff",
-  "deflate_predictor_tiled.tiff",
+  // "tiledplanar.tiff",
+  // "float32.tiff",
+  // "uint32.tiff",
+  // "int32.tiff",
+  // "float64.tiff",
+  // "lzw.tiff",
+  // "tiledplanarlzw.tiff",
+  // "float64lzw.tiff",
+  // "lzw_predictor.tiff",
+  // "deflate.tiff",
+  // "deflate_predictor.tiff",
+  // "deflate_predictor_tiled.tiff",
 ];
 
 var rgbtiffs = [
-    "stripped.tiff",
-    "rgb.tiff",
-    "BigTIFF.tif",
-    "rgb_paletted.tiff",
-    "cmyk.tif",
-    "ycbcr.tif",
-    "cielab.tif",
-    "5ae862e00b093000130affda.tif",
-    "jpeg.tiff",
-    "jpeg_ycbcr.tiff",
+  // "test.tiff"
+    // "stripped.tiff",
+    // "rgb.tiff",
+    // "BigTIFF.tif",
+    // "rgb_paletted.tiff",
+    // "cmyk.tif",
+    // "ycbcr.tif",
+    // "cielab.tif",
+    // "5ae862e00b093000130affda.tif",
+    // "jpeg.tiff",
+    // "jpeg_ycbcr.tiff",
 ]
 
 
 const pool = new GeoTIFF.Pool();
+
+let range = [0, 1000.000];
+// range = [0,1];
 
 var bandsSelect = document.getElementById("bands");
 
@@ -58,10 +94,6 @@ for (var i = 0; i < 15; ++i) {
 }
 
 tiffs.forEach(function(filename) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'data/' + filename, true);
-  xhr.responseType = 'arraybuffer';
-
   var div = document.createElement("div");
   div.style.float = "left";
   var header = document.createElement("p");
@@ -77,48 +109,46 @@ tiffs.forEach(function(filename) {
 
   document.getElementById("canvases").appendChild(div);
 
-  xhr.onload = function(e) {
-    console.time("readRasters " + filename);
-    GeoTIFF.fromArrayBuffer(this.response)
-      .then(parser => parser.getImage())
-      .then((image) => {
-        // console.log(image);
-        // console.log(image.getTiePoints());
 
-        // var imageWindow = null;
-        var width = image.getWidth();
-        var height = image.getHeight();
-        if (imageWindow) {
-          width = imageWindow[2] - imageWindow[0];
-          height = imageWindow[3] - imageWindow[1];
-        }
+  GeoTIFF.fromUrl('http://localhost:8080/test/data/' + filename, { allowMultiRanges: true, maxRanges: 4})
+    .then(tiff => tiff.getImage())
+    .then((image) => {
+      // console.log(image);
+      // console.log(image.getTiePoints());
 
-        var plot;
+      // var imageWindow = null;
+      var width = image.getWidth();
+      var height = image.getHeight();
+      if (imageWindow) {
+        width = imageWindow[2] - imageWindow[0];
+        height = imageWindow[3] - imageWindow[1];
+      }
 
-        bandsSelect.addEventListener("change", function (e) {
-          image.readRasters({ samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)], poolSize: 8 })
-            .then(function (rasters) {
-              var canvas = document.getElementById(filename);
-              plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
-              plot.render();
-            });
-        });
-        image.readRasters({
-          samples: [0],
-          window: imageWindow,
-          fillValue: 0,
-          pool,
-        })
+      var plot;
+
+      bandsSelect.addEventListener("change", function (e) {
+        image.readRasters({ samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)], poolSize: 8 })
           .then(function (rasters) {
-            console.timeEnd("readRasters " + filename);
+            const {width, height} = rasters;
             var canvas = document.getElementById(filename);
-            plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
+            plot = new plotty.plot(canvas, rasters[0], width, height, range, "viridis", false);
             plot.render();
           });
       });
-  };
-
-  xhr.send();
+      image.readRasters({
+        samples: [0],
+        window: imageWindow,
+        fillValue: 0,
+        pool,
+      })
+        .then(function (rasters) {
+          console.timeEnd("readRasters " + filename);
+          const {width, height} = rasters;
+          var canvas = document.getElementById(filename);
+          plot = new plotty.plot(canvas, rasters[0], width, height, range, "viridis", false);
+          plot.render();
+        });
+    });
 });
 
 
@@ -155,9 +185,9 @@ rgbtiffs.forEach(function(filename) {
           var data = imageData.data;
           var o = 0;
           for (var i = 0; i < raster.length; i+=3) {
-            data[o] = raster[i];
-            data[o+1] = raster[i+1];
-            data[o+2] = raster[i+2];
+            data[o] = raster[i] * 10;
+            data[o+1] = raster[i+1] * 10;
+            data[o+2] = raster[i+2] * 10;
             data[o+3] = 255;
             o += 4;
           }

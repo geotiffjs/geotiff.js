@@ -11,7 +11,10 @@
   ],
   "main": "dist/main.js",
   "dependencies": {
+    "@petamoriken/float16": "^1.0.7",
+    "content-type-parser": "^1.0.2",
     "pako": "^1.0.3",
+    "parse-headers": "^2.0.2",
     "xmldom": "0.1.*"
   },
   "devDependencies": {
@@ -33,11 +36,13 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
     "express": "^4.16.3",
+    "fs-extra": "^7.0.1",
     "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.5.5",
     "jsdoc-babel": "^0.2.1",
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
+    "send-ranges": "^3.0.0",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1",
     "worker-loader": "^1.1.1"

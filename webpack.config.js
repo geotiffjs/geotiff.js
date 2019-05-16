@@ -1,6 +1,21 @@
 const path = require('path');
+const sendRanges = require('send-ranges');
+const fs = require('fs');
+const fse = require('fs-extra');
 
 const isProduction = (process.env.NODE_ENV === 'production');
+
+async function retrieveFile(request) {
+  const filePath = path.join('test', request.path);
+  if (!/\.tif(f?)$/.test(filePath)) {
+    return null; // Falsey values will call the next handler in line
+  }
+  const getStream = range => fs.createReadStream(filePath, range);
+  const type = 'image/tiff';
+  const stats = await fse.stat(filePath);
+
+  return { getStream, type, size: stats.size };
+}
 
 module.exports = {
   entry: './src/main',
@@ -47,6 +62,9 @@ module.exports = {
     overlay: {
       warnings: true,
       errors: true,
+    },
+    setup(app) {
+      app.use(sendRanges(retrieveFile, { maxRanges: 10 }));
     },
   },
   cache: true,
