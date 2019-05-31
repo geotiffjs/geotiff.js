@@ -91,10 +91,10 @@ npm test
 To do some in-browser testing do:
 
 ```bash
-npm start
+npm run dev
 ```
 
-and navigate to `http://localhost:8090/test/`
+and navigate to `http://localhost:8090/`
 
 To build the library do:
 
