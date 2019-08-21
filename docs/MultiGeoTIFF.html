@@ -169,7 +169,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line414">line 414</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line420">line 420</a>
     </li></ul></dd>
     
 
@@ -355,7 +355,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line444">line 444</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line450">line 450</a>
     </li></ul></dd>
     
 
@@ -463,7 +463,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line469">line 469</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line475">line 475</a>
     </li></ul></dd>
     
 
@@ -519,7 +519,7 @@
     
 
     
-    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>, fillValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
     
 
     
@@ -599,6 +599,8 @@ image is called and the result returned.</p>
 
             
                 <td class="default">
+                
+                    {}
                 
                 </td>
             
@@ -789,13 +791,6 @@ image is called and the result returned.</p>
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
@@ -868,8 +863,8 @@ image is called and the result returned.</p>
                 </td>
             
 
-            <td class="description last"><p>The desired width of the output. When the width is no the
-                        same as the images, resampling will be performed.</p></td>
+            <td class="description last"><p>The desired width of the output. When the width is not the
+                                same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -906,8 +901,8 @@ image is called and the result returned.</p>
                 </td>
             
 
-            <td class="description last"><p>The desired height of the output. When the width is no the
-                         same as the images, resampling will be performed.</p></td>
+            <td class="description last"><p>The desired height of the output. When the width is not the
+                                 same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -987,9 +982,16 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>The value to use for parts of the image
-                                     outside of the images extent. When multiple
-                                     samples are requested, an array of fill values
-                                     can be passed.</p></td>
+                                             outside of the images extent. When multiple
+                                             samples are requested, an array of fill values
+                                             can be passed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1035,7 +1037,7 @@ image is called and the result returned.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line150">line 150</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line156">line 156</a>
     </li></ul></dd>
     
 
@@ -1108,13 +1110,13 @@ image is called and the result returned.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

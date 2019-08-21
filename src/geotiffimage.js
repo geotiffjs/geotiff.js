@@ -391,22 +391,24 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {Object} [options] optional parameters
+   * @param {Object} [options={}] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.samples=all samples] the selection of samples to read from.
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {number} [width] The desired width of the output. When the width is no the
-   *                         same as the images, resampling will be performed.
-   * @param {number} [height] The desired height of the output. When the width is no the
-   *                          same as the images, resampling will be performed.
-   * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [fillValue] The value to use for parts of the image
-   *                                      outside of the images extent. When multiple
-   *                                      samples are requested, an array of fill values
-   *                                      can be passed.
+   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {number} [options.width] The desired width of the output. When the width is
+   *                                 not the same as the images, resampling will be
+   *                                 performed.
+   * @param {number} [options.height] The desired height of the output. When the width
+   *                                  is not the same as the images, resampling will
+   *                                  be performed.
+   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [options.fillValue] The value to use for parts of the image
+   *                                              outside of the images extent. When
+   *                                              multiple samples are requested, an
+   *                                              array of fill values can be passed.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({

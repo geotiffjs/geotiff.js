@@ -43,7 +43,7 @@
 
 
     <section>
-        <article><h1>geotiff.js</h1><p><a href="https://travis-ci.org/geotiffjs/geotiff.js"><img src="https://travis-ci.org/geotiffjs/geotiff.js.svg" alt="Build Status"></a> <a href="https://www.versioneye.com/user/projects/566af91d4e049b0041000083"><img src="https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat" alt="Dependency Status"></a> <a href="https://badge.fury.io/js/geotiff"><img src="https://badge.fury.io/js/geotiff.svg" alt="npm version"></a></p>
+        <article><h1>geotiff.js</h1><p><a href="https://travis-ci.org/geotiffjs/geotiff.js"><img src="https://travis-ci.org/geotiffjs/geotiff.js.svg" alt="Build Status"></a> <a href="https://www.versioneye.com/user/projects/566af91d4e049b0041000083"><img src="https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat" alt="Dependency Status"></a> <a href="https://badge.fury.io/js/geotiff"><img src="https://badge.fury.io/js/geotiff.svg" alt="npm version"></a> <a href="https://gitter.im/geotiffjs/Lobby"><img src="https://badges.gitter.im/geotiffjs/geotiff.js.png" alt="Gitter chat"></a></p>
 <p>Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.</p>
 <h2>Features</h2><p>Currently available functionality:</p>
@@ -85,7 +85,7 @@
 <li>Limited <a href="http://bigtiff.org/#FILE_FORMAT">bigTIFF</a> support</li>
 <li>Automated testing via PhantomJS</li>
 </ul>
-<p>Further documentation can be found <a href="http://constantinius.github.io/geotiff.js/">here</a>.</p>
+<p>Further documentation can be found <a href="https://geotiffjs.github.io/geotiff.js/">here</a>.</p>
 <h2>Example Usage</h2><ul>
 <li><a href="http://www.youtube.com/watch?v=E6kFLtKgeJ8">Slice view using Cesium.js (TAMP project)</a></li>
 </ul>
@@ -112,7 +112,7 @@ sudo apt-get install -y gdal-bin imagemagick</code></pre><p>When GDAL and ImageM
 sh setup_data.sh
 cd -</code></pre><p>To test the library (using PhantomJS, karma, mocha and chai) do the following:</p>
 <pre class="prettyprint source lang-bash"><code>npm test</code></pre><p>To do some in-browser testing do:</p>
-<pre class="prettyprint source lang-bash"><code>npm start</code></pre><p>and navigate to <code>http://localhost:8090/test/</code></p>
+<pre class="prettyprint source lang-bash"><code>npm run dev</code></pre><p>and navigate to <code>http://localhost:8090/</code></p>
 <p>To build the library do:</p>
 <pre class="prettyprint source lang-bash"><code>npm run build</code></pre><p>The output is written to <code>dist/geotiff.browserify.js</code> and <code>dist/geotiff.browserify.min.js</code>.</p>
 <h2>Usage</h2><p>geotiff.js works with both <code>require</code> and the global variable <code>GeoTIFF</code>:</p>
@@ -163,7 +163,7 @@ is synchronous:</p>
 const height = image.getHeight();
 const tileWidth = image.getTileWidth();
 const tileHeight = image.getTileHeight();
-const samplesPerPixel = getSamplesPerPixel();
+const samplesPerPixel = image.getSamplesPerPixel();
 
 // when we are actually dealing with geo-data the following methods return
 // meaningful results:
@@ -241,7 +241,27 @@ factory function:</p>
 <pre class="prettyprint source lang-javascript"><code>const multiTiff = await GeoTIFF.fromUrls(
   'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
   ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
-);</code></pre><h2>What to do with the data?</h2><p>There is a nice HTML 5/WebGL based rendering library called
+);</code></pre><h3>Writing GeoTIFFs (Beta Version)</h3><p>You can create a binary representation of a GeoTIFF using <code>writeArrayBuffer</code>.
+This function returns an ArrayBuffer which you can then save as a .tif file.
+:warning: writeArrayBuffer currently writes the values uncompressed</p>
+<pre class="prettyprint source lang-javascript"><code>import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
+  height: 3,
+  width: 3
+};
+const arrayBuffer = await writeArrayBuffer(values, metadata);</code></pre><p>You can also customize the metadata using names found in the <a href="https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml">TIFF Spec</a> and <a href="https://cdn.earthdata.nasa.gov/conduit/upload/6852/geotiff-1.8.1-1995-10-31.pdf">GeoTIFF spec</a>.</p>
+<pre class="prettyprint source lang-javascript"><code>import { writeArrayBuffer } from 'geotiff';
+
+const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const metadata = {
+  height: 3,
+  ModelPixelScale: [0.031355, 0.031355, 0],
+  ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],  
+  width: 3
+};
+const arrayBuffer = await writeArrayBuffer(values, metadata);</code></pre><h2>What to do with the data?</h2><p>There is a nice HTML 5/WebGL based rendering library called
 <a href="https://github.com/santilland/plotty">plotty</a>, that allows for some really nice
 on the fly rendering of the data contained in a GeoTIFF.</p>
 <pre class="prettyprint source lang-html"><code>&lt;canvas id=&quot;plot&quot;>&lt;/canvas>
@@ -302,13 +322,13 @@ which is the aim of geotiff.js.</p></article>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
