@@ -9,7 +9,7 @@
     "image",
     "raster"
   ],
-  "main": "dist/main.js",
+  "main": "dist/bundle-node.js",
   "dependencies": {
     "pako": "^1.0.3",
     "xmldom": "0.1.*"
@@ -42,13 +42,12 @@
     "rollup-plugin-terser": "^5.1.1"
   },
   "scripts": {
+    "build": "npm run build:browser && npm run build:node",
     "build:browser": "cross-env TARGET=browser rollup -c",
     "build:node": "cross-env TARGET=node rollup -c",
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
-    "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
-    "prepublish": "npm run build",
-    "prepare": "npm run build"
+    "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs"
   },
   "author": "Fabian Schindler",
   "contributors": [

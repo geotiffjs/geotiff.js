@@ -11,7 +11,7 @@ const config = (input, file, format, plugins) => ({
   output: {
     file,
     format,
-    name: 'GeoTIFF',
+    name: 'geotiff',
     sourcemap: true,
   },
   watch: {
@@ -21,10 +21,10 @@ const config = (input, file, format, plugins) => ({
   external: ['buffer', 'fs', 'http', 'https', 'url'],
   plugins: [
     resolve({
-      preferBuiltins: true,
+      mainFields: ['module', 'main'],
     }),
     commonjs({
-      include: 'node_modules/**',
+      include: ['node_modules/**'],
     }),
     babel({
       exclude: 'node_modules/**',
