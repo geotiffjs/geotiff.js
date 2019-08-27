@@ -1,12 +1,13 @@
 {
-  "presets": ["env"],
-  "plugins": [
+  "presets": [
     [
-      "transform-runtime",
+      "env",
       {
-        "polyfill": false,
-        "regenerator": true
+        "modules": false
       }
     ]
+  ],
+  "plugins": [
+    "external-helpers"
   ]
 }

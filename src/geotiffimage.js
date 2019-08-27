@@ -1,6 +1,6 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml } from './globals';
+import { photometricInterpretations } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -68,13 +68,14 @@ class GeoTIFFImage {
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
    * @param {Source} source The datasource to read from
    */
-  constructor(fileDirectory, geoKeys, dataView, littleEndian, cache, source) {
+  constructor(fileDirectory, geoKeys, dataView, littleEndian, cache, source, xmlParser) {
     this.fileDirectory = fileDirectory;
     this.geoKeys = geoKeys;
     this.dataView = dataView;
     this.littleEndian = littleEndian;
     this.tiles = cache ? {} : null;
     this.isTiled = !fileDirectory.StripOffsets;
+    this.xmlParser = xmlParser;
     const planarConfiguration = fileDirectory.PlanarConfiguration;
     this.planarConfiguration = (typeof planarConfiguration === 'undefined') ? 1 : planarConfiguration;
     if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
@@ -596,7 +597,7 @@ class GeoTIFFImage {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = parseXml(string.substring(0, string.length - 1));
+    const xmlDom = this.xmlParser(string.substring(0, string.length - 1));
     const result = xmlDom.evaluate(
       'GDALMetadata/Item', xmlDom, null,
       XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null,

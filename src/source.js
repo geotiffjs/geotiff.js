@@ -1,10 +1,3 @@
-import { Buffer } from 'buffer';
-import { open, read } from 'fs';
-import http from 'http';
-import https from 'https';
-import urlMod from 'url';
-
-
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
   const rangeData = new ArrayBuffer(rangeLength);
@@ -103,7 +96,7 @@ async function wait(milliseconds) {
  * BlockedSource - an abstraction of (remote) files.
  * @implements Source
  */
-class BlockedSource {
+export default class BlockedSource {
   /**
    * @param {requestCallback} retrievalFunction Callback function to request data
    * @param {object} options Additional options
@@ -234,226 +227,38 @@ class BlockedSource {
   }
 }
 
-/**
- * Create a new source to read from a remote file using the
- * [fetch]{@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API} API.
- * @param {string} url The URL to send requests to.
- * @param {Object} [options] Additional options.
- * @param {Number} [options.blockSize] The block size to use.
- * @param {object} [options.headers] Additional headers to be sent to the server.
- * @returns The constructed source
- */
-export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
-  return new BlockedSource(async (offset, length) => {
-    const response = await fetch(url, {
-      headers: Object.assign({},
-        headers, {
-          Range: `bytes=${offset}-${offset + length}`,
-        },
-      ),
-    });
+// /**
+//  * Create a new source to read from a remote file. Uses either XHR, fetch or nodes http API.
+//  * @param {string} url The URL to send requests to.
+//  * @param {Object} [options] Additional options.
+//  * @param {Boolean} [options.forceXHR] Force the usage of XMLHttpRequest.
+//  * @param {Number} [options.blockSize] The block size to use.
+//  * @param {object} [options.headers] Additional headers to be sent to the server.
+//  * @returns The constructed source
+//  */
+// export function makeRemoteSource(url, options) {
+//   const { forceXHR } = options;
+//   if (typeof fetch === 'function' && !forceXHR) {
+//     return makeFetchSource(url, options);
+//   } else if (typeof XMLHttpRequest !== 'undefined') {
+//     return makeXHRSource(url, options);
+//   } else if (http.get) {
+//     return makeHttpSource(url, options);
+//   }
+//   throw new Error('No remote source available');
+// }
 
-    // check the response was okay and if the server actually understands range requests
-    if (!response.ok) {
-      throw new Error('Error fetching data.');
-    } else if (response.status === 206) {
-      const data = response.arrayBuffer ?
-        await response.arrayBuffer() : (await response.buffer()).buffer;
-      return {
-        data,
-        offset,
-        length,
-      };
-    } else {
-      const data = response.arrayBuffer ?
-        await response.arrayBuffer() : (await response.buffer()).buffer;
-      return {
-        data,
-        offset: 0,
-        length: data.byteLength,
-      };
-    }
-  }, { blockSize });
-}
+// /**
+//  * Create a new source to read from a local
+//  * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
+//  * @param {ArrayBuffer} arrayBuffer The ArrayBuffer to parse the GeoTIFF from.
+//  * @returns The constructed source
+//  */
+// export function makeBufferSource(arrayBuffer) {
+//   return {
+//     async fetch(offset, length) {
+//       return arrayBuffer.slice(offset, offset + length);
+//     },
+//   };
+// }
 
-/**
- * Create a new source to read from a remote file using the
- * [XHR]{@link https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest} API.
- * @param {string} url The URL to send requests to.
- * @param {Object} [options] Additional options.
- * @param {Number} [options.blockSize] The block size to use.
- * @param {object} [options.headers] Additional headers to be sent to the server.
- * @returns The constructed source
- */
-export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
-  return new BlockedSource(async (offset, length) => {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open('GET', url);
-      request.responseType = 'arraybuffer';
-
-      Object.entries(
-        Object.assign({},
-          headers, {
-            Range: `bytes=${offset}-${offset + length}`,
-          },
-        ),
-      ).forEach(([key, value]) => request.setRequestHeader(key, value));
-
-      request.onload = () => {
-        const data = request.response;
-        if (request.status === 206) {
-          resolve({
-            data,
-            offset,
-            length,
-          });
-        } else {
-          resolve({
-            data,
-            offset: 0,
-            length: data.byteLength,
-          });
-        }
-      };
-      request.onerror = reject;
-      request.send();
-    });
-  }, { blockSize });
-}
-
-/**
- * Create a new source to read from a remote file using the node
- * [http]{@link https://nodejs.org/api/http.html} API.
- * @param {string} url The URL to send requests to.
- * @param {Object} [options] Additional options.
- * @param {Number} [options.blockSize] The block size to use.
- * @param {object} [options.headers] Additional headers to be sent to the server.
- */
-export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
-  return new BlockedSource(async (offset, length) => new Promise((resolve, reject) => {
-    const parsed = urlMod.parse(url);
-    const request = (parsed.protocol === 'http:' ? http : https).get(
-      Object.assign({}, parsed, {
-        headers: Object.assign({},
-          headers, {
-            Range: `bytes=${offset}-${offset + length}`,
-          },
-        ),
-      }), (result) => {
-        const chunks = [];
-        // collect chunks
-        result.on('data', (chunk) => {
-          chunks.push(chunk);
-        });
-
-        // concatenate all chunks and resolve the promise with the resulting buffer
-        result.on('end', () => {
-          const data = Buffer.concat(chunks).buffer;
-          resolve({
-            data,
-            offset,
-            length: data.byteLength,
-          });
-        });
-      },
-    );
-    request.on('error', reject);
-  }), { blockSize });
-}
-
-/**
- * Create a new source to read from a remote file. Uses either XHR, fetch or nodes http API.
- * @param {string} url The URL to send requests to.
- * @param {Object} [options] Additional options.
- * @param {Boolean} [options.forceXHR] Force the usage of XMLHttpRequest.
- * @param {Number} [options.blockSize] The block size to use.
- * @param {object} [options.headers] Additional headers to be sent to the server.
- * @returns The constructed source
- */
-export function makeRemoteSource(url, options) {
-  const { forceXHR } = options;
-  if (typeof fetch === 'function' && !forceXHR) {
-    return makeFetchSource(url, options);
-  } else if (typeof XMLHttpRequest !== 'undefined') {
-    return makeXHRSource(url, options);
-  } else if (http.get) {
-    return makeHttpSource(url, options);
-  }
-  throw new Error('No remote source available');
-}
-
-/**
- * Create a new source to read from a local
- * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
- * @param {ArrayBuffer} arrayBuffer The ArrayBuffer to parse the GeoTIFF from.
- * @returns The constructed source
- */
-export function makeBufferSource(arrayBuffer) {
-  return {
-    async fetch(offset, length) {
-      return arrayBuffer.slice(offset, offset + length);
-    },
-  };
-}
-
-
-function openAsync(path, flags, mode = undefined) {
-  return new Promise((resolve, reject) => {
-    open(path, flags, mode, (err, fd) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(fd);
-      }
-    });
-  });
-}
-
-function readAsync(...args) {
-  return new Promise((resolve, reject) => {
-    read(...args, (err, bytesRead, buffer) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ bytesRead, buffer });
-      }
-    });
-  });
-}
-
-/**
- * Creates a new source using the node filesystem API.
- * @param {string} path The path to the file in the local filesystem.
- * @returns The constructed source
- */
-export function makeFileSource(path) {
-  const fileOpen = openAsync(path, 'r');
-
-  return {
-    async fetch(offset, length) {
-      const fd = await fileOpen;
-      const { buffer } = await readAsync(fd, Buffer.alloc(length), 0, length, offset);
-      return buffer.buffer;
-    },
-  };
-}
-
-/**
- * Create a new source from a given file/blob.
- * @param {Blob} file The file or blob to read from.
- * @returns The constructed source
- */
-export function makeFileReaderSource(file) {
-  return {
-    async fetch(offset, length) {
-      return new Promise((resolve, reject) => {
-        const blob = file.slice(offset, offset + length);
-        const reader = new FileReader();
-        reader.onload = event => resolve(event.target.result);
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(blob);
-      });
-    },
-  };
-}
