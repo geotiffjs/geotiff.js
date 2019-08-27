@@ -1,6 +1,7 @@
 import { makeFileSource, makeHttpSource } from './loadingNode';
 import GeoTIFF from './GeoTIFF';
 import Pool from './pool';
+import writeGeotiff from './geotiffwriter';
 import parseXml from './nodeSpecific/parseXml';
 
 const defaultOptions = {
@@ -29,5 +30,14 @@ export async function fromUrl(url, options = defaultOptions) {
   return GeoTIFF.fromSource(makeHttpSource(url, options));
 }
 
+/**
+ * Main creating function for GeoTIFF files.
+ * @param {(Array)} array of pixel values
+ * @returns {metadata} metadata
+ */
+export async function writeArrayBuffer(values, metadata) {
+  return writeGeotiff(values, metadata);
+}
+
+
 export { Pool };
-export { parseXml };

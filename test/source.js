@@ -5,7 +5,7 @@ import isNode from 'detect-node';
 import 'isomorphic-fetch';
 import { expect } from 'chai';
 
-import { makeFetchSource } from '../src/source';
+import { makeFetchSource } from '../src/loadingBrowser';
 
 const port = 9999;
 let server = null;

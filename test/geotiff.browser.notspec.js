@@ -1,19 +1,15 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable global-require */
 
-import isNode from 'detect-node';
 import { expect } from 'chai';
 import 'isomorphic-fetch';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
-import { makeFetchSource, makeFileSource } from '../src/source';
+import { fromFile } from '../src/entry-browser';
+import { makeFetchSource } from '../src/loadingBrowser';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 
 
 function createSource(filename) {
-  if (isNode) {
-    return makeFileSource(`test/data/${filename}`);
-  }
   return makeFetchSource(`test/data/${filename}`);
 }
 
@@ -77,16 +73,16 @@ function getMockMetaData(height, width) {
 
 describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {
-    expect(GeoTIFF).to.be.ok;
+    expect(fromFile).to.be.ok;
   });
 
   it('should work on stripped tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    const tiff = await fromFile('stripped.tiff');
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
   it('should work on tiled tiffs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('tiled.tiff'));
+    const tiff = await fromFile('tiled.tiff');
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
