@@ -12,6 +12,7 @@ before_script:
 - sh setup_data.sh
 - popd
 script:
+- npm build
 - npm test
 notifications:
   email: false

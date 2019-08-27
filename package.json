@@ -48,7 +48,7 @@
     "build": "npm run build:browser && npm run build:node",
     "build:browser": "cross-env TARGET=browser rollup -c",
     "build:node": "cross-env TARGET=node rollup -c",
-    "test": "mocha --require esm --require @babel/polyfill test/*.spec.js",
+    "test": "mocha test/*.spec.js",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs"
   },
