@@ -11,8 +11,8 @@ before_script:
 - pushd test/data
 - sh setup_data.sh
 - popd
+- npm run build
 script:
-- npm run build  
 - npm test
 notifications:
   email: false
