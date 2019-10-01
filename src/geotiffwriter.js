@@ -250,13 +250,15 @@ const encodeImage = (values, width, height, metadata) => {
     }
   }
 
+  const DataType = values.constructor
+
   const prfx = new Uint8Array(encodeIfds([ifd]));
 
-  const img = new Uint8Array(values);
+  const img = new Uint8Array(values.buffer);
 
   const samplesPerPixel = ifd[277];
 
-  const data = new Uint8Array(numBytesInIfd + (width * height * samplesPerPixel));
+  const data = new Uint8Array(numBytesInIfd + (img.length * samplesPerPixel));
   times(prfx.length, (i) => { data[i] = prfx[i]; });
   forEach(img, (value, i) => {
     data[numBytesInIfd + i] = value;
