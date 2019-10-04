@@ -496,10 +496,19 @@ class GeoTIFFImage {
     const pi = this.fileDirectory.PhotometricInterpretation;
 
     if (pi === photometricInterpretations.RGB) {
+      s = [0, 1, 2];
+      if (!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified))
+      {
+        s = []
+        for (let i = 0; this.fileDirectory.BitsPerSample.length; i += 1) {
+          s.push[i];
+        }
+      }
       return this.readRasters({
         window,
         interleave: true,
-        samples: [0, 1, 2],
+        
+        samples: s,
         pool,
       });
     }
