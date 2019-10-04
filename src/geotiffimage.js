@@ -496,7 +496,7 @@ class GeoTIFFImage {
     const pi = this.fileDirectory.PhotometricInterpretation;
 
     if (pi === photometricInterpretations.RGB) {
-      s = [0, 1, 2];
+      let s = [0, 1, 2];
       if (!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified))
       {
         s = []
