@@ -500,7 +500,7 @@ class GeoTIFFImage {
       if (!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified))
       {
         s = []
-        for (let i = 0; this.fileDirectory.BitsPerSample.length; i += 1) {
+        for (let i = 0; i < this.fileDirectory.BitsPerSample.length; i += 1) {
           s.push[i];
         }
       }
