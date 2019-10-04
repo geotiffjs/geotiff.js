@@ -1,6 +1,6 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml } from './globals';
+import { photometricInterpretations, parseXml, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
