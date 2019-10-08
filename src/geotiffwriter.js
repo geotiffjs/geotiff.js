@@ -253,7 +253,12 @@ const encodeImage = (values, width, height, metadata) => {
   const prfx = new Uint8Array(encodeIfds([ifd]));
 
   // This should allow other kinds of typed arrays to be used. Uint8 is just a view of the real underlying data.
-  const img = new Uint8Array(values.buffer);
+  let img = undefined
+  if (ArrayBuffer.isView(values)) { // It is a typed array
+    img = new Uint8Array(values.buffer);
+  } else { // It is a normal js array
+    img = new Uint8Array(values)
+  }
 
   const samplesPerPixel = ifd[277];
 
