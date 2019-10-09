@@ -7,7 +7,9 @@ export default class BaseDecoder {
     if (predictor !== 1) {
       const isTiled = !fileDirectory.StripOffsets;
       const tileWidth = isTiled ? fileDirectory.TileWidth : fileDirectory.ImageWidth;
-      const tileHeight = isTiled ? fileDirectory.TileLength : fileDirectory.RowsPerStrip;
+      const tileHeight = isTiled ? fileDirectory.TileLength : (
+        fileDirectory.RowsPerStrip || fileDirectory.ImageLength
+      );
       return applyPredictor(
         decoded, predictor, tileWidth, tileHeight, fileDirectory.BitsPerSample,
       );

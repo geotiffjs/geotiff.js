@@ -54,7 +54,8 @@
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "prepare": "npm run build"
   },
   "author": "Fabian Schindler",
   "contributors": [
