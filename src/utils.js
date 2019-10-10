@@ -76,3 +76,36 @@ export function toArrayRecursively(input) {
   }
   return input;
 }
+
+export function isTypedFloatArray(input) {
+  if (ArrayBuffer.isView(input)) {
+    const ctr = input.constructor
+    if (ctr === Float32Array || ctr === Float32Array) {
+      return true
+    }
+  }
+  return false
+}
+
+export function isTypedIntArray(input) {
+  if (ArrayBuffer.isView(input)) {
+    const ctr = input.constructor
+    if (ctr == Int8Array || ctr === Int16Array || ctr === Int32Array) {
+      return true
+    }
+  }
+  return false
+}
+
+export function isTypedUintArray(input) {
+  if (ArrayBuffer.isView(input)) {
+    const ctr = input.constructor
+    if (ctr == Uint8Array || ctr === Uint16Array || ctr === Uint32Array || ctr === Uint8ClampedArray) {
+      return true
+    }
+  }
+  return false
+}
+
+
+
