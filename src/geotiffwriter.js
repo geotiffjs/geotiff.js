@@ -339,11 +339,11 @@ const writeGeotiff = (data, metadata) => {
   delete metadata.width;
 
   // consult https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
-  let bitsPerSample = 8
-  if (ArrayBuffer.isView(flattenedValues)) {
-    bitsPerSample = 8 * flattenedValues.BYTES_PER_ELEMENT
-  }
   if (!metadata.BitsPerSample) {
+    let bitsPerSample = 8
+    if (ArrayBuffer.isView(flattenedValues)) {
+      bitsPerSample = 8 * flattenedValues.BYTES_PER_ELEMENT
+    }
     metadata.BitsPerSample = times(numBands, () => bitsPerSample);
   }
 
@@ -376,17 +376,17 @@ const writeGeotiff = (data, metadata) => {
     metadata.ModelPixelScale = [360 / width, 180 / height, 0];
   }
 
-  let sampleFormat = 1
-  if (isTypedFloatArray(flattenedValues)) {
-    sampleFormat = 3
-  }
-  if (isTypedIntArray(flattenedValues)) {
-    sampleFormat = 2
-  }
-  if (isTypedUintArray(flattenedValues)) {
-    sampleFormat = 1
-  }
   if (!metadata.SampleFormat) {
+    let sampleFormat = 1
+    if (isTypedFloatArray(flattenedValues)) {
+      sampleFormat = 3
+    }
+    if (isTypedIntArray(flattenedValues)) {
+      sampleFormat = 2
+    }
+    if (isTypedUintArray(flattenedValues)) {
+      sampleFormat = 1
+    }
     metadata.SampleFormat = times(numBands, () => sampleFormat);
   }
 
