@@ -80,7 +80,7 @@ export function toArrayRecursively(input) {
 export function isTypedFloatArray(input) {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor
-    if (ctr === Float32Array || ctr === Float32Array) {
+    if (ctr === Float32Array || ctr === Float64Array) {
       return true
     }
   }
