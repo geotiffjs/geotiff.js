@@ -210,12 +210,11 @@ export const photometricInterpretations = {
   ICCLab: 9,
 };
 
-export const ExtraSamplesValues = 
-{
+export const ExtraSamplesValues = {
   Unspecified: 0,
   Assocalpha: 1,
-  Unassalpha:2,
-}
+  Unassalpha: 2,
+};
 
 
 export const geoKeyNames = {

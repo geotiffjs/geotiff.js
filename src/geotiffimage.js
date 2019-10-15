@@ -485,7 +485,7 @@ class GeoTIFFImage {
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha =false} = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -497,17 +497,15 @@ class GeoTIFFImage {
 
     if (pi === photometricInterpretations.RGB) {
       let s = [0, 1, 2];
-      if ((!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified)) && enableAlpha)
-      {
-        s = []
+      if ((!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified)) && enableAlpha) {
+        s = [];
         for (let i = 0; i < this.fileDirectory.BitsPerSample.length; i += 1) {
-          s.push[i];
+          s.push(i);
         }
       }
       return this.readRasters({
         window,
         interleave: true,
-        
         samples: s,
         pool,
       });
