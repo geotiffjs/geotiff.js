@@ -483,7 +483,7 @@ class GeoTIFFImage {
    * @param {number} [height] The desired height of the output. When the width is no the
    *                          same as the images, resampling will be performed.
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {bool} [enableAlpha='false'] Enable reading alpha channel if present.
+   * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
   async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
