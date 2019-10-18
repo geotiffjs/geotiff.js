@@ -210,6 +210,13 @@ export const photometricInterpretations = {
   ICCLab: 9,
 };
 
+export const ExtraSamplesValues = {
+  Unspecified: 0,
+  Assocalpha: 1,
+  Unassalpha: 2,
+};
+
+
 export const geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',

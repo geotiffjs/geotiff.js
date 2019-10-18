@@ -40,3 +40,6 @@ gdal_translate -of GTiff -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR rgb.tiff jpeg_y
 
 # modeltransformation tag
 wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff
+
+# RGBA example
+wget https://s3.eu-central-1.amazonaws.com/waterview.geotiff/RGBA.tiff

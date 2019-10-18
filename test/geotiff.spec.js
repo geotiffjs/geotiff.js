@@ -172,6 +172,29 @@ describe('RGB-tests', () => {
   });
 });
 
+describe('RGBA-tests', () => {
+  const options = { window: [250, 250, 300, 300], interleave: true };
+  const comparisonRaster = (async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
+    const image = await tiff.getImage();
+    return image.readRasters(options);
+  })();
+  options.enableAlpha = true;
+  process.stdout.write(JSON.stringify(options));
+  // TODO: disabled, as in CI environment such images are not similar enough
+  // it('should work with CMYK files', async () => {
+  //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
+  //   await performRGBTest(tiff, options, comparisonRaster, 1);
+  // });
+
+  it('should work with RGBA files', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
+    await performRGBTest(tiff, options, comparisonRaster, 3);
+  });
+
+
+});
+
 describe('Geo metadata tests', async () => {
   it('should be able to get the origin and offset of images using tie points and scale', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));

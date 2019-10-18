@@ -1,6 +1,6 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml } from './globals';
+import { photometricInterpretations, parseXml, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -483,9 +483,10 @@ class GeoTIFFImage {
    * @param {number} [height] The desired height of the output. When the width is no the
    *                          same as the images, resampling will be performed.
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -496,10 +497,17 @@ class GeoTIFFImage {
     const pi = this.fileDirectory.PhotometricInterpretation;
 
     if (pi === photometricInterpretations.RGB) {
+      let s = [0, 1, 2];
+      if ((!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified)) && enableAlpha) {
+        s = [];
+        for (let i = 0; i < this.fileDirectory.BitsPerSample.length; i += 1) {
+          s.push(i);
+        }
+      }
       return this.readRasters({
         window,
         interleave: true,
-        samples: [0, 1, 2],
+        samples: s,
         pool,
       });
     }
