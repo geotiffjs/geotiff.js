@@ -617,6 +617,18 @@ class GeoTIFFImage {
   }
 
   /**
+   * Returns the GDAL nodata value
+   * @returns {Number} or null
+   */
+  getGDALNoData() {
+    if (!this.fileDirectory.GDAL_NODATA) {
+      return null;
+    }
+    const string = this.fileDirectory.GDAL_NODATA;
+    return Number(string.substring(0, string.length - 1));
+  }
+
+  /**
    * Returns the image origin as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
    * @returns {Array} The origin as a vector
