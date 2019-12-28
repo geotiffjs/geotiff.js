@@ -596,9 +596,14 @@ class GeoTIFFImage {
 
   /**
    * Returns the parsed GDAL metadata items.
+   *
+   * If sample is passed to null, dataset-level metadata will be returned.
+   * Otherwise only metadata specific to the provided sample will be returned.
+   *
+   * @param {Number} [sample=null] The sample index.
    * @returns {Object}
    */
-  getGDALMetadata() {
+  getGDALMetadata(sample = null) {
     const metadata = {};
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
@@ -611,7 +616,12 @@ class GeoTIFFImage {
     );
     for (let i = 0; i < result.snapshotLength; ++i) {
       const node = result.snapshotItem(i);
-      metadata[node.getAttribute('name')] = node.textContent;
+      const nodeSample = node.getAttribute('sample');
+      if( (sample == null && nodeSample == null) ||
+          (sample != null && nodeSample != null &&
+           sample === Number(nodeSample)) ) {
+        metadata[node.getAttribute('name')] = node.textContent;
+      }
     }
     return metadata;
   }
