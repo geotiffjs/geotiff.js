@@ -109,7 +109,7 @@ class BlockedSource {
    * @param {object} options Additional options
    * @param {object} options.blockSize Size of blocks to be fetched
    */
-  constructor(retrievalFunction, { blockSize = 65535 } = {}) {
+  constructor(retrievalFunction, { blockSize = 65536 } = {}) {
     this.retrievalFunction = retrievalFunction;
     this.blockSize = blockSize;
 
@@ -248,7 +248,7 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
     const response = await fetch(url, {
       headers: Object.assign({},
         headers, {
-          Range: `bytes=${offset}-${offset + length}`,
+          Range: `bytes=${offset}-${offset + length - 1}`,
         },
       ),
     });
@@ -295,7 +295,7 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       Object.entries(
         Object.assign({},
           headers, {
-            Range: `bytes=${offset}-${offset + length}`,
+            Range: `bytes=${offset}-${offset + length - 1}`,
           },
         ),
       ).forEach(([key, value]) => request.setRequestHeader(key, value));
@@ -337,7 +337,7 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
       Object.assign({}, parsed, {
         headers: Object.assign({},
           headers, {
-            Range: `bytes=${offset}-${offset + length}`,
+            Range: `bytes=${offset}-${offset + length - 1}`,
           },
         ),
       }), (result) => {
