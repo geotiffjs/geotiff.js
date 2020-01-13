@@ -38,6 +38,10 @@ module.exports = {
     http: 'empty',
   },
 
+  externals: {
+    xpath: 'xpath',
+  },
+
   devServer: {
     host: '0.0.0.0',
     port: 8090,

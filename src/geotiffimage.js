@@ -1,6 +1,6 @@
 /* eslint max-len: ["error", { "code": 120 }] */
-
-import { photometricInterpretations, parseXml, ExtraSamplesValues } from './globals';
+import * as xpath from 'xpath';
+import { photometricInterpretations, parseXml, ExtraSamplesValues, UNORDERED_NODE_SNAPSHOT_TYPE } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -610,9 +610,10 @@ class GeoTIFFImage {
     }
     const string = this.fileDirectory.GDAL_METADATA;
     const xmlDom = parseXml(string.substring(0, string.length - 1));
-    const result = xmlDom.evaluate(
+    const evaluator = xmlDom.evaluate ? xmlDom : xpath;
+    const result = evaluator.evaluate(
       'GDALMetadata/Item', xmlDom, null,
-      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null,
+      UNORDERED_NODE_SNAPSHOT_TYPE, null,
     );
     for (let i = 0; i < result.snapshotLength; ++i) {
       const node = result.snapshotItem(i);

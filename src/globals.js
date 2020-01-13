@@ -275,6 +275,7 @@ for (const key in geoKeyNames) {
 }
 
 export let parseXml; // eslint-disable-line
+export let UNORDERED_NODE_SNAPSHOT_TYPE; // eslint-disable-line
 // node.js version
 if (typeof window === 'undefined') {
   parseXml = function (xmlStr) {
@@ -282,10 +283,12 @@ if (typeof window === 'undefined') {
     const { DOMParser } = require('xmldom'); // eslint-disable-line global-require
     return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
+  UNORDERED_NODE_SNAPSHOT_TYPE = require('xpath').XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE; // eslint-disable-line
 } else if (typeof window.DOMParser !== 'undefined') {
   parseXml = function (xmlStr) {
     return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
   };
+  UNORDERED_NODE_SNAPSHOT_TYPE = window.XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE; // eslint-disable-line
 } else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
   parseXml = function (xmlStr) {
     const xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
@@ -293,5 +296,6 @@ if (typeof window === 'undefined') {
     xmlDoc.loadXML(xmlStr);
     return xmlDoc;
   };
+  UNORDERED_NODE_SNAPSHOT_TYPE = window.XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE; // eslint-disable-line
 }
 

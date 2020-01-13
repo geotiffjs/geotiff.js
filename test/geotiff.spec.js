@@ -213,6 +213,16 @@ describe('Geo metadata tests', async () => {
     expect(image.getGeoKeys()).to.have.property('GeographicTypeGeoKey');
     expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
   });
+
+  it('should get GDAL Metadata', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('stats.tiff'));
+    const image = await tiff.getImage();
+    const metadata = image.getGDALMetadata(0);
+    expect(metadata.STATISTICS_MAXIMUM).to.equal('65507');
+    expect(metadata.STATISTICS_MEAN).to.equal('4463.0531697257');
+    expect(metadata.STATISTICS_MINIMUM).to.equal('0');
+    expect(metadata.STATISTICS_STDDEV).to.equal('5846.4047263122');
+  });
 });
 
 describe("writeTests", function() {
