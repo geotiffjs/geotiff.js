@@ -427,6 +427,9 @@ look into it ASAP.
 
 Pull requests are welcome as well!
 
+## Community Packages
+A list of community packages can be found in [COMMUNITY.md](COMMUNITY.md)
+
 ## Acknowledgements
 
 This library was inspired by
