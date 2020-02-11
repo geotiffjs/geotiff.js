@@ -1,6 +1,7 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml, ExtraSamplesValues } from './globals';
+import txml from 'txml';
+import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -609,19 +610,27 @@ class GeoTIFFImage {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = parseXml(string.substring(0, string.length - 1));
-    const result = xmlDom.evaluate(
-      'GDALMetadata/Item', xmlDom, null,
-      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null,
-    );
-    for (let i = 0; i < result.snapshotLength; ++i) {
-      const node = result.snapshotItem(i);
-      const nodeSample = node.getAttribute('sample');
-      if( (sample == null && nodeSample == null) ||
-          (sample != null && nodeSample != null &&
-           sample === Number(nodeSample)) ) {
-        metadata[node.getAttribute('name')] = node.textContent;
-      }
+    const xmlDom = txml(string.substring(0, string.length - 1));
+
+    if (!xmlDom[0].tagName) {
+      throw new Error('Failed to parse GDAL metadata XML.');
+    }
+
+    const root = xmlDom[0];
+    if (root.tagName !== 'GDALMetadata') {
+      throw new Error('Unexpected GDAL metadata XML tag.');
+    }
+
+    let items = root.children
+      .filter(child => child.tagName === 'Item');
+
+    if (sample) {
+      items = items.filter(item => Number(item.attributes.sample) === sample);
+    }
+
+    for (let i = 0; i < items.length; ++i) {
+      const item = items[i];
+      metadata[item.attributes.name] = item.children[0];
     }
     return metadata;
   }
