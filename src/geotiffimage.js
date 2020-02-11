@@ -510,6 +510,8 @@ class GeoTIFFImage {
         interleave: true,
         samples: s,
         pool,
+        width,
+        height
       });
     }
 
