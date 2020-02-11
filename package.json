@@ -39,10 +39,13 @@
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
     "webpack": "^3.10.0",
+    "webpack-bundle-analyzer": "^3.6.0",
     "webpack-dev-server": "^2.11.1",
+    "webpack-merge": "^4.2.2",
     "worker-loader": "^1.1.1"
   },
   "scripts": {
+    "analyze": "NODE_ENV=production webpack -p --config webpack.analyze.js",
     "dev": "webpack-dev-server -d -w --content-base test",
     "watch": "webpack -d -w",
     "build:clean": "rm -rf dist/*",
