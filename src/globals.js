@@ -184,6 +184,8 @@ export const fieldTypeNames = {
   0x000A: 'SRATIONAL',
   0x000B: 'FLOAT',
   0x000C: 'DOUBLE',
+  // IFD offset, suggested by https://owl.phy.queensu.ca/~phil/exiftool/standards.html
+  0x000D: 'IFD',
   // introduced by BigTIFF
   0x0010: 'LONG8',
   0x0011: 'SLONG8',
