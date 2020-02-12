@@ -27,9 +27,12 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
 
   const allData = await image.readRasters({ window: [200, 200, 210, 210] });
+  const brData = await image.readRasters({ window: [width - 10, height - 10, width, height] });
   const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
+  expect(brData).to.have.length(sampleCount);
+  expect(brData[0]).to.be.an.instanceof(type);
   expect(data[0]).to.deep.equal(allData[5]);
 }
 
@@ -106,6 +109,26 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on deflate compressed images', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on deflate compressed images with predictor and big strips', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_big_strips.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on tiled deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_tiled.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('tiledplanarlzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
@@ -134,7 +157,7 @@ describe('GeoTIFF', () => {
   it('should work on Float64 and lzw compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float64lzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);
-  });
+  }).timeout(4000);
 
   it('should work on packbit compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('packbits.tiff'));
