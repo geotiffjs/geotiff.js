@@ -48,3 +48,8 @@ wget https://s3.eu-central-1.amazonaws.com/waterview.geotiff/RGBA.tiff
 # special LZW file
 wget https://github.com/geotiffjs/geotiff.js/files/4186628/nasa_raster.tiff.zip
 unzip -o nasa_raster.tiff.zip -d .
+
+# additional test for LZW: EOI_CODE after CLEAR_CODE
+wget https://github.com/geotiffjs/geotiff.js/files/2378479/lzw.zip
+mkdir lzw_clear_eoi
+unzip -o lzw.zip -d lzw_clear_eoi

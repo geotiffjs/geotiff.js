@@ -151,6 +151,12 @@ describe('GeoTIFF', () => {
     const image = await tiff.getImage();
     image.readRasters();
   });
+
+  it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
+    const image = await tiff.getImage();
+    image.readRasters();
+  });
 });
 
 describe('RGB-tests', () => {

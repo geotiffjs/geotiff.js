@@ -87,11 +87,11 @@ function decompress(input) {
       while (code === CLEAR_CODE) {
         code = getNext(array);
       }
-      if (code > CLEAR_CODE) {
-        throw new Error(`corrupted code at scanline ${code}`);
-      }
+
       if (code === EOI_CODE) {
         break;
+      } else if (code > CLEAR_CODE) {
+        throw new Error(`corrupted code at scanline ${code}`);
       } else {
         const val = getDictionaryReversed(code);
         appendReversed(result, val);
