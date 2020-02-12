@@ -145,6 +145,12 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('bigtiff.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
+
+  it('should work with NASAs LZW compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    image.readRasters();
+  });
 });
 
 describe('RGB-tests', () => {
@@ -342,7 +348,7 @@ describe("writeTests", function() {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
 
     const image = await newGeoTiff.getImage();
-    const rasters = await image.readRasters();    
+    const rasters = await image.readRasters();
 
     const newValues = toArrayRecursively(rasters[0]);
 
