@@ -300,7 +300,7 @@ const metadataDefaults = [
   ['GeogCitationGeoKey', 'WGS 84'],
 ];
 
-const writeGeotiff = (data, metadata) => {
+export function writeGeotiff (data, metadata) {
   const isFlattened = typeof data[0] === 'number';
 
   let height;
@@ -439,5 +439,3 @@ const writeGeotiff = (data, metadata) => {
 
   return outputImage;
 };
-
-module.exports = { writeGeotiff };
