@@ -5,7 +5,7 @@ import isNode from 'detect-node';
 import { expect } from 'chai';
 import 'isomorphic-fetch';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 
@@ -173,6 +173,13 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
     const image = await tiff.getImage();
     image.readRasters();
+  });
+
+  it('should work with worker pool', async () => {
+    const pool = new Pool()
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    image.readRasters({ pool });
   });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
