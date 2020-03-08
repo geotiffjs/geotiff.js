@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 /* eslint-disable global-require */
 
 import isNode from 'detect-node';

@@ -1,5 +1,5 @@
 const path = require('path');
-
+const ThreadsPlugin = require('threads-plugin');
 const isProduction = (process.env.NODE_ENV === 'production');
 
 module.exports = {
@@ -12,9 +12,13 @@ module.exports = {
     libraryTarget: 'umd',
   },
 
+  plugins: [
+    new ThreadsPlugin()
+  ],
+
   module: {
     rules: [
-     {
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: 'babel-loader',
