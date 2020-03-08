@@ -14,17 +14,7 @@ module.exports = {
 
   module: {
     rules: [
-      {
-        test: /\.worker\.js$/,
-        use: {
-          loader: 'worker-loader',
-          options: {
-            name: isProduction ? '[hash].decoder.worker.min.js' : '[hash].decoder.worker.js',
-            inline: true,
-            fallback: true,
-          },
-        },
-      }, {
+     {
         test: /\.js$/,
         exclude: /node_modules/,
         use: 'babel-loader',
