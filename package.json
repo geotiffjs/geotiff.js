@@ -10,6 +10,7 @@
     "raster"
   ],
   "main": "dist/main.js",
+  "browser": "dist/geotiff.bundle.js",
   "dependencies": {
     "@babel/polyfill": "^7.8.7",
     "@babel/runtime": "^7.8.7",
