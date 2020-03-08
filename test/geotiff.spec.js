@@ -1,9 +1,5 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable global-require */
-
 import isNode from 'detect-node';
 import { expect } from 'chai';
-import 'isomorphic-fetch';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
@@ -172,20 +168,20 @@ describe('GeoTIFF', () => {
   it('should work with NASAs LZW compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
     const image = await tiff.getImage();
-    image.readRasters();
+    await image.readRasters();
   });
 
   it('should work with worker pool', async () => {
     const pool = new Pool()
     const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
     const image = await tiff.getImage();
-    image.readRasters({ pool });
+    await image.readRasters({ pool });
   });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
     const image = await tiff.getImage();
-    image.readRasters();
+    await image.readRasters();
   });
 });
 
