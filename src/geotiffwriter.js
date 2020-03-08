@@ -56,7 +56,7 @@ const _binBE = {
     return _binBE.ui32[0];
   },
   readASCII: (buff, p, l) => {
-    return l.map(i => String.fromCharCode(buff[p + i])).join('');
+    return l.map((i) => String.fromCharCode(buff[p + i])).join('');
   },
   readFloat: (buff, p) => {
     const a = _binBE.ui8;
@@ -300,7 +300,7 @@ const metadataDefaults = [
   ['GeogCitationGeoKey', 'WGS 84'],
 ];
 
-export function writeGeotiff (data, metadata) {
+export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
 
   let height;
@@ -373,7 +373,7 @@ export function writeGeotiff (data, metadata) {
 
 
   const geoKeys = Object.keys(metadata)
-    .filter(key => endsWith(key, 'GeoKey'))
+    .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
   if (!metadata.GeoKeyDirectory) {
@@ -438,4 +438,4 @@ export function writeGeotiff (data, metadata) {
   const outputImage = encodeImage(flattenedValues, width, height, encodedMetadata);
 
   return outputImage;
-};
+}

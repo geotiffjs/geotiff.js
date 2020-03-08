@@ -34,6 +34,7 @@ module.exports = {
     ],
     'no-console': 0,
     'no-bitwise': 0,
+    'max-classes-per-file': 0,
     'import/prefer-default-export': 0,
     'prefer-default-export': 0,
     'func-names': 0,

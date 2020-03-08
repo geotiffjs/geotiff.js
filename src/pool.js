@@ -1,4 +1,5 @@
-import * as threads from 'threads'
+import { Worker, Pool as tPool, spawn } from 'threads';
+
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
 /**
@@ -16,8 +17,8 @@ class Pool {
    *                      decoding will be done in the main thread.
    */
   constructor(size = defaultPoolSize) {
-    const worker = new threads.Worker('./decoder.worker')
-    this.pool = threads.Pool(() => threads.spawn(worker), size)
+    const worker = new Worker('./decoder.worker.js');
+    this.pool = tPool(() => spawn(worker), size);
   }
 
   /**
@@ -27,19 +28,19 @@ class Pool {
    */
   async decode(fileDirectory, buffer) {
     return new Promise((resolve, reject) => {
-      this.pool.queue(async decode => {
+      this.pool.queue(async (decode) => {
         try {
-          const data = await decode(fileDirectory, buffer)
-          resolve(data)
+          const data = await decode(fileDirectory, buffer);
+          resolve(data);
         } catch (err) {
-          reject(err)
+          reject(err);
         }
-      })
-    })
+      });
+    });
   }
 
   destroy() {
-    this.pool.terminate(true)
+    this.pool.terminate(true);
   }
 }
 
