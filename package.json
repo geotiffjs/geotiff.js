@@ -38,7 +38,6 @@
     "threads-plugin": "^1.3.0"
   },
   "scripts": {
-    "analyze": "NODE_ENV=production webpack -p --config webpack.analyze.js",
     "dev": "parcel serve test/data/**/* test/index.html",
     "build:clean": "rm -rf dist-node/* dist-browser/",
     "bundle:node": "parcel build src/main.js --target node --out-dir dist-node/",
