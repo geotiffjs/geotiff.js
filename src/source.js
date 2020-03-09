@@ -290,11 +290,13 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       request.open('GET', url);
       request.responseType = 'arraybuffer';
 
-      Object.entries(
+      for (const [key, value] of Object.entries(
         {
           ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
         },
-      ).forEach(([key, value]) => request.setRequestHeader(key, value));
+      )) {
+        request.setRequestHeader(key, value);
+      }
 
       request.onload = () => {
         const data = request.response;

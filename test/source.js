@@ -1,5 +1,4 @@
 /* eslint-disable global-require */
-
 import isNode from 'detect-node';
 import 'isomorphic-fetch';
 import { expect } from 'chai';
@@ -23,7 +22,6 @@ after(() => {
     server.close();
   }
 });
-
 
 describe('makeFetchSource', () => {
   it('shall fetch the first n bytes', async () => {

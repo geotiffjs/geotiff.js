@@ -1,7 +1,7 @@
 import * as GeoTIFF from '../src/main'
-console.log(GeoTIFF)
-var imageWindow = [0, 0, 500, 500];
-var tiffs = [
+
+const imageWindow = [0, 0, 500, 500];
+const tiffs = [
   "stripped.tiff",
   "tiled.tiff",
   "tiledplanar.tiff",
@@ -18,7 +18,7 @@ var tiffs = [
   "deflate_predictor_tiled.tiff",
 ];
 
-var rgbtiffs = [
+const rgbtiffs = [
   "stripped.tiff",
   "rgb.tiff",
   "BigTIFF.tif",
@@ -31,29 +31,26 @@ var rgbtiffs = [
   "jpeg_ycbcr.tiff",
 ]
 
-
 const pool = new GeoTIFF.Pool();
-
-var bandsSelect = document.getElementById("bands");
-
-for (var i = 0; i < 15; ++i) {
-  var option = document.createElement("option");
+const bandsSelect = document.getElementById("bands");
+for (let i = 0; i < 15; ++i) {
+  const option = document.createElement("option");
   option.value = i;
   option.text = i + 1;
   bandsSelect.appendChild(option);
 }
 
 tiffs.forEach(function (filename) {
-  var xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
   xhr.open('GET', 'data/' + filename, true);
   xhr.responseType = 'arraybuffer';
 
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.style.float = "left";
-  var header = document.createElement("p");
+  const header = document.createElement("p");
   header.innerHTML = filename;
 
-  var canvas = document.createElement("canvas");
+  const canvas = document.createElement("canvas");
   canvas.id = filename;
   canvas.width = 500;
   canvas.height = 500;
@@ -72,19 +69,18 @@ tiffs.forEach(function (filename) {
         // console.log(image.getTiePoints());
 
         // var imageWindow = null;
-        var width = image.getWidth();
-        var height = image.getHeight();
+        let width = image.getWidth();
+        let height = image.getHeight();
         if (imageWindow) {
           width = imageWindow[2] - imageWindow[0];
           height = imageWindow[3] - imageWindow[1];
         }
 
-        var plot;
-
+        let plot;
         bandsSelect.addEventListener("change", function (e) {
           image.readRasters({ samples: [parseInt(bandsSelect.options[bandsSelect.selectedIndex].value)], poolSize: 8 })
             .then(function (rasters) {
-              var canvas = document.getElementById(filename);
+              const canvas = document.getElementById(filename);
               plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
               plot.render();
             });
@@ -97,49 +93,44 @@ tiffs.forEach(function (filename) {
         })
           .then(function (rasters) {
             console.timeEnd("readRasters " + filename);
-            var canvas = document.getElementById(filename);
+            const canvas = document.getElementById(filename);
             plot = new plotty.plot(canvas, rasters[0], width, height, [10, 65000], "viridis", false);
             plot.render();
           });
       });
   };
-
   xhr.send();
 });
 
-
 rgbtiffs.forEach(function (filename) {
-  var xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
   xhr.open('GET', 'data/' + filename, true);
   xhr.responseType = 'arraybuffer';
 
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.style.float = "left";
-  var header = document.createElement("p");
+  const header = document.createElement("p");
   header.innerHTML = filename;
 
-  var canvas = document.createElement("canvas");
+  const canvas = document.createElement("canvas");
   canvas.id = filename;
-
   div.appendChild(header);
   div.appendChild(canvas);
-
   document.getElementById("canvases").appendChild(div);
 
   xhr.onload = function (e) {
     GeoTIFF.fromArrayBuffer(this.response)
       .then(parser => parser.getImage())
       .then((image) => {
-        var plot;
         console.time("readRGB " + filename);
         image.readRGB({ pool }).then(function (raster) {
           console.timeEnd("readRGB " + filename);
           canvas.width = image.getWidth();
           canvas.height = image.getHeight();
-          var ctx = canvas.getContext("2d");
-          var imageData = ctx.createImageData(image.getWidth(), image.getHeight());
-          var data = imageData.data;
-          var o = 0;
+          const ctx = canvas.getContext("2d");
+          const imageData = ctx.createImageData(image.getWidth(), image.getHeight());
+          const data = imageData.data;
+          let o = 0;
           for (var i = 0; i < raster.length; i += 3) {
             data[o] = raster[i];
             data[o + 1] = raster[i + 1];
@@ -151,6 +142,5 @@ rgbtiffs.forEach(function (filename) {
         });
       });
   };
-
   xhr.send();
 });

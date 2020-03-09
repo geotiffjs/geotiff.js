@@ -1,11 +1,10 @@
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
-import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
+import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
-
 import * as globals from './globals';
 import * as rgb from './rgb';
 

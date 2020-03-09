@@ -4,19 +4,14 @@
   You can view that here:
   https://github.com/photopea/UTIF.js/blob/master/LICENSE
 */
-
-
 import { fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals';
 import { assign, endsWith, forEach, invert, times } from './utils';
 
-
 const tagName2Code = invert(fieldTagNames);
 const geoKeyName2Code = invert(geoKeyNames);
-
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
-
 const typeName2byte = invert(fieldTypeNames);
 
 // config variables
@@ -106,7 +101,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
 
   let eoff = offset + (12 * keys.length) + 4;
 
-  keys.forEach((key) => {
+  for (const key of keys) {
     let tag = null;
     if (typeof key === 'number') {
       tag = key;
@@ -180,7 +175,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
     }
 
     offset += 4;
-  });
+  }
 
   return [offset, eoff];
 };
