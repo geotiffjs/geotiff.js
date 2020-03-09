@@ -11,8 +11,11 @@
   ],
   "main": "dist-node/main.js",
   "browser": "dist-browser/main.js",
+  "engines": {
+    "node": ">=10.19",
+    "browsers": "defaults"
+  },
   "dependencies": {
-    "core-js": "^3.6.4",
     "pako": "^1.0.11",
     "regenerator-runtime": "^0.13.3",
     "threads": "^1.3.0",
