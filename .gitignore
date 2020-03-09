@@ -1,3 +1,5 @@
 node_modules
-dist/
+.cache
+dist-node
+dist-browser
 .DS_Store

@@ -1,4 +1,5 @@
 import { Worker, Pool as tPool, spawn } from 'threads';
+import "threads/register"
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
