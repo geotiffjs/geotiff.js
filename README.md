@@ -94,7 +94,7 @@ To do some in-browser testing do:
 npm run dev
 ```
 
-and navigate to `http://localhost:8090/`
+and navigate to `http://localhost:1234/index.html`
 
 To build the library do:
 
@@ -102,7 +102,7 @@ To build the library do:
 npm run build
 ```
 
-The output is written to `dist/geotiff.browserify.js` and `dist/geotiff.browserify.min.js`.
+The output is written to `dist-browser/main.js` and `dist-node/main.js`.
 
 ## Usage
 
@@ -117,10 +117,7 @@ import GeoTIFF from 'geotiff';
 or:
 
 ```html
-<script src="dist/geotiff.bundle.js"></script>
-<!-- or use the minified version:
-  <script src="dist/geotiff.bundle.min.js"></script>
--->
+<script src="dist-browser/main.js"></script>
 <script>
   console.log(GeoTIFF);
 </script>
