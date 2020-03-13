@@ -81,10 +81,20 @@ export default class DataSlice {
   readUint64(offset) {
     const left = this.readUint32(offset);
     const right = this.readUint32(offset + 4);
+    let combined;
     if (this._littleEndian) {
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+      }
+      return combined;
     }
-    return (right << 32) | left;
+    combined = 2 ** 32 * left + rightt;
+    if (!Number.isSafeInteger(combined)) {
+      console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+    }
+
+    return combined;
   }
 
   readInt64(offset) {
@@ -94,11 +104,20 @@ export default class DataSlice {
       left = this.readInt32(offset);
       right = this.readUint32(offset + 4);
 
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+      }
+      return combined;
     }
     left = this.readUint32(offset - this._sliceOffset);
     right = this.readInt32(offset - this._sliceOffset + 4);
-    return (right << 32) | left;
+    combined = 2 ** 32 * left + rightt;
+    if (!Number.isSafeInteger(combined)) {
+      console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+    }
+
+    return combined;
   }
 
   readOffset(offset) {
