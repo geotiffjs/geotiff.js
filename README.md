@@ -94,7 +94,7 @@ To do some in-browser testing do:
 npm run dev
 ```
 
-and navigate to `http://localhost:1234/index.html`
+and navigate to `http://localhost:8090/index.html`
 
 To build the library do:
 
