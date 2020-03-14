@@ -17,12 +17,12 @@
   },
   "dependencies": {
     "pako": "^1.0.11",
-    "regenerator-runtime": "^0.13.3",
     "threads": "^1.3.1",
     "txml": "^3.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
+    "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/register": "^7.8.6",
     "chai": "^4.2.0",
     "detect-node": "^2.0.4",
@@ -45,12 +45,11 @@
     "build:clean": "rm -rf dist-node/ dist-browser/",
     "build:node": "parcel build src/main.js --target node --out-dir dist-node/",
     "build:browser": "parcel build src/main.js --target browser --out-dir dist-browser/ --global GeoTIFF",
-    "dev": "parcel serve test/data/** test/index.html",
+    "dev": "parcel serve test/data/** test/index.html --port 8090",
     "dev:clean": "rm -rf dist/ .cache/",
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "prepublishOnly": "npm run build",
     "prepare": "npm run build",
     "test": "mocha --require @babel/register test/geotiff.spec.js"
   },
