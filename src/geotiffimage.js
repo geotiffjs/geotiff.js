@@ -140,7 +140,8 @@ class GeoTIFFImage {
   getTileHeight() {
     if (this.isTiled) {
       return this.fileDirectory.TileLength;
-    } if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
+    }
+    if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
       return Math.min(this.fileDirectory.RowsPerStrip, this.getHeight());
     }
     return this.getHeight();
@@ -668,7 +669,8 @@ class GeoTIFFImage {
         tiePoints[4],
         tiePoints[5],
       ];
-    } if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[3],
         modelTransformation[7],
@@ -696,7 +698,8 @@ class GeoTIFFImage {
         -modelPixelScale[1],
         modelPixelScale[2],
       ];
-    } if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[0],
         modelTransformation[5],

@@ -289,12 +289,8 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       const request = new XMLHttpRequest();
       request.open('GET', url);
       request.responseType = 'arraybuffer';
-
-      for (const [key, value] of Object.entries(
-        {
-          ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
-        },
-      )) {
+      const requestHeaders = { ...headers, Range: `bytes=${offset}-${offset + length - 1}` };
+      for (const [key, value] of Object.entries(requestHeaders)) {
         request.setRequestHeader(key, value);
       }
 
@@ -370,9 +366,11 @@ export function makeRemoteSource(url, options) {
   const { forceXHR } = options;
   if (typeof fetch === 'function' && !forceXHR) {
     return makeFetchSource(url, options);
-  } if (typeof XMLHttpRequest !== 'undefined') {
+  }
+  if (typeof XMLHttpRequest !== 'undefined') {
     return makeXHRSource(url, options);
-  } if (http.get) {
+  }
+  if (http.get) {
     return makeHttpSource(url, options);
   }
   throw new Error('No remote source available');
