@@ -85,18 +85,16 @@ export default class DataSlice {
     if (this._littleEndian) {
       combined = left + 2 ** 32 * right;
       if (!Number.isSafeInteger(combined)) {
-        console.error(
-          combined,
-          'exceeds MAX_SAFE_INTEGER. Precision may be lost.  Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
         );
       }
       return combined;
     }
-    combined = 2 ** 32 * left + rightt;
+    combined = 2 ** 32 * left + right;
     if (!Number.isSafeInteger(combined)) {
-      console.error(
-        combined,
-        'exceeds MAX_SAFE_INTEGER. Precision may be lost.  Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
       );
     }
 
@@ -112,15 +110,19 @@ export default class DataSlice {
 
       combined = left + 2 ** 32 * right;
       if (!Number.isSafeInteger(combined)) {
-        console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        );
       }
       return combined;
     }
     left = this.readUint32(offset - this._sliceOffset);
     right = this.readInt32(offset - this._sliceOffset + 4);
-    combined = 2 ** 32 * left + rightt;
+    combined = 2 ** 32 * left + right;
     if (!Number.isSafeInteger(combined)) {
-      console.log(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+      );
     }
 
     return combined;
