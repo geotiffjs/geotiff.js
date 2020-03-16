@@ -111,122 +111,6 @@ class BlockedSource {
    * @param {object} options Additional options
    * @param {object} options.blockSize Size of blocks to be fetched
    */
-  // constructor(retrievalFunction, { blockSize = 65535, multiRanges = false } = {}) {
-  //   this.retrievalFunction = retrievalFunction;
-  //   this.blockSize = blockSize;
-
-  //   // currently running block requests
-  //   this.blockRequests = new Map();
-
-  //   // already retrieved blocks
-  //   this.blocks = new Map();
-
-  //   // block ids waiting for a batched request. Either a Set or null
-  //   this.blockIdsAwaitingRequest = null;
-  // }
-
-  // /**
-  //  * Fetch a subset of the file.
-  //  * @param {number} offset The offset within the file to read from.
-  //  * @param {number} length The length in bytes to read from.
-  //  * @returns {ArrayBuffer} The subset of the file.
-  //  */
-  // async fetch(offset, length, immediate = false) {
-  //   const top = offset + length;
-
-  //   // calculate what blocks intersect the specified range (offset + length)
-  //   // determine what blocks are already stored or beeing requested
-  //   const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
-  //   const allBlockIds = [];
-  //   const missingBlockIds = [];
-  //   const blockRequests = [];
-
-  //   for (let current = firstBlockOffset; current < top; current += this.blockSize) {
-  //     const blockId = Math.floor(current / this.blockSize);
-  //     if (!this.blocks.has(blockId) && !this.blockRequests.has(blockId)) {
-  //       missingBlockIds.push(blockId);
-  //     }
-  //     if (this.blockRequests.has(blockId)) {
-  //       blockRequests.push(this.blockRequests.get(blockId));
-  //     }
-  //     allBlockIds.push(blockId);
-  //   }
-
-  //   // determine whether there are already blocks in the queue to be requested
-  //   // if so, add the missing blocks to this list
-  //   if (!this.blockIdsAwaitingRequest) {
-  //     this.blockIdsAwaitingRequest = new Set(missingBlockIds);
-  //   } else {
-  //     for (let i = 0; i < missingBlockIds.length; ++i) {
-  //       const id = missingBlockIds[i];
-  //       this.blockIdsAwaitingRequest.add(id);
-  //     }
-  //   }
-
-  //   // in immediate mode, we don't want to wait for possible additional requests coming in
-  //   if (!immediate) {
-  //     await wait();
-  //   }
-
-  //   // determine if we are the thread to start the requests.
-  //   if (this.blockIdsAwaitingRequest) {
-  //     // get all coherent blocks as groups to be requested in a single request
-  //     const groups = getCoherentBlockGroups(
-  //       Array.from(this.blockIdsAwaitingRequest).sort(),
-  //     );
-
-  //     if 
-
-  //     // iterate over all blocks
-  //     for (const group of groups) {
-
-  //       // fetch a group as in a single request
-  //       const request = this.requestData(
-  //         group[0] * this.blockSize, group.length * this.blockSize,
-  //       );
-
-  //       // for each block in the request, make a small 'splitter',
-  //       // i.e: wait for the request to finish, then cut out the bytes for
-  //       // that block and store it there.
-  //       // we keep that as a promise in 'blockRequests' to allow waiting on
-  //       // a single block.
-  //       for (let i = 0; i < group.length; ++i) {
-  //         const id = group[i];
-  //         this.blockRequests.set(id, (async () => {
-  //           const response = await request;
-  //           const o = i * this.blockSize;
-  //           const t = Math.min(o + this.blockSize, response.data.byteLength);
-  //           const data = response.data.slice(o, t);
-  //           this.blockRequests.delete(id);
-  //           this.blocks.set(id, {
-  //             data,
-  //             offset: response.offset + o,
-  //             length: data.byteLength,
-  //             top: response.offset + t,
-  //           });
-  //         })());
-  //       }
-  //     }
-  //     this.blockIdsAwaitingRequest = null;
-  //   }
-
-  //   // get a list of currently running requests for the blocks still missing
-  //   const missingRequests = [];
-  //   for (const blockId of missingBlockIds) {
-  //     if (this.blockRequests.has(blockId)) {
-  //       missingRequests.push(this.blockRequests.get(blockId));
-  //     }
-  //   }
-
-  //   // wait for all missing requests to finish
-  //   await Promise.all(missingRequests);
-  //   await Promise.all(blockRequests);
-
-  //   // now get all blocks for the request and return a summary buffer
-  //   const blocks = allBlockIds.map(id => this.blocks.get(id));
-  //   return readRangeFromBlocks(blocks, offset, length);
-  // }
-
   constructor(retrievalFunction, { blockSize = 65535, multiRanges = false, maxRanges = 2, cacheSize = 100 } = {}) {
     this.retrievalFunction = retrievalFunction;
     this.blockSize = blockSize;
@@ -439,7 +323,7 @@ export function makeFetchSource(url, { headers = {}, blockSize, maxRanges = 0, a
     const response = await fetch(url, {
       headers: Object.assign({},
         headers, {
-          Range: `bytes=${offset}-${offset + length}`,
+          Range: `bytes=${offset}-${offset + length - 1}`,
         },
       ),
     });
@@ -492,7 +376,7 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       Object.entries(
         Object.assign({},
           headers, {
-            Range: `bytes=${offset}-${offset + length}`,
+            Range: `bytes=${offset}-${offset + length - 1}`,
           },
         ),
       ).forEach(([key, value]) => request.setRequestHeader(key, value));
@@ -534,7 +418,7 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
       Object.assign({}, parsed, {
         headers: Object.assign({},
           headers, {
-            Range: `bytes=${offset}-${offset + length}`,
+            Range: `bytes=${offset}-${offset + length - 1}`,
           },
         ),
       }), (result) => {

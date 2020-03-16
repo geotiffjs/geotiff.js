@@ -1,6 +1,7 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml } from './globals';
+import txml from 'txml';
+import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -391,22 +392,24 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {Object} [options] optional parameters
+   * @param {Object} [options={}] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.samples=all samples] the selection of samples to read from.
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {number} [width] The desired width of the output. When the width is no the
-   *                         same as the images, resampling will be performed.
-   * @param {number} [height] The desired height of the output. When the width is no the
-   *                          same as the images, resampling will be performed.
-   * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [fillValue] The value to use for parts of the image
-   *                                      outside of the images extent. When multiple
-   *                                      samples are requested, an array of fill values
-   *                                      can be passed.
+   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {number} [options.width] The desired width of the output. When the width is
+   *                                 not the same as the images, resampling will be
+   *                                 performed.
+   * @param {number} [options.height] The desired height of the output. When the width
+   *                                  is not the same as the images, resampling will
+   *                                  be performed.
+   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [options.fillValue] The value to use for parts of the image
+   *                                              outside of the images extent. When
+   *                                              multiple samples are requested, an
+   *                                              array of fill values can be passed.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
@@ -481,9 +484,10 @@ class GeoTIFFImage {
    * @param {number} [height] The desired height of the output. When the width is no the
    *                          same as the images, resampling will be performed.
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -494,11 +498,20 @@ class GeoTIFFImage {
     const pi = this.fileDirectory.PhotometricInterpretation;
 
     if (pi === photometricInterpretations.RGB) {
+      let s = [0, 1, 2];
+      if ((!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified)) && enableAlpha) {
+        s = [];
+        for (let i = 0; i < this.fileDirectory.BitsPerSample.length; i += 1) {
+          s.push(i);
+        }
+      }
       return this.readRasters({
         window,
         interleave: true,
-        samples: [0, 1, 2],
+        samples: s,
         pool,
+        width,
+        height
       });
     }
 
@@ -586,24 +599,54 @@ class GeoTIFFImage {
 
   /**
    * Returns the parsed GDAL metadata items.
+   *
+   * If sample is passed to null, dataset-level metadata will be returned.
+   * Otherwise only metadata specific to the provided sample will be returned.
+   *
+   * @param {Number} [sample=null] The sample index.
    * @returns {Object}
    */
-  getGDALMetadata() {
+  getGDALMetadata(sample = null) {
     const metadata = {};
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = parseXml(string.substring(0, string.length - 1));
-    const result = xmlDom.evaluate(
-      'GDALMetadata/Item', xmlDom, null,
-      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null,
-    );
-    for (let i = 0; i < result.snapshotLength; ++i) {
-      const node = result.snapshotItem(i);
-      metadata[node.getAttribute('name')] = node.textContent;
+    const xmlDom = txml(string.substring(0, string.length - 1));
+
+    if (!xmlDom[0].tagName) {
+      throw new Error('Failed to parse GDAL metadata XML.');
+    }
+
+    const root = xmlDom[0];
+    if (root.tagName !== 'GDALMetadata') {
+      throw new Error('Unexpected GDAL metadata XML tag.');
+    }
+
+    let items = root.children
+      .filter(child => child.tagName === 'Item');
+
+    if (sample) {
+      items = items.filter(item => Number(item.attributes.sample) === sample);
+    }
+
+    for (let i = 0; i < items.length; ++i) {
+      const item = items[i];
+      metadata[item.attributes.name] = item.children[0];
     }
     return metadata;
+  }
+
+  /**
+   * Returns the GDAL nodata value
+   * @returns {Number} or null
+   */
+  getGDALNoData() {
+    if (!this.fileDirectory.GDAL_NODATA) {
+      return null;
+    }
+    const string = this.fileDirectory.GDAL_NODATA;
+    return Number(string.substring(0, string.length - 1));
   }
 
   /**

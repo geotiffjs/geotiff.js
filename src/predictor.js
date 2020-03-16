@@ -33,7 +33,8 @@ function decodeRowFloatingPoint(row, stride, bytesPerSample) {
   }
 }
 
-export function applyPredictor(block, predictor, width, height, bitsPerSample) {
+export function applyPredictor(block, predictor, width, height, bitsPerSample,
+                               planarConfiguration) {
   if (!predictor || predictor === 1) {
     return block;
   }
@@ -48,9 +49,12 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
   }
 
   const bytesPerSample = bitsPerSample[0] / 8;
-  const stride = bitsPerSample.length;
+  const stride = planarConfiguration === 2 ? 1 : bitsPerSample.length;
 
   for (let i = 0; i < height; ++i) {
+    // Last strip will be truncated if height % stripHeight != 0
+    if (i * stride * width * bytesPerSample >= block.byteLength)
+      break;
     let row;
     if (predictor === 2) { // horizontal prediction
       switch (bitsPerSample[0]) {
@@ -74,7 +78,7 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample) {
       }
       decodeRowAcc(row, stride, bytesPerSample);
     } else if (predictor === 3) { // horizontal floating point
-      row = new Uint8Array(block, i * stride * width * bytesPerSample, width * bytesPerSample);
+      row = new Uint8Array(block, i * stride * width * bytesPerSample, stride * width * bytesPerSample);
       decodeRowFloatingPoint(row, stride, bytesPerSample);
     }
   }

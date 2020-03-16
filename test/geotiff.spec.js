@@ -27,9 +27,12 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   expect(image.getGeoKeys().GeogAngularUnitsGeoKey).to.equal(9102);
 
   const allData = await image.readRasters({ window: [200, 200, 210, 210] });
+  const brData = await image.readRasters({ window: [width - 10, height - 10, width, height] });
   const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
+  expect(brData).to.have.length(sampleCount);
+  expect(brData[0]).to.be.an.instanceof(type);
   expect(data[0]).to.deep.equal(allData[5]);
 }
 
@@ -106,6 +109,26 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on deflate compressed images', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on deflate compressed images with predictor and big strips', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_big_strips.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work on tiled deflate compressed images with predictor', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('deflate_predictor_tiled.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on band interleaved, lzw compressed, and tiled tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('tiledplanarlzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
@@ -134,7 +157,7 @@ describe('GeoTIFF', () => {
   it('should work on Float64 and lzw compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float64lzw.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float64Array);
-  });
+  }).timeout(4000);
 
   it('should work on packbit compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('packbits.tiff'));
@@ -144,6 +167,18 @@ describe('GeoTIFF', () => {
   it('should work with BigTIFFs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('bigtiff.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should work with NASAs LZW compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    image.readRasters();
+  });
+
+  it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
+    const image = await tiff.getImage();
+    image.readRasters();
   });
 });
 
@@ -170,6 +205,29 @@ describe('RGB-tests', () => {
     const tiff = await GeoTIFF.fromSource(createSource('rgb_paletted.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 15);
   });
+});
+
+describe('RGBA-tests', () => {
+  const options = { window: [250, 250, 300, 300], interleave: true };
+  const comparisonRaster = (async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
+    const image = await tiff.getImage();
+    return image.readRasters(options);
+  })();
+  options.enableAlpha = true;
+  process.stdout.write(JSON.stringify(options));
+  // TODO: disabled, as in CI environment such images are not similar enough
+  // it('should work with CMYK files', async () => {
+  //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
+  //   await performRGBTest(tiff, options, comparisonRaster, 1);
+  // });
+
+  it('should work with RGBA files', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
+    await performRGBTest(tiff, options, comparisonRaster, 3);
+  });
+
+
 });
 
 describe('Geo metadata tests', async () => {
@@ -319,7 +377,7 @@ describe("writeTests", function() {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
 
     const image = await newGeoTiff.getImage();
-    const rasters = await image.readRasters();    
+    const rasters = await image.readRasters();
 
     const newValues = toArrayRecursively(rasters[0]);
 

@@ -184,6 +184,8 @@ export const fieldTypeNames = {
   0x000A: 'SRATIONAL',
   0x000B: 'FLOAT',
   0x000C: 'DOUBLE',
+  // IFD offset, suggested by https://owl.phy.queensu.ca/~phil/exiftool/standards.html
+  0x000D: 'IFD',
   // introduced by BigTIFF
   0x0010: 'LONG8',
   0x0011: 'SLONG8',
@@ -209,6 +211,13 @@ export const photometricInterpretations = {
   CIELab: 8,
   ICCLab: 9,
 };
+
+export const ExtraSamplesValues = {
+  Unspecified: 0,
+  Assocalpha: 1,
+  Unassalpha: 2,
+};
+
 
 export const geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
@@ -266,25 +275,3 @@ for (const key in geoKeyNames) {
     geoKeys[geoKeyNames[key]] = parseInt(key, 10);
   }
 }
-
-export let parseXml; // eslint-disable-line
-// node.js version
-if (typeof window === 'undefined') {
-  parseXml = function (xmlStr) {
-    // requires xmldom module
-    const { DOMParser } = require('xmldom'); // eslint-disable-line global-require
-    return (new DOMParser()).parseFromString(xmlStr, 'text/xml');
-  };
-} else if (typeof window.DOMParser !== 'undefined') {
-  parseXml = function (xmlStr) {
-    return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
-  };
-} else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
-  parseXml = function (xmlStr) {
-    const xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
-    xmlDoc.async = 'false';
-    xmlDoc.loadXML(xmlStr);
-    return xmlDoc;
-  };
-}
-

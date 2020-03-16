@@ -12,6 +12,7 @@ export default class BaseDecoder {
     if (predictor !== 1) {
       return applyPredictor(
         decoded, predictor, tileWidth, tileHeight, fileDirectory.BitsPerSample,
+        fileDirectory.PlanarConfiguration,
       );
     }
     return decoded;

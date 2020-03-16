@@ -31,7 +31,7 @@
 import { photometricInterpretations, parseXml } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
-import { resample } from './resample';
+import { resample, resampleInterleaved } from './resample';
 
 function sum(array, start, end) {
   let s = 0;
@@ -159,7 +159,12 @@ class GeoTIFFImage {
    * @returns {Number} the height of each tile
    */
   getTileHeight() {
-    return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
+    if (this.isTiled) {
+      return this.fileDirectory.TileLength;
+    } else if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
+      return Math.min(this.fileDirectory.RowsPerStrip, this.getHeight());
+    }
+    return this.getHeight();
   }
 
   /**
@@ -378,10 +383,28 @@ class GeoTIFFImage {
 
     if ((width &amp;&amp; (imageWindow[2] - imageWindow[0]) !== width)
         || (height &amp;&amp; (imageWindow[3] - imageWindow[1]) !== height)) {
-      return resample(
-        valueArrays, imageWindow[2] - imageWindow[0], imageWindow[3] - imageWindow[1],
-        width, height, resampleMethod,
-      );
+      let resampled;
+      if (interleave) {
+        resampled = resampleInterleaved(
+          valueArrays,
+          imageWindow[2] - imageWindow[0],
+          imageWindow[3] - imageWindow[1],
+          width, height,
+          samples.length,
+          resampleMethod,
+        );
+      } else {
+        resampled = resample(
+          valueArrays,
+          imageWindow[2] - imageWindow[0],
+          imageWindow[3] - imageWindow[1],
+          width, height,
+          resampleMethod,
+        );
+      }
+      resampled.width = width;
+      resampled.height = height;
+      return resampled;
     }
 
     valueArrays.width = width || imageWindow[2] - imageWindow[0];
@@ -396,22 +419,24 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {Object} [options] optional parameters
+   * @param {Object} [options={}] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.samples=all samples] the selection of samples to read from.
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {number} [width] The desired width of the output. When the width is no the
-   *                         same as the images, resampling will be performed.
-   * @param {number} [height] The desired height of the output. When the width is no the
-   *                          same as the images, resampling will be performed.
-   * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [fillValue] The value to use for parts of the image
-   *                                      outside of the images extent. When multiple
-   *                                      samples are requested, an array of fill values
-   *                                      can be passed.
+   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {number} [options.width] The desired width of the output. When the width is
+   *                                 not the same as the images, resampling will be
+   *                                 performed.
+   * @param {number} [options.height] The desired height of the output. When the width
+   *                                  is not the same as the images, resampling will
+   *                                  be performed.
+   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {number|number[]} [options.fillValue] The value to use for parts of the image
+   *                                              outside of the images extent. When
+   *                                              multiple samples are requested, an
+   *                                              array of fill values can be passed.
    * @returns {Promise.&lt;(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
@@ -717,13 +742,13 @@ export default GeoTIFFImage;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

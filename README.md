@@ -91,10 +91,10 @@ npm test
 To do some in-browser testing do:
 
 ```bash
-npm start
+npm run dev
 ```
 
-and navigate to `http://localhost:8090/test/`
+and navigate to `http://localhost:8090/`
 
 To build the library do:
 
@@ -426,6 +426,9 @@ If you have an idea, found a bug or have a remark, please open a ticket, we will
 look into it ASAP.
 
 Pull requests are welcome as well!
+
+## Community Packages
+A list of community packages can be found in [COMMUNITY.md](COMMUNITY.md)
 
 ## Acknowledgements
 

@@ -4,6 +4,7 @@ import BaseDecoder from './basedecoder';
 const MIN_BITS = 9;
 const CLEAR_CODE = 256; // clear code
 const EOI_CODE = 257; // end of information
+const MAX_BYTELENGTH = 12;
 
 function getByte(array, position, length) {
   const d = position % 8;
@@ -64,9 +65,6 @@ function decompress(input) {
     dictionaryChar[dictionaryLength] = c;
     dictionaryIndex[dictionaryLength] = i;
     dictionaryLength++;
-    if (dictionaryLength >= (2 ** byteLength)) {
-      byteLength++;
-    }
     return dictionaryLength - 1;
   }
   function getDictionaryReversed(n) {
@@ -89,11 +87,11 @@ function decompress(input) {
       while (code === CLEAR_CODE) {
         code = getNext(array);
       }
-      if (code > CLEAR_CODE) {
-        throw new Error(`corrupted code at scanline ${code}`);
-      }
+
       if (code === EOI_CODE) {
         break;
+      } else if (code > CLEAR_CODE) {
+        throw new Error(`corrupted code at scanline ${code}`);
       } else {
         const val = getDictionaryReversed(code);
         appendReversed(result, val);
@@ -115,8 +113,12 @@ function decompress(input) {
       oldCode = code;
     }
 
-    if (dictionaryLength >= (2 ** byteLength) - 1) {
-      byteLength++;
+    if (dictionaryLength + 1 >= (2 ** byteLength)) {
+      if (byteLength === MAX_BYTELENGTH) {
+        oldCode = undefined;
+      } else {
+        byteLength++;
+      }
     }
     code = getNext(array);
   }
