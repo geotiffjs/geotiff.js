@@ -111,7 +111,7 @@ class BlockedSource {
    * @param {object} options Additional options
    * @param {object} options.blockSize Size of blocks to be fetched
    */
-  constructor(retrievalFunction, { blockSize = 65535, multiRanges = false, maxRanges = 2, cacheSize = 100 } = {}) {
+  constructor(retrievalFunction, { blockSize = 65536, multiRanges = false, maxRanges = 2, cacheSize = 100 } = {}) {
     this.retrievalFunction = retrievalFunction;
     this.blockSize = blockSize;
     this.multiRanges = multiRanges;
