@@ -4,6 +4,7 @@ import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
+import { writeGeotiff } from './geotiffwriter';
 
 import * as globals from './globals';
 export { globals };
@@ -16,7 +17,7 @@ function getFieldTypeLength(fieldType) {
       return 1;
     case fieldTypes.SHORT: case fieldTypes.SSHORT:
       return 2;
-    case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT:
+    case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT: case fieldTypes.IFD:
       return 4;
     case fieldTypes.RATIONAL: case fieldTypes.SRATIONAL: case fieldTypes.DOUBLE:
     case fieldTypes.LONG8: case fieldTypes.SLONG8: case fieldTypes.IFD8:
@@ -76,7 +77,7 @@ function getValues(dataSlice, fieldType, count, offset) {
     case fieldTypes.SSHORT:
       values = new Int16Array(count); readMethod = dataSlice.readInt16;
       break;
-    case fieldTypes.LONG:
+    case fieldTypes.LONG: case fieldTypes.IFD:
       values = new Uint32Array(count); readMethod = dataSlice.readUint32;
       break;
     case fieldTypes.SLONG:
@@ -138,7 +139,7 @@ class GeoTIFFBase {
    * Then, the [readRasters]{@link GeoTIFFImage#readRasters} method of the selected
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
-   * @param {Object} [options] optional parameters
+   * @param {Object} [options={}] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
    * @param {Array} [options.bbox=whole image] the subset to read data from in
    *                                           geographical coordinates.
@@ -146,16 +147,16 @@ class GeoTIFFBase {
    * @param {Boolean} [options.interleave=false] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {Number} [width] The desired width of the output. When the width is no the
-   *                         same as the images, resampling will be performed.
-   * @param {Number} [height] The desired height of the output. When the width is no the
-   *                          same as the images, resampling will be performed.
-   * @param {String} [resampleMethod='nearest'] The desired resampling method.
-   * @param {Number|Number[]} [fillValue] The value to use for parts of the image
-   *                                      outside of the images extent. When multiple
-   *                                      samples are requested, an array of fill values
-   *                                      can be passed.
+   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {Number} [options.width] The desired width of the output. When the width is not the
+   *                                 same as the images, resampling will be performed.
+   * @param {Number} [options.height] The desired height of the output. When the width is not the
+   *                                  same as the images, resampling will be performed.
+   * @param {String} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {Number|Number[]} [options.fillValue] The value to use for parts of the image
+   *                                              outside of the images extent. When multiple
+   *                                              samples are requested, an array of fill values
+   *                                              can be passed.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters(options = {}) {
@@ -588,6 +589,15 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
+}
+
+/**
+ * Main creating function for GeoTIFF files.
+ * @param {(Array)} array of pixel values
+ * @returns {metadata} metadata
+ */
+export async function writeArrayBuffer(values, metadata) {
+  return writeGeotiff(values, metadata);
 }
 
 export { Pool };

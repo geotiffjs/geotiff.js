@@ -30,6 +30,10 @@
  * @module resample
  */
 
+function copyNewSize(array, width, height, samplesPerPixel = 1) {
+  return new (Object.getPrototypeOf(array).constructor)(width * height * samplesPerPixel);
+}
+
 /**
  * Resample the input arrays using nearest neighbor value selection.
  * @param {TypedArray[]} valueArrays The input arrays to resample
@@ -43,12 +47,13 @@ export function resampleNearest(valueArrays, inWidth, inHeight, outWidth, outHei
   const relX = inWidth / outWidth;
   const relY = inHeight / outHeight;
   return valueArrays.map((array) => {
-    const newArray = new (Object.getPrototypeOf(array).constructor)(outWidth * outHeight);
+    const newArray = copyNewSize(array, outWidth, outHeight);
     for (let y = 0; y &lt; outHeight; ++y) {
       const cy = Math.min(Math.round(relY * y), inHeight - 1);
       for (let x = 0; x &lt; outWidth; ++x) {
         const cx = Math.min(Math.round(relX * x), inWidth - 1);
-        newArray[(y * outWidth) + x] = array[(cy * inWidth) + cx];
+        const value = array[(cy * inWidth) + cx];
+        newArray[(y * outWidth) + x] = value;
       }
     }
     return newArray;
@@ -75,7 +80,7 @@ export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHe
   const relY = inHeight / outHeight;
 
   return valueArrays.map((array) => {
-    const newArray = new (Object.getPrototypeOf(array).constructor)(outWidth * outHeight);
+    const newArray = copyNewSize(array, outWidth, outHeight);
     for (let y = 0; y &lt; outHeight; ++y) {
       const rawY = relY * y;
 
@@ -99,7 +104,6 @@ export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHe
           lerp(lh, hh, tx),
           rawY % 1,
         );
-
         newArray[(y * outWidth) + x] = value;
       }
     }
@@ -108,7 +112,7 @@ export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHe
 }
 
 /**
- * Resample the input arrays using nearest neighbor value selection.
+ * Resample the input arrays using the selected resampling method.
  * @param {TypedArray[]} valueArrays The input arrays to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
@@ -128,6 +132,111 @@ export function resample(valueArrays, inWidth, inHeight, outWidth, outHeight, me
       throw new Error(`Unsupported resampling method: '${method}'`);
   }
 }
+
+/**
+ * Resample the pixel interleaved input array using nearest neighbor value selection.
+ * @param {TypedArray} valueArrays The input arrays to resample
+ * @param {number} inWidth The width of the input rasters
+ * @param {number} inHeight The height of the input rasters
+ * @param {number} outWidth The desired width of the output rasters
+ * @param {number} outHeight The desired height of the output rasters
+ * @param {number} samples The number of samples per pixel for pixel
+ *                         interleaved data
+ * @returns {TypedArray} The resampled raster
+ */
+export function resampleNearestInterleaved(
+  valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
+  const relX = inWidth / outWidth;
+  const relY = inHeight / outHeight;
+
+  const newArray = copyNewSize(valueArray, outWidth, outHeight, samples);
+  for (let y = 0; y &lt; outHeight; ++y) {
+    const cy = Math.min(Math.round(relY * y), inHeight - 1);
+    for (let x = 0; x &lt; outWidth; ++x) {
+      const cx = Math.min(Math.round(relX * x), inWidth - 1);
+      for (let i = 0; i &lt; samples; ++i) {
+        const value = valueArray[(cy * inWidth * samples) + (cx * samples) + i];
+        newArray[(y * outWidth * samples) + (x * samples) + i] = value;
+      }
+    }
+  }
+  return newArray;
+}
+
+/**
+ * Resample the pixel interleaved input array using bilinear interpolation.
+ * @param {TypedArray} valueArrays The input arrays to resample
+ * @param {number} inWidth The width of the input rasters
+ * @param {number} inHeight The height of the input rasters
+ * @param {number} outWidth The desired width of the output rasters
+ * @param {number} outHeight The desired height of the output rasters
+ * @param {number} samples The number of samples per pixel for pixel
+ *                         interleaved data
+ * @returns {TypedArray} The resampled raster
+ */
+export function resampleBilinearInterleaved(
+  valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
+  const relX = inWidth / outWidth;
+  const relY = inHeight / outHeight;
+  const newArray = copyNewSize(valueArray, outWidth, outHeight, samples);
+  for (let y = 0; y &lt; outHeight; ++y) {
+    const rawY = relY * y;
+
+    const yl = Math.floor(rawY);
+    const yh = Math.min(Math.ceil(rawY), (inHeight - 1));
+
+    for (let x = 0; x &lt; outWidth; ++x) {
+      const rawX = relX * x;
+      const tx = rawX % 1;
+
+      const xl = Math.floor(rawX);
+      const xh = Math.min(Math.ceil(rawX), (inWidth - 1));
+
+      for (let i = 0; i &lt; samples; ++i) {
+        const ll = valueArray[(yl * inWidth * samples) + (xl * samples) + i];
+        const hl = valueArray[(yl * inWidth * samples) + (xh * samples) + i];
+        const lh = valueArray[(yh * inWidth * samples) + (xl * samples) + i];
+        const hh = valueArray[(yh * inWidth * samples) + (xh * samples) + i];
+
+        const value = lerp(
+          lerp(ll, hl, tx),
+          lerp(lh, hh, tx),
+          rawY % 1,
+        );
+        newArray[(y * outWidth * samples) + (x * samples) + i] = value;
+      }
+    }
+  }
+  return newArray;
+}
+
+/**
+ * Resample the pixel interleaved input array using the selected resampling method.
+ * @param {TypedArray} valueArray The input array to resample
+ * @param {number} inWidth The width of the input rasters
+ * @param {number} inHeight The height of the input rasters
+ * @param {number} outWidth The desired width of the output rasters
+ * @param {number} outHeight The desired height of the output rasters
+ * @param {number} samples The number of samples per pixel for pixel
+ *                                 interleaved data
+ * @param {string} [method = 'nearest'] The desired resampling method
+ * @returns {TypedArray} The resampled rasters
+ */
+export function resampleInterleaved(valueArray, inWidth, inHeight, outWidth, outHeight, samples, method = 'nearest') {
+  switch (method.toLowerCase()) {
+    case 'nearest':
+      return resampleNearestInterleaved(
+        valueArray, inWidth, inHeight, outWidth, outHeight, samples,
+      );
+    case 'bilinear':
+    case 'linear':
+      return resampleBilinearInterleaved(
+        valueArray, inWidth, inHeight, outWidth, outHeight, samples,
+      );
+    default:
+      throw new Error(`Unsupported resampling method: '${method}'`);
+  }
+}
 </code></pre>
         </article>
     </section>
@@ -138,13 +247,13 @@ export function resample(valueArrays, inWidth, inHeight, outWidth, outHeight, me
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 19 2018 12:17:46 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

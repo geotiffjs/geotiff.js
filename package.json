@@ -1,6 +1,6 @@
 {
   "name": "geotiff",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": "https://github.com/geotiffjs/geotiff.js",
   "keywords": [
@@ -13,7 +13,7 @@
   "dependencies": {
     "@petamoriken/float16": "^1.0.7",
     "pako": "^1.0.3",
-    "xmldom": "0.1.*"
+    "txml": "^3.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -39,11 +39,15 @@
     "jsdoc-babel": "^0.2.1",
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.11.1",
-    "worker-loader": "^1.1.1"
+    "webpack": "^4.41.6",
+    "webpack-bundle-analyzer": "^3.6.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3",
+    "webpack-merge": "^4.2.2",
+    "worker-loader": "^2.0.0"
   },
   "scripts": {
+    "analyze": "NODE_ENV=production webpack -p --config webpack.analyze.js",
     "dev": "webpack-dev-server -d -w --content-base test",
     "watch": "webpack -d -w",
     "build:clean": "rm -rf dist/*",
@@ -55,7 +59,8 @@
     "test": "mocha --compilers js:babel-core/register --require babel-polyfill",
     "lint": "eslint src",
     "docs": "rm -rf docs/*; jsdoc -c .jsdoc.json -r src README.md -d docs",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "prepare": "npm run build"
   },
   "author": "Fabian Schindler",
   "contributors": [
