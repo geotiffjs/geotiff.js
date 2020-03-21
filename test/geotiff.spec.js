@@ -198,7 +198,7 @@ describe('RGB-tests', () => {
 
   it('should work with YCbCr files', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('ycbcr.tif'));
-    await performRGBTest(tiff, options, comparisonRaster, 3);
+    await performRGBTest(tiff, options, comparisonRaster, 27);
   });
 
   it('should work with paletted files', async () => {
@@ -215,7 +215,6 @@ describe('RGBA-tests', () => {
     return image.readRasters(options);
   })();
   options.enableAlpha = true;
-  process.stdout.write(JSON.stringify(options));
   // TODO: disabled, as in CI environment such images are not similar enough
   // it('should work with CMYK files', async () => {
   //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
@@ -226,8 +225,6 @@ describe('RGBA-tests', () => {
     const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 3);
   });
-
-
 });
 
 describe('Geo metadata tests', async () => {
@@ -247,6 +244,27 @@ describe('Geo metadata tests', async () => {
     expect(image.getBoundingBox()).to.be.an('array');
     expect(image.getGeoKeys()).to.have.property('GeographicTypeGeoKey');
     expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
+  });
+});
+
+describe('COG tests', async () => {
+  it('should parse the header ghost area when present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.deep.equal({
+      GDAL_STRUCTURAL_METADATA_SIZE: '000140 bytes',
+      LAYOUT: 'IFDS_BEFORE_DATA',
+      BLOCK_ORDER: 'ROW_MAJOR',
+      BLOCK_LEADER: 'SIZE_AS_UINT4',
+      BLOCK_TRAILER: 'LAST_4_BYTES_REPEATED',
+      KNOWN_INCOMPATIBLE_EDITION: 'NO',
+    });
+  });
+
+  it('should return null, when no ghost area is present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('initial.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.be.null;
   });
 });
 
