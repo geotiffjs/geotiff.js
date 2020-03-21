@@ -413,7 +413,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Get the values of the COG ghost area as a parsed map.
    * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
-   * @returns {object} the parsed ghost area
+   * @returns {object} the parsed ghost area or null, if no such area was found
    */
   async getGhostValues() {
     const offset = this.bigTiff ? 16 : 8;
@@ -425,7 +425,8 @@ class GeoTIFF extends GeoTIFFBase {
     let slice = await this.getSlice(offset, heuristicAreaSize);
     if (detectionString === getValues(slice, fieldTypes.ASCII, detectionString.length, offset)) {
       const valuesString = getValues(slice, fieldTypes.ASCII, heuristicAreaSize, offset);
-      const metadataSize = Number(valuesString.split('\n')[0].split('=')[1].split(' ')[0]);
+      const firstLine = valuesString.split('\n')[0];
+      const metadataSize = Number(firstLine.split('=')[1].split(' ')[0]) + firstLine.length;
       if (metadataSize > heuristicAreaSize) {
         slice = await this.getSlice(offset, metadataSize);
       }
@@ -433,6 +434,7 @@ class GeoTIFF extends GeoTIFFBase {
       this.ghostValues = {};
       fullString
         .split('\n')
+        .filter(line => line.length > 0)
         .map(line => line.split('='))
         .forEach(([key, value]) => {
           this.ghostValues[key] = value;
