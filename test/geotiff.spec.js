@@ -198,7 +198,7 @@ describe('RGB-tests', () => {
 
   it('should work with YCbCr files', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('ycbcr.tif'));
-    await performRGBTest(tiff, options, comparisonRaster, 3);
+    await performRGBTest(tiff, options, comparisonRaster, 27);
   });
 
   it('should work with paletted files', async () => {
@@ -215,7 +215,6 @@ describe('RGBA-tests', () => {
     return image.readRasters(options);
   })();
   options.enableAlpha = true;
-  process.stdout.write(JSON.stringify(options));
   // TODO: disabled, as in CI environment such images are not similar enough
   // it('should work with CMYK files', async () => {
   //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
@@ -226,8 +225,6 @@ describe('RGBA-tests', () => {
     const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 3);
   });
-
-
 });
 
 describe('Geo metadata tests', async () => {
