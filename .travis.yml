@@ -7,7 +7,11 @@ services:
 before_install:
 - docker pull osgeo/gdal:ubuntu-small-latest
 before_script:
-- docker run -it --rm -v `pwd`/test/data:/data osgeo/gdal:ubuntu-small-latest bash -c 'apt-get update && apt-get -y install imagemagick libtiff-tools && cd /data && ./setup_data.sh'
+- docker run -it --rm -v `pwd`/test/data:/data osgeo/gdal:ubuntu-small-latest bash -c "
+  apt-get update &&
+  apt-get -y install imagemagick libtiff-tools wget &&
+  cd /data &&
+  ./setup_data.sh"
 script:
 - npm test
 notifications:
