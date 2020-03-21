@@ -21,6 +21,8 @@ gdal_translate -of GTiff -co COMPRESS=LZW -co PREDICTOR=2 stripped.tiff lzw_pred
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
 gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
 
+gdal_translate -of COG initial.tiff cog.tiff
+
 # overviews
 cp stripped.tiff overviews.tiff
 gdaladdo overviews.tiff 2 4 8 16

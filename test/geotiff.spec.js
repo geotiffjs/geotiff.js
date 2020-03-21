@@ -250,6 +250,27 @@ describe('Geo metadata tests', async () => {
   });
 });
 
+describe('COG tests', async () => {
+  it('should parse the header ghost area when present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.deep.equal({
+      GDAL_STRUCTURAL_METADATA_SIZE: '000140 bytes',
+      LAYOUT: 'IFDS_BEFORE_DATA',
+      BLOCK_ORDER: 'ROW_MAJOR',
+      BLOCK_LEADER: 'SIZE_AS_UINT4',
+      BLOCK_TRAILER: 'LAST_4_BYTES_REPEATED',
+      KNOWN_INCOMPATIBLE_EDITION: 'NO',
+    });
+  });
+
+  it('should return null, when no ghost area is present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('initial.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.be.null;
+  });
+});
+
 describe("writeTests", function() {
 
 
