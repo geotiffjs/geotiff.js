@@ -413,7 +413,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Get the values of the COG ghost area as a parsed map.
    * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
-   * @returns {object} the parsed ghost area or null, if no such area was found
+   * @returns {Object} the parsed ghost area or null, if no such area was found
    */
   async getGhostValues() {
     const offset = this.bigTiff ? 16 : 8;
