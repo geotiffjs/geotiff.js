@@ -35,7 +35,8 @@ rm BigTIFFSamples.zip
 # color images
 rgb2pct.py rgb.tiff rgb_paletted.tiff
 # convert rgb.tiff -colorspace YCbCr ycbcr.tif
-rgb2ycbcr rgb.tiff ycbcr.tif -h 1 -v 1
+# rgb2ycbcr rgb.tiff ycbcr.tif -h 1 -v 1
+gdal_translate rgb.tiff ycbcr.tif -co PHOTOMETRIC=YCBCR -co COMPRESS=JPEG
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
 
