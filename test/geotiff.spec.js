@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
+import DataSlice from '../src/dataslice';
 
 function createSource(filename) {
   if (isNode) {
@@ -201,7 +202,7 @@ describe('RGB-tests', () => {
 
   it('should work with YCbCr files', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('ycbcr.tif'));
-    await performRGBTest(tiff, options, comparisonRaster, 3);
+    await performRGBTest(tiff, options, comparisonRaster, 27);
   });
 
   it('should work with paletted files', async () => {
@@ -218,7 +219,6 @@ describe('RGBA-tests', () => {
     return image.readRasters(options);
   })();
   options.enableAlpha = true;
-  process.stdout.write(JSON.stringify(options));
   // TODO: disabled, as in CI environment such images are not similar enough
   // it('should work with CMYK files', async () => {
   //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
@@ -251,10 +251,96 @@ describe('Geo metadata tests', async () => {
   });
 });
 
-describe("writeTests", function() {
+describe('COG tests', async () => {
+  it('should parse the header ghost area when present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.deep.equal({
+      GDAL_STRUCTURAL_METADATA_SIZE: '000140 bytes',
+      LAYOUT: 'IFDS_BEFORE_DATA',
+      BLOCK_ORDER: 'ROW_MAJOR',
+      BLOCK_LEADER: 'SIZE_AS_UINT4',
+      BLOCK_TRAILER: 'LAST_4_BYTES_REPEATED',
+      KNOWN_INCOMPATIBLE_EDITION: 'NO',
+    });
+  });
 
+  it('should return null, when no ghost area is present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('initial.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.be.null;
+  });
+});
 
-  it("should write pixel values and metadata with sensible defaults", async () => {
+describe('dataSlice 64 bit tests', () => {
+  const littleEndianBytes = new Uint8Array([
+    // (2 ** 53 - 1)
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0x1f,
+    0x00,
+    // 2 ** 64 - 1
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+  ]);
+  const littleEndianSlice = new DataSlice(littleEndianBytes.buffer, 0, true, true);
+  const bigEndianBytes = new Uint8Array([
+    // (2 ** 53 - 1)
+    // left
+    0x00,
+    0x1f,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // 2 ** 64 - 1
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+  ]);
+  const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
+  it('should read offset for normal int', () => {
+    const readLittleEndianBytes = littleEndianSlice.readOffset(0);
+    const readBigEndianBytes = bigEndianSlice.readOffset(0);
+    expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
+    expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
+  });
+  it('should throw error for number larger than MAX_SAFE_INTEGER', () => {
+    expect(() => {
+      littleEndianSlice.readOffset(8);
+    }).to.throw();
+    expect(() => {
+      bigEndianSlice.readOffset(8);
+    }).to.throw();
+  });
+});
+
+describe('writeTests', () => {
+  it('should write pixel values and metadata with sensible defaults', async () => {
     const originalValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const metadata = {
       height: 3,

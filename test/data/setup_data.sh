@@ -22,6 +22,8 @@ gdal_translate -of GTiff -co COMPRESS=LZW -co PREDICTOR=2 stripped.tiff lzw_pred
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
 gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
 
+gdal_translate -of COG initial.tiff cog.tiff
+
 # overviews
 cp stripped.tiff overviews.tiff
 gdaladdo overviews.tiff 2 4 8 16
@@ -34,7 +36,8 @@ rm BigTIFFSamples.zip
 # color images
 rgb2pct.py rgb.tiff rgb_paletted.tiff
 # convert rgb.tiff -colorspace YCbCr ycbcr.tif
-rgb2ycbcr rgb.tiff ycbcr.tif -h 1 -v 1
+# rgb2ycbcr rgb.tiff ycbcr.tif -h 1 -v 1
+gdal_translate -co PHOTOMETRIC=YCBCR -co COMPRESS=JPEG -co JPEG_QUALITY=100 rgb.tiff ycbcr.tif
 convert rgb.tiff -colorspace CMYK cmyk.tif
 convert rgb.tiff -colorspace Lab cielab.tif
 

@@ -278,6 +278,7 @@ class GeoTIFF extends GeoTIFFBase {
     this.cache = options.cache || false;
     this.fileDirectories = null;
     this.fileDirectoriesParsing = null;
+    this.ghostValues = null;
   }
 
   async getSlice(offset, size) {
@@ -405,6 +406,39 @@ class GeoTIFF extends GeoTIFFBase {
     }
 
     return this.fileDirectories.length;
+  }
+
+  /**
+   * Get the values of the COG ghost area as a parsed map.
+   * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
+   * @returns {Object} the parsed ghost area or null, if no such area was found
+   */
+  async getGhostValues() {
+    const offset = this.bigTiff ? 16 : 8;
+    if (this.ghostValues) {
+      return this.ghostValues;
+    }
+    const detectionString = 'GDAL_STRUCTURAL_METADATA_SIZE=';
+    const heuristicAreaSize = detectionString.length + 100;
+    let slice = await this.getSlice(offset, heuristicAreaSize);
+    if (detectionString === getValues(slice, fieldTypes.ASCII, detectionString.length, offset)) {
+      const valuesString = getValues(slice, fieldTypes.ASCII, heuristicAreaSize, offset);
+      const firstLine = valuesString.split('\n')[0];
+      const metadataSize = Number(firstLine.split('=')[1].split(' ')[0]) + firstLine.length;
+      if (metadataSize > heuristicAreaSize) {
+        slice = await this.getSlice(offset, metadataSize);
+      }
+      const fullString = getValues(slice, fieldTypes.ASCII, metadataSize, offset);
+      this.ghostValues = {};
+      fullString
+        .split('\n')
+        .filter(line => line.length > 0)
+        .map(line => line.split('='))
+        .forEach(([key, value]) => {
+          this.ghostValues[key] = value;
+        });
+    }
+    return this.ghostValues;
   }
 
   /**

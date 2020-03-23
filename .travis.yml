@@ -2,15 +2,16 @@ language: node_js
 dist: trusty
 node_js:
 - '9.11'
+services:
+- docker
 before_install:
-- sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
-- sudo apt-get update
-- sudo apt-get install -y gdal-bin python-gdal imagemagick libtiff-tools
+- docker pull osgeo/gdal:ubuntu-small-latest
 before_script:
-- mkdir -p test/data
-- pushd test/data
-- sh setup_data.sh
-- popd
+- docker run -it --rm -v `pwd`/test/data:/data osgeo/gdal:ubuntu-small-latest bash -c "
+  apt-get update &&
+  apt-get -y install imagemagick libtiff-tools wget &&
+  cd /data &&
+  ./setup_data.sh"
 script:
 - npm test
 notifications:
