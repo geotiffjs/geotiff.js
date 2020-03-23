@@ -38,5 +38,7 @@ module.exports = {
     'object-curly-newline': 0,
     'no-await-in-loop': 0,
     'prefer-destructuring': ['error', { 'object': true, 'array': false }],
+    'curly': ['error', 'all'],
+    'brace-style': ['error', '1tbs', { 'allowSingleLine': false }]
   }
 };

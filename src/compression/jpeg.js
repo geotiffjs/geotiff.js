@@ -341,7 +341,9 @@ function decodeScan(data, initialOffset,
         mcu++;
 
         // If we've reached our expected MCU's, stop decoding
-        if (mcu === mcuExpected) break;
+        if (mcu === mcuExpected) {
+          break;
+        }
       }
     }
 
@@ -602,8 +604,12 @@ class JpegStreamReader {
       for (componentId in frame.components) {
         if (frame.components.hasOwnProperty(componentId)) {
           component = frame.components[componentId];
-          if (maxH < component.h) maxH = component.h;
-          if (maxV < component.v) maxV = component.v;
+          if (maxH < component.h) {
+            maxH = component.h;
+          }
+          if (maxV < component.v) {
+            maxV = component.v;
+          }
         }
       }
       const mcusPerLine = Math.ceil(frame.samplesPerLine / 8 / maxH);

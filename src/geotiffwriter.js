@@ -55,12 +55,16 @@ const _binBE = {
   },
   readFloat: (buff, p) => {
     const a = _binBE.ui8;
-    times(4, (i) => { a[i] = buff[p + 3 - i]; });
+    times(4, (i) => {
+      a[i] = buff[p + 3 - i];
+    });
     return _binBE.fl32[0];
   },
   readDouble: (buff, p) => {
     const a = _binBE.ui8;
-    times(8, (i) => { a[i] = buff[p + 7 - i]; });
+    times(8, (i) => {
+      a[i] = buff[p + 7 - i];
+    });
     return _binBE.fl64[0];
   },
   writeUshort: (buff, p, n) => {
@@ -74,7 +78,9 @@ const _binBE = {
     buff[p + 3] = (n >> 0) & 255;
   },
   writeASCII: (buff, p, s) => {
-    times(s.length, (i) => { buff[p + i] = s.charCodeAt(i); });
+    times(s.length, (i) => {
+      buff[p + i] = s.charCodeAt(i);
+    });
   },
   ui8: new Uint8Array(8),
 };
@@ -252,7 +258,9 @@ const encodeImage = (values, width, height, metadata) => {
   const samplesPerPixel = ifd[277];
 
   const data = new Uint8Array(numBytesInIfd + (width * height * samplesPerPixel));
-  times(prfx.length, (i) => { data[i] = prfx[i]; });
+  times(prfx.length, (i) => {
+    data[i] = prfx[i];
+  });
   forEach(img, (value, i) => {
     data[numBytesInIfd + i] = value;
   });
