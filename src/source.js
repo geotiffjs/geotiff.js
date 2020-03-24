@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { open, read } from 'fs';
+import { open, read, close } from 'fs';
 import http from 'http';
 import https from 'https';
 import urlMod from 'url';
@@ -397,6 +397,17 @@ export function makeBufferSource(arrayBuffer) {
   };
 }
 
+function closeAsync(fd) {
+  return new Promise((resolve, reject) => {
+    close(fd, err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    });
+  });
+}
 
 function openAsync(path, flags, mode = undefined) {
   return new Promise((resolve, reject) => {
@@ -434,6 +445,7 @@ export function makeFileSource(path) {
     async fetch(offset, length) {
       const fd = await fileOpen;
       const { buffer } = await readAsync(fd, Buffer.alloc(length), 0, length, offset);
+      await closeAsync(fd);
       return buffer.buffer;
     },
   };
