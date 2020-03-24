@@ -439,11 +439,11 @@ function readAsync(...args) {
  * @returns The constructed source
  */
 export function makeFileSource(path) {
-  const fileOpen = openAsync(path, 'r');
+  const fileOpen = openAsync.bind(undefined, path, 'r');
 
   return {
     async fetch(offset, length) {
-      const fd = await fileOpen;
+      const fd = await fileOpen();
       const { buffer } = await readAsync(fd, Buffer.alloc(length), 0, length, offset);
       await closeAsync(fd);
       return buffer.buffer;
