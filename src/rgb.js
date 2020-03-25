@@ -109,4 +109,3 @@ export function fromCIELab(cieLabRaster) {
   }
   return rgbRaster;
 }
-/* eslint-enable */

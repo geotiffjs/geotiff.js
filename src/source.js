@@ -96,7 +96,7 @@ function getCoherentBlockGroups(blockIds) {
  * Promisified wrapper around 'setTimeout' to allow 'await'
  */
 async function wait(milliseconds) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 /**
@@ -218,7 +218,7 @@ class BlockedSource {
     await Promise.all(blockRequests);
 
     // now get all blocks for the request and return a summary buffer
-    const blocks = allBlockIds.map(id => this.blocks.get(id));
+    const blocks = allBlockIds.map((id) => this.blocks.get(id));
     return readRangeFromBlocks(blocks, offset, length);
   }
 
@@ -246,27 +246,25 @@ class BlockedSource {
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
   return new BlockedSource(async (offset, length) => {
     const response = await fetch(url, {
-      headers: Object.assign({},
-        headers, {
-          Range: `bytes=${offset}-${offset + length - 1}`,
-        },
-      ),
+      headers: {
+        ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
+      },
     });
 
     // check the response was okay and if the server actually understands range requests
     if (!response.ok) {
       throw new Error('Error fetching data.');
     } else if (response.status === 206) {
-      const data = response.arrayBuffer ?
-        await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = response.arrayBuffer
+        ? await response.arrayBuffer() : (await response.buffer()).buffer;
       return {
         data,
         offset,
         length,
       };
     } else {
-      const data = response.arrayBuffer ?
-        await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = response.arrayBuffer
+        ? await response.arrayBuffer() : (await response.buffer()).buffer;
       return {
         data,
         offset: 0,
@@ -291,14 +289,10 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       const request = new XMLHttpRequest();
       request.open('GET', url);
       request.responseType = 'arraybuffer';
-
-      Object.entries(
-        Object.assign({},
-          headers, {
-            Range: `bytes=${offset}-${offset + length - 1}`,
-          },
-        ),
-      ).forEach(([key, value]) => request.setRequestHeader(key, value));
+      const requestHeaders = { ...headers, Range: `bytes=${offset}-${offset + length - 1}` };
+      for (const [key, value] of Object.entries(requestHeaders)) {
+        request.setRequestHeader(key, value);
+      }
 
       request.onload = () => {
         const data = request.response;
@@ -334,13 +328,10 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
   return new BlockedSource(async (offset, length) => new Promise((resolve, reject) => {
     const parsed = urlMod.parse(url);
     const request = (parsed.protocol === 'http:' ? http : https).get(
-      Object.assign({}, parsed, {
-        headers: Object.assign({},
-          headers, {
-            Range: `bytes=${offset}-${offset + length - 1}`,
-          },
-        ),
-      }), (result) => {
+      { ...parsed,
+        headers: {
+          ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
+        } }, (result) => {
         const chunks = [];
         // collect chunks
         result.on('data', (chunk) => {
@@ -375,9 +366,11 @@ export function makeRemoteSource(url, options) {
   const { forceXHR } = options;
   if (typeof fetch === 'function' && !forceXHR) {
     return makeFetchSource(url, options);
-  } else if (typeof XMLHttpRequest !== 'undefined') {
+  }
+  if (typeof XMLHttpRequest !== 'undefined') {
     return makeXHRSource(url, options);
-  } else if (http.get) {
+  }
+  if (http.get) {
     return makeHttpSource(url, options);
   }
   throw new Error('No remote source available');
@@ -450,7 +443,7 @@ export function makeFileReaderSource(file) {
       return new Promise((resolve, reject) => {
         const blob = file.slice(offset, offset + length);
         const reader = new FileReader();
-        reader.onload = event => resolve(event.target.result);
+        reader.onload = (event) => resolve(event.target.result);
         reader.onerror = reject;
         reader.readAsArrayBuffer(blob);
       });

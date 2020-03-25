@@ -1,14 +1,14 @@
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
-import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
+import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
-
 import * as globals from './globals';
-export { globals };
 import * as rgb from './rgb';
+
+export { globals };
 export { rgb };
 
 function getFieldTypeLength(fieldType) {
@@ -36,8 +36,8 @@ function parseGeoKeyDirectory(fileDirectory) {
   const geoKeyDirectory = {};
   for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
     const key = geoKeyNames[rawGeoKeyDirectory[i]];
-    const location = (rawGeoKeyDirectory[i + 1]) ?
-      (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
+    const location = (rawGeoKeyDirectory[i + 1])
+      ? (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
     const count = rawGeoKeyDirectory[i + 2];
     const offset = rawGeoKeyDirectory[i + 3];
 
@@ -249,9 +249,7 @@ class GeoTIFFBase {
       ];
     }
 
-    return usedImage.readRasters(Object.assign({}, options, {
-      window: wnd,
-    }));
+    return usedImage.readRasters({ ...options, window: wnd });
   }
 }
 
@@ -300,9 +298,9 @@ class GeoTIFF extends GeoTIFFBase {
 
     while (nextIFDByteOffset !== 0x00000000) {
       let dataSlice = await this.getSlice(nextIFDByteOffset);
-      const numDirEntries = this.bigTiff ?
-        dataSlice.readUint64(nextIFDByteOffset) :
-        dataSlice.readUint16(nextIFDByteOffset);
+      const numDirEntries = this.bigTiff
+        ? dataSlice.readUint64(nextIFDByteOffset)
+        : dataSlice.readUint16(nextIFDByteOffset);
 
       // if the slice does not cover the whole IFD, request a bigger slice, where the
       // whole IFD fits: num of entries + n x tag length + offset to next IFD
@@ -318,9 +316,9 @@ class GeoTIFF extends GeoTIFFBase {
       for (let entryCount = 0; entryCount < numDirEntries; i += entrySize, ++entryCount) {
         const fieldTag = dataSlice.readUint16(i);
         const fieldType = dataSlice.readUint16(i + 2);
-        const typeCount = this.bigTiff ?
-          dataSlice.readUint64(i + 4) :
-          dataSlice.readUint32(i + 4);
+        const typeCount = this.bigTiff
+          ? dataSlice.readUint64(i + 4)
+          : dataSlice.readUint32(i + 4);
 
         let fieldValues;
         let value;
@@ -347,8 +345,8 @@ class GeoTIFF extends GeoTIFFBase {
         }
 
         // unpack single values from the array
-        if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1 &&
-          !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+        if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1
+          && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
           value = fieldValues[0];
         } else {
           value = fieldValues;
@@ -477,9 +475,9 @@ class GeoTIFF extends GeoTIFFBase {
       throw new TypeError('Invalid magic number.');
     }
 
-    const firstIFDOffset = bigTiff ?
-      dataView.getUint64(8, littleEndian) :
-      dataView.getUint32(4, littleEndian);
+    const firstIFDOffset = bigTiff
+      ? dataView.getUint64(8, littleEndian)
+      : dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
   }
 }
@@ -510,7 +508,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
 
   async parseFileDirectoriesPerFile() {
     const requests = [this.mainFile.parseFileDirectories()]
-      .concat(this.overviewFiles.map(file => file.parseFileDirectories()));
+      .concat(this.overviewFiles.map((file) => file.parseFileDirectories()));
 
     this.fileDirectoriesPerFile = await Promise.all(requests);
     return this.fileDirectoriesPerFile;
@@ -619,7 +617,7 @@ export async function fromBlob(blob) {
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
   const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options));
   const overviewFiles = await Promise.all(
-    overviewUrls.map(url => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
