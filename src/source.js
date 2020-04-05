@@ -445,8 +445,11 @@ export function makeFileSource(path) {
     async fetch(offset, length) {
       const fd = await fileOpen();
       const { buffer } = await readAsync(fd, Buffer.alloc(length), 0, length, offset);
-      await closeAsync(fd);
       return buffer.buffer;
+    },
+    async close() {
+      const fd = await fileOpen();
+      return await closeAsync(fd);
     },
   };
 }
