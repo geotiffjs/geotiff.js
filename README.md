@@ -74,6 +74,10 @@ sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
 sudo apt-get install -y gdal-bin imagemagick
 ```
+To install GDAL and ImageMagick on MacOS X, please use [Homebrew](https://brew.sh/). The setup script also needs `wget` on MacOS X
+```bash
+brew install wget gdal imagemagick
+```
 
 When GDAL and ImageMagick is installed, the test data setup script can be run:
 ```bash

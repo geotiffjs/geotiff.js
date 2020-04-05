@@ -84,6 +84,12 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should close the GeoTIFF without errors', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    expect(await tiff.close()).to.be.undefined;
+  });
+
   it('should work on tiled tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('tiled.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);

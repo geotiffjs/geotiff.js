@@ -480,6 +480,18 @@ class GeoTIFF extends GeoTIFFBase {
       : dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
   }
+  /**
+   * Closes the underlying file buffer
+   * N.B. After the GeoTIFF has been completely processed it needs
+   * to be closed but only if it has been constructed from a file.
+   */
+  close() {
+    if (typeof this.source.close === 'function') {
+      return this.source.close();
+    } else {
+      return false;
+    }
+  }
 }
 
 export { GeoTIFF };
@@ -586,7 +598,10 @@ export async function fromArrayBuffer(arrayBuffer) {
  * Construct a GeoTIFF from a local file path. This uses the node
  * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
  * not available on browsers.
- * @param {string} path The filepath to read from.
+ * 
+ * N.B. After the GeoTIFF has been completely processed it needs
+ * to be closed but only if it has been constructed from a file.
+ * @param {string} path The file path to read from.
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path) {
