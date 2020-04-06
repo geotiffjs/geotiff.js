@@ -1,5 +1,5 @@
 # geotiff.js
-[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![Dependency Status](https://www.versioneye.com/user/projects/566af91d4e049b0041000083/badge.svg?style=flat)](https://www.versioneye.com/user/projects/566af91d4e049b0041000083) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
+[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
 
 Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.
@@ -169,7 +169,7 @@ or a `Blob`/`File`:
 ```
 
 Now that we have opened the TIFF file, we can inspect it. The TIFF is structured
-in a small header and a list of one or more images (Image File Directory, IFD to 
+in a small header and a list of one or more images (Image File Directory, IFD to
 use the TIFF nomenclature). To get one image by index the `getImage()` function
 must be used. This is again an asynchronous operation, as the IFDs are loaded
 lazily:
@@ -178,7 +178,7 @@ lazily:
 const image = await tiff.getImage(); // by default, the first image is read.
 ```
 
-Now that we have obtained a `GeoTIFFImage` object we can inspect its metadata 
+Now that we have obtained a `GeoTIFFImage` object we can inspect its metadata
 (like size, tiling, number of samples, geographical information, etc.). All
 the metadata is parsed once the IFD is first parsed, thus the access to that
 is synchronous:
@@ -273,11 +273,11 @@ const pool = new GeoTIFF.Pool();
 const data = await image.readRasters({ pool });
 ```
 
-It is possible to provide a pool size (i.e: number of workers), by default the number 
+It is possible to provide a pool size (i.e: number of workers), by default the number
 of available processors is used.
 
 Because of the way WebWorker work (pun intended), there is a considerable overhead
-involved when using the `Pool`, as all the data must be copied and cannot be simply be 
+involved when using the `Pool`, as all the data must be copied and cannot be simply be
 shared. But the benefits are two-fold. First: for larger image reads the overall time
 is still likely to be reduced and second: the main thread is relieved which helps to
 uphold responsiveness.
@@ -287,7 +287,7 @@ is not available out of the box.
 
 ### Dealing with visual data
 
-The TIFF specification provides various ways to encode visual data. In the 
+The TIFF specification provides various ways to encode visual data. In the
 specification this is called photometric interpretation. The simplest case we
 already dealt with is the RGB one. Others are grayscale, paletted images, CMYK,
 YCbCr, and CIE L*a*b.
@@ -305,7 +305,7 @@ const rgb = await image.readRGB({
 
 ### Automatic image selection (experimental)
 
-When dealing with images that have internal (or even external, see the next section) 
+When dealing with images that have internal (or even external, see the next section)
 overviews, `GeoTIFF` objects provide a separate `readRasters` method. This method
 works very similar to the method on the `GeoTIFFImage` objects with the same name.
 By default, it uses the larges image available (highest resolution), but when either
@@ -363,7 +363,7 @@ const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const metadata = {
   height: 3,
   ModelPixelScale: [0.031355, 0.031355, 0],
-  ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],  
+  ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],
   width: 3
 };
 const arrayBuffer = await writeArrayBuffer(values, metadata);
