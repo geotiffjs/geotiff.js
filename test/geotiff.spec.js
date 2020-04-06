@@ -180,6 +180,17 @@ describe('GeoTIFF', () => {
     const image = await tiff.getImage();
     image.readRasters();
   });
+
+  it('should work with multi-page-tiff directory parsing', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const offsets = [8, 2712, 4394];
+    tiff.ifdRequests = offsets.map(offset => tiff.parseFileDirectoryAt(offset));
+    tiff.ifdRequests.forEach(async (_, i) => {
+      const image = await tiff.getImage(i);
+      image.readRasters();
+    });
+  });
+
 });
 
 describe('RGB-tests', () => {
@@ -280,7 +291,7 @@ describe("writeTests", function() {
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
@@ -346,7 +357,7 @@ describe("writeTests", function() {
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8,8,8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
@@ -432,7 +443,7 @@ describe("writeTests", function() {
 
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
