@@ -180,17 +180,41 @@ describe('GeoTIFF', () => {
     const image = await tiff.getImage();
     image.readRasters();
   });
+});
 
-  it('should work with multi-page-tiff directory parsing', async () => {
+describe('ifdRequestTests', () => {
+  const offsets = [8, 2712, 4394];
+
+  it('requesting first image only parses first IFD', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
-    const offsets = [8, 2712, 4394];
+    await tiff.getImage(0);
+    expect(tiff.ifdRequests.length).to.equal(1);
+  });
+
+  it('requesting last image only parses all IFDs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    await tiff.getImage(2);
+    // the image has 3 panes, so 2 is the index of the third image
+    expect(tiff.ifdRequests.length).to.equal(3);
+  });
+
+  it('requesting third image after manually parsing second yiels 2 ifdRequests', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const index = 1;
+    tiff.ifdRequests[index] = tiff.parseFileDirectoryAt(offsets[index]);
+    await tiff.getImage(index + 1);
+    // first image slot is empty so we filter out the Promises, of which there are two
+    expect(tiff.ifdRequests.filter(ifdRequest => ifdRequest instanceof Promise).length).to.equal(2);
+  });
+
+  it('should be able to manually set ifdRequests and readRasters', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
     tiff.ifdRequests = offsets.map(offset => tiff.parseFileDirectoryAt(offset));
     tiff.ifdRequests.forEach(async (_, i) => {
       const image = await tiff.getImage(i);
       image.readRasters();
     });
   });
-
 });
 
 describe('RGB-tests', () => {
