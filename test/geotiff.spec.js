@@ -184,22 +184,23 @@ describe('GeoTIFF', () => {
 
 describe('ifdRequestTests', () => {
   const offsets = [8, 2712, 4394];
+  const source = 'multi-channel.ome.tif';
 
   it('requesting first image only parses first IFD', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource(source));
     await tiff.getImage(0);
     expect(tiff.ifdRequests.length).to.equal(1);
   });
 
   it('requesting last image only parses all IFDs', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource(source));
     await tiff.getImage(2);
     // the image has 3 panes, so 2 is the index of the third image
     expect(tiff.ifdRequests.length).to.equal(3);
   });
 
   it('requesting third image after manually parsing second yiels 2 ifdRequests', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource(source));
     const index = 1;
     tiff.ifdRequests[index] = tiff.parseFileDirectoryAt(offsets[index]);
     await tiff.getImage(index + 1);
@@ -208,7 +209,7 @@ describe('ifdRequestTests', () => {
   });
 
   it('should be able to manually set ifdRequests and readRasters', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('multi-channel.ome.tif'));
+    const tiff = await GeoTIFF.fromSource(createSource(source));
     tiff.ifdRequests = offsets.map(offset => tiff.parseFileDirectoryAt(offset));
     tiff.ifdRequests.forEach(async (_, i) => {
       const image = await tiff.getImage(i);
