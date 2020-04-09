@@ -8,26 +8,53 @@ export default class DataView64 {
   }
 
   getUint64(offset, littleEndian) {
-    const left = this.getUint32(offset, littleEndian);
-    const right = this.getUint32(offset + 4, littleEndian);
+    const left = this.getUint32(offset);
+    const right = this.getUint32(offset + 4);
+    let combined;
     if (littleEndian) {
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        );
+      }
+      return combined;
     }
-    return (right << 32) | left;
+    combined = 2 ** 32 * left + right;
+    if (!Number.isSafeInteger(combined)) {
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+      );
+    }
+
+    return combined;
   }
 
   getInt64(offset, littleEndian) {
     let left;
     let right;
     if (littleEndian) {
-      left = this.getInt32(offset, littleEndian);
-      right = this.getUint32(offset + 4, littleEndian);
+      left = this.getInt32(offset);
+      right = this.getUint32(offset + 4);
 
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        );
+      }
+      return combined;
     }
-    left = this.getUint32(offset, littleEndian);
-    right = this.getInt32(offset + 4, littleEndian);
-    return (right << 32) | left;
+    left = this.getUint32(offset - this._sliceOffset);
+    right = this.getInt32(offset - this._sliceOffset + 4);
+    combined = 2 ** 32 * left + right;
+    if (!Number.isSafeInteger(combined)) {
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+      );
+    }
+
+    return combined;
   }
 
   getUint8(offset, littleEndian) {
