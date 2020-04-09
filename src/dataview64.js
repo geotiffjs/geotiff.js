@@ -8,8 +8,8 @@ export default class DataView64 {
   }
 
   getUint64(offset, littleEndian) {
-    const left = this.getUint32(offset);
-    const right = this.getUint32(offset + 4);
+    const left = this.getUint32(offset, littleEndian);
+    const right = this.getUint32(offset + 4, littleEndian);
     let combined;
     if (littleEndian) {
       combined = left + 2 ** 32 * right;
@@ -34,8 +34,8 @@ export default class DataView64 {
     let left;
     let right;
     if (littleEndian) {
-      left = this.getInt32(offset);
-      right = this.getUint32(offset + 4);
+      left = this.getInt32(offset, littleEndian);
+      right = this.getUint32(offset + 4, littleEndian);
 
       combined = left + 2 ** 32 * right;
       if (!Number.isSafeInteger(combined)) {
@@ -45,8 +45,8 @@ export default class DataView64 {
       }
       return combined;
     }
-    left = this.getUint32(offset - this._sliceOffset);
-    right = this.getInt32(offset - this._sliceOffset + 4);
+    left = this.getUint32(offset, littleEndian);
+    right = this.getInt32(offset + 4, littleEndian);
     combined = 2 ** 32 * left + right;
     if (!Number.isSafeInteger(combined)) {
       throw new Error(
