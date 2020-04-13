@@ -10,7 +10,7 @@
     "raster"
   ],
   "main": "dist-node/main.js",
-  "browser": "dist-browser/main.js",
+  "module": "src/main.js",
   "engines": {
     "node": ">=10.19",
     "browsers": "defaults"
