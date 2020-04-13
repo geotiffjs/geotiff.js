@@ -11,6 +11,7 @@
   ],
   "main": "dist-node/main.js",
   "module": "src/main.js",
+  "jsdelivr": "dist-browser/main.js",
   "files": [
     "src",
     "dist-node",
