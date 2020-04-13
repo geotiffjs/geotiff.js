@@ -298,8 +298,21 @@ shared. But the benefits are two-fold. First: for larger image reads the overall
 is still likely to be reduced and second: the main thread is relieved which helps to
 uphold responsiveness.
 
-Note: WebWorkers are only available in browsers. For node applications this feature
-is not available out of the box.
+If you wan't to use the Worker Pool in a project built with webpack (ex: VueJS or React) you have to install `threads-plugin` and add the plugin to your `webpack.config.js`:
+```
+npm install -D threads-plugin
+```
+
+```javascript
+const ThreadsPlugin = require('threads-plugin')
+
+module.exports = {
+  // ...
+  plugins: [
+    new ThreadsPlugin()
+  ]
+}
+````
 
 ### Dealing with visual data
 
