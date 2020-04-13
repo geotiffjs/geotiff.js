@@ -37,11 +37,12 @@
     "jsdoc-babel": "^0.5.0",
     "jshint-stylish": "^2.2.1",
     "mocha": "^7.1.0",
+    "npm-run-all": "^4.1.5",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-bundle-visualiser": "^1.2.0"
   },
   "scripts": {
-    "build": "npm run build:clean; npm run build:browser; npm run build:node;",
+    "build": "npm run build:clean; run-p build:browser build:node;",
     "build:clean": "rm -rf dist-node/ dist-browser/",
     "build:node": "parcel build src/main.js --target node --out-dir dist-node/",
     "build:browser": "parcel build src/main.js --target browser --out-dir dist-browser/ --global GeoTIFF",
