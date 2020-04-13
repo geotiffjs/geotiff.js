@@ -108,9 +108,24 @@ npm run build
 
 The output is written to `dist-browser/main.js` and `dist-node/main.js`.
 
+## Install
+
+You can install geotiff.js using npm:
+```
+npm install geotiff
+```
+
+or you can use the prebuilt version with a CDN:
+
+```html
+<script async src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+```
+Note: Currently the CDN installation is not compatible with GeoTIFF workers pool `GeoTIFF.Pool`.
+
+
 ## Usage
 
-geotiff.js works with both `require` and the global variable `GeoTIFF`:
+geotiff.js works with both `require`, `import`and the global variable `GeoTIFF`:
 
 ```javascript
 const GeoTIFF = require('geotiff');
@@ -121,9 +136,10 @@ import GeoTIFF from 'geotiff';
 or:
 
 ```html
-<script src="dist-browser/main.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/geotiff"></script>
 <script>
   console.log(GeoTIFF);
+  // Note: GeoTIFF.Pool will not work
 </script>
 ```
 
