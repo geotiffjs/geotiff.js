@@ -125,7 +125,7 @@ Note: Currently the CDN installation is not compatible with GeoTIFF workers pool
 
 ## Usage
 
-geotiff.js works with both `require`, `import`and the global variable `GeoTIFF`:
+geotiff.js works with both `require`, `import` and the global variable `GeoTIFF`:
 
 ```javascript
 const GeoTIFF = require('geotiff');
@@ -298,7 +298,7 @@ shared. But the benefits are two-fold. First: for larger image reads the overall
 is still likely to be reduced and second: the main thread is relieved which helps to
 uphold responsiveness.
 
-If you wan't to use the Worker Pool in a project built with webpack (ex: VueJS or React) you have to install `threads-plugin` and add the plugin to your `webpack.config.js`:
+If you want to use the Worker Pool in a project built with webpack (ex: VueJS or React) you have to install `threads-plugin` and add the plugin to your `webpack.config.js`:
 ```
 npm install -D threads-plugin
 ```
