@@ -9,9 +9,9 @@
     "image",
     "raster"
   ],
-  "main": "dist-node/main.js",
-  "module": "src/main.js",
-  "jsdelivr": "dist-browser/main.js",
+  "main": "dist-node/geotiff.js",
+  "module": "src/geotiff.js",
+  "jsdelivr": "dist-browser/geotiff.js",
   "files": [
     "src",
     "dist-node",
@@ -50,8 +50,8 @@
   "scripts": {
     "build": "npm run build:clean; run-p build:browser build:node;",
     "build:clean": "rm -rf dist-node/ dist-browser/",
-    "build:node": "parcel build src/main.js --target node --out-dir dist-node/",
-    "build:browser": "parcel build src/main.js --target browser --out-dir dist-browser/ --global GeoTIFF",
+    "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/",
+    "build:browser": "parcel build src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF",
     "dev": "parcel serve test/data/** test/index.html --port 8090",
     "dev:clean": "rm -rf dist/ .cache/",
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
