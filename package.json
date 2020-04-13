@@ -11,6 +11,11 @@
   ],
   "main": "dist-node/main.js",
   "module": "src/main.js",
+  "files": [
+    "src",
+    "dist-node",
+    "dist-browser"
+  ],
   "engines": {
     "node": ">=10.19",
     "browsers": "defaults"
