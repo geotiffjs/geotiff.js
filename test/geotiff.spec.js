@@ -1,7 +1,7 @@
 import isNode from 'detect-node';
 import { expect } from 'chai';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/main';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/geotiff';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';

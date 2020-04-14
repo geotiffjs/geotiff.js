@@ -1,4 +1,4 @@
-import * as GeoTIFF from '../src/main'
+import GeoTIFF from '../src/geotiff'
 
 const imageWindow = [0, 0, 500, 500];
 const tiffs = [
