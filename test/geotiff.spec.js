@@ -1,14 +1,10 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable global-require */
-
 import isNode from 'detect-node';
 import { expect } from 'chai';
-import 'isomorphic-fetch';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer } from '../src/main';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/geotiff';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
-
+import DataSlice from '../src/dataslice';
 
 function createSource(filename) {
   if (isNode) {
@@ -86,6 +82,12 @@ describe('GeoTIFF', () => {
   it('should work on stripped tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
+  it('should close the GeoTIFF without errors', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+    expect(await tiff.close()).to.be.undefined;
   });
 
   it('should work on tiled tiffs', async () => {
@@ -172,13 +174,21 @@ describe('GeoTIFF', () => {
   it('should work with NASAs LZW compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
     const image = await tiff.getImage();
-    image.readRasters();
+    await image.readRasters();
   });
+
+  // FIXME: does not work with mocha
+  // it('should work with worker pool', async () => {
+  //   const pool = new Pool()
+  //   const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+  //   const image = await tiff.getImage();
+  //   await image.readRasters({ pool });
+  // });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
     const image = await tiff.getImage();
-    image.readRasters();
+    await image.readRasters();
   });
 });
 
@@ -234,7 +244,7 @@ describe('RGB-tests', () => {
 
   it('should work with YCbCr files', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('ycbcr.tif'));
-    await performRGBTest(tiff, options, comparisonRaster, 3);
+    await performRGBTest(tiff, options, comparisonRaster, 27);
   });
 
   it('should work with paletted files', async () => {
@@ -251,7 +261,6 @@ describe('RGBA-tests', () => {
     return image.readRasters(options);
   })();
   options.enableAlpha = true;
-  process.stdout.write(JSON.stringify(options));
   // TODO: disabled, as in CI environment such images are not similar enough
   // it('should work with CMYK files', async () => {
   //   const tiff = await GeoTIFF.fromSource(createSource('cmyk.tif'));
@@ -262,8 +271,6 @@ describe('RGBA-tests', () => {
     const tiff = await GeoTIFF.fromSource(createSource('RGBA.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 3);
   });
-
-
 });
 
 describe('Geo metadata tests', async () => {
@@ -286,29 +293,108 @@ describe('Geo metadata tests', async () => {
   });
 });
 
-describe("writeTests", function() {
+describe('COG tests', async () => {
+  it('should parse the header ghost area when present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.deep.equal({
+      GDAL_STRUCTURAL_METADATA_SIZE: '000140 bytes',
+      LAYOUT: 'IFDS_BEFORE_DATA',
+      BLOCK_ORDER: 'ROW_MAJOR',
+      BLOCK_LEADER: 'SIZE_AS_UINT4',
+      BLOCK_TRAILER: 'LAST_4_BYTES_REPEATED',
+      KNOWN_INCOMPATIBLE_EDITION: 'NO',
+    });
+  });
 
+  it('should return null, when no ghost area is present', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('initial.tiff'));
+    const ghostValues = await tiff.getGhostValues();
+    expect(ghostValues).to.be.null;
+  });
+});
 
-  it("should write pixel values and metadata with sensible defaults", async () => {
+describe('dataSlice 64 bit tests', () => {
+  const littleEndianBytes = new Uint8Array([
+    // (2 ** 53 - 1)
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0x1f,
+    0x00,
+    // 2 ** 64 - 1
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+  ]);
+  const littleEndianSlice = new DataSlice(littleEndianBytes.buffer, 0, true, true);
+  const bigEndianBytes = new Uint8Array([
+    // (2 ** 53 - 1)
+    // left
+    0x00,
+    0x1f,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // 2 ** 64 - 1
+    // left
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+    // right
+    0xff,
+    0xff,
+    0xff,
+    0xff,
+  ]);
+  const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
+  it('should read offset for normal int', () => {
+    const readLittleEndianBytes = littleEndianSlice.readOffset(0);
+    const readBigEndianBytes = bigEndianSlice.readOffset(0);
+    expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
+    expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
+  });
+  it('should throw error for number larger than MAX_SAFE_INTEGER', () => {
+    expect(() => {
+      littleEndianSlice.readOffset(8);
+    }).to.throw();
+    expect(() => {
+      bigEndianSlice.readOffset(8);
+    }).to.throw();
+  });
+});
 
+describe('writeTests', () => {
+  it('should write pixel values and metadata with sensible defaults', async () => {
     const originalValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
     const metadata = {
       height: 3,
       width: 3
     };
-
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
-
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
-
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
-
     const newValues = toArrayRecursively(rasters[0]);
-
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
-
+    
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an("object");
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
@@ -331,46 +417,37 @@ describe("writeTests", function() {
     expect(fileDirectory.SamplesPerPixel).to.equal(1);
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
-
   });
 
   it("should write rgb data with sensible defaults", async () => {
-
     const originalRed = [
       [ 255, 255, 255 ],
       [ 0, 0, 0 ],
       [ 0, 0, 0 ]
     ];
-
     const originalGreen = [
       [ 0, 0, 0 ],
       [ 255, 255, 255 ],
       [ 0, 0, 0 ]
     ];
-
     const originalBlue = [
       [ 0, 0, 0 ],
       [ 0, 0, 0 ],
       [ 255, 255, 255 ]
     ];
-
     const originalValues = [originalRed, originalGreen, originalBlue];
-
     const metadata = {
       height: 3,
       width: 3
     };
 
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
-
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
-
     const image = await newGeoTiff.getImage();
     const newValues = await image.readRasters();
     const red = chunk(newValues[0], 3);
     const green = chunk(newValues[1], 3);
     const blue = chunk(newValues[2], 3);
-
     expect(normalize(red)).to.equal(normalize(originalRed));
     expect(normalize(green)).to.equal(normalize(originalGreen));
     expect(normalize(blue)).to.equal(normalize(originalBlue));
@@ -400,29 +477,20 @@ describe("writeTests", function() {
   });
 
   it("should write flattened pixel values", async () => {
-
     const originalValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
     const height = 3;
     const width = 3;
 
     const metadata = getMockMetaData(height, width);
-
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
-
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
-
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
-
     const newValues = toArrayRecursively(rasters[0]);
-
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
-
   });
 
   it("should write pixel values in two dimensions", async () => {
-
     const originalValues = [
       [
         [1, 2, 3],
@@ -430,42 +498,32 @@ describe("writeTests", function() {
         [7, 8, 9]
       ]
     ];
-
     const height = 3;
     const width = 3;
 
     const metadata = getMockMetaData(height, width);
-
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
-
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
     const image = await newGeoTiff.getImage();
     const newValues = await image.readRasters();
     const newValuesReshaped = toArray(newValues).map(function(band) {
       return chunk(band, width);
     });
-
     expect(JSON.stringify(newValuesReshaped.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
-
   });
 
 
   it("should write metadata correctly", async () => {
-
-
     const height = 12;
     const width = 12;
     const originalValues = range(height * width);
-
+    
     const metadata = getMockMetaData(height, width);
-
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
-
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
-
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
 
     const { fileDirectory } = image;
@@ -484,7 +542,5 @@ describe("writeTests", function() {
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(height));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
     expect(fileDirectory.GDAL_NODATA).to.equal("0\u0000");
-
   });
-
 });

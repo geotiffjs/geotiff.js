@@ -81,10 +81,24 @@ export default class DataSlice {
   readUint64(offset) {
     const left = this.readUint32(offset);
     const right = this.readUint32(offset + 4);
+    let combined;
     if (this._littleEndian) {
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        );
+      }
+      return combined;
     }
-    return (right << 32) | left;
+    combined = 2 ** 32 * left + right;
+    if (!Number.isSafeInteger(combined)) {
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+      );
+    }
+
+    return combined;
   }
 
   readInt64(offset) {
@@ -94,11 +108,24 @@ export default class DataSlice {
       left = this.readInt32(offset);
       right = this.readUint32(offset + 4);
 
-      return (left << 32) | right;
+      combined = left + 2 ** 32 * right;
+      if (!Number.isSafeInteger(combined)) {
+        throw new Error(
+          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        );
+      }
+      return combined;
     }
     left = this.readUint32(offset - this._sliceOffset);
     right = this.readInt32(offset - this._sliceOffset + 4);
-    return (right << 32) | left;
+    combined = 2 ** 32 * left + right;
+    if (!Number.isSafeInteger(combined)) {
+      throw new Error(
+        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+      );
+    }
+
+    return combined;
   }
 
   readOffset(offset) {

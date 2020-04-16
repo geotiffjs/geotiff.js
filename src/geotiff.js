@@ -1,14 +1,14 @@
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
-import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 import Pool from './pool';
+import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
-
 import * as globals from './globals';
-export { globals };
 import * as rgb from './rgb';
+
+export { globals };
 export { rgb };
 
 function getFieldTypeLength(fieldType) {
@@ -36,8 +36,8 @@ function parseGeoKeyDirectory(fileDirectory) {
   const geoKeyDirectory = {};
   for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
     const key = geoKeyNames[rawGeoKeyDirectory[i]];
-    const location = (rawGeoKeyDirectory[i + 1]) ?
-      (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
+    const location = (rawGeoKeyDirectory[i + 1])
+      ? (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
     const count = rawGeoKeyDirectory[i + 2];
     const offset = rawGeoKeyDirectory[i + 3];
 
@@ -273,9 +273,7 @@ class GeoTIFFBase {
       ];
     }
 
-    return usedImage.readRasters(Object.assign({}, options, {
-      window: wnd,
-    }));
+    return usedImage.readRasters({ ...options, window: wnd });
   }
 }
 
@@ -303,6 +301,7 @@ class GeoTIFF extends GeoTIFFBase {
     this.firstIFDOffset = firstIFDOffset;
     this.cache = options.cache || false;
     this.ifdRequests = [];
+    this.ghostValues = null;
   }
 
   async getSlice(offset, size) {
@@ -482,6 +481,39 @@ class GeoTIFF extends GeoTIFFBase {
   }
 
   /**
+   * Get the values of the COG ghost area as a parsed map.
+   * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
+   * @returns {Object} the parsed ghost area or null, if no such area was found
+   */
+  async getGhostValues() {
+    const offset = this.bigTiff ? 16 : 8;
+    if (this.ghostValues) {
+      return this.ghostValues;
+    }
+    const detectionString = 'GDAL_STRUCTURAL_METADATA_SIZE=';
+    const heuristicAreaSize = detectionString.length + 100;
+    let slice = await this.getSlice(offset, heuristicAreaSize);
+    if (detectionString === getValues(slice, fieldTypes.ASCII, detectionString.length, offset)) {
+      const valuesString = getValues(slice, fieldTypes.ASCII, heuristicAreaSize, offset);
+      const firstLine = valuesString.split('\n')[0];
+      const metadataSize = Number(firstLine.split('=')[1].split(' ')[0]) + firstLine.length;
+      if (metadataSize > heuristicAreaSize) {
+        slice = await this.getSlice(offset, metadataSize);
+      }
+      const fullString = getValues(slice, fieldTypes.ASCII, metadataSize, offset);
+      this.ghostValues = {};
+      fullString
+        .split('\n')
+        .filter(line => line.length > 0)
+        .map(line => line.split('='))
+        .forEach(([key, value]) => {
+          this.ghostValues[key] = value;
+        });
+    }
+    return this.ghostValues;
+  }
+
+  /**
    * Parse a (Geo)TIFF file from the given source.
    *
    * @param {source~Source} source The source of data to parse from.
@@ -515,10 +547,22 @@ class GeoTIFF extends GeoTIFFBase {
       throw new TypeError('Invalid magic number.');
     }
 
-    const firstIFDOffset = bigTiff ?
-      dataView.getUint64(8, littleEndian) :
-      dataView.getUint32(4, littleEndian);
+    const firstIFDOffset = bigTiff
+      ? dataView.getUint64(8, littleEndian)
+      : dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
+  }
+  /**
+   * Closes the underlying file buffer
+   * N.B. After the GeoTIFF has been completely processed it needs
+   * to be closed but only if it has been constructed from a file.
+   */
+  close() {
+    if (typeof this.source.close === 'function') {
+      return this.source.close();
+    } else {
+      return false;
+    }
   }
 }
 
@@ -548,7 +592,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
 
   async parseFileDirectoriesPerFile() {
     const requests = [this.mainFile.parseFileDirectories()]
-      .concat(this.overviewFiles.map(file => file.parseFileDirectories()));
+      .concat(this.overviewFiles.map((file) => file.parseFileDirectories()));
 
     this.fileDirectoriesPerFile = await Promise.all(requests);
     return this.fileDirectoriesPerFile;
@@ -626,7 +670,10 @@ export async function fromArrayBuffer(arrayBuffer) {
  * Construct a GeoTIFF from a local file path. This uses the node
  * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
  * not available on browsers.
- * @param {string} path The filepath to read from.
+ * 
+ * N.B. After the GeoTIFF has been completely processed it needs
+ * to be closed but only if it has been constructed from a file.
+ * @param {string} path The file path to read from.
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path) {
@@ -657,7 +704,7 @@ export async function fromBlob(blob) {
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
   const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options));
   const overviewFiles = await Promise.all(
-    overviewUrls.map(url => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);

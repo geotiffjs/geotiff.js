@@ -1,11 +1,9 @@
-/* eslint-disable no-unused-expressions */
 /* eslint-disable global-require */
-
 import isNode from 'detect-node';
 import 'isomorphic-fetch';
 import { expect } from 'chai';
 
-import { makeFetchSource } from '../src/source';
+import { makeFetchSource } from '../src/geotiff';
 
 const port = 9999;
 let server = null;
@@ -24,7 +22,6 @@ after(() => {
     server.close();
   }
 });
-
 
 describe('makeFetchSource', () => {
   it('shall fetch the first n bytes', async () => {

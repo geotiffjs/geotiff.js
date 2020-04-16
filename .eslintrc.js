@@ -1,10 +1,5 @@
 module.exports = {
   'extends': 'airbnb',
-  'parser': 'babel-eslint',
-  'parserOptions': {
-    'sourceType': 'module',
-    'allowImportExportEverywhere': false
-  },
   'env': {
     'mocha': true,
     'browser': true,
@@ -34,6 +29,7 @@ module.exports = {
     ],
     'no-console': 0,
     'no-bitwise': 0,
+    'max-classes-per-file': 0,
     'import/prefer-default-export': 0,
     'prefer-default-export': 0,
     'func-names': 0,
@@ -42,5 +38,7 @@ module.exports = {
     'object-curly-newline': 0,
     'no-await-in-loop': 0,
     'prefer-destructuring': ['error', { 'object': true, 'array': false }],
+    'curly': ['error', 'all'],
+    'brace-style': ['error', '1tbs', { 'allowSingleLine': false }]
   }
 };
