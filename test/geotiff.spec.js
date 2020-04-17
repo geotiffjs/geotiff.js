@@ -193,6 +193,42 @@ describe('GeoTIFF', () => {
   });
 });
 
+describe('ifdRequestTests', () => {
+  const offsets = [8, 2712, 4394];
+  const source = 'multi-channel.ome.tif';
+
+  it('requesting first image only parses first IFD', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource(source));
+    await tiff.getImage(0);
+    expect(tiff.ifdRequests.length).to.equal(1);
+  });
+
+  it('requesting last image only parses all IFDs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource(source));
+    await tiff.getImage(2);
+    // the image has 3 panes, so 2 is the index of the third image
+    expect(tiff.ifdRequests.length).to.equal(3);
+  });
+
+  it('requesting third image after manually parsing second yiels 2 ifdRequests', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource(source));
+    const index = 1;
+    tiff.ifdRequests[index] = tiff.parseFileDirectoryAt(offsets[index]);
+    await tiff.getImage(index + 1);
+    // first image slot is empty so we filter out the Promises, of which there are two
+    expect(tiff.ifdRequests.filter(ifdRequest => ifdRequest instanceof Promise).length).to.equal(2);
+  });
+
+  it('should be able to manually set ifdRequests and readRasters', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource(source));
+    tiff.ifdRequests = offsets.map(offset => tiff.parseFileDirectoryAt(offset));
+    tiff.ifdRequests.forEach(async (_, i) => {
+      const image = await tiff.getImage(i);
+      image.readRasters();
+    });
+  });
+});
+
 describe('RGB-tests', () => {
   const options = { window: [250, 250, 300, 300], interleave: true };
   const comparisonRaster = (async () => {
@@ -582,7 +618,7 @@ describe('writeTests', () => {
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
@@ -639,7 +675,7 @@ describe('writeTests', () => {
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8,8,8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
@@ -706,7 +742,7 @@ describe('writeTests', () => {
     const newValues = toArrayRecursively(rasters[0]);
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
 
-    const fileDirectory = newGeoTiff.fileDirectories[0][0];
+    const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
     expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
