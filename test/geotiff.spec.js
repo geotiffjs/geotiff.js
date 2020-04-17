@@ -5,6 +5,7 @@ import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/main';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
+import DataView64 from "../src/dataview64";
 
 function createSource(filename) {
   if (isNode) {
@@ -277,65 +278,280 @@ describe('COG tests', async () => {
     expect(ghostValues).to.be.null;
   });
 });
+describe("64 bit tests", () => {
+  it("DataView64 uint64 tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // (2 ** 53 - 1)
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0x1f,
+      0x00,
+      // 2 ** 64 - 1
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const littleEndianView = new DataView64(littleEndianBytes.buffer);
+    const bigEndianBytes = new Uint8Array([
+      // (2 ** 53 - 1)
+      // left
+      0x00,
+      0x1f,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // 2 ** 64 - 1
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const bigEndianView = new DataView64(bigEndianBytes.buffer);
+    const readLittleEndianBytes = littleEndianView.getUint64(0, true);
+    const readBigEndianBytes = bigEndianView.getUint64(0, false);
+    expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
+    expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
+    expect(() => {
+      littleEndianView.getUint64(8, true);
+    }).to.throw();
+    expect(() => {
+      bigEndianView.getUint64(8, false);
+    }).to.throw();
+  });
 
-describe('dataSlice 64 bit tests', () => {
-  const littleEndianBytes = new Uint8Array([
-    // (2 ** 53 - 1)
-    // left
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    // right
-    0xff,
-    0xff,
-    0x1f,
-    0x00,
-    // 2 ** 64 - 1
-    // left
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    // right
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-  ]);
-  const littleEndianSlice = new DataSlice(littleEndianBytes.buffer, 0, true, true);
-  const bigEndianBytes = new Uint8Array([
-    // (2 ** 53 - 1)
-    // left
-    0x00,
-    0x1f,
-    0xff,
-    0xff,
-    // right
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    // 2 ** 64 - 1
-    // left
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    // right
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-  ]);
-  const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
-  it('should read offset for normal int', () => {
+  it("DataView64 negative int64 tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // -(2 ** 32 - 1)
+      // left
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      // right
+      0x00,
+      0x00,
+      0xf0,
+      0xff,
+    ]);
+    const littleEndianView = new DataView64(littleEndianBytes.buffer);
+    const bigEndianBytes = new Uint8Array([
+      // -(2 ** 32 - 1)
+      // left
+      0xff,
+      0xf0,
+      0x00,
+      0x00,
+      // right
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+    ]);
+    const bigEndianView = new DataView64(bigEndianBytes.buffer);
+    const readLittleEndianBytes = littleEndianView.getInt64(0, true);
+    const readBigEndianBytes = bigEndianView.getInt64(0, false);
+    expect(readLittleEndianBytes).to.equal(-(2 ** 52 - 1));
+    expect(readBigEndianBytes).to.equal(-(2 ** 52 - 1));
+  });
+
+  it("DataView64 positive int64 tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // (2 ** 52 - 1)
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0x0f,
+      0x00,
+    ]);
+    const littleEndianView = new DataView64(littleEndianBytes.buffer);
+    const bigEndianBytes = new Uint8Array([
+      // (2 ** 52 - 1)
+      // left
+      0x00,
+      0x0f,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const bigEndianView = new DataView64(bigEndianBytes.buffer);
+    const readLittleEndianBytes = littleEndianView.getInt64(0, true);
+    const readBigEndianBytes = bigEndianView.getInt64(0, false);
+    expect(readLittleEndianBytes).to.equal(2 ** 52 - 1);
+    expect(readBigEndianBytes).to.equal(2 ** 52 - 1);
+  });
+
+  it("DataSlice positive int64 tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // (2 ** 52 - 1)
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0x0f,
+      0x00,
+    ]);
+    const littleEndianSlice = new DataSlice(
+      littleEndianBytes.buffer,
+      0,
+      true,
+      true
+    );
+    const bigEndianBytes = new Uint8Array([
+      // (2 ** 52 - 1)
+      // left
+      0x00,
+      0x0f,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
+    const readLittleEndianBytes = littleEndianSlice.readInt64(0, true);
+    const readBigEndianBytes = bigEndianSlice.readInt64(0, false);
+    expect(readLittleEndianBytes).to.equal(2 ** 52 - 1);
+    expect(readBigEndianBytes).to.equal(2 ** 52 - 1);
+  });
+
+  it("DataSlice negative int64 tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // -(2 ** 32 - 1)
+      // left
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      // right
+      0x00,
+      0x00,
+      0xf0,
+      0xff,
+    ]);
+    const littleEndianSlice = new DataSlice(
+      littleEndianBytes.buffer,
+      0,
+      true,
+      true
+    );
+    const bigEndianBytes = new Uint8Array([
+      // -(2 ** 32 - 1)
+      // left
+      0xff,
+      0xf0,
+      0x00,
+      0x00,
+      // right
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+    ]);
+    const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
+    const readLittleEndianBytes = littleEndianSlice.readInt64(0, true);
+    const readBigEndianBytes = bigEndianSlice.readInt64(0, false);
+    expect(readLittleEndianBytes).to.equal(-(2 ** 52 - 1));
+    expect(readBigEndianBytes).to.equal(-(2 ** 52 - 1));
+  });
+
+  it("DataSlice uint64 bit tests", () => {
+    const littleEndianBytes = new Uint8Array([
+      // (2 ** 53 - 1)
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0x1f,
+      0x00,
+      // 2 ** 64 - 1
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const littleEndianSlice = new DataSlice(
+      littleEndianBytes.buffer,
+      0,
+      true,
+      true
+    );
+    const bigEndianBytes = new Uint8Array([
+      // (2 ** 53 - 1)
+      // left
+      0x00,
+      0x1f,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // 2 ** 64 - 1
+      // left
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      // right
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+    ]);
+    const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
     const readLittleEndianBytes = littleEndianSlice.readOffset(0);
     const readBigEndianBytes = bigEndianSlice.readOffset(0);
     expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
     expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
-  });
-  it('should throw error for number larger than MAX_SAFE_INTEGER', () => {
     expect(() => {
       littleEndianSlice.readOffset(8);
     }).to.throw();
