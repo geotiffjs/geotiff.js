@@ -118,7 +118,7 @@ npm install geotiff
 or you can use the prebuilt version with a CDN:
 
 ```html
-<script async src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+<script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
 ```
 Note: Currently the CDN installation is not compatible with GeoTIFF workers pool `GeoTIFF.Pool`.
 
