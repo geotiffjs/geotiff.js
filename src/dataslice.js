@@ -101,31 +101,33 @@ export default class DataSlice {
     return combined;
   }
 
+  // adapted from https://stackoverflow.com/a/55338384/8060591
   readInt64(offset) {
-    let left;
-    let right;
-    if (this._littleEndian) {
-      left = this.readInt32(offset);
-      right = this.readUint32(offset + 4);
-
-      combined = left + 2 ** 32 * right;
-      if (!Number.isSafeInteger(combined)) {
-        throw new Error(
-          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
-        );
-      }
-      return combined;
-    }
-    left = this.readUint32(offset - this._sliceOffset);
-    right = this.readInt32(offset - this._sliceOffset + 4);
-    combined = 2 ** 32 * left + right;
-    if (!Number.isSafeInteger(combined)) {
-      throw new Error(
-        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+    let value = 0;
+    const isNegative =
+      (this._dataView.getUint8(offset + (this._littleEndian ? 7 : 0)) & 0x80) >
+      0;
+    let carrying = true;
+    for (let i = 0; i < 8; i++) {
+      let byte = this._dataView.getUint8(
+        offset + (this._littleEndian ? i : 7 - i)
       );
+      if (isNegative) {
+        if (carrying) {
+          if (byte !== 0x00) {
+            byte = ~(byte - 1) & 0xff;
+            carrying = false;
+          }
+        } else {
+          byte = ~byte & 0xff;
+        }
+      }
+      value += byte * 256 ** i;
     }
-
-    return combined;
+    if (isNegative) {
+      value = -value;
+    }
+    return value
   }
 
   readOffset(offset) {
