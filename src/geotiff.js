@@ -51,7 +51,7 @@ function parseGeoKeyDirectory(fileDirectory) {
       } else if (typeof value === 'string') {
         value = value.substring(offset, offset + count - 1);
       } else if (value.subarray) {
-        value = value.subarray(offset, offset + count - 1);
+        value = value.subarray(offset, offset + count);
       }
     }
     geoKeyDirectory[key] = value;
@@ -670,7 +670,7 @@ export async function fromArrayBuffer(arrayBuffer) {
  * Construct a GeoTIFF from a local file path. This uses the node
  * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
  * not available on browsers.
- * 
+ *
  * N.B. After the GeoTIFF has been completely processed it needs
  * to be closed but only if it has been constructed from a file.
  * @param {string} path The file path to read from.
