@@ -7,9 +7,11 @@ import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
 import * as globals from './globals';
 import * as rgb from './rgb';
+import { getDecoder } from './compression';
 
 export { globals };
 export { rgb };
+export { getDecoder };
 
 function getFieldTypeLength(fieldType) {
   switch (fieldType) {
@@ -52,6 +54,9 @@ function parseGeoKeyDirectory(fileDirectory) {
         value = value.substring(offset, offset + count - 1);
       } else if (value.subarray) {
         value = value.subarray(offset, offset + count);
+        if (count === 1) {
+          value = value[0];
+        }
       }
     }
     geoKeyDirectory[key] = value;
@@ -552,6 +557,7 @@ class GeoTIFF extends GeoTIFFBase {
       : dataView.getUint32(4, littleEndian);
     return new GeoTIFF(source, littleEndian, bigTiff, firstIFDOffset, options);
   }
+
   /**
    * Closes the underlying file buffer
    * N.B. After the GeoTIFF has been completely processed it needs
@@ -560,9 +566,8 @@ class GeoTIFF extends GeoTIFFBase {
   close() {
     if (typeof this.source.close === 'function') {
       return this.source.close();
-    } else {
-      return false;
     }
+    return false;
   }
 }
 
