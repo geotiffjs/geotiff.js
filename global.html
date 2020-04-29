@@ -94,271 +94,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="GeoTIFF"><span class="type-signature"></span>GeoTIFF<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>The abstraction for a whole GeoTIFF file.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line257">line 257</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="GeoTIFFImage"><span class="type-signature"></span>GeoTIFFImage<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>GeoTIFF sub-file image.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line59">line 59</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="value"><span class="type-signature"></span>value<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>(experimental) Reads raster data from the best fitting image. This function uses
-the image with the lowest resolution that is still a higher resolution than the
-requested resolution.
-When specified, the <code>bbox</code> option is translated to the <code>window</code> option and the
-<code>resX</code> and <code>resY</code> to <code>width</code> and <code>height</code> respectively.
-Then, the readRasters method of the selected
-image is called and the result returned.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line133">line 133</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>GeoTIFFImage.readRasters</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".%22default%22"><span class="type-signature"></span>."default"<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Wrapper for GeoTIFF files that have external overviews.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line500">line 500</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -369,7 +104,7 @@ image is called and the result returned.</p>
     
 
     
-    <h4 class="name" id="_fromArrayBuffer"><span class="type-signature"></span>_fromArrayBuffer<span class="signature">(path)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id="fromArrayBuffer"><span class="type-signature"></span>fromArrayBuffer<span class="signature">(arrayBuffer)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
     
 
     
@@ -377,11 +112,8 @@ image is called and the result returned.</p>
 
 
 <div class="description">
-    <p>Construct a GeoTIFF from a local file path. This uses the node
-<a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
-not available on browsers.</p>
-<p>N.B. After the GeoTIFF has been completely processed it needs
-to be closed but only if it has been constructed from a file.</p>
+    <p>Construct a new GeoTIFF from an
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
 </div>
 
 
@@ -417,13 +149,13 @@ to be closed but only if it has been constructed from a file.</p>
 
         <tr>
             
-                <td class="name"><code>path</code></td>
+                <td class="name"><code>arrayBuffer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">ArrayBuffer</span>
 
 
             
@@ -433,7 +165,7 @@ to be closed but only if it has been constructed from a file.</p>
 
             
 
-            <td class="description last"><p>The file path to read from.</p></td>
+            <td class="description last"><p>The data to read the file from.</p></td>
         </tr>
 
     
@@ -474,7 +206,7 @@ to be closed but only if it has been constructed from a file.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line597">line 597</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line670">line 670</a>
     </li></ul></dd>
     
 
@@ -514,7 +246,7 @@ to be closed but only if it has been constructed from a file.</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>></span>
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
     </dd>
@@ -532,242 +264,7 @@ to be closed but only if it has been constructed from a file.</p>
     
 
     
-    <h4 class="name" id="_fromBlob"><span class="type-signature"></span>_fromBlob<span class="signature">(mainUrl, overviewUrls, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;MultiGeoTIFF>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Construct a MultiGeoTIFF from the given URLs.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>mainUrl</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The URL for the main file.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>overviewUrls</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>An array of URLs for the overview images.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Additional options to pass to the source.
-See makeRemoteSource
-for details.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line623">line 623</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>The resulting MultiGeoTIFF file.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;MultiGeoTIFF></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="_fromFile"><span class="type-signature"></span>_fromFile<span class="signature">(blob)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id="fromBlob"><span class="type-signature"></span>fromBlob<span class="signature">(blob)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
     
 
     
@@ -874,7 +371,7 @@ object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line611">line 611</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line696">line 696</a>
     </li></ul></dd>
     
 
@@ -914,7 +411,7 @@ object.</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>></span>
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
     </dd>
@@ -932,7 +429,7 @@ object.</p>
     
 
     
-    <h4 class="name" id="_fromUrl"><span class="type-signature"></span>_fromUrl<span class="signature">(arrayBuffer)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id="fromFile"><span class="type-signature"></span>fromFile<span class="signature">(path)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
     
 
     
@@ -940,8 +437,11 @@ object.</p>
 
 
 <div class="description">
-    <p>Construct a new GeoTIFF from an
-<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
+    <p>Construct a GeoTIFF from a local file path. This uses the node
+<a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
+not available on browsers.</p>
+<p>N.B. After the GeoTIFF has been completely processed it needs
+to be closed but only if it has been constructed from a file.</p>
 </div>
 
 
@@ -977,13 +477,13 @@ object.</p>
 
         <tr>
             
-                <td class="name"><code>arrayBuffer</code></td>
+                <td class="name"><code>path</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">ArrayBuffer</span>
+<span class="param-type">string</span>
 
 
             
@@ -993,7 +493,7 @@ object.</p>
 
             
 
-            <td class="description last"><p>The data to read the file from.</p></td>
+            <td class="description last"><p>The file path to read from.</p></td>
         </tr>
 
     
@@ -1034,7 +534,7 @@ object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line587">line 587</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line684">line 684</a>
     </li></ul></dd>
     
 
@@ -1074,7 +574,7 @@ object.</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>></span>
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
     </dd>
@@ -1092,166 +592,7 @@ object.</p>
     
 
     
-    <h4 class="name" id="_fromUrls"><span class="type-signature"></span>_fromUrls<span class="signature">(array)</span><span class="type-signature"> &rarr; {metadata}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Main creating function for GeoTIFF files.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>array</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>of pixel values</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line641">line 641</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>metadata</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">metadata</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="fromUrl"><span class="type-signature"></span>fromUrl<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>>}</span></h4>
+    <h4 class="name" id="fromUrl"><span class="type-signature"></span>fromUrl<span class="signature">(url, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
     
 
     
@@ -1396,7 +737,7 @@ See makeRemoteSource for details.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line576">line 576</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line660">line 660</a>
     </li></ul></dd>
     
 
@@ -1436,7 +777,7 @@ See makeRemoteSource for details.</p></td>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="global.html#GeoTIFF">GeoTIFF</a>></span>
+<span class="param-type">Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>></span>
 
 
     </dd>
@@ -1454,7 +795,7 @@ See makeRemoteSource for details.</p></td>
     
 
     
-    <h4 class="name" id="value"><span class="type-signature"></span>value<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="fromUrls"><span class="type-signature"></span>fromUrls<span class="signature">(mainUrl, overviewUrls, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>>}</span></h4>
     
 
     
@@ -1462,9 +803,7 @@ See makeRemoteSource for details.</p></td>
 
 
 <div class="description">
-    <p>Closes the underlying file buffer
-N.B. After the GeoTIFF has been completely processed it needs
-to be closed but only if it has been constructed from a file.</p>
+    <p>Construct a MultiGeoTIFF from the given URLs.</p>
 </div>
 
 
@@ -1473,6 +812,131 @@ to be closed but only if it has been constructed from a file.</p>
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mainUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The URL for the main file.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>overviewUrls</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An array of URLs for the overview images.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options to pass to the source.
+See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
+for details.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -1508,7 +972,7 @@ to be closed but only if it has been constructed from a file.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line483">line 483</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line709">line 709</a>
     </li></ul></dd>
     
 
@@ -1533,6 +997,187 @@ to be closed but only if it has been constructed from a file.</p>
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting MultiGeoTIFF file.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="writeArrayBuffer"><span class="type-signature"></span>writeArrayBuffer<span class="signature">(array)</span><span class="type-signature"> &rarr; {metadata}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Main creating function for GeoTIFF files.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>of pixel values</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line723">line 723</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>metadata</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">metadata</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1906,13 +1551,13 @@ to be closed but only if it has been constructed from a file.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_fromArrayBuffer">_fromArrayBuffer</a></li><li><a href="global.html#_fromBlob">_fromBlob</a></li><li><a href="global.html#_fromFile">_fromFile</a></li><li><a href="global.html#_fromUrl">_fromUrl</a></li><li><a href="global.html#_fromUrls">_fromUrls</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#GeoTIFF">GeoTIFF</a></li><li><a href="global.html#GeoTIFFImage">GeoTIFFImage</a></li><li><a href="global.html#value">value</a></li><li><a href="global.html#.%2522default%2522">."default"</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Apr 06 2020 20:10:52 GMT+0000 (UTC)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 20:27:50 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
