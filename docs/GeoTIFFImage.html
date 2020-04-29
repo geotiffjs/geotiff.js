@@ -257,7 +257,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line64">line 64</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -267,6 +267,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -365,7 +367,7 @@ exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line637">line 637</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line736">line 736</a>
     </li></ul></dd>
     
 
@@ -375,6 +377,8 @@ exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -474,7 +478,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line150">line 150</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line155">line 155</a>
     </li></ul></dd>
     
 
@@ -484,6 +488,8 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
     
 </dl>
+
+
 
 
 
@@ -582,7 +588,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line94">line 94</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line92">line 92</a>
     </li></ul></dd>
     
 
@@ -592,6 +598,8 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
     
 </dl>
+
+
 
 
 
@@ -638,7 +646,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
 
     
-    <h4 class="name" id="getGDALMetadata"><span class="type-signature"></span>getGDALMetadata<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getGDALMetadata"><span class="type-signature"></span>getGDALMetadata<span class="signature">(sample<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -647,6 +655,183 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
 <div class="description">
     <p>Returns the parsed GDAL metadata items.</p>
+<p>If sample is passed to null, dataset-level metadata will be returned.
+Otherwise only metadata specific to the provided sample will be returned.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sample</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>The sample index.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line615">line 615</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getGDALNoData"><span class="type-signature"></span>getGDALNoData<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns the GDAL nodata value</p>
 </div>
 
 
@@ -690,7 +875,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line566">line 566</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line650">line 650</a>
     </li></ul></dd>
     
 
@@ -713,9 +898,15 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>or null</p>
+</div>
+
 
 
 <dl>
@@ -724,7 +915,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
+<span class="param-type">Number</span>
 
 
     </dd>
@@ -794,7 +985,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line101">line 101</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line100">line 100</a>
     </li></ul></dd>
     
 
@@ -804,6 +995,8 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
     
 </dl>
+
+
 
 
 
@@ -902,7 +1095,7 @@ bytes are supported, an exception is thrown when this is not the case.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line115">line 115</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line116">line 116</a>
     </li></ul></dd>
     
 
@@ -912,6 +1105,8 @@ bytes are supported, an exception is thrown when this is not the case.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1011,7 +1206,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line586">line 586</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line663">line 663</a>
     </li></ul></dd>
     
 
@@ -1021,6 +1216,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1149,8 +1346,8 @@ transformation, then an exception is thrown.</p>
             
 
             <td class="description last"><p>A reference image to calculate the resolution from
-                                            in cases when the current image does not have the
-                                            required tags on its own.</p></td>
+in cases when the current image does not have the
+required tags on its own.</p></td>
         </tr>
 
     
@@ -1191,7 +1388,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line605">line 605</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line691">line 691</a>
     </li></ul></dd>
     
 
@@ -1201,6 +1398,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1299,7 +1498,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line122">line 122</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line124">line 124</a>
     </li></ul></dd>
     
 
@@ -1309,6 +1508,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1407,7 +1608,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line543">line 543</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line587">line 587</a>
     </li></ul></dd>
     
 
@@ -1417,6 +1618,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1511,7 +1714,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line136">line 136</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line140">line 140</a>
     </li></ul></dd>
     
 
@@ -1521,6 +1724,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1740,7 +1945,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line235">line 235</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line240">line 240</a>
     </li></ul></dd>
     
 
@@ -1750,6 +1955,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1844,7 +2051,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line129">line 129</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line132">line 132</a>
     </li></ul></dd>
     
 
@@ -1854,6 +2061,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1975,6 +2184,8 @@ transformation, then an exception is thrown.</p>
 
 
 
+
+
 <h5>Returns:</h5>
 
         
@@ -2060,7 +2271,7 @@ transformation, then an exception is thrown.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line627">line 627</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line726">line 726</a>
     </li></ul></dd>
     
 
@@ -2070,6 +2281,8 @@ transformation, then an exception is thrown.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2340,8 +2553,8 @@ of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>whether the data shall be read
-                                            in one single array or separate
-                                            arrays.</p></td>
+in one single array or separate
+arrays.</p></td>
         </tr>
 
     
@@ -2418,8 +2631,8 @@ of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>The desired width of the output. When the width is
-                                not the same as the images, resampling will be
-                                performed.</p></td>
+not the same as the images, resampling will be
+performed.</p></td>
         </tr>
 
     
@@ -2457,8 +2670,8 @@ of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>The desired height of the output. When the width
-                                 is not the same as the images, resampling will
-                                 be performed.</p></td>
+is not the same as the images, resampling will
+be performed.</p></td>
         </tr>
 
     
@@ -2538,9 +2751,9 @@ of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>The value to use for parts of the image
-                                             outside of the images extent. When
-                                             multiple samples are requested, an
-                                             array of fill values can be passed.</p></td>
+outside of the images extent. When
+multiple samples are requested, an
+array of fill values can be passed.</p></td>
         </tr>
 
     
@@ -2588,7 +2801,7 @@ of the raster is read for each sample.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line390">line 390</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line421">line 421</a>
     </li></ul></dd>
     
 
@@ -2598,6 +2811,8 @@ of the raster is read for each sample.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2644,7 +2859,7 @@ of the raster is read for each sample.</p>
     
 
     
-    <h4 class="name" id="readRGB"><span class="type-signature">(async) </span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    <h4 class="name" id="readRGB"><span class="type-signature">(async) </span>readRGB<span class="signature">(options<span class="signature-attributes">opt</span>, pool<span class="signature-attributes">opt</span>, width<span class="signature-attributes">opt</span>, height<span class="signature-attributes">opt</span>, resampleMethod<span class="signature-attributes">opt</span>, enableAlpha<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
     
 
     
@@ -2873,7 +3088,7 @@ When provided, only a subset of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>The desired width of the output. When the width is no the
-                        same as the images, resampling will be performed.</p></td>
+same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -2911,7 +3126,7 @@ When provided, only a subset of the raster is read for each sample.</p>
             
 
             <td class="description last"><p>The desired height of the output. When the width is no the
-                         same as the images, resampling will be performed.</p></td>
+same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -2954,6 +3169,45 @@ When provided, only a subset of the raster is read for each sample.</p>
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>enableAlpha</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Enable reading alpha channel if present.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -2991,7 +3245,7 @@ When provided, only a subset of the raster is read for each sample.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line461">line 461</a>
+        <a href="geotiffimage.js.html">geotiffimage.js</a>, <a href="geotiffimage.js.html#line496">line 496</a>
     </li></ul></dd>
     
 
@@ -3001,6 +3255,8 @@ When provided, only a subset of the raster is read for each sample.</p>
 
     
 </dl>
+
+
 
 
 
@@ -3057,13 +3313,13 @@ When provided, only a subset of the raster is read for each sample.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>
