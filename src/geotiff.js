@@ -596,8 +596,8 @@ class MultiGeoTIFF extends GeoTIFFBase {
   }
 
   async parseFileDirectoriesPerFile() {
-    const requests = [this.mainFile.parseFileDirectories()]
-      .concat(this.overviewFiles.map((file) => file.parseFileDirectories()));
+    const requests = [this.mainFile.parseFileDirectoryAt(this.mainFile.firstIFDOffset)]
+      .concat(this.overviewFiles.map((file) => file.parseFileDirectoryAt(file.firstIFDOffset)));
 
     this.fileDirectoriesPerFile = await Promise.all(requests);
     return this.fileDirectoriesPerFile;
@@ -610,25 +610,23 @@ class MultiGeoTIFF extends GeoTIFFBase {
    * @returns {GeoTIFFImage} the image at the given index
    */
   async getImage(index = 0) {
-    if (!this.fileDirectoriesPerFile) {
-      if (!this.fileDirectoriesPerFileParsing) {
-        this.fileDirectoriesPerFileParsing = this.parseFileDirectoriesPerFile();
+    await this.getImageCount();
+    await this.parseFileDirectoriesPerFile();
+    let visited = 0;
+    for (let i = 0; i < this.imageFiles.length; i++) {
+      const imageFile = this.imageFiles[i];
+      for (let ii = 0; ii < this.imageCounts[i]; ii++) {
+        if (index === visited) {
+          const ifd = await imageFile.requestIFD(index);
+          return new GeoTIFFImage(
+            ifd.fileDirectory, ifd.geoKeyDirectory,
+            imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
+          );
+        }
+        visited++;
       }
-      this.fileDirectoriesPerFile = await this.fileDirectoriesPerFileParsing;
     }
 
-    let relativeIndex = index;
-    for (let i = 0; i < this.fileDirectoriesPerFile.length; ++i) {
-      const fileDirectories = this.fileDirectoriesPerFile[i];
-      if (relativeIndex < fileDirectories.length) {
-        const file = this.imageFiles[i];
-        return new GeoTIFFImage(
-          fileDirectories[relativeIndex][0], fileDirectories[relativeIndex][1],
-          file.dataView, file.littleEndian, file.cache, file.source,
-        );
-      }
-      relativeIndex -= fileDirectories.length;
-    }
     throw new RangeError('Invalid image index');
   }
 
@@ -638,13 +636,14 @@ class MultiGeoTIFF extends GeoTIFFBase {
    * @returns {Number} the number of internal subfile images
    */
   async getImageCount() {
-    if (!this.fileDirectoriesPerFile) {
-      if (!this.fileDirectoriesPerFileParsing) {
-        this.fileDirectoriesPerFileParsing = this.parseFileDirectoriesPerFile();
-      }
-      this.fileDirectoriesPerFile = await this.fileDirectoriesPerFileParsing;
+    if (this.imageCount !== null) {
+      return this.imageCount;
     }
-    return this.fileDirectoriesPerFile.reduce((count, ifds) => count + ifds.length, 0);
+    const requests = [this.mainFile.getImageCount()]
+      .concat(this.overviewFiles.map((file) => file.getImageCount()));
+    this.imageCounts = await Promise.all(requests);
+    this.imageCount = this.imageCounts.reduce((count, ifds) => count + ifds, 0);
+    return this.imageCount;
   }
 }
 

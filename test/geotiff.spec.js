@@ -1,11 +1,24 @@
 import isNode from 'detect-node';
 import { expect } from 'chai';
+import http from 'http';
+import serveStatic from 'serve-static';
+import finalhandler from 'finalhandler';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool } from '../src/geotiff';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
 import { makeFetchSource, makeFileSource } from '../src/source';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
 import DataView64 from "../src/dataview64";
+
+// Set up a node server to make tiffs available at localhost:3000/test/data
+before(async (done) => {
+  const serve = serveStatic(__dirname);
+  const server = http.createServer(function onRequest (req, res) {
+    serve(req, res, finalhandler(req, res));
+  });
+  server.listen(3000);
+  done();
+});
 
 function createSource(filename) {
   if (isNode) {
@@ -74,6 +87,20 @@ function getMockMetaData(height, width) {
     "GDAL_NODATA": "0",
   };
 }
+
+describe('GeoTIFF - external overviews', () => {
+  it('Can load', async () => {
+    const tiff = await fromUrls('http://localhost:3000/data/overviews_external.tiff', ['http://localhost:3000/data/overviews_external.tiff.ovr']);
+    const image1 = await tiff.getImage(0);
+    const image2 = await tiff.getImage(1);
+    const image3 = await tiff.getImage(2);
+    const image4 = await tiff.getImage(3);
+    expect(image1.fileDirectory.ImageWidth).to.equal(539);
+    expect(image2.fileDirectory.ImageWidth).to.equal(135);
+    expect(image3.fileDirectory.ImageWidth).to.equal(68);
+    expect(image4.fileDirectory.ImageWidth).to.equal(34);
+  });
+});
 
 describe('GeoTIFF', () => {
   it('geotiff.js module available', () => {

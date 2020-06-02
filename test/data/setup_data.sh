@@ -28,6 +28,8 @@ gdal_translate -of COG initial.tiff cog.tiff
 # overviews
 cp stripped.tiff overviews.tiff
 gdaladdo overviews.tiff 2 4 8 16
+cp stripped.tiff overviews_external.tiff
+gdaladdo -ro overviews_external.tiff 2 4 8 16
 
 # bigtiff
 wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
