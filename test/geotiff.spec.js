@@ -91,6 +91,9 @@ function getMockMetaData(height, width) {
 describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
     const tiff = await fromUrls('http://localhost:3000/data/overviews_external.tiff', ['http://localhost:3000/data/overviews_external.tiff.ovr']);
+    const count = await tiff.getImageCount();
+    expect(count).to.equal(4);
+
     const image1 = await tiff.getImage(0);
     const image2 = await tiff.getImage(1);
     const image3 = await tiff.getImage(2);
