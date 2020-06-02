@@ -92,7 +92,7 @@ describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
     const tiff = await fromUrls('http://localhost:3000/data/overviews_external.tiff', ['http://localhost:3000/data/overviews_external.tiff.ovr']);
     const count = await tiff.getImageCount();
-    expect(count).to.equal(4);
+    expect(count).to.equal(5);
 
     const image1 = await tiff.getImage(0);
     const image2 = await tiff.getImage(1);
