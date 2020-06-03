@@ -99,13 +99,15 @@ describe('GeoTIFF - external overviews', () => {
     expect(count).to.equal(5);
 
     const image1 = await tiff.getImage(0);
-    const image2 = await tiff.getImage(1);
-    const image3 = await tiff.getImage(2);
-    const image4 = await tiff.getImage(3);
     expect(image1.fileDirectory.ImageWidth).to.equal(539);
-    expect(image2.fileDirectory.ImageWidth).to.equal(135);
-    expect(image3.fileDirectory.ImageWidth).to.equal(68);
-    expect(image4.fileDirectory.ImageWidth).to.equal(34);
+    const image2 = await tiff.getImage(1);
+    expect(image2.fileDirectory.ImageWidth).to.equal(270);
+    const image3 = await tiff.getImage(2);
+    expect(image3.fileDirectory.ImageWidth).to.equal(135);
+    const image4 = await tiff.getImage(3);
+    expect(image4.fileDirectory.ImageWidth).to.equal(68);
+    const image5 = await tiff.getImage(4);
+    expect(image5.fileDirectory.ImageWidth).to.equal(34);
   });
 });
 

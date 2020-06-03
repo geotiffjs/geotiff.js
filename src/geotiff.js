@@ -613,18 +613,21 @@ class MultiGeoTIFF extends GeoTIFFBase {
     await this.getImageCount();
     await this.parseFileDirectoriesPerFile();
     let visited = 0;
+    let relativeIndex = 0;
     for (let i = 0; i < this.imageFiles.length; i++) {
       const imageFile = this.imageFiles[i];
       for (let ii = 0; ii < this.imageCounts[i]; ii++) {
         if (index === visited) {
-          const ifd = await imageFile.requestIFD(index);
+          const ifd = await imageFile.requestIFD(relativeIndex);
           return new GeoTIFFImage(
-            ifd.fileDirectory, ifd.geoKeyDirectory,
+            ifd.fileDirectory, imageFile.geoKeyDirectory,
             imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
           );
         }
         visited++;
+        relativeIndex++;
       }
+      relativeIndex = 0;
     }
 
     throw new RangeError('Invalid image index');
