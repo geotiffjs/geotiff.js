@@ -11,13 +11,17 @@ import DataSlice from '../src/dataslice';
 import DataView64 from "../src/dataview64";
 
 // Set up a node server to make tiffs available at localhost:3000/test/data
-before(async (done) => {
+let server = null
+before(async () => {
   const serve = serveStatic(__dirname);
-  const server = http.createServer(function onRequest (req, res) {
+  server = http.createServer(function onRequest (req, res) {
     serve(req, res, finalhandler(req, res));
   });
   server.listen(3000);
-  done();
+});
+
+after(async () => {
+  server.close();
 });
 
 function createSource(filename) {
