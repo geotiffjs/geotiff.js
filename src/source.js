@@ -25,7 +25,7 @@ function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
 
     if (topDelta < 0) {
       usedBlockLength = block.length - blockInnerOffset;
-    } else if (topDelta > 0) {
+    } else {
       usedBlockLength = rangeTop - block.offset - blockInnerOffset;
     }
 
