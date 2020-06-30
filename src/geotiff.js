@@ -8,10 +8,12 @@ import { writeGeotiff } from './geotiffwriter';
 import * as globals from './globals';
 import * as rgb from './rgb';
 import { getDecoder } from './compression';
+import { setLogger } from './logging';
 
 export { globals };
 export { rgb };
 export { getDecoder };
+export { setLogger };
 
 function getFieldTypeLength(fieldType) {
   switch (fieldType) {
