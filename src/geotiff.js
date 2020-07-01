@@ -459,17 +459,6 @@ class GeoTIFF extends GeoTIFFBase {
    */
   async getImageCount() {
     let index = 0;
-    if (this.ifdRequests.length > 0) {
-      // optimization: if we already have the last IFD loaded,
-      // we know the final size.
-      const lastIFD = await this.ifdRequests[this.ifdRequests.length - 1];
-      if (lastIFD.nextIFDByteOffset === 0) {
-        return this.ifdRequests.length;
-      }
-      // otherwise we can at least start later in the list.
-      index = this.ifdRequests.length;
-    }
-
     // loop until we run out of IFDs
     let hasNext = true;
     while (hasNext) {
