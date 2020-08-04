@@ -131,7 +131,7 @@ function getValues(dataSlice, fieldType, count, offset) {
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return String.fromCharCode.apply(null, values);
+    return new TextDecoder('utf-8').decode(values);
   }
   return values;
 }
