@@ -1,4 +1,4 @@
-import { Pool as tPool, spawn, Worker } from 'threads';
+import { Pool as tPool, spawn, Worker, Transfer } from 'threads';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
@@ -30,7 +30,7 @@ class Pool {
     return new Promise((resolve, reject) => {
       this.pool.queue(async (decode) => {
         try {
-          const data = await decode(fileDirectory, buffer);
+          const data = await decode(fileDirectory, Transfer(buffer));
           resolve(data);
         } catch (err) {
           reject(err);
