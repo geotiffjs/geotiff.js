@@ -632,7 +632,7 @@ class GeoTIFFImage {
     let items = root.children
       .filter((child) => child.tagName === 'Item');
 
-    if (sample) {
+    if (sample !== null) {
       items = items.filter((item) => Number(item.attributes.sample) === sample);
     }
 
