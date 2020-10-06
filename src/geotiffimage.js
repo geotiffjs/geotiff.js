@@ -237,7 +237,7 @@ class GeoTIFFImage {
    * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @returns {Promise.<ArrayBuffer>}
    */
-  async getTileOrStrip(x, y, sample, poolOrDecoder) {
+  async getTileOrStrip(x, y, sample, poolOrDecoder, signal) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -257,8 +257,10 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
-    const slice = await this.source.fetch(offset, byteCount);
-
+    const slice = await this.source.fetch(offset, byteCount, false, signal);
+    if (slice.length === 0) {
+      return { x, y, sample, data: [] };
+    }
     // either use the provided pool or decoder to decode the data
     let request;
     if (tiles === null) {
@@ -632,7 +634,7 @@ class GeoTIFFImage {
     let items = root.children
       .filter((child) => child.tagName === 'Item');
 
-    if (sample !== null) {
+    if (sample) {
       items = items.filter((item) => Number(item.attributes.sample) === sample);
     }
 

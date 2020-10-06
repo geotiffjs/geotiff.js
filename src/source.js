@@ -129,7 +129,7 @@ class BlockedSource {
    * @param {number} length The length in bytes to read from.
    * @returns {ArrayBuffer} The subset of the file.
    */
-  async fetch(offset, length, immediate = false) {
+  async fetch(offset, length, immediate = false, signal) {
     const top = offset + length;
 
     // calculate what blocks intersect the specified range (offset + length)
@@ -177,7 +177,7 @@ class BlockedSource {
       for (const group of groups) {
         // fetch a group as in a single request
         const request = this.requestData(
-          group[0] * this.blockSize, group.length * this.blockSize,
+          group[0] * this.blockSize, group.length * this.blockSize, signal
         );
 
         // for each block in the request, make a small 'splitter',
@@ -188,17 +188,23 @@ class BlockedSource {
         for (let i = 0; i < group.length; ++i) {
           const id = group[i];
           this.blockRequests.set(id, (async () => {
-            const response = await request;
-            const o = i * this.blockSize;
-            const t = Math.min(o + this.blockSize, response.data.byteLength);
-            const data = response.data.slice(o, t);
-            this.blockRequests.delete(id);
-            this.blocks.set(id, {
-              data,
-              offset: response.offset + o,
-              length: data.byteLength,
-              top: response.offset + t,
-            });
+            try {
+              const response = await request;
+              const o = i * this.blockSize;
+              const t = Math.min(o + this.blockSize, response.data.byteLength);
+              const data = response.data.slice(o, t);
+              this.blockRequests.delete(id);
+              this.blocks.set(id, {
+                data,
+                offset: response.offset + o,
+                length: data.byteLength,
+                top: response.offset + t,
+              });
+            }
+            catch (err) {
+              this.blocks.delete(id);
+              this.blockRequests.delete(id);
+            }
           })());
         }
       }
@@ -219,11 +225,15 @@ class BlockedSource {
 
     // now get all blocks for the request and return a summary buffer
     const blocks = allBlockIds.map((id) => this.blocks.get(id));
+    // Some of the blocks were cancelled by the signal (AbortController)
+    if (blocks.some(i => !i)) {
+      return []
+    }
     return readRangeFromBlocks(blocks, offset, length);
   }
 
-  async requestData(requestedOffset, requestedLength) {
-    const response = await this.retrievalFunction(requestedOffset, requestedLength);
+  async requestData(requestedOffset, requestedLength, signal) {
+    const response = await this.retrievalFunction(requestedOffset, requestedLength, signal);
     if (!response.length) {
       response.length = response.data.byteLength;
     } else if (response.length !== response.data.byteLength) {
@@ -244,11 +254,12 @@ class BlockedSource {
  * @returns The constructed source
  */
 export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
-  return new BlockedSource(async (offset, length) => {
+  return new BlockedSource(async (offset, length, signal) => {
     const response = await fetch(url, {
       headers: {
         ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
       },
+      signal,
     });
 
     // check the response was okay and if the server actually understands range requests
