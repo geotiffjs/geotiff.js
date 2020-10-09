@@ -202,8 +202,12 @@ class BlockedSource {
               });
             }
             catch (err) {
-              this.blocks.delete(id);
-              this.blockRequests.delete(id);
+              if (err.name === 'AbortError') {
+                this.blocks.delete(id);
+                this.blockRequests.delete(id);
+              } else {
+                throw(err)
+              }
             }
           })());
         }
