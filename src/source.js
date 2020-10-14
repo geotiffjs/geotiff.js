@@ -81,7 +81,7 @@ function getCoherentBlockGroups(blockIds) {
   groups.push(current);
 
   for (let i = 0; i < blockIds.length; ++i) {
-    if (i === 0 || blockIds[i] === blockIds[i - 1] + 1) {
+    if (i === 0 || blockIds[i].id === blockIds[i - 1].id + 1) {
       current.push(blockIds[i]);
     } else {
       current = [blockIds[i]];
@@ -140,14 +140,14 @@ class BlockedSource {
     const blockRequests = [];
 
     for (let current = firstBlockOffset; current < top; current += this.blockSize) {
-      const blockId = Math.floor(current / this.blockSize);
-      if (!this.blocks.has(blockId) && !this.blockRequests.has(blockId)) {
-        missingBlockIds.push(blockId);
+      const id = Math.floor(current / this.blockSize);
+      if (!this.blocks.has(id) && !this.blockRequests.has(id)) {
+        missingBlockIds.push({ id, signal });
       }
-      if (this.blockRequests.has(blockId)) {
-        blockRequests.push(this.blockRequests.get(blockId));
+      if (this.blockRequests.has(id)) {
+        blockRequests.push(this.blockRequests.get(id));
       }
-      allBlockIds.push(blockId);
+      allBlockIds.push(id);
     }
 
     // determine whether there are already blocks in the queue to be requested
@@ -156,8 +156,7 @@ class BlockedSource {
       this.blockIdsAwaitingRequest = new Set(missingBlockIds);
     } else {
       for (let i = 0; i < missingBlockIds.length; ++i) {
-        const id = missingBlockIds[i];
-        this.blockIdsAwaitingRequest.add(id);
+        this.blockIdsAwaitingRequest.add(missingBlockIds[i]);
       }
     }
 
@@ -177,7 +176,7 @@ class BlockedSource {
       for (const group of groups) {
         // fetch a group as in a single request
         const request = this.requestData(
-          group[0] * this.blockSize, group.length * this.blockSize, signal
+          group[0].id * this.blockSize, group.length * this.blockSize, group[0].signal,
         );
 
         // for each block in the request, make a small 'splitter',
@@ -186,7 +185,7 @@ class BlockedSource {
         // we keep that as a promise in 'blockRequests' to allow waiting on
         // a single block.
         for (let i = 0; i < group.length; ++i) {
-          const id = group[i];
+          const { id } = group[i];
           this.blockRequests.set(id, (async () => {
             try {
               const response = await request;
@@ -206,7 +205,7 @@ class BlockedSource {
                 this.blocks.delete(id);
                 this.blockRequests.delete(id);
               } else {
-                throw(err)
+                throw (err);
               }
             }
           })());
@@ -217,9 +216,9 @@ class BlockedSource {
 
     // get a list of currently running requests for the blocks still missing
     const missingRequests = [];
-    for (const blockId of missingBlockIds) {
-      if (this.blockRequests.has(blockId)) {
-        missingRequests.push(this.blockRequests.get(blockId));
+    for (const { id } of missingBlockIds) {
+      if (this.blockRequests.has(id)) {
+        missingRequests.push(this.blockRequests.get(id));
       }
     }
 
