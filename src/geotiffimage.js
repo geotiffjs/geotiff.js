@@ -258,7 +258,7 @@ class GeoTIFFImage {
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
     const slice = await this.source.fetch(offset, byteCount, false, signal);
-    if (slice.length === 0) {
+    if (signal?.aborted === 0) {
       return { x, y, sample, data: [] };
     }
     // either use the provided pool or decoder to decode the data
