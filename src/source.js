@@ -200,9 +200,13 @@ class BlockedSource {
                 top: response.offset + t,
               });
             }
-            catch (AbortError) {
-              this.blocks.delete(id);
-              this.blockRequests.delete(id);
+            catch (err) {
+              if (err.name === 'AbortError') {
+                this.blocks.delete(id);
+                this.blockRequests.delete(id);
+              } else {
+                throw (err);
+              }
             }
           })());
         }
