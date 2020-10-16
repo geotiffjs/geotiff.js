@@ -177,19 +177,19 @@ class BlockedSource {
     const blockRequests = [];
 
     for (let current = firstBlockOffset; current < top; current += this.blockSize) {
-      const id = Math.floor(current / this.blockSize);
-      if (!this.blocks.has(id) && !this.blockRequests.has(id)) {
-        missingBlockIds.push(id);
-        if (this.signals.has(id) && signal) {
-          this.signals.get(id).push(signal);
+      const blockId = Math.floor(current / this.blockSize);
+      if (!this.blocks.has(blockId) && !this.blockRequests.has(blockId)) {
+        missingBlockIds.push(blockId);
+        if (this.signals.has(blockId) && signal) {
+          this.signals.get(blockId).push(signal);
         } else if (signal) {
-          this.signals.set(id, [signal]);
+          this.signals.set(blockId, [signal]);
         }
       }
-      if (this.blockRequests.has(id)) {
-        blockRequests.push(this.blockRequests.get(id));
+      if (this.blockRequests.has(blockId)) {
+        blockRequests.push(this.blockRequests.get(blockId));
       }
-      allBlockIds.push(id);
+      allBlockIds.push(blockId);
     }
 
     // determine whether there are already blocks in the queue to be requested
@@ -262,9 +262,9 @@ class BlockedSource {
 
     // get a list of currently running requests for the blocks still missing
     const missingRequests = [];
-    for (const id of missingBlockIds) {
-      if (this.blockRequests.has(id)) {
-        missingRequests.push(this.blockRequests.get(id));
+    for (const blockId of missingBlockIds) {
+      if (this.blockRequests.has(blockId)) {
+        missingRequests.push(this.blockRequests.get(blockId));
       }
     }
 
