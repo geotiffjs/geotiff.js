@@ -156,6 +156,9 @@ class BlockedSource {
     // A map of block ids to all potential signals
     this.signals = new Map();
 
+    // Set of aborted block ids
+    this.abortedBlockIds = new Set();
+
     // block ids waiting for a batched request. Either a Set or null
     this.blockIdsAwaitingRequest = null;
   }
@@ -217,7 +220,7 @@ class BlockedSource {
       // iterate over all blocks
       for (const group of groups) {
         // Get all unique signals belonging to the group to use as one collective signal.
-        const signals = Array.from(new Set(group.map(id => this.signals.get(id)).flat()));
+        const signals = Array.from(new Set(group.map((id) => this.signals.get(id)).flat()));
         // fetch a group as in a single request
         const request = this.requestData(
           group[0] * this.blockSize, group.length * this.blockSize, allSignals(signals),
@@ -238,6 +241,7 @@ class BlockedSource {
               const data = response.data.slice(o, t);
               this.blockRequests.delete(id);
               this.signals.delete(id);
+              this.abortedBlockIds.delete(id);
               this.blocks.set(id, {
                 data,
                 offset: response.offset + o,
@@ -250,6 +254,7 @@ class BlockedSource {
                 this.blocks.delete(id);
                 this.blockRequests.delete(id);
                 this.signals.delete(id);
+                this.abortedBlockIds.add(id);
               } else {
                 throw (err);
               }
@@ -274,11 +279,40 @@ class BlockedSource {
 
     // now get all blocks for the request and return a summary buffer
     const blocks = allBlockIds.map((id) => this.blocks.get(id));
-    // Some of the blocks were cancelled by the signal (AbortController)
-    if (blocks.some(i => !i)) {
-      return [];
+    const abortedBlocksToBeRequested = [];
+    // Some of the blocks were cancelled by a signal (AbortController)
+    if (blocks.some((i) => !i)) {
+      // But not by this fetch's signal
+      if (!signal.aborted) {
+        allBlockIds.forEach((blockId) => {
+          if (this.abortedBlockIds.has(blockId)) {
+            const request = this.requestData(
+              blockId * this.blockSize, this.blockSize,
+            );
+            this.blockRequests.set(blockId, (async () => {
+              const response = await request;
+              const t = Math.min(this.blockSize, response.data.byteLength);
+              const data = response.data.slice(0, t);
+              this.abortedBlockIds.delete(blockId);
+              this.blocks.set(blockId, {
+                data,
+                offset: response.offset,
+                length: data.byteLength,
+                top: response.offset + t,
+              });
+            })());
+            abortedBlocksToBeRequested.push(this.blockRequests.get(blockId));
+          }
+        });
+      } else {
+        return [];
+      }
+      await Promise.all(abortedBlocksToBeRequested);
+      const blocksAndRefetchedBlocks = allBlockIds.map((id) => this.blocks.get(id));
+      return readRangeFromBlocks(blocksAndRefetchedBlocks, offset, length);
+    } else {
+      return readRangeFromBlocks(blocks, offset, length);
     }
-    return readRangeFromBlocks(blocks, offset, length);
   }
 
   async requestData(requestedOffset, requestedLength, signal) {
