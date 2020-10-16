@@ -32,9 +32,9 @@ function allSignals(signals) {
   for (const signal of signals) {
     if (signal.aborted) {
       onAbort();
-      break;
+    } else {
+      signal.addEventListener('abort', onAbort);
     }
-    signal.addEventListener('abort', onAbort);
   }
   return controller.signal;
 }
