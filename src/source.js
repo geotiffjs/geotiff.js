@@ -4,6 +4,39 @@ import http from 'http';
 import https from 'https';
 import urlMod from 'url';
 
+/**
+ * Create a new AbortController whose signal depends on all input signals aborting.
+ * @param {Array} signals An array of AbortSignals.
+ * @returns {AbortSignal} The AbortSignal dependent on all input AbortSignals.
+ */
+function allSignals(signals) {
+  if (!signals.every(Boolean)) {
+    return undefined;
+  }
+  const controller = new AbortController();
+  controller.count = signals.length;
+
+  function onAbort() {
+    controller.count -= 1;
+    if (controller.count === 0) {
+      controller.abort();
+
+      // Cleanup
+      for (const signal of signals) {
+        signal.removeEventListener('abort', onAbort);
+      }
+    }
+  }
+
+  for (const signal of signals) {
+    if (signal.aborted) {
+      onAbort();
+      break;
+    }
+    signal.addEventListener('abort', onAbort);
+  }
+  return controller.signal;
+}
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
@@ -81,7 +114,7 @@ function getCoherentBlockGroups(blockIds) {
   groups.push(current);
 
   for (let i = 0; i < blockIds.length; ++i) {
-    if (i === 0 || blockIds[i].id === blockIds[i - 1].id + 1) {
+    if (i === 0 || blockIds[i] === blockIds[i - 1] + 1) {
       current.push(blockIds[i]);
     } else {
       current = [blockIds[i]];
@@ -119,6 +152,9 @@ class BlockedSource {
     // already retrieved blocks
     this.blocks = new Map();
 
+    // A map of block ids to all potential signals
+    this.signals = new Map();
+
     // block ids waiting for a batched request. Either a Set or null
     this.blockIdsAwaitingRequest = null;
   }
@@ -142,7 +178,12 @@ class BlockedSource {
     for (let current = firstBlockOffset; current < top; current += this.blockSize) {
       const id = Math.floor(current / this.blockSize);
       if (!this.blocks.has(id) && !this.blockRequests.has(id)) {
-        missingBlockIds.push({ id, signal });
+        missingBlockIds.push(id);
+        if (this.signals.has(id) && signal) {
+          this.signals.get(id).push(signal);
+        } else if (signal) {
+          this.signals.set(id, [signal]);
+        }
       }
       if (this.blockRequests.has(id)) {
         blockRequests.push(this.blockRequests.get(id));
@@ -174,9 +215,11 @@ class BlockedSource {
 
       // iterate over all blocks
       for (const group of groups) {
+        // Get all unique signals belonging to the group to use as one collective signal.
+        const signals = Array.from(new Set(group.map(id => this.signals.get(id)).flat()));
         // fetch a group as in a single request
         const request = this.requestData(
-          group[0].id * this.blockSize, group.length * this.blockSize, group[0].signal,
+          group[0] * this.blockSize, group.length * this.blockSize, allSignals(signals),
         );
 
         // for each block in the request, make a small 'splitter',
@@ -185,7 +228,7 @@ class BlockedSource {
         // we keep that as a promise in 'blockRequests' to allow waiting on
         // a single block.
         for (let i = 0; i < group.length; ++i) {
-          const { id } = group[i];
+          const id = group[i];
           this.blockRequests.set(id, (async () => {
             try {
               const response = await request;
@@ -193,6 +236,7 @@ class BlockedSource {
               const t = Math.min(o + this.blockSize, response.data.byteLength);
               const data = response.data.slice(o, t);
               this.blockRequests.delete(id);
+              this.signals.delete(id);
               this.blocks.set(id, {
                 data,
                 offset: response.offset + o,
@@ -204,6 +248,7 @@ class BlockedSource {
               if (err.name === 'AbortError') {
                 this.blocks.delete(id);
                 this.blockRequests.delete(id);
+                this.signals.delete(id);
               } else {
                 throw (err);
               }
@@ -216,7 +261,7 @@ class BlockedSource {
 
     // get a list of currently running requests for the blocks still missing
     const missingRequests = [];
-    for (const { id } of missingBlockIds) {
+    for (const id of missingBlockIds) {
       if (this.blockRequests.has(id)) {
         missingRequests.push(this.blockRequests.get(id));
       }
@@ -230,7 +275,7 @@ class BlockedSource {
     const blocks = allBlockIds.map((id) => this.blocks.get(id));
     // Some of the blocks were cancelled by the signal (AbortController)
     if (blocks.some(i => !i)) {
-      return []
+      return [];
     }
     return readRangeFromBlocks(blocks, offset, length);
   }
