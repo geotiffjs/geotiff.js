@@ -6,6 +6,7 @@ import urlMod from 'url';
 
 /**
  * Create a new AbortController whose signal depends on all input signals aborting.
+ * Credit: https://github.com/whatwg/fetch/issues/905#issuecomment-491970649
  * @param {Array} signals An array of AbortSignals.
  * @returns {AbortSignal} The AbortSignal dependent on all input AbortSignals.
  */
