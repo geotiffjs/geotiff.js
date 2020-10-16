@@ -180,9 +180,9 @@ class BlockedSource {
       const blockId = Math.floor(current / this.blockSize);
       if (!this.blocks.has(blockId) && !this.blockRequests.has(blockId)) {
         missingBlockIds.push(blockId);
-        if (this.signals.has(blockId) && signal) {
+        if (this.signals.has(blockId)) {
           this.signals.get(blockId).push(signal);
-        } else if (signal) {
+        } else {
           this.signals.set(blockId, [signal]);
         }
       }
