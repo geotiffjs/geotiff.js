@@ -1,9 +1,10 @@
 import { expose, Transfer } from 'threads/worker';
 import { getDecoder } from './compression';
 
-function decode(fileDirectory, buffer) {
+async function decode(fileDirectory, buffer) {
   const decoder = getDecoder(fileDirectory);
-  return Transfer(decoder.decode(fileDirectory, buffer));
+  const decoded = await decoder.decode(fileDirectory, buffer);
+  return Transfer(decoded);
 }
 
 expose(decode);
