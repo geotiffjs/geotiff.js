@@ -15,9 +15,11 @@ class Pool {
    * @param {Number} size The size of the pool. Defaults to the number of CPUs
    *                      available. When this parameter is `null` or 0, then the
    *                      decoding will be done in the main thread.
+   * @param {Worker} worker The decoder worker, loaded and initialised. Enables
+   *                        loading the worker using worker-loader(or others) externally
+   *                        when using this library as a webpack dependency.
    */
-  constructor(size = defaultPoolSize) {
-    const worker = new Worker('./decoder.worker.js');
+  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js')) {
     this.pool = tPool(() => spawn(worker), size);
   }
 
