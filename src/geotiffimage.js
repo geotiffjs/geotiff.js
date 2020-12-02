@@ -282,7 +282,7 @@ class GeoTIFFImage {
    * @param {Pool} pool The decoder pool
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -322,7 +322,7 @@ class GeoTIFFImage {
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sample);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
+          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           promises.push(promise);
           promise.then((tile) => {
             const buffer = tile.data;
@@ -418,11 +418,12 @@ class GeoTIFFImage {
    *                                              outside of the images extent. When
    *                                              multiple samples are requested, an
    *                                              array of fill values can be passed.
+   * @param {Object} [signal] An AbortSignal that may be signalled if there are too many queued requests.
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
     window: wnd, samples = [], interleave, pool = null,
-    width, height, resampleMethod, fillValue,
+    width, height, resampleMethod, fillValue, signal
   } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
 
@@ -471,7 +472,7 @@ class GeoTIFFImage {
     const poolOrDecoder = pool || getDecoder(this.fileDirectory);
 
     const result = await this._readRaster(
-      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod,
+      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal
     );
     return result;
   }
@@ -493,9 +494,10 @@ class GeoTIFFImage {
    *                          same as the images, resampling will be performed.
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
    * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
+   * @param {Object} [signal] An AbortSignal that may be signalled if there are too many queued requests.
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false, signal } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -520,6 +522,7 @@ class GeoTIFFImage {
         pool,
         width,
         height,
+        signal,
       });
     }
 
@@ -549,6 +552,7 @@ class GeoTIFFImage {
       width,
       height,
       resampleMethod,
+      signal,
     };
     const { fileDirectory } = this;
     const raster = await this.readRasters(subOptions);

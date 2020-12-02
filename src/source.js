@@ -283,7 +283,7 @@ class BlockedSource {
     // Some of the blocks were cancelled by a signal (AbortController)
     if (blocks.some((i) => !i)) {
       // But not by this fetch's signal
-      if (!signal.aborted) {
+      if (signal && !signal.aborted) {
         allBlockIds.forEach((blockId) => {
           if (this.abortedBlockIds.has(blockId)) {
             const request = this.requestData(
