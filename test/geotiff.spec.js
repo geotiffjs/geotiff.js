@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import http from 'http';
 import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
+import AbortController from "node-abort-controller";
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
 import { makeFetchSource, makeFileSource } from '../src/source';
@@ -262,6 +263,32 @@ describe('ifdRequestTests', () => {
       const image = await tiff.getImage(i);
       image.readRasters();
     });
+  });
+});
+
+describe("Abort signal", () => {
+  const source = "multi-channel.ome.tif";
+
+  it("Abort signal on readRasters returns fill-value array", async () => {
+    const tiff = await GeoTIFF.fromSource(createSource(source));
+    const image = await tiff.getImage(0);
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    abortController.abort();
+    const rasters = await image.readRasters({ signal, fillValue: 17 });
+    // Aborted signal should return an empty array (i.e no rasters since readRasters returns an array of typed arrays).
+    expect(rasters.length).to.equal(0);
+  });
+  it("Abort signal on readRGB returns fill value array", async () => {
+    const tiff = await GeoTIFF.fromSource(createSource("rgb_paletted.tiff"));
+    const image = await tiff.getImage();
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    abortController.abort();
+    const rgbRaster = await image.readRGB({ signal });
+    console.log(rgbRaster)
+    // Without a fill value, readRGB returns an empty Uint8Array.
+    expect(rgbRaster.length).to.equal(0);
   });
 });
 

@@ -325,6 +325,7 @@ class GeoTIFFImage {
           const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           promises.push(promise);
           promise.then((tile) => {
+            if (signal && signal.aborted) return;
             const buffer = tile.data;
             const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
@@ -361,6 +362,7 @@ class GeoTIFFImage {
       }
     }
     await Promise.all(promises);
+    if (signal && signal.aborted) return new valueArrays.constructor(0);
 
     if ((width && (imageWindow[2] - imageWindow[0]) !== width)
         || (height && (imageWindow[3] - imageWindow[1]) !== height)) {
