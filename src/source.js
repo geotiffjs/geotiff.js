@@ -4,6 +4,8 @@ import http from 'http';
 import https from 'https';
 import urlMod from 'url';
 
+import { parseContentRange } from './utils';
+
 
 function readRangeFromBlocks(blocks, rangeOffset, rangeLength) {
   const rangeTop = rangeOffset + rangeLength;
@@ -121,6 +123,9 @@ class BlockedSource {
 
     // block ids waiting for a batched request. Either a Set or null
     this.blockIdsAwaitingRequest = null;
+
+    // file size to not read over. To be set when first response was set
+    this.fileSize = null;
   }
 
   /**
@@ -130,7 +135,10 @@ class BlockedSource {
    * @returns {ArrayBuffer} The subset of the file.
    */
   async fetch(offset, length, immediate = false) {
-    const top = offset + length;
+    let top = offset + length;
+    if (this.fileSize !== null) {
+      top = Math.min(top, this.fileSize);
+    }
 
     // calculate what blocks intersect the specified range (offset + length)
     // determine what blocks are already stored or beeing requested
@@ -192,6 +200,9 @@ class BlockedSource {
             const o = i * this.blockSize;
             const t = Math.min(o + this.blockSize, response.data.byteLength);
             const data = response.data.slice(o, t);
+            if (this.fileSize === null && response.fileSize) {
+              this.fileSize = response.fileSize;
+            }
             this.blockRequests.delete(id);
             this.blocks.set(id, {
               data,
@@ -257,10 +268,17 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
     } else if (response.status === 206) {
       const data = response.arrayBuffer
         ? await response.arrayBuffer() : (await response.buffer()).buffer;
+
+      const contentRange = parseContentRange(response.headers.get('Content-Range'));
+      let fileSize;
+      if (contentRange !== null) {
+        fileSize = contentRange.length;
+      }
       return {
         data,
         offset,
         length,
+        fileSize,
       };
     } else {
       const data = response.arrayBuffer
@@ -269,6 +287,7 @@ export function makeFetchSource(url, { headers = {}, blockSize } = {}) {
         data,
         offset: 0,
         length: data.byteLength,
+        fileSize: data.byteLength,
       };
     }
   }, { blockSize });
@@ -297,16 +316,23 @@ export function makeXHRSource(url, { headers = {}, blockSize } = {}) {
       request.onload = () => {
         const data = request.response;
         if (request.status === 206) {
+          const contentRange = parseContentRange(request.getResponseHeader('Content-Range'));
+          let fileSize;
+          if (contentRange !== null) {
+            fileSize = contentRange.length;
+          }
           resolve({
             data,
             offset,
             length,
+            fileSize,
           });
         } else {
           resolve({
             data,
             offset: 0,
             length: data.byteLength,
+            fileSize: data.byteLength,
           });
         }
       };
@@ -328,10 +354,18 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
   return new BlockedSource(async (offset, length) => new Promise((resolve, reject) => {
     const parsed = urlMod.parse(url);
     const request = (parsed.protocol === 'http:' ? http : https).get(
-      { ...parsed,
+      {
+        ...parsed,
         headers: {
           ...headers, Range: `bytes=${offset}-${offset + length - 1}`,
-        } }, (result) => {
+        },
+      },
+      (result) => {
+        const contentRange = parseContentRange(result.headers['content-range']);
+        let fileSize;
+        if (contentRange !== null) {
+          fileSize = contentRange.length;
+        }
         const chunks = [];
         // collect chunks
         result.on('data', (chunk) => {
@@ -345,6 +379,7 @@ export function makeHttpSource(url, { headers = {}, blockSize } = {}) {
             data,
             offset,
             length: data.byteLength,
+            fileSize,
           });
         });
       },
@@ -392,11 +427,11 @@ export function makeBufferSource(arrayBuffer) {
 
 function closeAsync(fd) {
   return new Promise((resolve, reject) => {
-    close(fd, err => {
+    close(fd, (err) => {
       if (err) {
-        reject(err)
+        reject(err);
       } else {
-        resolve()
+        resolve();
       }
     });
   });
