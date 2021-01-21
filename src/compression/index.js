@@ -3,6 +3,7 @@ import LZWDecoder from './lzw';
 import JpegDecoder from './jpeg';
 import DeflateDecoder from './deflate';
 import PackbitsDecoder from './packbits';
+import WebImageDecoder from './webimage';
 
 export function getDecoder(fileDirectory) {
   switch (fileDirectory.Compression) {
@@ -20,6 +21,8 @@ export function getDecoder(fileDirectory) {
       return new DeflateDecoder();
     case 32773: // packbits
       return new PackbitsDecoder();
+    case 50001:
+      return new WebImageDecoder();
     default:
       throw new Error(`Unknown compression method identifier: ${fileDirectory.Compression}`);
   }
