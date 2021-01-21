@@ -1,6 +1,6 @@
 {
   "name": "geotiff",
-  "version": "1.0.0-beta.14",
+  "version": "1.0.0-beta.16",
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": "https://github.com/geotiffjs/geotiff.js",
   "keywords": [
@@ -48,11 +48,12 @@
     "npm-run-all": "^4.1.5",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-bundle-visualiser": "^1.2.0",
+    "rimraf": "^3.0.2",
     "serve-static": "^1.14.1"
   },
   "scripts": {
     "build": "npm run build:clean; run-p build:browser build:node;",
-    "build:clean": "rm -rf dist-node/ dist-browser/",
+    "build:clean": "rimraf dist-node/ dist-browser/",
     "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/",
     "build:browser": "parcel build src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
     "watch:browser": "parcel watch src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
