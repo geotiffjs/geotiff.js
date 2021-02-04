@@ -234,7 +234,13 @@ class BlockedSource {
   }
 
   async requestData(requestedOffset, requestedLength) {
-    const response = await this.retrievalFunction(requestedOffset, requestedLength);
+    let actualLengthToRequest = requestedLength;
+    if (this.fileSize !== null && requestedOffset + requestedLength > this.fileSize) {
+      // some HTTP servers (e.g. Aliyun OSS) do not support Range requests
+      // when the Range header is longer than the actual file length
+      actualLengthToRequest = this.fileSize - requestedOffset;
+    }
+    const response = await this.retrievalFunction(requestedOffset, actualLengthToRequest);
     if (!response.length) {
       response.length = response.data.byteLength;
     } else if (response.length !== response.data.byteLength) {
