@@ -277,7 +277,6 @@ describe("Abort signal", () => {
     abortController.abort();
     try {
       await image.readRasters({ signal });
-      throw new Error('AbortSignal should cause method throw exception with name AbortError, not complete');
     } catch (e) {
       expect(e.name).to.equal('AbortError');
     }
@@ -290,7 +289,6 @@ describe("Abort signal", () => {
     abortController.abort();
     try {
       await image.readRGB({ signal });
-      throw new Error('AbortSignal should cause method throw exception with name AbortError, not complete');
     } catch (e) {
       expect(e.name).to.equal('AbortError');
     }
