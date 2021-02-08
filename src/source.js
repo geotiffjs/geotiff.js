@@ -4,7 +4,7 @@ import http from 'http';
 import https from 'https';
 import urlMod from 'url';
 
-import { parseContentRange } from './utils';
+import { parseContentRange, AbortError } from './utils';
 
 /**
  * Create a new AbortController whose signal depends on all input signals aborting.
@@ -315,8 +315,9 @@ class BlockedSource {
             abortedBlocksToBeRequested.push(this.blockRequests.get(blockId));
           }
         });
-      } else {
-        return [];
+        // Blocks were cancelled by this signal.
+      } else if (signal && signal.aborted) {
+        throw new AbortError();
       }
       await Promise.all(abortedBlocksToBeRequested);
       const blocksAndRefetchedBlocks = allBlockIds.map((id) => this.blocks.get(id));

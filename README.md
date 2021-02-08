@@ -371,29 +371,33 @@ const multiTiff = await GeoTIFF.fromUrls(
 
 ### AbortController Support
 
-Geotiff.js supports the use of [`AbortController`s](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).  Calls to `getRasters`, `readRGB` and `getTileOrStrip` will not error
-out but return an empty version of what is normally returned.  You should check if the signal is aborted if you use this feature instead of trying to use the returned value.
+Geotiff.js supports the use of [`AbortController`s](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).  Calls to `getRasters`, `readRGB` and `getTileOrStrip` will throw an `Error` with name `AbortSignal` similar to the browser's `fetch` behavior.
+
 
 ```javascript
 const abortController = new AbortController();
 const { signal } = abortController;
 abortController.abort();
-const data = await tiff.readRasters({ signal })
-// data is an empty array [] since readRasters returns an array of TypeArrays normally.
-// Check if the signal was aborted and return what you want to from wherever this is called.
-if signal.aborted return;
-});
+try{
+  const data = await tiff.readRasters({ signal })
+} catch(e) {
+  if (err.name === 'AbortError') {
+    // do stuff
+  }
+}
 ```
 
 ```javascript
 const abortController = new AbortController();
 const { signal } = abortController;
 abortController.abort();
-const data = await tiff.readRGB({ signal })
-// data is an empty Uint8Array [] since read rasters returns an Uint8Array normally.
-// Check if the signal was aborted and return what you want to from wherever this is called.
-if signal.aborted return;
-});
+try{
+  const data = await tiff.readRGB({ signal })
+} catch(e) {
+  if (err.name === 'AbortError') {
+    // do stuff
+  }
+}
 ```
 
 ### Writing GeoTIFFs (Beta Version)

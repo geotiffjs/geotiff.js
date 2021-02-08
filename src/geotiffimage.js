@@ -5,6 +5,7 @@ import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
+import { AbortError } from './utils';
 
 function sum(array, start, end) {
   let s = 0;
@@ -258,8 +259,9 @@ class GeoTIFFImage {
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
     const slice = await this.source.fetch(offset, byteCount, false, signal);
+    // Needed for testing so that aborts are obeyed in node, where fetch API is not used.
     if (signal && signal.aborted) {
-      return { x, y, sample, data: [] };
+      throw new AbortError();
     }
     // either use the provided pool or decoder to decode the data
     let request;
@@ -325,7 +327,6 @@ class GeoTIFFImage {
           const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           promises.push(promise);
           promise.then((tile) => {
-            if (signal && signal.aborted) return;
             const buffer = tile.data;
             const dataView = new DataView(buffer);
             const firstLine = tile.y * tileHeight;
@@ -362,7 +363,6 @@ class GeoTIFFImage {
       }
     }
     await Promise.all(promises);
-    if (signal && signal.aborted) return new valueArrays.constructor(0);
 
     if ((width && (imageWindow[2] - imageWindow[0]) !== width)
         || (height && (imageWindow[3] - imageWindow[1]) !== height)) {
