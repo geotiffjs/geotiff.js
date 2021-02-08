@@ -129,8 +129,10 @@ geotiff.js works with both `require`, `import` and the global variable `GeoTIFF`
 
 ```javascript
 const GeoTIFF = require('geotiff');
+const { fromUrl, fromUrls, fromArrayBuffer, fromBlob } = GeoTIFF;
+
 // or
-import GeoTIFF from 'geotiff';
+import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
 ```
 
 or:
@@ -148,12 +150,12 @@ there are shortcuts available. The following creates a source that reads from a
 remote GeoTIFF referenced by a URL:
 
 ```javascript
-GeoTIFF.fromUrl(someUrl)
+fromUrl(someUrl)
   .then(tiff => { /* ... */});
 
 // or when using async/await
 (async function() {
-  const tiff = await GeoTIFF.fromUrl(someUrl);
+  const tiff = await fromUrl(someUrl);
   // ...
 })()
 ```
@@ -169,7 +171,7 @@ options are reading from a local `ArrayBuffer`:
 // using local ArrayBuffer
 const response = await fetch(someUrl);
 const arrayBuffer = await response.arrayBuffer();
-const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+const tiff = await fromArrayBuffer(arrayBuffer);
 ```
 
 or a `Blob`/`File`:
@@ -179,7 +181,7 @@ or a `Blob`/`File`:
 <script>
   const input = document.getElementById('file'):
   input.onchange = async function() {
-    const tiff = await GeoTIFF.fromBlob(input.files[0]);
+    const tiff = await fromBlob(input.files[0]);
   }
 </script>
 ```
@@ -363,7 +365,7 @@ images by index or read data using `readRasters`. Toget such a file use the `fro
 factory function:
 
 ```javascript
-const multiTiff = await GeoTIFF.fromUrls(
+const multiTiff = await fromUrls(
   'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
   ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
 );
@@ -405,7 +407,7 @@ You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
 This function returns an ArrayBuffer which you can then save as a .tif file.
 :warning: writeArrayBuffer currently writes the values uncompressed
 ```javascript
-import { writeArrayBuffer } from 'geotiff';
+import GeoTIFF, { writeArrayBuffer } from 'geotiff';
 
 const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const metadata = {
@@ -441,7 +443,7 @@ on the fly rendering of the data contained in a GeoTIFF.
   // ...
 
   (async function() {
-    const tiff = await GeoTIFF.fromUrl(url);
+    const tiff = await fromUrl(url);
     const image = await tiff.getImage();
     const data = await image.readRasters();
 
