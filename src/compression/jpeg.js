@@ -341,7 +341,9 @@ function decodeScan(data, initialOffset,
         mcu++;
 
         // If we've reached our expected MCU's, stop decoding
-        if (mcu === mcuExpected) break;
+        if (mcu === mcuExpected) {
+          break;
+        }
       }
     }
 
@@ -398,9 +400,9 @@ function buildComponentData(frame, component) {
       const row = 8 * i;
 
       // check for all-zero AC coefficients
-      if (p[1 + row] === 0 && p[2 + row] === 0 && p[3 + row] === 0 &&
-        p[4 + row] === 0 && p[5 + row] === 0 && p[6 + row] === 0 &&
-        p[7 + row] === 0) {
+      if (p[1 + row] === 0 && p[2 + row] === 0 && p[3 + row] === 0
+        && p[4 + row] === 0 && p[5 + row] === 0 && p[6 + row] === 0
+        && p[7 + row] === 0) {
         t = ((dctSqrt2 * p[0 + row]) + 512) >> 10;
         p[0 + row] = t;
         p[1 + row] = t;
@@ -467,9 +469,9 @@ function buildComponentData(frame, component) {
       const col = i;
 
       // check for all-zero AC coefficients
-      if (p[(1 * 8) + col] === 0 && p[(2 * 8) + col] === 0 && p[(3 * 8) + col] === 0 &&
-        p[(4 * 8) + col] === 0 && p[(5 * 8) + col] === 0 && p[(6 * 8) + col] === 0 &&
-        p[(7 * 8) + col] === 0) {
+      if (p[(1 * 8) + col] === 0 && p[(2 * 8) + col] === 0 && p[(3 * 8) + col] === 0
+        && p[(4 * 8) + col] === 0 && p[(5 * 8) + col] === 0 && p[(6 * 8) + col] === 0
+        && p[(7 * 8) + col] === 0) {
         t = ((dctSqrt2 * dataIn[i + 0]) + 8192) >> 14;
         p[(0 * 8) + col] = t;
         p[(1 * 8) + col] = t;
@@ -602,8 +604,12 @@ class JpegStreamReader {
       for (componentId in frame.components) {
         if (frame.components.hasOwnProperty(componentId)) {
           component = frame.components[componentId];
-          if (maxH < component.h) maxH = component.h;
-          if (maxV < component.v) maxV = component.v;
+          if (maxH < component.h) {
+            maxH = component.h;
+          }
+          if (maxV < component.v) {
+            maxV = component.v;
+          }
         }
       }
       const mcusPerLine = Math.ceil(frame.samplesPerLine / 8 / maxH);
@@ -663,8 +669,8 @@ class JpegStreamReader {
           const appData = readDataBlock();
 
           if (fileMarker === 0xFFE0) {
-            if (appData[0] === 0x4A && appData[1] === 0x46 && appData[2] === 0x49 &&
-              appData[3] === 0x46 && appData[4] === 0) { // 'JFIF\x00'
+            if (appData[0] === 0x4A && appData[1] === 0x46 && appData[2] === 0x49
+              && appData[3] === 0x46 && appData[4] === 0) { // 'JFIF\x00'
               this.jfif = {
                 version: { major: appData[5], minor: appData[6] },
                 densityUnits: appData[7],
@@ -678,8 +684,8 @@ class JpegStreamReader {
           }
           // TODO APP1 - Exif
           if (fileMarker === 0xFFEE) {
-            if (appData[0] === 0x41 && appData[1] === 0x64 && appData[2] === 0x6F &&
-              appData[3] === 0x62 && appData[4] === 0x65 && appData[5] === 0) { // 'Adobe\x00'
+            if (appData[0] === 0x41 && appData[1] === 0x64 && appData[2] === 0x6F
+              && appData[3] === 0x62 && appData[4] === 0x65 && appData[5] === 0) { // 'Adobe\x00'
               this.adobe = {
                 version: appData[6],
                 flags0: (appData[7] << 8) | appData[8],
@@ -815,8 +821,8 @@ class JpegStreamReader {
           break;
 
         default:
-          if (data[offset - 3] === 0xFF &&
-            data[offset - 2] >= 0xC0 && data[offset - 2] <= 0xFE) {
+          if (data[offset - 3] === 0xFF
+            && data[offset - 2] >= 0xC0 && data[offset - 2] <= 0xFE) {
             // could be incorrect encoding -- last 0xFF byte of the previous
             // block was eaten by the encoder
             offset -= 3;

@@ -104,164 +104,6 @@
     
 
     
-    <h4 class="name" id="fetch"><span class="type-signature">(async) </span>fetch<span class="signature">(offset, length)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>To conform to the simple Source interface</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>offset</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>length</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source_remote.js.html">source/remote.js</a>, <a href="source_remote.js.html#line108">line 108</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id="fromArrayBuffer"><span class="type-signature"></span>fromArrayBuffer<span class="signature">(arrayBuffer)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFF.html">GeoTIFF</a>>}</span></h4>
     
 
@@ -364,7 +206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line505">line 505</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line670">line 670</a>
     </li></ul></dd>
     
 
@@ -374,6 +216,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -527,7 +371,7 @@ object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line528">line 528</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line696">line 696</a>
     </li></ul></dd>
     
 
@@ -537,6 +381,8 @@ object.</p>
 
     
 </dl>
+
+
 
 
 
@@ -594,6 +440,8 @@ object.</p>
     <p>Construct a GeoTIFF from a local file path. This uses the node
 <a href="https://nodejs.org/api/fs.html">filesystem API</a> and is
 not available on browsers.</p>
+<p>N.B. After the GeoTIFF has been completely processed it needs
+to be closed but only if it has been constructed from a file.</p>
 </div>
 
 
@@ -645,7 +493,7 @@ not available on browsers.</p>
 
             
 
-            <td class="description last"><p>The filepath to read from.</p></td>
+            <td class="description last"><p>The file path to read from.</p></td>
         </tr>
 
     
@@ -686,7 +534,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line516">line 516</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line684">line 684</a>
     </li></ul></dd>
     
 
@@ -696,6 +544,8 @@ not available on browsers.</p>
 
     
 </dl>
+
+
 
 
 
@@ -846,7 +696,7 @@ not available on browsers.</p>
             
 
             <td class="description last"><p>Additional options to pass to the source.
-                          See makeRemoteSource for details.</p></td>
+See makeRemoteSource for details.</p></td>
         </tr>
 
     
@@ -887,7 +737,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line495">line 495</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line660">line 660</a>
     </li></ul></dd>
     
 
@@ -897,6 +747,8 @@ not available on browsers.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1078,8 +930,8 @@ not available on browsers.</p>
             
 
             <td class="description last"><p>Additional options to pass to the source.
-                          See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
-                          for details.</p></td>
+See <a href="module-source.html#.makeRemoteSource">makeRemoteSource</a>
+for details.</p></td>
         </tr>
 
     
@@ -1120,7 +972,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line541">line 541</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line709">line 709</a>
     </li></ul></dd>
     
 
@@ -1130,6 +982,8 @@ not available on browsers.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1159,252 +1013,6 @@ not available on browsers.</p>
     <dd>
         
 <span class="param-type">Promise.&lt;<a href="MultiGeoTIFF.html">MultiGeoTIFF</a>></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="sendRequest"><span class="type-signature"></span>sendRequest<span class="signature">(url, headers, credentials, forceXHR)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Sends an HTTP request, either using XHR or fetch.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>url</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The URL to send the request to</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>All request headers as an Object</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>credentials</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>forceXHR</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>A switch indicating whether XHR is forced to be used</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source_remote.js.html">source/remote.js</a>, <a href="source_remote.js.html#line12">line 12</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>A response object with status, headers, dataPromise and abort keys</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
 
 
     </dd>
@@ -1523,7 +1131,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line553">line 553</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line723">line 723</a>
     </li></ul></dd>
     
 
@@ -1533,6 +1141,8 @@ not available on browsers.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1729,173 +1339,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source_index.js.html">source/index.js</a>, <a href="source_index.js.html#line15">line 15</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-            
-                
-<h4 class="name" id="Block">Block</h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">object</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">ArrayBuffer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual data of the block.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>offset</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual offset of the block within the file.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>length</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The actual size of the block in bytes.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line50">line 50</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line51">line 51</a>
     </li></ul></dd>
     
 
@@ -1977,7 +1421,7 @@ not available on browsers.</p>
             
 
             <td class="description last"><p>Method that return one byte of data for decoding,
-  or -1 when EOF is reached.</p></td>
+or -1 when EOF is reached.</p></td>
         </tr>
 
     
@@ -2162,7 +1606,7 @@ not available on browsers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source.js.html">source.js</a>, <a href="source.js.html#line57">line 57</a>
+        <a href="source.js.html">source.js</a>, <a href="source.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -2172,6 +1616,8 @@ not available on browsers.</p>
 
     
 </dl>
+
+
 
 
 
@@ -2226,13 +1672,13 @@ not available on browsers.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

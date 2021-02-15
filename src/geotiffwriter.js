@@ -4,19 +4,14 @@
   You can view that here:
   https://github.com/photopea/UTIF.js/blob/master/LICENSE
 */
-
-
 import { fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals';
 import { assign, endsWith, forEach, invert, times } from './utils';
 
-
 const tagName2Code = invert(fieldTagNames);
 const geoKeyName2Code = invert(geoKeyNames);
-
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
-
 const typeName2byte = invert(fieldTypeNames);
 
 // config variables
@@ -56,16 +51,20 @@ const _binBE = {
     return _binBE.ui32[0];
   },
   readASCII: (buff, p, l) => {
-    return l.map(i => String.fromCharCode(buff[p + i])).join('');
+    return l.map((i) => String.fromCharCode(buff[p + i])).join('');
   },
   readFloat: (buff, p) => {
     const a = _binBE.ui8;
-    times(4, (i) => { a[i] = buff[p + 3 - i]; });
+    times(4, (i) => {
+      a[i] = buff[p + 3 - i];
+    });
     return _binBE.fl32[0];
   },
   readDouble: (buff, p) => {
     const a = _binBE.ui8;
-    times(8, (i) => { a[i] = buff[p + 7 - i]; });
+    times(8, (i) => {
+      a[i] = buff[p + 7 - i];
+    });
     return _binBE.fl64[0];
   },
   writeUshort: (buff, p, n) => {
@@ -79,7 +78,9 @@ const _binBE = {
     buff[p + 3] = (n >> 0) & 255;
   },
   writeASCII: (buff, p, s) => {
-    times(s.length, (i) => { buff[p + i] = s.charCodeAt(i); });
+    times(s.length, (i) => {
+      buff[p + i] = s.charCodeAt(i);
+    });
   },
   ui8: new Uint8Array(8),
 };
@@ -106,7 +107,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
 
   let eoff = offset + (12 * keys.length) + 4;
 
-  keys.forEach((key) => {
+  for (const key of keys) {
     let tag = null;
     if (typeof key === 'number') {
       tag = key;
@@ -180,7 +181,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
     }
 
     offset += 4;
-  });
+  }
 
   return [offset, eoff];
 };
@@ -257,7 +258,9 @@ const encodeImage = (values, width, height, metadata) => {
   const samplesPerPixel = ifd[277];
 
   const data = new Uint8Array(numBytesInIfd + (width * height * samplesPerPixel));
-  times(prfx.length, (i) => { data[i] = prfx[i]; });
+  times(prfx.length, (i) => {
+    data[i] = prfx[i];
+  });
   forEach(img, (value, i) => {
     data[numBytesInIfd + i] = value;
   });
@@ -300,7 +303,7 @@ const metadataDefaults = [
   ['GeogCitationGeoKey', 'WGS 84'],
 ];
 
-export function writeGeotiff (data, metadata) {
+export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
 
   let height;
@@ -373,7 +376,7 @@ export function writeGeotiff (data, metadata) {
 
 
   const geoKeys = Object.keys(metadata)
-    .filter(key => endsWith(key, 'GeoKey'))
+    .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
   if (!metadata.GeoKeyDirectory) {
@@ -438,4 +441,4 @@ export function writeGeotiff (data, metadata) {
   const outputImage = encodeImage(flattenedValues, width, height, encodedMetadata);
 
   return outputImage;
-};
+}

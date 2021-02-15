@@ -28,7 +28,8 @@
         <article>
             <pre class="prettyprint source linenums"><code>/* eslint max-len: ["error", { "code": 120 }] */
 
-import { photometricInterpretations, parseXml } from './globals';
+import txml from 'txml';
+import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
 import { getDecoder } from './compression';
 import { resample, resampleInterleaved } from './resample';
@@ -119,6 +120,7 @@ class GeoTIFFImage {
   getFileDirectory() {
     return this.fileDirectory;
   }
+
   /**
    * Returns the associated parsed geo keys.
    * @returns {Object} the parsed geo keys
@@ -126,6 +128,7 @@ class GeoTIFFImage {
   getGeoKeys() {
     return this.geoKeys;
   }
+
   /**
    * Returns the width of the image.
    * @returns {Number} the width of the image
@@ -133,6 +136,7 @@ class GeoTIFFImage {
   getWidth() {
     return this.fileDirectory.ImageWidth;
   }
+
   /**
    * Returns the height of the image.
    * @returns {Number} the height of the image
@@ -140,6 +144,7 @@ class GeoTIFFImage {
   getHeight() {
     return this.fileDirectory.ImageLength;
   }
+
   /**
    * Returns the number of samples per pixel.
    * @returns {Number} the number of samples per pixel
@@ -147,6 +152,7 @@ class GeoTIFFImage {
   getSamplesPerPixel() {
     return this.fileDirectory.SamplesPerPixel;
   }
+
   /**
    * Returns the width of each tile.
    * @returns {Number} the width of each tile
@@ -154,6 +160,7 @@ class GeoTIFFImage {
   getTileWidth() {
     return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
   }
+
   /**
    * Returns the height of each tile.
    * @returns {Number} the height of each tile
@@ -161,7 +168,8 @@ class GeoTIFFImage {
   getTileHeight() {
     if (this.isTiled) {
       return this.fileDirectory.TileLength;
-    } else if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
+    }
+    if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
       return Math.min(this.fileDirectory.RowsPerStrip, this.getHeight());
     }
     return this.getHeight();
@@ -198,8 +206,8 @@ class GeoTIFFImage {
   }
 
   getReaderForSample(sampleIndex) {
-    const format = this.fileDirectory.SampleFormat ?
-      this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    const format = this.fileDirectory.SampleFormat
+      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
@@ -243,8 +251,8 @@ class GeoTIFFImage {
   }
 
   getArrayForSample(sampleIndex, size) {
-    const format = this.fileDirectory.SampleFormat ?
-      this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    const format = this.fileDirectory.SampleFormat
+      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     return arrayForType(format, bitsPerSample, size);
   }
@@ -362,10 +370,9 @@ class GeoTIFFImage {
                 );
                 let windowCoordinate;
                 if (interleave) {
-                  windowCoordinate =
-                    ((y + firstLine - imageWindow[1]) * windowWidth * samples.length) +
-                    ((x + firstCol - imageWindow[0]) * samples.length) +
-                    si;
+                  windowCoordinate = ((y + firstLine - imageWindow[1]) * windowWidth * samples.length)
+                    + ((x + firstCol - imageWindow[0]) * samples.length)
+                    + si;
                   valueArrays[windowCoordinate] = value;
                 } else {
                   windowCoordinate = (
@@ -467,8 +474,8 @@ class GeoTIFFImage {
     }
     let valueArrays;
     if (interleave) {
-      const format = this.fileDirectory.SampleFormat ?
-        Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
+      const format = this.fileDirectory.SampleFormat
+        ? Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
@@ -511,9 +518,10 @@ class GeoTIFFImage {
    * @param {number} [height] The desired height of the output. When the width is no the
    *                          same as the images, resampling will be performed.
    * @param {string} [resampleMethod='nearest'] The desired resampling method.
+   * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
    * @returns {Promise.&lt;TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -524,11 +532,20 @@ class GeoTIFFImage {
     const pi = this.fileDirectory.PhotometricInterpretation;
 
     if (pi === photometricInterpretations.RGB) {
+      let s = [0, 1, 2];
+      if ((!(this.fileDirectory.ExtraSamples === ExtraSamplesValues.Unspecified)) &amp;&amp; enableAlpha) {
+        s = [];
+        for (let i = 0; i &lt; this.fileDirectory.BitsPerSample.length; i += 1) {
+          s.push(i);
+        }
+      }
       return this.readRasters({
         window,
         interleave: true,
-        samples: [0, 1, 2],
+        samples: s,
         pool,
+        width,
+        height,
       });
     }
 
@@ -616,24 +633,54 @@ class GeoTIFFImage {
 
   /**
    * Returns the parsed GDAL metadata items.
+   *
+   * If sample is passed to null, dataset-level metadata will be returned.
+   * Otherwise only metadata specific to the provided sample will be returned.
+   *
+   * @param {Number} [sample=null] The sample index.
    * @returns {Object}
    */
-  getGDALMetadata() {
+  getGDALMetadata(sample = null) {
     const metadata = {};
     if (!this.fileDirectory.GDAL_METADATA) {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = parseXml(string.substring(0, string.length - 1));
-    const result = xmlDom.evaluate(
-      'GDALMetadata/Item', xmlDom, null,
-      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null,
-    );
-    for (let i = 0; i &lt; result.snapshotLength; ++i) {
-      const node = result.snapshotItem(i);
-      metadata[node.getAttribute('name')] = node.textContent;
+    const xmlDom = txml(string.substring(0, string.length - 1));
+
+    if (!xmlDom[0].tagName) {
+      throw new Error('Failed to parse GDAL metadata XML.');
+    }
+
+    const root = xmlDom[0];
+    if (root.tagName !== 'GDALMetadata') {
+      throw new Error('Unexpected GDAL metadata XML tag.');
+    }
+
+    let items = root.children
+      .filter((child) => child.tagName === 'Item');
+
+    if (sample) {
+      items = items.filter((item) => Number(item.attributes.sample) === sample);
+    }
+
+    for (let i = 0; i &lt; items.length; ++i) {
+      const item = items[i];
+      metadata[item.attributes.name] = item.children[0];
     }
     return metadata;
+  }
+
+  /**
+   * Returns the GDAL nodata value
+   * @returns {Number} or null
+   */
+  getGDALNoData() {
+    if (!this.fileDirectory.GDAL_NODATA) {
+      return null;
+    }
+    const string = this.fileDirectory.GDAL_NODATA;
+    return Number(string.substring(0, string.length - 1));
   }
 
   /**
@@ -650,7 +697,8 @@ class GeoTIFFImage {
         tiePoints[4],
         tiePoints[5],
       ];
-    } else if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[3],
         modelTransformation[7],
@@ -678,7 +726,8 @@ class GeoTIFFImage {
         -modelPixelScale[1],
         modelPixelScale[2],
       ];
-    } else if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[0],
         modelTransformation[5],
@@ -742,13 +791,13 @@ export default GeoTIFFImage;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

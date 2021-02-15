@@ -205,7 +205,7 @@
             
 
             <td class="description last"><p>The numeric byte-offset from the start of the image
-                               to the first IFD.</p></td>
+to the first IFD.</p></td>
         </tr>
 
     
@@ -348,7 +348,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line241">line 241</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line301">line 301</a>
     </li></ul></dd>
     
 
@@ -358,6 +358,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -537,7 +539,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line380">line 380</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line527">line 527</a>
     </li></ul></dd>
     
 
@@ -560,6 +562,209 @@
 
 
 
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Closes the underlying file buffer
+N.B. After the GeoTIFF has been completely processed it needs
+to be closed but only if it has been constructed from a file.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line566">line 566</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getGhostValues"><span class="type-signature">(async) </span>getGhostValues<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get the values of the COG ghost area as a parsed map.
+See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line493">line 493</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the parsed ghost area or null, if no such area was found</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -692,7 +897,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line343">line 343</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line445">line 445</a>
     </li></ul></dd>
     
 
@@ -702,6 +907,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -800,7 +1007,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line363">line 363</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line458">line 458</a>
     </li></ul></dd>
     
 
@@ -810,6 +1017,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -839,6 +1048,168 @@
     <dd>
         
 <span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="parseFileDirectoryAt"><span class="type-signature">(async) </span>parseFileDirectoryAt<span class="signature">(offset)</span><span class="type-signature"> &rarr; {<a href="ImageFileDirectory.html">ImageFileDirectory</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Instructs to parse an image file directory at the given file offset.
+As there is no way to ensure that a location is indeed the start of an IFD,
+this function must be called with caution (e.g only using the IFD offsets from
+the headers or other IFDs).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the offset to parse the IFD at</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line329">line 329</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the parsed IFD</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="ImageFileDirectory.html">ImageFileDirectory</a></span>
 
 
     </dd>
@@ -1044,7 +1415,7 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>the subset to read data from in
-                                          geographical coordinates.</p></td>
+geographical coordinates.</p></td>
         </tr>
 
     
@@ -1123,8 +1494,8 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>whether the data shall be read
-                                            in one single array or separate
-                                            arrays.</p></td>
+in one single array or separate
+arrays.</p></td>
         </tr>
 
     
@@ -1201,7 +1572,7 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>The desired width of the output. When the width is not the
-                                same as the images, resampling will be performed.</p></td>
+same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -1239,7 +1610,7 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>The desired height of the output. When the width is not the
-                                 same as the images, resampling will be performed.</p></td>
+same as the images, resampling will be performed.</p></td>
         </tr>
 
     
@@ -1319,9 +1690,9 @@ image is called and the result returned.</p>
             
 
             <td class="description last"><p>The value to use for parts of the image
-                                             outside of the images extent. When multiple
-                                             samples are requested, an array of fill values
-                                             can be passed.</p></td>
+outside of the images extent. When multiple
+samples are requested, an array of fill values
+can be passed.</p></td>
         </tr>
 
     
@@ -1347,8 +1718,10 @@ image is called and the result returned.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="GeoTIFFBase.html#readRasters">GeoTIFFBase#readRasters</a>
     </li></ul></dd>
     
@@ -1370,11 +1743,9 @@ image is called and the result returned.</p>
     
 
     
-
-    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line156">line 156</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line191">line 191</a>
     </li></ul></dd>
     
 
@@ -1391,6 +1762,8 @@ image is called and the result returned.</p>
 
     
 </dl>
+
+
 
 
 
@@ -1447,13 +1820,13 @@ image is called and the result returned.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="global.html#Block">Block</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="DetailedSource.html">DetailedSource</a></li><li><a href="MultiSource.html">MultiSource</a></li><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetch">fetch</a></li><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#sendRequest">sendRequest</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 21 2019 14:32:49 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>
