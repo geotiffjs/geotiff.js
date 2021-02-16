@@ -117,3 +117,11 @@ export function parseContentRange(headerValue) {
 
   return null;
 }
+
+
+/*
+ * Promisified wrapper around 'setTimeout' to allow 'await'
+ */
+export async function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}

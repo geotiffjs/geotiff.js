@@ -2,13 +2,21 @@ import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import Pool from './pool';
-import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+// import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+
+import { makeFetchSource } from './source/fetch';
+import { makeBufferSource } from './source/arraybuffer';
+import { makeFileReaderSource } from './source/filereader';
+import { makeFileSource } from './source/file';
+
 import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
 import * as globals from './globals';
 import * as rgb from './rgb';
 import { getDecoder } from './compression';
 import { setLogger } from './logging';
+
+const makeRemoteSource = makeFetchSource;
 
 export { globals };
 export { rgb };
@@ -314,9 +322,13 @@ class GeoTIFF extends GeoTIFFBase {
   async getSlice(offset, size) {
     const fallbackSize = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
-      await this.source.fetch(
-        offset, typeof size !== 'undefined' ? size : fallbackSize,
-      ), offset, this.littleEndian, this.bigTiff,
+      await this.source.fetch({
+        offset,
+        length: typeof size !== 'undefined' ? size : fallbackSize,
+      })[0],
+      offset,
+      this.littleEndian,
+      this.bigTiff,
     );
   }
 
@@ -516,7 +528,7 @@ class GeoTIFF extends GeoTIFFBase {
    * @param {object} options Additional options.
    */
   static async fromSource(source, options) {
-    const headerData = await source.fetch(0, 1024);
+    const headerData = await source.fetch({ offset: 0, length: 1024 })[0];
     const dataView = new DataView64(headerData);
 
     const BOM = dataView.getUint16(0, 0);

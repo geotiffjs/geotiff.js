@@ -97,7 +97,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
 
     // parse the headers to get the content range size
     const headers = parseHeaders(innerText.substr(0, endOfHeaders));
-    const { start, end } = parseContentRange(headers['content-range']);
+    const { start, end, total } = parseContentRange(headers['content-range']);
 
     // calculate the length of the slice and the next offset
     const startOfData = offset + boundary.length + endOfHeaders + CRLFCRLF.length;
@@ -107,6 +107,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
       data: responseArrayBuffer.slice(startOfData, startOfData + length),
       offset: start,
       length,
+      fileSize: total,
     });
 
     offset = startOfData + length + 4;
