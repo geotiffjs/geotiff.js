@@ -5,7 +5,8 @@ import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
-import { makeFetchSource, makeFileSource } from '../src/source';
+import { makeFetchSource } from '../src/source/fetch';
+import { makeFileSource } from '../src/source/file';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
 import DataView64 from "../src/dataview64";
@@ -646,7 +647,7 @@ describe('writeTests', () => {
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
     expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
-    
+
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an("object");
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
@@ -769,7 +770,7 @@ describe('writeTests', () => {
     const height = 12;
     const width = 12;
     const originalValues = range(height * width);
-    
+
     const metadata = getMockMetaData(height, width);
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
