@@ -23,7 +23,11 @@ function itemsToObject(items) {
 function parseHeaders(text) {
   const items = text
     .split('\r\n')
-    .map(line => line.split(':').map(str => str.trim()));
+    .map(line => {
+      const kv = line.split(':').map(str => str.trim());
+      kv[0] = kv[0].toLowerCase();
+      return kv
+    });
 
   return itemsToObject(items);
 }
@@ -65,28 +69,47 @@ export function parseContentRange(rawContentRange) {
  * @returns {Object[]} the parsed byteranges
  */
 export function parseByteRanges(responseArrayBuffer, boundary) {
-  let offset = 0;
+  let offset = null;
   const decoder = new TextDecoder('ascii');
   const out = [];
+
+  const startBoundary = `--${boundary}`;
+  const endBoundary = `${startBoundary}--`;
+
+  // search for the initial boundary, may be offset by some bytes
+  // TODO: more efficient to check for `--` in bytes directly
+  for (let i = 0; i < 10; ++i) {
+    const text = decoder.decode(
+      new Uint8Array(responseArrayBuffer, i, startBoundary.length)
+    );
+    if (text === startBoundary) {
+      offset = i;
+    }
+  }
+
+  if (offset === null) {
+    throw new Error("Could not find initial boundary");
+  }
+
   while (offset < responseArrayBuffer.byteLength) {
     const text = decoder.decode(
       new Uint8Array(responseArrayBuffer, offset,
-        Math.min(boundary.length + 1024, responseArrayBuffer.byteLength - offset),
+        Math.min(startBoundary.length + 1024, responseArrayBuffer.byteLength - offset),
       ),
     );
 
     // break if we arrived at the end
-    if (text.length === 0 || text === `${boundary}--`) {
+    if (text.length === 0 || text.startsWith(endBoundary)) {
       break;
     }
 
     // assert that we are actually dealing with a byterange and are at the correct offset
-    if (!text.startsWith(boundary)) {
+    if (!text.startsWith(startBoundary)) {
       throw new Error('Part does not start with boundary');
     }
 
     // get a substring from where we read the headers
-    const innerText = text.substr(boundary.length + 2);
+    const innerText = text.substr(startBoundary.length + 2);
 
     if (innerText.length === 0) {
       break;
@@ -100,7 +123,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
     const { start, end, total } = parseContentRange(headers['content-range']);
 
     // calculate the length of the slice and the next offset
-    const startOfData = offset + boundary.length + endOfHeaders + CRLFCRLF.length;
+    const startOfData = offset + startBoundary.length + endOfHeaders + CRLFCRLF.length;
     const length = parseInt(end, 10) + 1 - parseInt(start, 10);
     out.push({
       headers,
