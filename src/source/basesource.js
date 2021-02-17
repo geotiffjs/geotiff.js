@@ -11,7 +11,9 @@ export class BaseSource {
    * @returns {ArrayBuffer[]}
    */
   async fetch(slices, signal = undefined) {
-    return slices.map((slice) => this.fetchSlice(slice, signal));
+    return await Promise.all(
+      slices.map((slice) => this.fetchSlice(slice, signal)),
+    );
   }
 
   /**
