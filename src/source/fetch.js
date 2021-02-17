@@ -28,18 +28,22 @@ class FetchSource extends BaseSource {
   async fetch(slices, signal) {
     // if we allow multi-ranges, split the incoming request into that many sub-requests
     // and join them afterwards
-    if (this.maxRanges > 1) {
-      const subSlices = [];
-      for (let i = 0; i < slices.length; i += this.maxRanges) {
-        subSlices.push(
-          this.fetchSlices(slices.slice(i, i + this.maxRanges), signal),
-        );
-      }
-      return subSlices.flat();
+    if (this.maxRanges >= slices.length) {
+      return this.fetchSlices(slices, signal);
+      // TODO: split into multiple multi-range requests
+      // const subSlicesRequests = [];
+      // for (let i = 0; i < slices.length; i += this.maxRanges) {
+      //   subSlicesRequests.push(
+      //     this.fetchSlices(slices.slice(i, i + this.maxRanges), signal),
+      //   );
+      // }
+      // return (await Promise.all(subSlicesRequests)).flat();
     }
 
     // otherwise make a single request for each slice
-    return slices.map((slice) => this.fetchSlice(slice, signal));
+    return await Promise.all(
+      slices.map((slice) => this.fetchSlice(slice, signal)),
+    );
   }
 
   async fetchSlices(slices, signal) {
@@ -49,7 +53,7 @@ class FetchSource extends BaseSource {
           ...this.headers,
           Range: `bytes=${slices
             .map(({ offset, length }) => `${offset}-${offset + length}`)
-            .join(', ')
+            .join(',')
           }`,
         },
         credentials: this.credentials,
@@ -66,16 +70,28 @@ class FetchSource extends BaseSource {
         this._fileSize = byteRanges[0].fileSize || null;
         return byteRanges;
       }
+
       const data = response.arrayBuffer
         ? await response.arrayBuffer() : (await response.buffer()).buffer;
 
       const { start, end, total } = parseContentRange(response.headers.get('content-range'));
       this._fileSize = total || null;
-      return [{
+      const first = [{
         data,
         offset: start,
         length: end - start,
       }];
+
+      if (slices.length > 1) {
+        // we requested more than one slice, but got only the first
+        // unfortunately, some HTTP Servers don't support multi-ranges
+        // and return onyl the first
+
+        // get the rest of the slices and fetch them iteratetively
+        const others = await Promise.all(slices.slice(1).map((slice) => this.fetchSlice(slice, signal)));
+        return first.concat(others);
+      }
+      return first;
     } else {
       if (!this.allowFullFile) {
         throw new Error('Server responded with full file');
@@ -96,7 +112,7 @@ class FetchSource extends BaseSource {
     const response = await fetch(this.url, {
       headers: {
         ...this.headers,
-        Range: `bytes=${offset}-${offset + length - 1}`,
+        Range: `bytes=${offset}-${offset + length}`,
       },
       credentials: this.credentials,
       signal,

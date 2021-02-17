@@ -322,10 +322,10 @@ class GeoTIFF extends GeoTIFFBase {
   async getSlice(offset, size) {
     const fallbackSize = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
-      await this.source.fetch({
+      (await this.source.fetch([{
         offset,
         length: typeof size !== 'undefined' ? size : fallbackSize,
-      })[0],
+      }]))[0],
       offset,
       this.littleEndian,
       this.bigTiff,
@@ -528,7 +528,7 @@ class GeoTIFF extends GeoTIFFBase {
    * @param {object} options Additional options.
    */
   static async fromSource(source, options) {
-    const headerData = await source.fetch({ offset: 0, length: 1024 })[0];
+    const headerData = (await source.fetch([{ offset: 0, length: 1024 }]))[0];
     const dataView = new DataView64(headerData);
 
     const BOM = dataView.getUint16(0, 0);

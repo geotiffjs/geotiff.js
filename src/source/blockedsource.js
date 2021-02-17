@@ -103,33 +103,30 @@ export class BlockedSource extends BaseSource {
 
     // check if we still need to
     if (this.blockIdsToFetch.size > 0) {
-      const groups = this.groupBlocks(
-        Array.from(this.blockIdsToFetch).sort(),
-      );
+      const groups = this.groupBlocks(this.blockIdsToFetch);
 
       // start requesting slices of data
       const groupRequests = this.source.fetch(groups, signal);
 
       for (let groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
         const group = groups[groupIndex];
-        const groupRequest = groupRequests[groupIndex];
 
         for (const blockId of group.blockIds) {
           // make an async IIFE for each block
           const blockRequest = (async () => {
-            const response = await groupRequest;
-            const o = blockId * this.blockSize;
+            const response =  (await groupRequests)[groupIndex];
+            const blockOffset = blockId * this.blockSize;
+            const o = blockOffset - response.offset;
             const t = Math.min(o + this.blockSize, response.data.byteLength);
             const data = response.data.slice(o, t);
-            // if (this.fileSize === null && response.fileSize) {
-            //   this.fileSize = response.fileSize;
-            // }
-            this.blockRequests.delete(blockId);
-            this.blockCache.set(blockId, new Block(
-              response.offset + o,
+            const block = new Block(
+              blockOffset,
               data.byteLength,
               data,
-            ));
+            );
+            this.blockRequests.delete(blockId);
+            this.blockCache.set(blockId, block);
+            return block;
           })();
           this.blockRequests.set(blockId, blockRequest);
         }
@@ -149,11 +146,11 @@ export class BlockedSource extends BaseSource {
     const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
     // actually await all pending requests
-    const values = await Promise.all(blockRequests.values());
+    const values = await Promise.all(Array.from(blockRequests.values()));
 
     // create a final Map, with all required blocks for this request to satisfy
-    const requiredBlocks = new Map(zip(blockRequests.keys(), values));
-    for (const { blockId, block } of cachedBlocks) {
+    const requiredBlocks = new Map(zip(Array.from(blockRequests.keys()), values));
+    for (const [blockId, block] of cachedBlocks) {
       requiredBlocks.set(blockId, block);
     }
 
@@ -167,13 +164,13 @@ export class BlockedSource extends BaseSource {
    * @returns {BlockGroup[]}
    */
   groupBlocks(blockIds) {
-    const sortedBlockIds = Array.from(blockIds).sort();
+    const sortedBlockIds = Array.from(blockIds).sort((a, b) => a - b);
     if (sortedBlockIds.length === 0) {
       return [];
     }
     let current = [];
     let lastBlockId = null;
-    const groups = [current];
+    const groups = [];
 
     for (const blockId of blockIds) {
       if (lastBlockId === null || lastBlockId + 1 === blockId) {
@@ -189,6 +186,13 @@ export class BlockedSource extends BaseSource {
         lastBlockId = null;
       }
     }
+
+    groups.push(new BlockGroup(
+      current[0] * this.blockSize,
+      current.length * this.blockSize,
+      current,
+    ));
+
     return groups;
   }
 
