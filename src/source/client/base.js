@@ -1,4 +1,4 @@
-class BaseResponse {
+export class BaseResponse {
   /**
    * Returns whether the response has an ok'ish status code
    */
@@ -30,7 +30,7 @@ class BaseResponse {
   }
 }
 
-class BaseClient {
+export class BaseClient {
   constructor(url) {
     this.url = url;
   }

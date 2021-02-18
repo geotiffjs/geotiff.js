@@ -21,7 +21,6 @@ class RemoteSource extends BaseSource {
     this.headers = headers;
     this.maxRanges = maxRanges;
     this.allowFullFile = allowFullFile;
-    this.credentials = credentials;
     this._fileSize = null;
   }
 
@@ -61,14 +60,13 @@ class RemoteSource extends BaseSource {
           .join(',')
         }`,
       },
-      credentials: this.credentials,
       signal,
     })
 
     if (!response.ok) {
       throw new Error('Error fetching data.');
     } else if (response.status === 206) {
-      const { type, params } = parseContentType(response.headers.get('content-type'));
+      const { type, params } = parseContentType(response.getHeader('content-type'));
       if (type === 'multipart/byteranges') {
         const byteRanges = parseByteRanges(await response.getData(), params.boundary);
         this._fileSize = byteRanges[0].fileSize || null;
@@ -77,7 +75,7 @@ class RemoteSource extends BaseSource {
 
       const data = await response.getData();
 
-      const { start, end, total } = parseContentRange(response.headers.get('content-range'));
+      const { start, end, total } = parseContentRange(response.getHeader('content-range'));
       this._fileSize = total || null;
       const first = [{
         data,
@@ -125,7 +123,7 @@ class RemoteSource extends BaseSource {
     } else if (response.status === 206) {
       const data = await response.getData();
 
-      const { total } = parseContentRange(response.headers.get('content-range'));
+      const { total } = parseContentRange(response.getHeader('content-range'));
       this._fileSize = total || null;
       return {
         data,
@@ -161,7 +159,7 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   return new BlockedSource(source, blockSize, cacheSize);
 }
 
-export function makeFetchSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new FetchClient(url, credentials);
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
   return maybeWrapInBlockedSource(source, blockOptions);

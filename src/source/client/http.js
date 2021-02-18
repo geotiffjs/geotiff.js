@@ -7,6 +7,7 @@ class HttpResponse extends BaseResponse {
    * @param {http.ServerResponse} response
    */
   constructor(response, dataPromise) {
+    super();
     this.response = response;
     this.dataPromise = dataPromise;
   }

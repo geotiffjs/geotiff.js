@@ -8,6 +8,7 @@ class XHRResponse extends BaseResponse {
    * @param {ArrayBuffer} data
    */
   constructor(xhr, data) {
+    super();
     this.xhr = xhr;
     this.data = data;
   }

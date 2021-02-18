@@ -7,6 +7,7 @@ class FetchResponse extends BaseResponse {
    * @param {Response} response
    */
   constructor(response) {
+    super();
     this.response = response;
   }
 
@@ -19,8 +20,9 @@ class FetchResponse extends BaseResponse {
   }
 
   async getData() {
-    const data = response.arrayBuffer
-      ? await response.arrayBuffer() : (await response.buffer()).buffer;
+    const data = this.response.arrayBuffer
+      ? await this.response.arrayBuffer()
+      : (await this.response.buffer()).buffer;
     return data;
   }
 }

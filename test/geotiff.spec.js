@@ -6,7 +6,7 @@ import finalhandler from 'finalhandler';
 import 'isomorphic-fetch';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
-import { makeFetchSource } from '../src/source/fetch';
+import { makeFetchSource } from '../src/source/remote';
 import { makeFileSource } from '../src/source/file';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
