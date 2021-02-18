@@ -1,3 +1,7 @@
+import http from 'http';
+import https from 'https';
+import urlMod from 'url';
+
 import { BaseClient, BaseResponse } from './base';
 
 
@@ -40,11 +44,6 @@ export class HttpClient extends BaseClient {
           headers,
         },
         (response) => {
-          const contentRange = parseContentRange(response.headers['content-range']);
-          if (contentRange !== null) {
-            this._fileSize = contentRange.length;
-          }
-
           const dataPromise = new Promise((resolve) => {
             const chunks = [];
 

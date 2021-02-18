@@ -18,7 +18,7 @@ class XHRResponse extends BaseResponse {
   }
 
   getHeader(name) {
-    return this.response.headers.getResponseHeader(name);
+    return this.xhr.getResponseHeader(name);
   }
 
   async getData() {
