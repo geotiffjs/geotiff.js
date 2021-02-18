@@ -46,6 +46,9 @@ export class XHRClient extends BaseClient {
       xhr.send();
 
       if (signal) {
+        if (signal.aborted) {
+          xhr.abort();
+        }
         signal.addEventListener('abort', () => xhr.abort());
       }
     });
