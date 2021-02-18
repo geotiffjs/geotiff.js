@@ -1,4 +1,6 @@
 import { BaseSource } from './basesource';
+import { AbortError } from '../utils';
+
 
 class ArrayBufferSource extends BaseSource {
   constructor(arrayBuffer) {
@@ -6,7 +8,10 @@ class ArrayBufferSource extends BaseSource {
     this.arrayBuffer = arrayBuffer;
   }
 
-  fetchSlice(slice) {
+  fetchSlice(slice, signal) {
+    if (signal.aborted) {
+      throw new AbortError('Request aborted');
+    }
     return this.arrayBuffer.slice(slice.offset, slice.offset + slice.length);
   }
 }

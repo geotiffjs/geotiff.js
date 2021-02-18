@@ -3,6 +3,7 @@ import https from 'https';
 import urlMod from 'url';
 
 import { BaseClient, BaseResponse } from './base';
+import { AbortError } from '../../utils';
 
 
 class HttpResponse extends BaseResponse {
@@ -65,7 +66,10 @@ export class HttpClient extends BaseClient {
       request.on('error', reject);
 
       if (signal) {
-        signal.addEventListener('abort', () => request.destroy(new Error('Request aborted')));
+        if (signal.aborted) {
+          request.destroy(new AbortError('Request aborted'));
+        }
+        signal.addEventListener('abort', () => request.destroy(new AbortError('Request aborted')));
       }
     });
   }

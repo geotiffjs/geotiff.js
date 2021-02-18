@@ -1,4 +1,5 @@
 import { BaseClient, BaseResponse } from './base';
+import { AbortError } from '../../utils';
 
 
 class XHRResponse extends BaseResponse {
@@ -42,7 +43,7 @@ export class XHRClient extends BaseClient {
         resolve(new XHRResponse(xhr, data));
       };
       xhr.onerror = reject;
-      xhr.onabort = () => reject(new Error('Request aborted'));
+      xhr.onabort = () => reject(new AbortError('Request aborted'));
       xhr.send();
 
       if (signal) {
