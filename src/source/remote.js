@@ -2,18 +2,22 @@ import { parseByteRanges, parseContentRange, parseContentType } from './httputil
 import { BaseSource } from './basesource';
 import { BlockedSource } from './blockedsource';
 
-class FetchSource extends BaseSource {
+import { FetchClient } from './client/fetch';
+import { XHRClient } from './client/xhr';
+import { HttpClient } from './client/http';
+
+
+class RemoteSource extends BaseSource {
   /**
    *
-   * @param {string} url
+   * @param {BaseClient} client
    * @param {object} headers
    * @param {numbers} maxRanges
    * @param {boolean} allowFullFile
-   * @param {string} credentials
    */
-  constructor(url, headers, maxRanges, allowFullFile, credentials) {
+  constructor(client, headers, maxRanges, allowFullFile) {
     super();
-    this.url = url;
+    this.client = client;
     this.headers = headers;
     this.maxRanges = maxRanges;
     this.allowFullFile = allowFullFile;
@@ -30,7 +34,9 @@ class FetchSource extends BaseSource {
     // and join them afterwards
     if (this.maxRanges >= slices.length) {
       return this.fetchSlices(slices, signal);
+    } else if (this.maxRanges > 0 && slices.length > 1) {
       // TODO: split into multiple multi-range requests
+
       // const subSlicesRequests = [];
       // for (let i = 0; i < slices.length; i += this.maxRanges) {
       //   subSlicesRequests.push(
@@ -47,32 +53,29 @@ class FetchSource extends BaseSource {
   }
 
   async fetchSlices(slices, signal) {
-    const response = await fetch(
-      this.url, {
-        headers: {
-          ...this.headers,
-          Range: `bytes=${slices
-            .map(({ offset, length }) => `${offset}-${offset + length}`)
-            .join(',')
-          }`,
-        },
-        credentials: this.credentials,
-        signal,
+    const response = await this.client.request({
+      headers: {
+        ...this.headers,
+        Range: `bytes=${slices
+          .map(({ offset, length }) => `${offset}-${offset + length}`)
+          .join(',')
+        }`,
       },
-    );
+      credentials: this.credentials,
+      signal,
+    })
 
     if (!response.ok) {
       throw new Error('Error fetching data.');
     } else if (response.status === 206) {
       const { type, params } = parseContentType(response.headers.get('content-type'));
       if (type === 'multipart/byteranges') {
-        const byteRanges = parseByteRanges(await response.arrayBuffer(), params.boundary);
+        const byteRanges = parseByteRanges(await response.getData(), params.boundary);
         this._fileSize = byteRanges[0].fileSize || null;
         return byteRanges;
       }
 
-      const data = response.arrayBuffer
-        ? await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = await response.getData();
 
       const { start, end, total } = parseContentRange(response.headers.get('content-range'));
       this._fileSize = total || null;
@@ -96,8 +99,7 @@ class FetchSource extends BaseSource {
       if (!this.allowFullFile) {
         throw new Error('Server responded with full file');
       }
-      const data = response.arrayBuffer
-        ? await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = await response.getData();
       this._fileSize = data.byteLength;
       return [{
         data,
@@ -109,12 +111,11 @@ class FetchSource extends BaseSource {
 
   async fetchSlice(slice, signal) {
     const { offset, length } = slice;
-    const response = await fetch(this.url, {
+    const response = await this.client.request({
       headers: {
         ...this.headers,
         Range: `bytes=${offset}-${offset + length}`,
       },
-      credentials: this.credentials,
       signal,
     });
 
@@ -122,10 +123,9 @@ class FetchSource extends BaseSource {
     if (!response.ok) {
       throw new Error('Error fetching data.');
     } else if (response.status === 206) {
-      const data = response.arrayBuffer
-        ? await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = await response.getData();
 
-      const { total } = parseContentRange(response.headers.get('Content-Range'));
+      const { total } = parseContentRange(response.headers.get('content-range'));
       this._fileSize = total || null;
       return {
         data,
@@ -137,8 +137,7 @@ class FetchSource extends BaseSource {
         throw new Error('Server responded with full file');
       }
 
-      const data = response.arrayBuffer
-        ? await response.arrayBuffer() : (await response.buffer()).buffer;
+      const data = await response.getData();
 
       this._fileSize = data.byteLength;
       return {
@@ -154,23 +153,46 @@ class FetchSource extends BaseSource {
   }
 }
 
+
+function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
+  if (blockSize === null) {
+    return source;
+  }
+  return new BlockedSource(source, blockSize, cacheSize);
+}
+
+export function makeFetchSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const client = new FetchClient(url, credentials);
+  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  return maybeWrapInBlockedSource(source, blockOptions);
+}
+
+export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const client = new XHRClient(url);
+  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  return maybeWrapInBlockedSource(source, blockOptions);
+}
+
+export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const client = new HttpClient(url);
+  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  return maybeWrapInBlockedSource(source, blockOptions);
+}
+
 /**
  *
  * @param {string} url
  * @param {object} options
  */
-export function makeFetchSource(
-  url, {
-    headers = {},
-    maxRanges = 0,
-    allowFullFile = false,
-    credentials = undefined,
-    blockSize = undefined,
-    cacheSize = undefined,
-  } = {}) {
-  const fetchSource = new FetchSource(url, headers, maxRanges, allowFullFile, credentials);
-  if (blockSize === null) {
-    return fetchSource;
+export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
+
+  if (typeof fetch === 'function' && !forceXHR) {
+    return makeFetchSource(url, clientOptions);
   }
-  return new BlockedSource(fetchSource, blockSize, cacheSize);
+  if (typeof XMLHttpRequest !== 'undefined') {
+    return makeXHRSource(url, clientOptions);
+  }
+  if (http.get) {
+    return makeHttpSource(url, clientOptions);
+  }
 }

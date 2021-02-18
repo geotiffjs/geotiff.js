@@ -2,9 +2,8 @@ import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import Pool from './pool';
-// import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
 
-import { makeFetchSource } from './source/fetch';
+import { makeRemoteSource } from './source/remote';
 import { makeBufferSource } from './source/arraybuffer';
 import { makeFileReaderSource } from './source/filereader';
 import { makeFileSource } from './source/file';
@@ -15,8 +14,6 @@ import * as globals from './globals';
 import * as rgb from './rgb';
 import { getDecoder } from './compression';
 import { setLogger } from './logging';
-
-const makeRemoteSource = makeFetchSource;
 
 export { globals };
 export { rgb };
