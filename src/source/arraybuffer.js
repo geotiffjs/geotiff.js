@@ -9,7 +9,7 @@ class ArrayBufferSource extends BaseSource {
   }
 
   fetchSlice(slice, signal) {
-    if (signal.aborted) {
+    if (signal && signal.aborted) {
       throw new AbortError('Request aborted');
     }
     return this.arrayBuffer.slice(slice.offset, slice.offset + slice.length);
