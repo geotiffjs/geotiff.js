@@ -369,6 +369,23 @@ const multiTiff = await GeoTIFF.fromUrls(
 );
 ```
 
+### AbortController Support
+
+Geotiff.js supports the use of [`AbortController`s](https://developer.mozilla.org/en-US/docs/Web/API/AbortController). Calls to `getRasters`, `readRGB` and `getTileOrStrip` will throw an `Error` with name `AbortSignal` similar to the browser's `fetch` behavior.
+
+```javascript
+const abortController = new AbortController();
+const { signal } = abortController;
+abortController.abort();
+try {
+  const data = await tiff.readRasters({ signal });
+} catch(e) {
+  if (err.name === 'AbortError') {
+    // do stuff
+  }
+}
+```
+
 ### Writing GeoTIFFs (Beta Version)
 You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
 This function returns an ArrayBuffer which you can then save as a .tif file.
