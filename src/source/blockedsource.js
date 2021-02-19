@@ -114,19 +114,22 @@ export class BlockedSource extends BaseSource {
         for (const blockId of group.blockIds) {
           // make an async IIFE for each block
           const blockRequest = (async () => {
-            const response =  (await groupRequests)[groupIndex];
-            const blockOffset = blockId * this.blockSize;
-            const o = blockOffset - response.offset;
-            const t = Math.min(o + this.blockSize, response.data.byteLength);
-            const data = response.data.slice(o, t);
-            const block = new Block(
-              blockOffset,
-              data.byteLength,
-              data,
-            );
-            this.blockRequests.delete(blockId);
-            this.blockCache.set(blockId, block);
-            return block;
+            try {
+              const response =  (await groupRequests)[groupIndex];
+              const blockOffset = blockId * this.blockSize;
+              const o = blockOffset - response.offset;
+              const t = Math.min(o + this.blockSize, response.data.byteLength);
+              const data = response.data.slice(o, t);
+              const block = new Block(
+                blockOffset,
+                data.byteLength,
+                data,
+              );
+              this.blockCache.set(blockId, block);
+              return block;
+            } finally {
+              this.blockRequests.delete(blockId);
+            }
           })();
           this.blockRequests.set(blockId, blockRequest);
         }
