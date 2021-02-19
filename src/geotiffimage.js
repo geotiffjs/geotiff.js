@@ -120,6 +120,7 @@ class GeoTIFFImage {
   getFileDirectory() {
     return this.fileDirectory;
   }
+
   /**
    * Returns the associated parsed geo keys.
    * @returns {Object} the parsed geo keys
@@ -127,6 +128,7 @@ class GeoTIFFImage {
   getGeoKeys() {
     return this.geoKeys;
   }
+
   /**
    * Returns the width of the image.
    * @returns {Number} the width of the image
@@ -134,6 +136,7 @@ class GeoTIFFImage {
   getWidth() {
     return this.fileDirectory.ImageWidth;
   }
+
   /**
    * Returns the height of the image.
    * @returns {Number} the height of the image
@@ -141,6 +144,7 @@ class GeoTIFFImage {
   getHeight() {
     return this.fileDirectory.ImageLength;
   }
+
   /**
    * Returns the number of samples per pixel.
    * @returns {Number} the number of samples per pixel
@@ -148,6 +152,7 @@ class GeoTIFFImage {
   getSamplesPerPixel() {
     return this.fileDirectory.SamplesPerPixel;
   }
+
   /**
    * Returns the width of each tile.
    * @returns {Number} the width of each tile
@@ -155,6 +160,7 @@ class GeoTIFFImage {
   getTileWidth() {
     return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
   }
+
   /**
    * Returns the height of each tile.
    * @returns {Number} the height of each tile
@@ -162,7 +168,8 @@ class GeoTIFFImage {
   getTileHeight() {
     if (this.isTiled) {
       return this.fileDirectory.TileLength;
-    } else if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
+    }
+    if (typeof this.fileDirectory.RowsPerStrip !== 'undefined') {
       return Math.min(this.fileDirectory.RowsPerStrip, this.getHeight());
     }
     return this.getHeight();
@@ -200,8 +207,8 @@ class GeoTIFFImage {
   }
 
   getReaderForSample(sampleIndex) {
-    const format = this.fileDirectory.SampleFormat ?
-      this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    const format = this.fileDirectory.SampleFormat
+      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
@@ -382,10 +389,9 @@ class GeoTIFFImage {
                 );
                 let windowCoordinate;
                 if (interleave) {
-                  windowCoordinate =
-                    ((y + firstLine - imageWindow[1]) * windowWidth * samples.length) +
-                    ((x + firstCol - imageWindow[0]) * samples.length) +
-                    si;
+                  windowCoordinate = ((y + firstLine - imageWindow[1]) * windowWidth * samples.length)
+                    + ((x + firstCol - imageWindow[0]) * samples.length)
+                    + si;
                   valueArrays[windowCoordinate] = value;
                 } else {
                   windowCoordinate = (
@@ -487,8 +493,8 @@ class GeoTIFFImage {
     }
     let valueArrays;
     if (interleave) {
-      const format = this.fileDirectory.SampleFormat ?
-        Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
+      const format = this.fileDirectory.SampleFormat
+        ? Math.max.apply(null, this.fileDirectory.SampleFormat) : 1;
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
@@ -558,7 +564,7 @@ class GeoTIFFImage {
         samples: s,
         pool,
         width,
-        height
+        height,
       });
     }
 
@@ -671,10 +677,10 @@ class GeoTIFFImage {
     }
 
     let items = root.children
-      .filter(child => child.tagName === 'Item');
+      .filter((child) => child.tagName === 'Item');
 
-    if (sample) {
-      items = items.filter(item => Number(item.attributes.sample) === sample);
+    if (sample !== null) {
+      items = items.filter((item) => Number(item.attributes.sample) === sample);
     }
 
     for (let i = 0; i < items.length; ++i) {
@@ -710,7 +716,8 @@ class GeoTIFFImage {
         tiePoints[4],
         tiePoints[5],
       ];
-    } else if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[3],
         modelTransformation[7],
@@ -738,7 +745,8 @@ class GeoTIFFImage {
         -modelPixelScale[1],
         modelPixelScale[2],
       ];
-    } else if (modelTransformation) {
+    }
+    if (modelTransformation) {
       return [
         modelTransformation[0],
         modelTransformation[5],

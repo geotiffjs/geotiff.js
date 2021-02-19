@@ -1,4 +1,4 @@
-import Worker from './decoder.worker';
+import { Pool as tPool, spawn, Worker, Transfer } from 'threads';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
@@ -15,18 +15,12 @@ class Pool {
    * @param {Number} size The size of the pool. Defaults to the number of CPUs
    *                      available. When this parameter is `null` or 0, then the
    *                      decoding will be done in the main thread.
+   * @param {Worker} worker The decoder worker, loaded and initialised. Enables
+   *                        loading the worker using worker-loader(or others) externally
+   *                        when using this library as a webpack dependency.
    */
-  constructor(size = defaultPoolSize) {
-    this.workers = [];
-    this.idleWorkers = [];
-    this.waitQueue = [];
-    this.decoder = null;
-
-    for (let i = 0; i < size; ++i) {
-      const w = new Worker();
-      this.workers.push(w);
-      this.idleWorkers.push(w);
-    }
+  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js')) {
+    this.pool = tPool(() => spawn(worker), size);
   }
 
   /**
@@ -35,51 +29,20 @@ class Pool {
    * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
    */
   async decode(fileDirectory, buffer) {
-    const currentWorker = await this.waitForWorker();
     return new Promise((resolve, reject) => {
-      currentWorker.onmessage = (event) => {
-        // this.workers.push(currentWorker);
-        this.finishTask(currentWorker);
-        resolve(event.data[0]);
-      };
-      currentWorker.onerror = (error) => {
-        // this.workers.push(currentWorker);
-        this.finishTask(currentWorker);
-        reject(error);
-      };
-      currentWorker.postMessage([
-        'decode', fileDirectory, buffer,
-      ], [buffer]);
+      this.pool.queue(async (decode) => {
+        try {
+          const data = await decode(fileDirectory, Transfer(buffer));
+          resolve(data);
+        } catch (err) {
+          reject(err);
+        }
+      });
     });
-  }
-
-  async waitForWorker() {
-    const idleWorker = this.idleWorkers.pop();
-    if (idleWorker) {
-      return idleWorker;
-    }
-    const waiter = {};
-    const promise = new Promise((resolve) => {
-      waiter.resolve = resolve;
-    });
-
-    this.waitQueue.push(waiter);
-    return promise;
-  }
-
-  async finishTask(currentWorker) {
-    const waiter = this.waitQueue.pop();
-    if (waiter) {
-      waiter.resolve(currentWorker);
-    } else {
-      this.idleWorkers.push(currentWorker);
-    }
   }
 
   destroy() {
-    for (let i = 0; i < this.workers.length; ++i) {
-      this.workers[i].terminate();
-    }
+    this.pool.terminate(true);
   }
 }
 

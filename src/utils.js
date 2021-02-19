@@ -76,3 +76,44 @@ export function toArrayRecursively(input) {
   }
   return input;
 }
+
+// copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js
+export function parseContentRange(headerValue) {
+  if (!headerValue) {
+    return null;
+  }
+
+  if (typeof headerValue !== 'string') {
+    throw new Error('invalid argument');
+  }
+
+  const parseInt = (number) => Number.parseInt(number, 10);
+
+  // Check for presence of unit
+  let matches = headerValue.match(/^(\w*) /);
+  const unit = matches && matches[1];
+
+  // check for start-end/size header format
+  matches = headerValue.match(/(\d+)-(\d+)\/(\d+|\*)/);
+  if (matches) {
+    return {
+      unit,
+      first: parseInt(matches[1]),
+      last: parseInt(matches[2]),
+      length: matches[3] === '*' ? null : parseInt(matches[3]),
+    };
+  }
+
+  // check for size header format
+  matches = headerValue.match(/(\d+|\*)/);
+  if (matches) {
+    return {
+      unit,
+      first: null,
+      last: null,
+      length: matches[1] === '*' ? null : parseInt(matches[1]),
+    };
+  }
+
+  return null;
+}
