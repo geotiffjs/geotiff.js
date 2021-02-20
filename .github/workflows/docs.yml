@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  docs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
