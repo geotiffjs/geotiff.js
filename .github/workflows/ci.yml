@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: -|
-        docker pull osgeo/gdal:ubuntu-small-latest
+        docker pull osgeo/gdal:ubuntu-small-latest ;
         docker run -it --rm -v `pwd`/test/data:/data osgeo/gdal:ubuntu-small-latest bash -c "apt-get update && apt-get -y install imagemagick libtiff-tools wget && cd /data && ./setup_data.sh"
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
