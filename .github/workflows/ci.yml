@@ -1,0 +1,28 @@
+name: Node.js CI
+
+on:
+  [ push ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: -|
+        docker pull osgeo/gdal:ubuntu-small-latest ;
+        docker run -i --rm -v `pwd`/test/data:/data osgeo/gdal:ubuntu-small-latest bash -c "apt-get update && apt-get -y install imagemagick libtiff-tools wget && cd /data && ./setup_data.sh"
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - run: npm ci
+    - run: npm run build
+    - run: npm test
+    - name: action-slack
+      uses: 8398a7/action-slack@v3.8.0
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always()
