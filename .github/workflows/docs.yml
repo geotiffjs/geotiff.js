@@ -6,7 +6,7 @@ on:
 
 jobs:
   docs:
-    name: Create Release
+    name: Build and publish Documentation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
