@@ -75,6 +75,9 @@ function normalizeArray(inBuffer, size, format, bitsPerSample) {
         outArray[i] = (view.getUint8(byteOffset) >> (8 - bitsPerSample) - innerBitOffset) & mask;
       } else if (innerBitOffset + bitsPerSample <= 16) {
         outArray[i] = (view.getUint16(byteOffset) >> (16 - bitsPerSample) - innerBitOffset) & mask;
+      } else if (innerBitOffset + bitsPerSample <= 24) {
+        const raw = (view.getUint16(byteOffset) << 8) | (view.getUint8(byteOffset + 2));
+        outArray[i] = (raw >> (24 - bitsPerSample) - innerBitOffset) & mask;
       } else {
         outArray[i] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & mask;
       }
