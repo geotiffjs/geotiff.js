@@ -126,6 +126,12 @@ export async function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+export function zip(a, b) {
+  const A = Array.isArray(a) ? a : Array.from(a);
+  const B = Array.isArray(b) ? b : Array.from(b);
+  return A.map((k, i) => [k, B[i]]);
+}
+
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 export class AbortError extends Error {
@@ -141,3 +147,13 @@ export class AbortError extends Error {
     this.name = 'AbortError';
   }
 }
+
+export class _AggregateError extends Error {
+  constructor(errors, message) {
+    this.errors = errors;
+    this.message = message;
+    this.name = 'AggregateError';
+  }
+}
+
+export const AggregateError = (typeof AggregateError === 'undefined') ? _AggregateError : AggregateError;
