@@ -624,7 +624,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
         if (index === visited) {
           const ifd = await imageFile.requestIFD(relativeIndex);
           return new GeoTIFFImage(
-            ifd.fileDirectory, imageFile.geoKeyDirectory,
+            ifd.fileDirectory, ifd.geoKeyDirectory,
             imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
           );
         }
