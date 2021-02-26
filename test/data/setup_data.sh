@@ -65,11 +65,11 @@ unzip -o lzw.zip -d lzw_clear_eoi
 # n-bit support
 
 for i in 10 11 12 13 14 15; do
-    gdal_translate -of GTiff -co NBITS=$i -ot UInt16 initial.tiff n_bit_${i}.tiff
-    gdal_translate -of GTiff -co NBITS=$i -co TILED=YES -ot UInt16 initial.tiff n_bit_tiled_${i}.tiff
-    gdal_translate -of GTiff -co NBITS=$i -ot UInt16 -co INTERLEAVE=BAND initial.tiff n_bit_interleave_${i}.tiff
+    gdal_translate -of GTiff -co NBITS=$i -ot UInt16 initial.tiff n_bit_${i}.tiff || true
+    gdal_translate -of GTiff -co NBITS=$i -co TILED=YES -ot UInt16 initial.tiff n_bit_tiled_${i}.tiff || true
+    gdal_translate -of GTiff -co NBITS=$i -ot UInt16 -co INTERLEAVE=BAND initial.tiff n_bit_interleave_${i}.tiff || true
 done
 
-gdal_translate -of GTiff -co NBITS=16 -ot Float32 initial.tiff float_n_bit_16.tiff
-gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co TILED=YES initial.tiff float_n_bit_tiled_16.tiff
-gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co INTERLEAVE=BAND initial.tiff float_n_bit_interleave_16.tiff
+gdal_translate -of GTiff -co NBITS=16 -ot Float32 initial.tiff float_n_bit_16.tiff || true
+gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co TILED=YES initial.tiff float_n_bit_tiled_16.tiff || true
+gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co INTERLEAVE=BAND initial.tiff float_n_bit_interleave_16.tiff || true
