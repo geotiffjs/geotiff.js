@@ -21,7 +21,8 @@ Currently available functionality:
     * pixel interleaved images
   * Supported data-types:
     * (U)Int8/16/32
-    * Float32/64
+    * UInt1-31 (with some drawbacks)
+    * Float16/32/64
   * Enabled compressions:
     * no compression
     * Packbits
@@ -370,6 +371,7 @@ const multiTiff = await GeoTIFF.fromUrls(
 ```
 
 ### Writing GeoTIFFs (Beta Version)
+
 You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
 This function returns an ArrayBuffer which you can then save as a .tif file.
 :warning: writeArrayBuffer currently writes the values uncompressed
@@ -444,11 +446,22 @@ a reasonable support, the following is implemented:
     cause problems for some compression algorithms if those arrays are used for
     pixel values.
 
+## n-bit Support
+
+geotiff.js has some n-bit support which means that it supports unsigned integer
+data reading with each element using a non-multiple of 8 bit depth. This only
+works with band interleaved images (see
+[this related issue](https://github.com/geotiffjs/geotiff.js/issues/202)).
+
 ## Planned stuff:
 
   * Better support of geospatial parameters:
     * Parsing of EPSG identifiers
     * WKT representation
+
+## Known Issues
+
+The open issues can be found on [GitHub](https://github.com/geotiffjs/geotiff.js/issues).
 
 ## Contribution
 
@@ -458,6 +471,7 @@ look into it ASAP.
 Pull requests are welcome as well!
 
 ## Community Packages
+
 A list of community packages can be found in [COMMUNITY.md](COMMUNITY.md)
 
 ## Acknowledgements
