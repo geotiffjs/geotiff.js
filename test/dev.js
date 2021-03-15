@@ -4,6 +4,7 @@ const imageWindow = [0, 0, 500, 500];
 const tiffs = [
   "stripped.tiff",
   "tiled.tiff",
+  "interleave.tiff",
   "tiledplanar.tiff",
   "float32.tiff",
   "uint32.tiff",
@@ -16,6 +17,12 @@ const tiffs = [
   "deflate.tiff",
   "deflate_predictor.tiff",
   "deflate_predictor_tiled.tiff",
+  "lerc.tiff",
+  "lerc_interleave.tiff",
+  "lerc_deflate.tiff",
+  "float32lerc.tiff",
+  "float32lerc_interleave.tiff",
+  "float32lerc_deflate.tiff",
   // "n_bit_tiled_10.tiff",
   // "n_bit_11.tiff",
   // "n_bit_12.tiff",
@@ -62,7 +69,7 @@ async function render(image, sample, canvas, width, height) {
       fillValue: 0,
       pool,
     });
-    const plot = new plotty.plot(canvas, data[0], width, height, [-1, 2000], "viridis", false);
+    const plot = new plotty.plot(canvas, data[0], width, height, [10, 65000], "viridis", false);
     plot.render();
   } catch (exc) {
     return;

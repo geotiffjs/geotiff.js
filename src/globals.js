@@ -116,6 +116,9 @@ export const fieldTagNames = {
   0x87AF: 'GeoKeyDirectory',
   0x87B0: 'GeoDoubleParams',
   0x87B1: 'GeoAsciiParams',
+
+  // LERC
+  0xC5F2: 'LercParameters',
 };
 
 export const fieldTags = {};
@@ -217,6 +220,16 @@ export const ExtraSamplesValues = {
   Unspecified: 0,
   Assocalpha: 1,
   Unassalpha: 2,
+};
+
+export const LercParameters = {
+  Version: 0,
+  AddCompression: 1,
+};
+
+export const LercAddCompression = {
+  None: 0,
+  Deflate: 1,
 };
 
 
