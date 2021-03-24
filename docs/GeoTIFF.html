@@ -93,7 +93,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="Source.html">Source</a></span>
+<span class="param-type">Source</span>
 
 
             
@@ -348,7 +348,7 @@ to the first IFD.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line301">line 301</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line310">line 310</a>
     </li></ul></dd>
     
 
@@ -415,7 +415,7 @@ to the first IFD.</p></td>
     
 
     
-    <h4 class="name" id=".fromSource"><span class="type-signature">(async, static) </span>fromSource<span class="signature">(source, options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".fromSource"><span class="type-signature">(async, static) </span>fromSource<span class="signature">(source, options, signal<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -447,6 +447,8 @@ to the first IFD.</p></td>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -472,6 +474,14 @@ to the first IFD.</p></td>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
@@ -495,10 +505,52 @@ to the first IFD.</p></td>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"><p>Additional options.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>signal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">AbortSignal</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An AbortSignal that may be signalled if the request is
+to be aborted</p></td>
         </tr>
 
     
@@ -539,7 +591,7 @@ to the first IFD.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line527">line 527</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line531">line 531</a>
     </li></ul></dd>
     
 
@@ -629,7 +681,7 @@ to be closed but only if it has been constructed from a file.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line566">line 566</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line570">line 570</a>
     </li></ul></dd>
     
 
@@ -718,7 +770,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line493">line 493</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line495">line 495</a>
     </li></ul></dd>
     
 
@@ -897,7 +949,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line445">line 445</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line458">line 458</a>
     </li></ul></dd>
     
 
@@ -1007,7 +1059,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line458">line 458</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line471">line 471</a>
     </li></ul></dd>
     
 
@@ -1169,7 +1221,7 @@ the headers or other IFDs).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line329">line 329</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line342">line 342</a>
     </li></ul></dd>
     
 
@@ -1656,6 +1708,44 @@ same as the images, resampling will be performed.</p></td>
 
         <tr>
             
+                <td class="name"><code>signal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">AbortSignal</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>An AbortSignal that may be signalled if the request is
+to be aborted</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>fillValue</code></td>
             
 
@@ -1745,7 +1835,7 @@ can be passed.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line191">line 191</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line200">line 200</a>
     </li></ul></dd>
     
 
@@ -1820,13 +1910,13 @@ can be passed.</p></td>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="Block.html">Block</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Mar 24 2021 15:46:30 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

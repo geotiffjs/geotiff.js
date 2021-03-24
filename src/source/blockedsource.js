@@ -65,7 +65,7 @@ export class BlockedSource extends BaseSource {
 
   /**
    *
-   * @param {./basesource/Slice[]} slices
+   * @param {basesource/Slice[]} slices
    */
   async fetch(slices, signal) {
     const cachedBlocks = new Map();

@@ -70,7 +70,8 @@
 <li>Supported data-types:
 <ul>
 <li>(U)Int8/16/32</li>
-<li>Float32/64</li>
+<li>UInt1-31 (with some drawbacks)</li>
+<li>Float16/32/64</li>
 </ul>
 </li>
 <li>Enabled compressions:
@@ -150,8 +151,10 @@ cd -
 <h2>Usage</h2>
 <p>geotiff.js works with both <code>require</code>, <code>import</code> and the global variable <code>GeoTIFF</code>:</p>
 <pre class="prettyprint source lang-javascript"><code>const GeoTIFF = require('geotiff');
+const { fromUrl, fromUrls, fromArrayBuffer, fromBlob } = GeoTIFF;
+
 // or
-import GeoTIFF from 'geotiff';
+import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
 </code></pre>
 <p>or:</p>
 <pre class="prettyprint source lang-html"><code>&lt;script async src=&quot;https://cdn.jsdelivr.net/npm/geotiff&quot;>&lt;/script>
@@ -163,12 +166,12 @@ import GeoTIFF from 'geotiff';
 <p>To parse a GeoTIFF, first a data source is required. To help with the development,
 there are shortcuts available. The following creates a source that reads from a
 remote GeoTIFF referenced by a URL:</p>
-<pre class="prettyprint source lang-javascript"><code>GeoTIFF.fromUrl(someUrl)
+<pre class="prettyprint source lang-javascript"><code>fromUrl(someUrl)
   .then(tiff => { /* ... */});
 
 // or when using async/await
 (async function() {
-  const tiff = await GeoTIFF.fromUrl(someUrl);
+  const tiff = await fromUrl(someUrl);
   // ...
 })()
 </code></pre>
@@ -180,14 +183,14 @@ options are reading from a local <code>ArrayBuffer</code>:</p>
 <pre class="prettyprint source lang-javascript"><code>// using local ArrayBuffer
 const response = await fetch(someUrl);
 const arrayBuffer = await response.arrayBuffer();
-const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+const tiff = await fromArrayBuffer(arrayBuffer);
 </code></pre>
 <p>or a <code>Blob</code>/<code>File</code>:</p>
 <pre class="prettyprint source lang-html"><code>&lt;input type=&quot;file&quot; id=&quot;file&quot;>
 &lt;script>
   const input = document.getElementById('file'):
   input.onchange = async function() {
-    const tiff = await GeoTIFF.fromBlob(input.files[0]);
+    const tiff = await fromBlob(input.files[0]);
   }
 &lt;/script>
 </code></pre>
@@ -317,16 +320,29 @@ would use single-file images by taking advantage of the <code>MultiGeoTIFF</code
 behave exactly the same as the before mentioned <code>GeoTIFF</code> objects: you can select
 images by index or read data using <code>readRasters</code>. Toget such a file use the <code>fromUrls</code>
 factory function:</p>
-<pre class="prettyprint source lang-javascript"><code>const multiTiff = await GeoTIFF.fromUrls(
+<pre class="prettyprint source lang-javascript"><code>const multiTiff = await fromUrls(
   'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
   ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
 );
+</code></pre>
+<h3>AbortController Support</h3>
+<p>Geotiff.js supports the use of <a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController"><code>AbortController</code>s</a>. Calls to <code>getRasters</code>, <code>readRGB</code> and <code>getTileOrStrip</code> will throw an <code>Error</code> with name <code>AbortSignal</code> similar to the browser's <code>fetch</code> behavior.</p>
+<pre class="prettyprint source lang-javascript"><code>const abortController = new AbortController();
+const { signal } = abortController;
+abortController.abort();
+try {
+  const data = await tiff.readRasters({ signal });
+} catch(e) {
+  if (err.name === 'AbortError') {
+    // do stuff
+  }
+}
 </code></pre>
 <h3>Writing GeoTIFFs (Beta Version)</h3>
 <p>You can create a binary representation of a GeoTIFF using <code>writeArrayBuffer</code>.
 This function returns an ArrayBuffer which you can then save as a .tif file.
 :warning: writeArrayBuffer currently writes the values uncompressed</p>
-<pre class="prettyprint source lang-javascript"><code>import { writeArrayBuffer } from 'geotiff';
+<pre class="prettyprint source lang-javascript"><code>import GeoTIFF, { writeArrayBuffer } from 'geotiff';
 
 const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const metadata = {
@@ -356,7 +372,7 @@ on the fly rendering of the data contained in a GeoTIFF.</p>
   // ...
 
   (async function() {
-    const tiff = await GeoTIFF.fromUrl(url);
+    const tiff = await fromUrl(url);
     const image = await tiff.getImage();
     const data = await image.readRasters();
 
@@ -388,6 +404,11 @@ might be inaccuracies for <em>very</em> large values.</li>
 cause problems for some compression algorithms if those arrays are used for
 pixel values.</li>
 </ul>
+<h2>n-bit Support</h2>
+<p>geotiff.js has some n-bit support which means that it supports unsigned integer
+data reading with each element using a non-multiple of 8 bit depth. This only
+works with band interleaved images (see
+<a href="https://github.com/geotiffjs/geotiff.js/issues/202">this related issue</a>).</p>
 <h2>Planned stuff:</h2>
 <ul>
 <li>Better support of geospatial parameters:
@@ -397,6 +418,8 @@ pixel values.</li>
 </ul>
 </li>
 </ul>
+<h2>Known Issues</h2>
+<p>The open issues can be found on <a href="https://github.com/geotiffjs/geotiff.js/issues">GitHub</a>.</p>
 <h2>Contribution</h2>
 <p>If you have an idea, found a bug or have a remark, please open a ticket, we will
 look into it ASAP.</p>
@@ -418,13 +441,13 @@ which is the aim of geotiff.js.</p></article>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li><li><a href="module-source.html">source</a></li></ul><h3>Classes</h3><ul><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-source-BlockedSource.html">BlockedSource</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li></ul><h3>Interfaces</h3><ul><li><a href="Source.html">Source</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="Block.html">Block</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Apr 29 2020 22:11:53 GMT+0200 (Central European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Mar 24 2021 15:46:30 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
