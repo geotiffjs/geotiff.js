@@ -122,7 +122,8 @@ class GeoTIFFImage {
    * @returns {Number} the number of samples per pixel
    */
   getSamplesPerPixel() {
-    return this.fileDirectory.SamplesPerPixel;
+    return typeof this.fileDirectory.SamplesPerPixel !== 'undefined'
+      ? this.fileDirectory.SamplesPerPixel : 1;
   }
 
   /**
@@ -432,14 +433,15 @@ class GeoTIFFImage {
     const imageWindowWidth = imageWindow[2] - imageWindow[0];
     const imageWindowHeight = imageWindow[3] - imageWindow[1];
     const numPixels = imageWindowWidth * imageWindowHeight;
+    const samplesPerPixel = this.getSamplesPerPixel();
 
     if (!samples || !samples.length) {
-      for (let i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
+      for (let i = 0; i < samplesPerPixel; ++i) {
         samples.push(i);
       }
     } else {
       for (let i = 0; i < samples.length; ++i) {
-        if (samples[i] >= this.fileDirectory.SamplesPerPixel) {
+        if (samples[i] >= samplesPerPixel) {
           return Promise.reject(new RangeError(`Invalid sample index '${samples[i]}'.`));
         }
       }
