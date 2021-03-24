@@ -11,13 +11,13 @@ import { makeFetchSource, makeHttpSource } from '../src/source/remote';
 import { makeFileSource } from '../src/source/file';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
-import DataView64 from "../src/dataview64";
+import DataView64 from '../src/dataview64';
 
 // Set up a node server to make tiffs available at localhost:3000/test/data
-let server = null
+let server = null;
 before(async () => {
   const serve = serveStatic(__dirname);
-  server = http.createServer(function onRequest (req, res) {
+  server = http.createServer((req, res) => {
     serve(req, res, finalhandler(req, res));
   });
   server.listen(3000);
@@ -229,6 +229,132 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
     const image = await tiff.getImage();
     await image.readRasters();
+  });
+});
+
+
+describe('n-bit uint tests', () => {
+  const wnd = [100, 100, 150, 150];
+  for (const n of [10, 11, 12, 13, 14, 15]) {
+    it(`should correctly read ${n}-bit datasets pixel interleaved`, async () => {
+      const truncValue = (1 << n) - 1;
+
+      const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+      const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+      const testTiff = await GeoTIFF.fromSource(createSource(`n_bit_${n}.tiff`));
+      const testImage = await testTiff.getImage();
+      const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+      expect(testImage.getBitsPerSample()).to.equal(n);
+
+      for (let s = 0; s < origData.length; ++s) {
+        const origSample = origData[s];
+        const testSample = testData[s];
+        for (let i = 0; i < origSample.length; ++i) {
+          expect(testSample[i]).to.equal(Math.min(origSample[i], truncValue));
+        }
+      }
+    });
+
+    it(`should correctly read ${n}-bit datasets band interleaved`, async () => {
+      const truncValue = (1 << n) - 1;
+
+      const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+      const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+      const testTiff = await GeoTIFF.fromSource(createSource(`n_bit_interleave_${n}.tiff`));
+      const testImage = await testTiff.getImage();
+      const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+      expect(testImage.getBitsPerSample()).to.equal(n);
+
+      for (let s = 0; s < origData.length; ++s) {
+        const origSample = origData[s];
+        const testSample = testData[s];
+        for (let i = 0; i < origSample.length; ++i) {
+          expect(testSample[i]).to.equal(Math.min(origSample[i], truncValue));
+        }
+      }
+    });
+
+    it(`should correctly read ${n}-bit tiled datasets`, async () => {
+      const truncValue = (1 << n) - 1;
+
+      const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+      const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+      const testTiff = await GeoTIFF.fromSource(createSource(`n_bit_tiled_${n}.tiff`));
+      const testImage = await testTiff.getImage();
+      const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+      expect(testImage.getBitsPerSample()).to.equal(n);
+
+      for (let s = 0; s < origData.length; ++s) {
+        const origSample = origData[s];
+        const testSample = testData[s];
+        for (let i = 0; i < origSample.length; ++i) {
+          expect(testSample[i]).to.equal(Math.min(origSample[i], truncValue));
+        }
+      }
+    });
+  }
+
+  it('should correctly read 16-bit float pixel interleaved datasets', async () => {
+    const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+    const testTiff = await GeoTIFF.fromSource(createSource('float_n_bit_16.tiff'));
+    const testImage = await testTiff.getImage();
+    const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+    expect(testImage.getBitsPerSample()).to.equal(16);
+
+    for (let s = 0; s < origData.length; ++s) {
+      const origSample = origData[s];
+      const testSample = testData[s];
+      for (let i = 0; i < origSample.length; ++i) {
+        expect(Math.abs(testSample[i] - origSample[i])).to.be.lessThan(100);
+      }
+    }
+  });
+
+  it('should correctly read 16-bit float band interleaved datasets', async () => {
+    const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+    const testTiff = await GeoTIFF.fromSource(createSource('float_n_bit_interleave_16.tiff'));
+    const testImage = await testTiff.getImage();
+    const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+    expect(testImage.getBitsPerSample()).to.equal(16);
+
+    for (let s = 0; s < origData.length; ++s) {
+      const origSample = origData[s];
+      const testSample = testData[s];
+      for (let i = 0; i < origSample.length; ++i) {
+        expect(Math.abs(testSample[i] - origSample[i])).to.be.lessThan(100);
+      }
+    }
+  });
+
+  it('should correctly read 16-bit float band tiled datasets', async () => {
+    const origTiff = await GeoTIFF.fromSource(createSource('stripped.tiff'));
+    const origData = await (await origTiff.getImage()).readRasters({ window: wnd, samples: [0] });
+
+    const testTiff = await GeoTIFF.fromSource(createSource('float_n_bit_tiled_16.tiff'));
+    const testImage = await testTiff.getImage();
+    const testData = await testImage.readRasters({ window: wnd, samples: [0] });
+
+    expect(testImage.getBitsPerSample()).to.equal(16);
+
+    for (let s = 0; s < origData.length; ++s) {
+      const origSample = origData[s];
+      const testSample = testData[s];
+      for (let i = 0; i < origSample.length; ++i) {
+        expect(Math.abs(testSample[i] - origSample[i])).to.be.lessThan(100);
+      }
+    }
   });
 });
 

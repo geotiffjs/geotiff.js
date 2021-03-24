@@ -22,6 +22,7 @@
     "browsers": "defaults"
   },
   "dependencies": {
+    "@petamoriken/float16": "^1.0.7",
     "content-type-parser": "^1.0.2",
     "lru-cache": "^6.0.0",
     "pako": "^1.0.11",
@@ -68,7 +69,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "prepare": "npm run build",
-    "test": "mocha --require @babel/register test/geotiff.spec.js"
+    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js"
   },
   "author": "Fabian Schindler",
   "contributors": [
