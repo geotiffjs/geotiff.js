@@ -333,9 +333,11 @@ class GeoTIFFImage {
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
    * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+   *                               to be aborted
    * @returns {Promise.<ArrayBuffer>}
    */
-  async getTileOrStrip(x, y, sample, poolOrDecoder) {
+  async getTileOrStrip(x, y, sample, poolOrDecoder, signal) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
     const numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
     let index;
@@ -355,7 +357,7 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
-    const slice = await this.source.fetch(offset, byteCount);
+    const slice = (await this.source.fetch([{ offset, length: byteCount }], signal))[0];
 
     let request;
     if (tiles === null || !tiles[index]) {
@@ -398,10 +400,15 @@ class GeoTIFFImage {
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into
    * @param {Boolean} interleave Whether or not to write in an interleaved manner
-   * @param {Pool} pool The decoder pool
+   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {number} width the width of window to be read into
+   * @param {number} height the height of window to be read into
+   * @param {number} resampleMethod the resampling method to be used when interpolating
+   * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+   *                               to be aborted
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -441,7 +448,7 @@ class GeoTIFFImage {
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sampleIndex);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder);
+          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           promises.push(promise);
           promise.then((tile) => {
             const buffer = tile.data;
@@ -538,11 +545,13 @@ class GeoTIFFImage {
    *                                              outside of the images extent. When
    *                                              multiple samples are requested, an
    *                                              array of fill values can be passed.
+   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
+   *                                       to be aborted
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
     window: wnd, samples = [], interleave, pool = null,
-    width, height, resampleMethod, fillValue,
+    width, height, resampleMethod, fillValue, signal,
   } = {}) {
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
 
@@ -592,7 +601,7 @@ class GeoTIFFImage {
     const poolOrDecoder = pool || getDecoder(this.fileDirectory);
 
     const result = await this._readRaster(
-      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod,
+      imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal,
     );
     return result;
   }
@@ -607,16 +616,18 @@ class GeoTIFFImage {
    *
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Number} [pool=null] The optional decoder pool to use.
-   * @param {number} [width] The desired width of the output. When the width is no the
-   *                         same as the images, resampling will be performed.
-   * @param {number} [height] The desired height of the output. When the width is no the
-   *                          same as the images, resampling will be performed.
-   * @param {string} [resampleMethod='nearest'] The desired resampling method.
-   * @param {bool} [enableAlpha=false] Enable reading alpha channel if present.
+   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {number} [options.width] The desired width of the output. When the width is no the
+   *                                 same as the images, resampling will be performed.
+   * @param {number} [options.height] The desired height of the output. When the width is no the
+   *                                  same as the images, resampling will be performed.
+   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {bool} [options.enableAlpha=false] Enable reading alpha channel if present.
+   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
+   *                                       to be aborted
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false } = {}) {
+  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false, signal } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -641,6 +652,8 @@ class GeoTIFFImage {
         pool,
         width,
         height,
+        resampleMethod,
+        signal,
       });
     }
 
@@ -670,6 +683,7 @@ class GeoTIFFImage {
       width,
       height,
       resampleMethod,
+      signal,
     };
     const { fileDirectory } = this;
     const raster = await this.readRasters(subOptions);

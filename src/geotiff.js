@@ -2,7 +2,12 @@ import GeoTIFFImage from './geotiffimage';
 import DataView64 from './dataview64';
 import DataSlice from './dataslice';
 import Pool from './pool';
-import { makeRemoteSource, makeBufferSource, makeFileSource, makeFileReaderSource } from './source';
+
+import { makeRemoteSource } from './source/remote';
+import { makeBufferSource } from './source/arraybuffer';
+import { makeFileReaderSource } from './source/filereader';
+import { makeFileSource } from './source/file';
+
 import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
 import * as globals from './globals';
@@ -184,6 +189,8 @@ class GeoTIFFBase {
    * @param {Number} [options.height] The desired height of the output. When the width is not the
    *                                  same as the images, resampling will be performed.
    * @param {String} [options.resampleMethod='nearest'] The desired resampling method.
+   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
+   *                                       to be aborted
    * @param {Number|Number[]} [options.fillValue] The value to use for parts of the image
    *                                              outside of the images extent. When multiple
    *                                              samples are requested, an array of fill values
@@ -314,9 +321,13 @@ class GeoTIFF extends GeoTIFFBase {
   async getSlice(offset, size) {
     const fallbackSize = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
-      await this.source.fetch(
-        offset, typeof size !== 'undefined' ? size : fallbackSize,
-      ), offset, this.littleEndian, this.bigTiff,
+      (await this.source.fetch([{
+        offset,
+        length: typeof size !== 'undefined' ? size : fallbackSize,
+      }]))[0],
+      offset,
+      this.littleEndian,
+      this.bigTiff,
     );
   }
 
@@ -514,9 +525,11 @@ class GeoTIFF extends GeoTIFFBase {
    *
    * @param {source~Source} source The source of data to parse from.
    * @param {object} options Additional options.
+   * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+   *                               to be aborted
    */
-  static async fromSource(source, options) {
-    const headerData = await source.fetch(0, 1024);
+  static async fromSource(source, options, signal) {
+    const headerData = (await source.fetch([{ offset: 0, length: 1024 }], signal))[0];
     const dataView = new DataView64(headerData);
 
     const BOM = dataView.getUint16(0, 0);
@@ -648,20 +661,24 @@ export { MultiGeoTIFF };
  * @param {string} url The URL to access the image from
  * @param {object} [options] Additional options to pass to the source.
  *                           See {@link makeRemoteSource} for details.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
-export async function fromUrl(url, options = {}) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options));
+export async function fromUrl(url, options = {}, signal) {
+  return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
 }
 
 /**
  * Construct a new GeoTIFF from an
  * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
  * @param {ArrayBuffer} arrayBuffer The data to read the file from.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
-export async function fromArrayBuffer(arrayBuffer) {
-  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer));
+export async function fromArrayBuffer(arrayBuffer, signal) {
+  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), signal);
 }
 
 /**
@@ -672,10 +689,12 @@ export async function fromArrayBuffer(arrayBuffer) {
  * N.B. After the GeoTIFF has been completely processed it needs
  * to be closed but only if it has been constructed from a file.
  * @param {string} path The file path to read from.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
-export async function fromFile(path) {
-  return GeoTIFF.fromSource(makeFileSource(path));
+export async function fromFile(path, signal) {
+  return GeoTIFF.fromSource(makeFileSource(path), signal);
 }
 
 /**
@@ -684,10 +703,12 @@ export async function fromFile(path) {
  * [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File}
  * object.
  * @param {Blob|File} blob The Blob or File object to read from.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
  * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
  */
-export async function fromBlob(blob) {
-  return GeoTIFF.fromSource(makeFileReaderSource(blob));
+export async function fromBlob(blob, signal) {
+  return GeoTIFF.fromSource(makeFileReaderSource(blob), signal);
 }
 
 /**
@@ -697,10 +718,12 @@ export async function fromBlob(blob) {
  * @param {object} [options] Additional options to pass to the source.
  *                           See [makeRemoteSource]{@link module:source.makeRemoteSource}
  *                           for details.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
  * @returns {Promise.<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
-export async function fromUrls(mainUrl, overviewUrls = [], options = {}) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options));
+export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
+  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), signal);
   const overviewFiles = await Promise.all(
     overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
   );
