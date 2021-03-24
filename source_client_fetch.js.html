@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: GeoTIFFImageIndexError</title>
+    <title>JSDoc: Source: source/client/fetch.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,138 +17,60 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: GeoTIFFImageIndexError</h1>
+    <h1 class="page-title">Source: source/client/fetch.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFFImageIndexError<span class="signature">()</span><span class="type-signature"></span></h2>
-        
-            <div class="class-description"><p>Error class for cases when an IFD index was requested, that does not exist
-in the file.</p></div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-    <h2>Constructor</h2>
-    
-
-    
-    <h4 class="name" id="GeoTIFFImageIndexError"><span class="type-signature"></span>new GeoTIFFImageIndexError<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line161">line 161</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { BaseClient, BaseResponse } from './base';
+
+
+class FetchResponse extends BaseResponse {
+  /**
+   * BaseResponse facade for fetch API Response
+   * @param {Response} response
+   */
+  constructor(response) {
+    super();
+    this.response = response;
+  }
+
+  get status() {
+    return this.response.status;
+  }
+
+  getHeader(name) {
+    return this.response.headers.get(name);
+  }
+
+  async getData() {
+    const data = this.response.arrayBuffer
+      ? await this.response.arrayBuffer()
+      : (await this.response.buffer()).buffer;
+    return data;
+  }
+}
+
+export class FetchClient extends BaseClient {
+  constructor(url, credentials) {
+    super(url);
+    this.credentials = credentials;
+  }
+
+  async request({ headers, credentials, signal } = {}) {
+    const response = await fetch(this.url, {
+      headers, credentials, signal
+    });
+    return new FetchResponse(response);
+  }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

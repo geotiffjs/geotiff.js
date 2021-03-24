@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Pool</title>
+    <title>JSDoc: Class: Block</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Pool</h1>
+    <h1 class="page-title">Class: Block</h1>
 
     
 
@@ -28,10 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-pool.html">pool</a>~</span>Pool<span class="signature">(size, worker)</span><span class="type-signature"></span></h2>
-        
-            <div class="class-description"><p>Pool for workers to decode chunks of the images.</p></div>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Block<span class="signature">(offset, length, data<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -42,11 +39,9 @@
         
 
     
-    <h2>Constructor</h2>
-    
 
     
-    <h4 class="name" id="Pool"><span class="type-signature"></span>new Pool<span class="signature">(size, worker)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Block"><span class="type-signature"></span>new Block<span class="signature">(offset, length, data<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -74,7 +69,11 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -86,50 +85,109 @@
 
         <tr>
             
-                <td class="name"><code>size</code></td>
+                <td class="name"><code>offset</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The size of the pool. Defaults to the number of CPUs
-available. When this parameter is <code>null</code> or 0, then the
-decoding will be done in the main thread.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>worker</code></td>
+                <td class="name"><code>length</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Worker</span>
+<span class="param-type">number</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The decoder worker, loaded and initialised. Enables
-loading the worker using worker-loader(or others) externally
-when using this library as a webpack dependency.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ArrayBuffer</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"></td>
         </tr>
 
     
@@ -170,7 +228,7 @@ when using this library as a webpack dependency.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line22">line 22</a>
+        <a href="source_blockedsource.js.html">source/blockedsource.js</a>, <a href="source_blockedsource.js.html#line12">line 12</a>
     </li></ul></dd>
     
 
@@ -216,82 +274,15 @@ when using this library as a webpack dependency.</p></td>
     
 
     
-
-    
-        <h3 class="subsection-title">Methods</h3>
+        <h3 class="subsection-title">Members</h3>
 
         
             
-
-    
-
-    
-    <h4 class="name" id="decode"><span class="type-signature">(async) </span>decode<span class="signature">(buffer)</span><span class="type-signature"> &rarr; {Promise.&lt;ArrayBuffer>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Decode the given block of bytes with the set compression method.</p>
-</div>
+<h4 class="name" id="top"><span class="type-signature"></span>top<span class="type-signature"></span></h4>
 
 
 
 
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>buffer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">ArrayBuffer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the array buffer of bytes to decode.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -327,7 +318,7 @@ when using this library as a webpack dependency.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line31">line 31</a>
+        <a href="source_blockedsource.js.html">source/blockedsource.js</a>, <a href="source_blockedsource.js.html#line21">line 21</a>
     </li></ul></dd>
     
 
@@ -343,43 +334,9 @@ when using this library as a webpack dependency.</p></td>
 
 
 
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
         
-<div class="param-desc">
-    <p>the decoded result as a <code>Promise</code></p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;ArrayBuffer></span>
-
-
-    </dd>
-</dl>
-
     
 
-
-
-
-
-        
     
 
     
