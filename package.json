@@ -22,6 +22,7 @@
     "browsers": "defaults"
   },
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.8.3",
     "@petamoriken/float16": "^1.0.7",
     "content-type-parser": "^1.0.2",
     "lru-cache": "^6.0.0",
