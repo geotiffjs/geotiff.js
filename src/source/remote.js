@@ -190,7 +190,5 @@ export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {
   if (typeof XMLHttpRequest !== 'undefined') {
     return makeXHRSource(url, clientOptions);
   }
-  if (http.get) {
-    return makeHttpSource(url, clientOptions);
-  }
+  return makeHttpSource(url, clientOptions);
 }
