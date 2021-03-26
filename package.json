@@ -36,6 +36,7 @@
     "@babel/preset-env": "^7.10.2",
     "@babel/register": "^7.8.6",
     "chai": "^4.2.0",
+    "core-js": "^3.9.1",
     "detect-node": "^2.0.4",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.0.1",

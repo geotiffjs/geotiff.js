@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
 import { BaseSource } from './basesource';
-import { AbortError, AggregateError, wait, zip } from '../utils';
+import { AbortError, wait, zip } from '../utils';
 
 class Block {
   /**

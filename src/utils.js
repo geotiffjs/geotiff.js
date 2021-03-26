@@ -147,13 +147,3 @@ export class AbortError extends Error {
     this.name = 'AbortError';
   }
 }
-
-export class _AggregateError extends Error {
-  constructor(errors, message) {
-    this.errors = errors;
-    this.message = message;
-    this.name = 'AggregateError';
-  }
-}
-
-export const AggregateError = (typeof AggregateError === 'undefined') ? _AggregateError : AggregateError;
