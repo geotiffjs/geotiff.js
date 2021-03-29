@@ -48,7 +48,7 @@ Further documentation can be found [here](https://geotiffjs.github.io/geotiff.js
 
 * [Contour generation using d3-contour](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
-[![contour](https://user-images.githubusercontent.com/482265/112865971-98182200-90b9-11eb-80e3-96e926c39f34.jpg)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+[![contour](https://user-images.githubusercontent.com/482265/112866402-0b219880-90ba-11eb-9dda-5f1d9ed9bafc.jpg)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
 ## Setup
 
