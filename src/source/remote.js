@@ -61,7 +61,7 @@ class RemoteSource extends BaseSource {
         }`,
       },
       signal,
-    })
+    });
 
     if (!response.ok) {
       throw new Error('Error fetching data.');

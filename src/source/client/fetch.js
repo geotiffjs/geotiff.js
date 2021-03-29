@@ -35,7 +35,7 @@ export class FetchClient extends BaseClient {
 
   async request({ headers, credentials, signal } = {}) {
     const response = await fetch(this.url, {
-      headers, credentials, signal
+      headers, credentials, signal,
     });
     return new FetchResponse(response);
   }

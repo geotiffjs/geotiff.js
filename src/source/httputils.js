@@ -38,8 +38,8 @@ function parseHeaders(text) {
  * @returns {Object} the parsed content type with the fields: type and params
  */
 export function parseContentType(rawContentType) {
-  const [type, ...rawParams] = rawContentType.split(';').map(s => s.trim());
-  const paramsItems = rawParams.map(param => param.split('='));
+  const [type, ...rawParams] = rawContentType.split(';').map((s) => s.trim());
+  const paramsItems = rawParams.map((param) => param.split('='));
   return { type, params: itemsToObject(paramsItems) };
 }
 
@@ -49,12 +49,18 @@ export function parseContentType(rawContentType) {
  * @returns {Object} the parsed parts
  */
 export function parseContentRange(rawContentRange) {
-  const [, start, end, total] = rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/);
-  return {
-    start: parseInt(start, 10),
-    end: parseInt(end, 10),
-    total: parseInt(total, 10),
-  };
+  let start;
+  let end;
+  let total;
+
+  if (rawContentRange) {
+    [, start, end, total] = rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/);
+    start = parseInt(start, 10);
+    end = parseInt(end, 10);
+    total = parseInt(total, 10);
+  }
+
+  return { start, end, total };
 }
 
 /**
