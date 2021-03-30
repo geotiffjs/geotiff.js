@@ -9,6 +9,7 @@ import AbortController from "node-abort-controller";
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
 import { makeFetchSource, makeHttpSource } from '../src/source/remote';
 import { makeFileSource } from '../src/source/file';
+import { BlockedSource } from '../src/source/blockedsource';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
 import DataSlice from '../src/dataslice';
 import DataView64 from '../src/dataview64';
@@ -952,5 +953,32 @@ describe('writeTests', () => {
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(height));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
     expect(fileDirectory.GDAL_NODATA).to.equal("0\u0000");
+  });
+});
+
+describe('BlockedSource Test', () => {
+  const blockedSource = new BlockedSource(null, { blockSize: 2 });
+
+  it('Groups only contiguous blocks as one group', () => {
+    const groups = blockedSource.groupBlocks([2, 0, 1, 3]);
+    expect(groups.length).to.equal(1);
+    const [group] = groups;
+    expect(group.blockIds.length).to.equal(4);
+    expect(group.offset).to.equal(0);
+    expect(group.length).to.equal(8);
+  });
+
+  it('Groups two non-contiguous blocks as two groups', () => {
+    const groups = blockedSource.groupBlocks([0, 1, 7, 2, 8, 3]);
+    expect(groups.length).to.equal(2);
+    const [group1, group2] = groups;
+    expect(group1.blockIds.length).to.equal(4);
+    expect(group1.blockIds).to.deep.equal([0, 1, 2, 3]);
+    expect(group1.offset).to.equal(0);
+    expect(group1.length).to.equal(8);
+    expect(group2.blockIds.length).to.equal(2);
+    expect(group2.offset).to.equal(14);
+    expect(group2.length).to.equal(4);
+    expect(group2.blockIds).to.deep.equal([7, 8]);
   });
 });
