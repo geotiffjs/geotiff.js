@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
 import { BaseSource } from './basesource';
-import { AbortError, AggregateError, wait, zip } from '../utils';
+import { AbortError, wait, zip } from '../utils';
 
 class Block {
   /**
@@ -9,11 +9,10 @@ class Block {
    * @param {number} length
    * @param {ArrayBuffer} [data]
    */
-  constructor(offset, length, data = null, id) {
+  constructor(offset, length, data = null) {
     this.offset = offset;
     this.length = length;
     this.data = data;
-    this.id = id;
   }
 
   /**
@@ -111,7 +110,7 @@ export class BlockedSource extends BaseSource {
     // actually await all pending requests
     await Promise.allSettled(blockRequests.values());
     await Promise.allSettled(missingRequests.values());
-    const abortedBlockRequests = new Map();
+    const abortedBlockRequests = [];
     // perform retries if a block was interrupted by a previous signal
     const abortedBlockIds = allBlockIds.filter(id => this.abortedBlockIds.has(id) || !this.blockCache.has(id))
     abortedBlockIds.forEach(id => this.blockIdsToFetch.add(id));
@@ -123,12 +122,12 @@ export class BlockedSource extends BaseSource {
         if (!block) {
           throw new Error(`Block ${blockId} is not in the block requests`);
         }
-        abortedBlockRequests.set(blockId, block);
+        abortedBlockRequests.push(block);
       }
       await Promise.allSettled(Array.from(abortedBlockRequests.values()));
     }
 
-    // throw an error (either abort error or AggregateError if no abort was done)
+    // throw an  abort error
     if (signal && signal.aborted) {
       throw new AbortError('Request was aborted');
     }
@@ -137,7 +136,6 @@ export class BlockedSource extends BaseSource {
 
     // create a final Map, with all required blocks for this request to satisfy
     const requiredBlocks = new Map(zip(allBlockIds, blocks));
-    console.log(this.blockCache.length)
 
     // TODO: satisfy each slice
     return this.readSliceData(slices, requiredBlocks);
@@ -186,7 +184,7 @@ export class BlockedSource extends BaseSource {
                 throw err;
               }
             } finally {
-              this.blockRequests.delete(blockId, performance.now());
+              this.blockRequests.delete(blockId);
             }
           })());
         }
