@@ -9,10 +9,11 @@ class Block {
    * @param {number} length
    * @param {ArrayBuffer} [data]
    */
-  constructor(offset, length, data = null) {
+  constructor(offset, length, data = null, id) {
     this.offset = offset;
     this.length = length;
     this.data = data;
+    this.id = id;
   }
 
   /**
@@ -45,18 +46,20 @@ export class BlockedSource extends BaseSource {
    * @param {Source} source The underlying source that shall be blocked and cached
    * @param {object} options
    */
-  constructor(source, { blockSize = 65536, cacheSize = 100 } = {}) {
+  constructor(source, { blockSize = 65536, cacheSize = 100000 } = {}) {
     super();
     this.source = source;
     this.blockSize = blockSize;
 
-    this.blockCache = new LRUCache({ max: cacheSize });
+    this.blockCache = new Map();
 
     // mapping blockId -> Block instance
     this.blockRequests = new Map();
 
     // set of blockIds missing for the current requests
     this.blockIdsToFetch = new Set();
+
+    this.abortedBlockIds = new Set();
   }
 
   get fileSize() {
@@ -68,9 +71,9 @@ export class BlockedSource extends BaseSource {
    * @param {basesource/Slice[]} slices
    */
   async fetch(slices, signal) {
-    const cachedBlocks = new Map();
-    const blockRequests = new Map();
-    const missingBlockIds = new Set();
+    const blockRequests = [];
+    const missingBlockIds = [];
+    const allBlockIds = []
 
     for (const { offset, length } of slices) {
       let top = offset + length;
@@ -82,98 +85,83 @@ export class BlockedSource extends BaseSource {
 
       const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
 
-      // chunk the current slice into blocks
       for (let current = firstBlockOffset; current < top; current += this.blockSize) {
-        // check if the block is cached, being requested or still missing
         const blockId = Math.floor(current / this.blockSize);
-
-        if (this.blockCache.has(blockId)) {
-          cachedBlocks.set(blockId, this.blockCache.get(blockId));
-        } else if (this.blockRequests.has(blockId)) {
-          blockRequests.set(blockId, this.blockRequests.get(blockId));
-        } else {
+        if (!this.blockCache.has(blockId) && !this.blockRequests.has(blockId)) {
           this.blockIdsToFetch.add(blockId);
-          missingBlockIds.add(blockId);
+          missingBlockIds.push(blockId);
         }
+        if (this.blockRequests.has(blockId)) {
+          blockRequests.push(this.blockRequests.get(blockId));
+        }
+        allBlockIds.push(blockId);
       }
     }
 
     // allow additional block requests to accumulate
     await wait();
     this.fetchBlocks(signal);
-
+    const missingRequests = []
     for (const blockId of missingBlockIds) {
-      const block = this.blockRequests.get(blockId);
-      if (!block) {
-        throw new Error(`Block ${blockId} is not in the block requests`);
+      if (this.blockRequests.has(blockId)) {
+        missingRequests.push(this.blockRequests.get(blockId));
       }
-      blockRequests.set(blockId, block);
     }
 
     // actually await all pending requests
-    let results = await Promise.allSettled(blockRequests.values());
-
+    await Promise.allSettled(blockRequests.values());
+    await Promise.allSettled(missingRequests.values());
+    console.log('awaiting init', allBlockIds, 'for all blocks', allBlockIds, performance.now())
+    const abortedBlockRequests = new Map();
     // perform retries if a block was interrupted by a previous signal
-    if (results.some((result) => result.status === 'rejected')) {
-      const retriedBlockRequests = new Set();
-      for (const [blockId, result] of zip(blockRequests.keys(), results)) {
-        const { rejected, reason } = result;
-        if (rejected) {
-          // push some blocks back to the to-fetch list if they were
-          // aborted, but only when a different signal was used
-          if (reason.name === 'AbortError' && reason.signal !== signal) {
-            this.blockIdsToFetch.add(blockId);
-            retriedBlockRequests.add(blockId);
-          }
+    const abortedBlockIds = allBlockIds.filter(id => this.abortedBlockIds.has(id) || !this.blockCache.has(id))
+    abortedBlockIds.forEach(id => this.blockIdsToFetch.add(id));
+    // start the retry of some blocks if required
+    if (abortedBlockIds.length > 0) {
+      console.log('fetching aborted: ', abortedBlockIds, 'for all blocks', allBlockIds, performance.now())
+      this.fetchBlocks(null);
+      for (const blockId of abortedBlockIds) {
+        const block = this.blockRequests.get(blockId);
+        if (!block) {
+          throw new Error(`Block ${blockId} is not in the block requests`);
         }
+        abortedBlockRequests.set(blockId, block);
       }
-
-      // start the retry of some blocks if required
-      if (this.blockIdsToFetch.length > 0) {
-        this.fetchBlocks(signal);
-        for (const blockId of retriedBlockRequests) {
-          const block = this.blockRequests.get(blockId);
-          if (!block) {
-            throw new Error(`Block ${blockId} is not in the block requests`);
-          }
-          blockRequests.set(blockId, block);
-        }
-        results = await Promise.allSettled(Array.from(blockRequests.values()));
-      }
+      await Promise.allSettled(Array.from(abortedBlockRequests.values()));
+      console.log('awaiting aborted', abortedBlockIds, abortedBlockRequests, 'for all blocks', allBlockIds, performance.now())
     }
+    const blocks = allBlockIds.map((id) => this.blockCache.get(id));
 
     // throw an error (either abort error or AggregateError if no abort was done)
-    if (results.some((result) => result.status === 'rejected')) {
-      if (signal && signal.aborted) {
-        throw new AbortError('Request was aborted');
-      }
-      throw new AggregateError(
-        results.filter((result) => result.status === 'rejected').map((result) => result.reason),
-        'Request failed',
-      );
+    if (signal && signal.aborted) {
+      throw new AbortError('Request was aborted');
     }
-
-    // extract the actual block responses
-    const values = results.map((result) => result.value);
 
     // create a final Map, with all required blocks for this request to satisfy
-    const requiredBlocks = new Map(zip(Array.from(blockRequests.keys()), values));
-    for (const [blockId, block] of cachedBlocks) {
-      requiredBlocks.set(blockId, block);
-    }
+    const requiredBlocks = new Map(zip(allBlockIds, blocks));
 
     // TODO: satisfy each slice
-    return this.readSliceData(slices, requiredBlocks);
+    let data;
+    try {
+         data =  this.readSliceData(slices, requiredBlocks);
+
+    } catch (err){
+          console.log('ERRORING OUT', requiredBlocks, missingBlockIds, abortedBlockIds, 'for all blocks', allBlockIds, performance.now())
+      throw new Error('sorry')
+    }
+    return data
   }
 
   /**
    *
    * @param {AbortSignal} signal
    */
-  fetchBlocks(signal) {
+  fetchBlocks(signal, blocks) {
+    const blockIdsToFetch = blocks || this.blockIdsToFetch
+    console.log('fetching', blockIdsToFetch, performance.now())
     // check if we still need to
-    if (this.blockIdsToFetch.size > 0) {
-      const groups = this.groupBlocks(this.blockIdsToFetch);
+    if (blockIdsToFetch.size > 0) {
+      const groups = this.groupBlocks(blockIdsToFetch);
 
       // start requesting slices of data
       const groupRequests = this.source.fetch(groups, signal);
@@ -183,7 +171,7 @@ export class BlockedSource extends BaseSource {
 
         for (const blockId of group.blockIds) {
           // make an async IIFE for each block
-          const blockRequest = (async () => {
+          this.blockRequests.set(blockId, (async () => {
             try {
               const response = (await groupRequests)[groupIndex];
               const blockOffset = blockId * this.blockSize;
@@ -194,24 +182,29 @@ export class BlockedSource extends BaseSource {
                 blockOffset,
                 data.byteLength,
                 data,
+                blockId
               );
+              console.log('set', blockId, performance.now(), performance.now())
               this.blockCache.set(blockId, block);
-              return block;
+              this.abortedBlockIds.delete(blockId);
             } catch (err) {
               if (err.name === 'AbortError') {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
+                this.blockCache.delete(blockId);
+                this.abortedBlockIds.add(blockId);
+                console.log('aborted', blockId, this.abortedBlockIds, performance.now())
+              } else {
+                throw err;
               }
-              throw err;
             } finally {
-              this.blockRequests.delete(blockId);
+              this.blockRequests.delete(blockId, performance.now());
             }
-          })();
-          this.blockRequests.set(blockId, blockRequest);
+          })());
         }
       }
-      this.blockIdsToFetch.clear();
+      blockIdsToFetch.clear();
     }
   }
 
