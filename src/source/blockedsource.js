@@ -46,12 +46,12 @@ export class BlockedSource extends BaseSource {
    * @param {Source} source The underlying source that shall be blocked and cached
    * @param {object} options
    */
-  constructor(source, { blockSize = 65536, cacheSize = 100000 } = {}) {
+  constructor(source, { blockSize = 65536, cacheSize = 1000 } = {}) {
     super();
     this.source = source;
     this.blockSize = blockSize;
 
-    this.blockCache = new Map();
+    this.blockCache = new LRUCache({ max: cacheSize });
 
     // mapping blockId -> Block instance
     this.blockRequests = new Map();
@@ -111,14 +111,12 @@ export class BlockedSource extends BaseSource {
     // actually await all pending requests
     await Promise.allSettled(blockRequests.values());
     await Promise.allSettled(missingRequests.values());
-    console.log('awaiting init', allBlockIds, 'for all blocks', allBlockIds, performance.now())
     const abortedBlockRequests = new Map();
     // perform retries if a block was interrupted by a previous signal
     const abortedBlockIds = allBlockIds.filter(id => this.abortedBlockIds.has(id) || !this.blockCache.has(id))
     abortedBlockIds.forEach(id => this.blockIdsToFetch.add(id));
     // start the retry of some blocks if required
-    if (abortedBlockIds.length > 0) {
-      console.log('fetching aborted: ', abortedBlockIds, 'for all blocks', allBlockIds, performance.now())
+    if (abortedBlockIds.length > 0 && signal && !signal.aborted) {
       this.fetchBlocks(null);
       for (const blockId of abortedBlockIds) {
         const block = this.blockRequests.get(blockId);
@@ -128,40 +126,31 @@ export class BlockedSource extends BaseSource {
         abortedBlockRequests.set(blockId, block);
       }
       await Promise.allSettled(Array.from(abortedBlockRequests.values()));
-      console.log('awaiting aborted', abortedBlockIds, abortedBlockRequests, 'for all blocks', allBlockIds, performance.now())
     }
-    const blocks = allBlockIds.map((id) => this.blockCache.get(id));
 
     // throw an error (either abort error or AggregateError if no abort was done)
     if (signal && signal.aborted) {
       throw new AbortError('Request was aborted');
     }
 
+    const blocks = allBlockIds.map((id) => this.blockCache.get(id));
+
     // create a final Map, with all required blocks for this request to satisfy
     const requiredBlocks = new Map(zip(allBlockIds, blocks));
+    console.log(this.blockCache.length)
 
     // TODO: satisfy each slice
-    let data;
-    try {
-         data =  this.readSliceData(slices, requiredBlocks);
-
-    } catch (err){
-          console.log('ERRORING OUT', requiredBlocks, missingBlockIds, abortedBlockIds, 'for all blocks', allBlockIds, performance.now())
-      throw new Error('sorry')
-    }
-    return data
+    return this.readSliceData(slices, requiredBlocks);
   }
 
   /**
    *
    * @param {AbortSignal} signal
    */
-  fetchBlocks(signal, blocks) {
-    const blockIdsToFetch = blocks || this.blockIdsToFetch
-    console.log('fetching', blockIdsToFetch, performance.now())
+  fetchBlocks(signal) {
     // check if we still need to
-    if (blockIdsToFetch.size > 0) {
-      const groups = this.groupBlocks(blockIdsToFetch);
+    if (this.blockIdsToFetch.size > 0) {
+      const groups = this.groupBlocks(this.blockIdsToFetch);
 
       // start requesting slices of data
       const groupRequests = this.source.fetch(groups, signal);
@@ -184,7 +173,6 @@ export class BlockedSource extends BaseSource {
                 data,
                 blockId
               );
-              console.log('set', blockId, performance.now(), performance.now())
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
             } catch (err) {
@@ -192,9 +180,8 @@ export class BlockedSource extends BaseSource {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
-                this.blockCache.delete(blockId);
+                this.blockCache.del(blockId);
                 this.abortedBlockIds.add(blockId);
-                console.log('aborted', blockId, this.abortedBlockIds, performance.now())
               } else {
                 throw err;
               }
@@ -204,7 +191,7 @@ export class BlockedSource extends BaseSource {
           })());
         }
       }
-      blockIdsToFetch.clear();
+      this.blockIdsToFetch.clear();
     }
   }
 
