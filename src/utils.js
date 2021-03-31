@@ -147,3 +147,14 @@ export class AbortError extends Error {
     this.name = 'AbortError';
   }
 }
+
+export class CustomAggregateError extends Error {
+  constructor(errors, message) {
+    super(message);
+    this.errors = errors;
+    this.message = message;
+    this.name = 'AggregateError';
+  }
+}
+
+export const AggregateError = CustomAggregateError;

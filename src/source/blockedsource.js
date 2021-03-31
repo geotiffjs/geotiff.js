@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
 import { BaseSource } from './basesource';
-import { AbortError, wait, zip } from '../utils';
+import { AbortError, wait, zip, AggregateError } from '../utils';
 
 class Block {
   /**
@@ -100,19 +100,23 @@ export class BlockedSource extends BaseSource {
     // allow additional block requests to accumulate
     await wait();
     this.fetchBlocks(signal);
-    const missingRequests = []
+
+    // Gather all of the new requests that this fetch call is contributing to `fetch`.
+    const missingRequests = [];
     for (const blockId of missingBlockIds) {
       if (this.blockRequests.has(blockId)) {
         missingRequests.push(this.blockRequests.get(blockId));
       }
     }
 
-    // actually await all pending requests
+    // Sctually await all pending requests that are needed for this `fetch`.
     await Promise.allSettled(blockRequests.values());
     await Promise.allSettled(missingRequests.values());
+
+    // Perform retries if a block was interrupted by a previous signal
     const abortedBlockRequests = [];
-    // perform retries if a block was interrupted by a previous signal
-    const abortedBlockIds = allBlockIds.filter(id => this.abortedBlockIds.has(id) || !this.blockCache.has(id))
+    const abortedBlockIds = allBlockIds
+      .filter(id => this.abortedBlockIds.has(id) || !this.blockCache.has(id));
     abortedBlockIds.forEach(id => this.blockIdsToFetch.add(id));
     // start the retry of some blocks if required
     if (abortedBlockIds.length > 0 && signal && !signal.aborted) {
@@ -133,6 +137,10 @@ export class BlockedSource extends BaseSource {
     }
 
     const blocks = allBlockIds.map((id) => this.blockCache.get(id));
+    const failedBlocks = blocks.filter((i) => !i);
+    if (failedBlocks.length) {
+      throw new AggregateError(failedBlocks, 'Request failed');
+    }
 
     // create a final Map, with all required blocks for this request to satisfy
     const requiredBlocks = new Map(zip(allBlockIds, blocks));
@@ -169,7 +177,7 @@ export class BlockedSource extends BaseSource {
                 blockOffset,
                 data.byteLength,
                 data,
-                blockId
+                blockId,
               );
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
