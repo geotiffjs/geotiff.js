@@ -91,6 +91,8 @@ export class BlockedSource extends BaseSource {
           cachedBlocks.set(blockId, this.blockCache.get(blockId));
         } else if (this.blockRequests.has(blockId)) {
           blockRequests.set(blockId, this.blockRequests.get(blockId));
+        } else if (this.blockIdsToFetch.has(blockId)) {
+          missingBlockIds.add(blockId);
         } else {
           this.blockIdsToFetch.add(blockId);
           missingBlockIds.add(blockId);
@@ -104,10 +106,15 @@ export class BlockedSource extends BaseSource {
 
     for (const blockId of missingBlockIds) {
       const block = this.blockRequests.get(blockId);
-      if (!block) {
+      const cachedBlock = this.blockCache.get(blockId);
+
+      if (block) {
+        blockRequests.set(blockId, block);
+      } else if (cachedBlock) {
+        cachedBlocks.set(blockId, cachedBlock);
+      } else {
         throw new Error(`Block ${blockId} is not in the block requests`);
       }
-      blockRequests.set(blockId, block);
     }
 
     // actually await all pending requests
