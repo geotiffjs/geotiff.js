@@ -169,6 +169,7 @@ export const arrayFields = [
   fieldTags.StripRowCounts,
   fieldTags.TileByteCounts,
   fieldTags.TileOffsets,
+  fieldTags.SubIFDs,
 ];
 
 export const fieldTypeNames = {

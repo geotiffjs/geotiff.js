@@ -229,7 +229,7 @@ export class BlockedSource extends BaseSource {
     let lastBlockId = null;
     const groups = [];
 
-    for (const blockId of blockIds) {
+    for (const blockId of sortedBlockIds) {
       if (lastBlockId === null || lastBlockId + 1 === blockId) {
         current.push(blockId);
         lastBlockId = blockId;
@@ -240,7 +240,7 @@ export class BlockedSource extends BaseSource {
           current,
         ));
         current = [blockId];
-        lastBlockId = null;
+        lastBlockId = blockId;
       }
     }
 
