@@ -1,5 +1,5 @@
 # geotiff.js
-[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
+[![Node.js CI](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
 
 Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.
@@ -29,6 +29,7 @@ Currently available functionality:
     * LZW
     * Deflate (with floating point or horizontal predictor support)
     * JPEG
+    * LERC (with additional Deflate compression support)
   * Automatic selection of overview level to read from
   * Subsetting via an image window or bounding box and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array

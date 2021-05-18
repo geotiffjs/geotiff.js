@@ -22,6 +22,12 @@ gdal_translate -of GTiff -co COMPRESS=LZW -ot Float64 stripped.tiff float64lzw.t
 gdal_translate -of GTiff -co COMPRESS=LZW -co PREDICTOR=2 stripped.tiff lzw_predictor.tiff
 gdal_translate -of GTiff -outsize 10% 10% stripped.tiff small.tiff
 gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
+gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff lerc.tiff
+gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff lerc_interleave.tiff
+gdal_translate -of GTiff -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff lerc_deflate.tiff
+gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff float32lerc.tiff
+gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff float32lerc_interleave.tiff
+gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff float32lerc_deflate.tiff
 
 gdal_translate -of COG initial.tiff cog.tiff
 
@@ -59,7 +65,7 @@ unzip -o nasa_raster.tiff.zip -d .
 
 # additional test for LZW: EOI_CODE after CLEAR_CODE
 wget https://github.com/geotiffjs/geotiff.js/files/2378479/lzw.zip
-mkdir lzw_clear_eoi
+mkdir -p lzw_clear_eoi
 unzip -o lzw.zip -d lzw_clear_eoi
 
 # n-bit support

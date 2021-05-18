@@ -3,4 +3,5 @@ node_modules
 dist
 dist-node
 dist-browser
+docs
 .DS_Store

@@ -5,6 +5,8 @@
 class DummyLogger {
   log() {}
 
+  debug() {}
+
   info() {}
 
   warn() {}
@@ -24,6 +26,10 @@ let LOGGER = new DummyLogger();
  */
 export function setLogger(logger = new DummyLogger()) {
   LOGGER = logger;
+}
+
+export function debug(...args) {
+  return LOGGER.debug(...args);
 }
 
 export function log(...args) {
