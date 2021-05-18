@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
 import { BaseSource } from './basesource';
-import { AbortError, wait, zip, AggregateError } from '../utils';
+import { AbortError, AggregateError, wait, zip } from '../utils';
 
 class Block {
   /**
@@ -45,7 +45,7 @@ export class BlockedSource extends BaseSource {
    * @param {Source} source The underlying source that shall be blocked and cached
    * @param {object} options
    */
-  constructor(source, { blockSize = 65536, cacheSize = 1000 } = {}) {
+  constructor(source, { blockSize = 65536, cacheSize = 100 } = {}) {
     super();
     this.source = source;
     this.blockSize = blockSize;
