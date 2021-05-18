@@ -156,7 +156,7 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   if (blockSize === null) {
     return source;
   }
-  return new BlockedSource(source, blockSize, cacheSize);
+  return new BlockedSource(source, { blockSize, cacheSize });
 }
 
 export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
