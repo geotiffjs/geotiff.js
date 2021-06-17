@@ -12,12 +12,12 @@ import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
 import { writeGeotiff } from './geotiffwriter';
 import * as globals from './globals';
 import * as rgb from './rgb';
-import { getDecoder } from './compression';
+import { getDecoder, addDecoder } from './compression';
 import { setLogger } from './logging';
 
 export { globals };
 export { rgb };
-export { getDecoder };
+export { getDecoder, addDecoder };
 export { setLogger };
 
 function getFieldTypeLength(fieldType) {
