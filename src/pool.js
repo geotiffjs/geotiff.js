@@ -12,7 +12,7 @@ class Pool {
   constructor(size = defaultPoolSize, workerFactory = defaultWorkerFactory) {
     this.workerFactory = workerFactory;
     let worker = workerFactory();
-    this.poolSize = size ?? 4;
+    this.poolSize = size || 4;
     this.used = 1;
     this.pool = [worker];
     this.jobs = [];
@@ -28,15 +28,31 @@ class Pool {
 
   _nextJob() {
     let worker = this.pool.pop();
+
     if (!worker) {
       if (this.used >= this.poolSize) return;
       this.used++;
       worker = this.workerFactory();
     }
+
     const job = this.jobs.shift();
     if (!job) return;
-    worker.onmessage = event => job.resolve(event.data);
-    worker.onerror = err => job.reject(err);
+
+    const finish = () => {
+      this.pool.push(worker);
+      this._nextJob();
+    }
+
+    worker.onmessage = event => {
+      job.resolve(event.data);
+      finish();
+    };
+
+    worker.onerror = err => {
+      job.reject(err);
+      finish();
+    }
+
     worker.postMessage(['decode', job.fileDirectory, job.buffer], [job.buffer]);
   }
 }
