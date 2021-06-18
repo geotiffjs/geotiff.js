@@ -1,10 +1,14 @@
-import { expose, Transfer } from 'threads/worker';
 import { getDecoder } from './compression';
 
 async function decode(fileDirectory, buffer) {
   const decoder = getDecoder(fileDirectory);
   const decoded = await decoder.decode(fileDirectory, buffer);
-  return Transfer(decoded);
+  return decoded;
 }
 
-expose(decode);
+addEventListener('message', e => {
+  const [name, ...args] = e.data;
+  if (name === 'decode') {
+    decode(...args).then(res => postMessage(res, [res]));
+  }
+});

@@ -29,17 +29,18 @@
     "lru-cache": "^6.0.0",
     "pako": "^2.0.3",
     "parse-headers": "^2.0.2",
-    "threads": "^1.6.5",
-    "txml": "^4.0.1"
+    "txml": "^4.0.1",
+    "web-worker": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.10.2",
     "@babel/register": "^7.8.6",
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
     "chai": "^4.2.0",
     "detect-node": "^2.0.4",
-    "esbuild": "^0.12.9",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-plugin-import": "^2.20.1",
@@ -57,12 +58,13 @@
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-bundle-visualiser": "^1.2.0",
     "rimraf": "^3.0.2",
+    "rollup": "^2.52.1",
     "send-ranges": "^3.0.0",
     "serve-static": "^1.14.1"
   },
   "scripts": {
     "build": "npm run build:clean; run-p build:browser build:node;",
-    "build:esm": "esbuild --outdir=test-geo --target=node14 --platform=node --format=esm --bundle src/geotiff.js",
+    "build:esm": "rollup -c",
     "build:clean": "rimraf dist-node/ dist-browser/",
     "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/",
     "build:browser": "parcel build src/geotiff.js --no-minify --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
