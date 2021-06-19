@@ -58,11 +58,15 @@ export default [
     input: 'src/geotiff.js',
     output: {
       dir: 'dist-esm/browser',
-      format: 'esm',
+      name: "GeoTIFF",
+      format: 'umd',
       assetFileNames: '[name]-[hash][extname]',
     },
     plugins: [
-      resolve({ mainFields: ['browser', 'module'] }),
+      resolve({
+        preferBuiltins: true,
+        mainFields: ['browser', 'module'],
+      }),
       commonjs(),
       workerUrl(),
     ],
