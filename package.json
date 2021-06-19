@@ -19,7 +19,7 @@
     "dist-browser"
   ],
   "engines": {
-    "node": ">=10.19",
+    "node": ">=12",
     "browsers": "defaults"
   },
   "dependencies": {
