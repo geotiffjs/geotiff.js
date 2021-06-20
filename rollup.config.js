@@ -2,6 +2,7 @@ import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
+import { terser } from 'rollup-plugin-terser';
 
 import path from 'path';
 import pkg from './package.json';
@@ -18,7 +19,8 @@ import pkg from './package.json';
  * const workerUrl = new URL('./worker-12030.js', import.meta.url);
  * let worker = new Worker(workerUrl);
  */
-function workerUrl() {
+const defaultPluginFactory = () => [resolve(), commonjs(), terser()];
+function workerUrl(pluginFactory = defaultPluginFactory) {
   const prefix = 'worker-url:';
   return {
     name: 'worker-url',
@@ -34,10 +36,7 @@ function workerUrl() {
       const filepath = id.slice(prefix.length);
       const bundle = await rollup({
         input: filepath,
-        plugins: [
-          resolve(),
-          commonjs(),
-        ],
+        plugins: pluginFactory(),
       });
       const { output } = await bundle.generate({
         format: 'esm',
@@ -70,27 +69,8 @@ export default [
   {
     input: 'src/geotiff.js',
     output: {
-      dir: 'dist-esm/browser-esm',
-      name: "GeoTIFF",
+      dir: 'dist-esm/browser',
       format: 'esm',
-      assetFileNames: '[name]-[hash][extname]',
-    },
-    plugins: [
-      nodePolyfills(),
-      resolve({
-        preferBuiltins: false,
-        mainFields: ['browser', 'module'],
-      }),
-      commonjs(),
-      workerUrl(),
-    ],
-  },
-  {
-    input: 'src/geotiff.js',
-    output: {
-      dir: 'dist-esm/browser-umd',
-      name: "GeoTIFF",
-      format: 'umd',
       assetFileNames: '[name]-[hash][extname]',
     },
     plugins: [
