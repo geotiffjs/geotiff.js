@@ -1,6 +1,7 @@
 import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import path from 'path';
 import pkg from './package.json';
@@ -57,14 +58,33 @@ export default [
   {
     input: 'src/geotiff.js',
     output: {
-      dir: 'dist-esm/browser',
+      dir: 'dist-esm/browser-esm',
+      name: "GeoTIFF",
+      format: 'esm',
+      assetFileNames: '[name]-[hash][extname]',
+    },
+    plugins: [
+      nodePolyfills(),
+      resolve({
+        preferBuiltins: false,
+        mainFields: ['browser', 'module'],
+      }),
+      commonjs(),
+      workerUrl(),
+    ],
+  },
+  {
+    input: 'src/geotiff.js',
+    output: {
+      dir: 'dist-esm/browser-umd',
       name: "GeoTIFF",
       format: 'umd',
       assetFileNames: '[name]-[hash][extname]',
     },
     plugins: [
+      nodePolyfills(),
       resolve({
-        preferBuiltins: true,
+        preferBuiltins: false,
         mainFields: ['browser', 'module'],
       }),
       commonjs(),
