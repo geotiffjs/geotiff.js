@@ -1,54 +1,17 @@
-import { read, open, close } from 'fs';
+import fs from 'fs';
 import { BaseSource } from './basesource';
-
-function closeAsync(fd) {
-  return new Promise((resolve, reject) => {
-    close(fd, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-function openAsync(path, flags, mode = undefined) {
-  return new Promise((resolve, reject) => {
-    open(path, flags, mode, (err, fd) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(fd);
-      }
-    });
-  });
-}
-
-function readAsync(...args) {
-  return new Promise((resolve, reject) => {
-    read(...args, (err, bytesRead, buffer) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ bytesRead, buffer });
-      }
-    });
-  });
-}
 
 class FileSource extends BaseSource {
   constructor(path) {
     super();
     this.path = path;
-    this.openRequest = openAsync(path, 'r');
+    this.openRequest = fs.promises.open(path, 'r');
   }
 
   async fetchSlice(slice) {
     // TODO: use `signal`
     const fd = await this.openRequest;
-    const { buffer } = await readAsync(
-      fd,
+    const { buffer } = await fd.read(
       Buffer.alloc(slice.length),
       0,
       slice.length,
@@ -59,7 +22,7 @@ class FileSource extends BaseSource {
 
   async close() {
     const fd = await this.openRequest;
-    await closeAsync(fd);
+    await fd.close();
   }
 }
 
