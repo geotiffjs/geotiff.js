@@ -6,6 +6,18 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 import path from 'path';
 import pkg from './package.json';
 
+/**
+ * Creates a separate bundle for worker url import, 
+ * and emits as a separate fully bundled asset. Currently 
+ * only Node & Chromium browsers support worker modules, so
+ * the worker is a single bundled file for now.
+ * 
+ * import workerUrl from 'worker-url:./worker.js';
+ * let worker = new Worker(workerUrl);
+ * 
+ * const workerUrl = new URL('./worker-12030.js', import.meta.url);
+ * let worker = new Worker(workerUrl);
+ */
 function workerUrl() {
   const prefix = 'worker-url:';
   return {
