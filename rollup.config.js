@@ -1,7 +1,6 @@
 import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
 import { terser } from 'rollup-plugin-terser';
 
 import path from 'path';
@@ -39,7 +38,7 @@ function workerUrl(pluginFactory = defaultPluginFactory) {
         plugins: pluginFactory(),
       });
       const { output } = await bundle.generate({
-        format: 'esm',
+        format: 'iife',
         inlineDynamicImports: true,
       });
       const fileId = this.emitFile({
@@ -48,6 +47,21 @@ function workerUrl(pluginFactory = defaultPluginFactory) {
         source: output[0].code,
       });
       return `export default import.meta.ROLLUP_FILE_URL_${fileId};`
+    }
+  }
+}
+
+function resolveEmptyDefault(modules = []) {
+  modules = new Set(modules);
+  const prefix = 'resolve-empty:';
+  return {
+    name: 'resolve-empty',
+    resolveId(id) {
+      if (modules.has(id)) return prefix + id;
+    },
+    load(id) {
+      if (!id.startsWith(prefix)) return;
+      return `export default {}`;
     }
   }
 }
@@ -74,7 +88,7 @@ export default [
       assetFileNames: '[name]-[hash][extname]',
     },
     plugins: [
-      nodePolyfills(),
+      resolveEmptyDefault(['fs', 'http', 'https']),
       resolve({
         preferBuiltins: false,
         mainFields: ['browser', 'module'],
