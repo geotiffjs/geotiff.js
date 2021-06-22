@@ -1,5 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import replace from '@rollup/plugin-replace';
 import pkg from './package.json';
 
 /**
@@ -19,6 +20,14 @@ function resolveEmptyDefault(modules = []) {
   }
 }
 
+const replaceWorkerName = (entryFileNames) => {
+  const name = 'decoder.worker.js';
+  return replace({ 
+    preventAssignment: true,
+    [name]: `decoder.worker${entryFileNames.slice('[name]'.length)}`
+  });
+}
+
 const bundle = (base) => {
   return ['src/geotiff.js', 'src/decoder.worker.js'].map(input => {
     const plugins = typeof base?.plugins === 'function' ? base.plugins() : base.plugins;
@@ -30,11 +39,14 @@ const node = (output) => {
   return bundle({
     output,
     external: [...Object.keys(pkg.dependencies), 'threads/worker'],
-    plugins: () => resolve({ preferBuiltins: true })
+    plugins: () => [
+      resolve({ preferBuiltins: true }),
+      replaceWorkerName(output.entryFileNames),
+    ]
   })
 }
 
-const browser = (output, minify = false) => {
+const browser = (output) => {
   return bundle({
     output,
     context: 'window',
@@ -42,13 +54,14 @@ const browser = (output, minify = false) => {
       resolveEmptyDefault(['fs', 'http', 'https', 'through2']),
       resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
+      replaceWorkerName(output.entryFileNames),
     ],
   })
 }
 
 export default [
-  node({ dir: 'dist-node', format: 'cjs' }),
-  node({ dir: 'dist-node-esm', format: 'esm' }),
-  browser({ dir: 'dist-browser', name: 'GeoTIFF', format: 'umd' }),
-  browser({ dir: 'dist-browser-esm', format: 'esm' }),
+  node({ dir: 'dist', format: 'cjs', entryFileNames: '[name].cjs' }),
+  node({ dir: 'dist', format: 'esm', entryFileNames: '[name].mjs' }),
+  browser({ dir: 'dist', name: 'GeoTIFF', format: 'umd', entryFileNames: '[name].umd.js' }),
+  browser({ dir: 'dist', format: 'esm', entryFileNames:'[name].module.js' }),
 ].flat();
