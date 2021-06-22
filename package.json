@@ -78,7 +78,7 @@
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "mocha --full-trace --require esm test/geotiff.spec.js"
+    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js"
   },
   "author": "Fabian Schindler",
   "contributors": [
