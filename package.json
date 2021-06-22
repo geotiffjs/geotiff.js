@@ -15,11 +15,21 @@
   "files": [
     "src",
     "dist-node",
-    "dist-browser"
+    "dist-node-esm",
+    "dist-browser",
+    "dist-browser-esm"
   ],
   "engines": {
     "node": ">=12",
     "browsers": "defaults"
+  },
+  "exports": {
+    ".": {
+      "browser": "./dist-browser-esm/geotiff.js",
+      "umd": "./dist-browser/geotiff.js",
+      "require": "./dist-node/geotiff.js",
+      "import": "./dist-node-esm/geotiff.js"
+    }
   },
   "dependencies": {
     "@petamoriken/float16": "^2.0.0",
@@ -58,7 +68,6 @@
     "parcel-plugin-bundle-visualiser": "^1.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.52.1",
-    "rollup-plugin-terser": "^7.0.2",
     "send-ranges": "^3.0.0",
     "serve-static": "^1.14.1"
   },

@@ -19,30 +19,36 @@ function resolveEmptyDefault(modules = []) {
   }
 }
 
-export default [
-  {
-    input: 'src/geotiff.js',
-    output: {
-      dir: 'dist-esm/node',
-      format: 'esm',
-      assetFileNames: '[name]-[hash][extname]',
-    },
-    external: Object.keys(pkg.dependencies),
-    plugins: [
-      resolve({ preferBuiltins: true }),
-    ],
-  },
-  {
-    input: 'src/geotiff.js',
-    output: {
-      dir: 'dist-esm/browser',
-      format: 'esm',
-      assetFileNames: '[name]-[hash][extname]',
-    },
-    plugins: [
+const bundle = (base) => {
+  return ['src/geotiff.js', 'src/decoder.worker.js'].map(input => {
+    const plugins = typeof base?.plugins === 'function' ? base.plugins() : base.plugins;
+    return { ...base, plugins, input };
+  });
+}
+
+const node = (output) => {
+  return bundle({
+    output,
+    external: [...Object.keys(pkg.dependencies), 'threads/worker'],
+    plugins: () => resolve({ preferBuiltins: true })
+  })
+}
+
+const browser = (output, minify = false) => {
+  return bundle({
+    output,
+    context: 'window',
+    plugins: () => [
       resolveEmptyDefault(['fs', 'http', 'https', 'through2']),
       resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
     ],
-  },
-]
+  })
+}
+
+export default [
+  node({ dir: 'dist-node', format: 'cjs' }),
+  node({ dir: 'dist-node-esm', format: 'esm' }),
+  browser({ dir: 'dist-browser', name: 'GeoTIFF', format: 'umd' }),
+  browser({ dir: 'dist-browser-esm', format: 'esm' }),
+].flat();
