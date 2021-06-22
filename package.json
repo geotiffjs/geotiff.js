@@ -9,7 +9,6 @@
     "image",
     "raster"
   ],
-  "type": "module",
   "main": "dist-node/geotiff.js",
   "module": "src/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
@@ -29,8 +28,8 @@
     "lru-cache": "^6.0.0",
     "pako": "^2.0.3",
     "parse-headers": "^2.0.3",
-    "txml": "^4.0.1",
-    "web-worker": "^1.0.0"
+    "threads": "^1.6.5",
+    "txml": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
@@ -67,7 +66,7 @@
     "build": "npm run build:clean; run-p build:browser build:node;",
     "build:esm": "rollup -c",
     "build:clean": "rimraf dist-node/ dist-browser/",
-    "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/",
+    "build:node": "parcel build src/geotiff.js --no-minify --target node --out-dir dist-node/",
     "build:browser": "parcel build src/geotiff.js --no-minify --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
     "watch:browser": "parcel watch src/geotiff.js --no-minify --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
     "dev": "parcel serve test/data/** test/index.html src/ --port 8090",

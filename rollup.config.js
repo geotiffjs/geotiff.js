@@ -1,68 +1,21 @@
-import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from 'rollup-plugin-terser';
-
-import path from 'path';
 import pkg from './package.json';
 
 /**
- * Creates a separate bundle for worker url import, 
- * and emits as a separate fully bundled asset. Currently 
- * only Node & Chromium browsers support worker modules, so
- * the worker is a single bundled file for now.
+ * Rollup plugin. Resolves import statements to empty modules
  * 
- * import workerUrl from 'worker-url:./worker.js';
- * let worker = new Worker(workerUrl);
+ * import fs from 'fs' --> const fs = {}
  * 
- * const workerUrl = new URL('./worker-12030.js', import.meta.url);
- * let worker = new Worker(workerUrl);
+ * @param {string[]} modules modules to treat as empty objects
  */
-const defaultPluginFactory = () => [resolve(), commonjs(), terser()];
-function workerUrl(pluginFactory = defaultPluginFactory) {
-  const prefix = 'worker-url:';
-  return {
-    name: 'worker-url',
-    async resolveId(id, importer) {
-      if (!id.startsWith(prefix)) return;
-      const plainId = id.slice(prefix.length);
-      const result = await this.resolve(plainId, importer);
-      if (!result) return;
-      return prefix + result.id;
-    },
-    async load(id) {
-      if (!id.startsWith(prefix)) return;
-      const filepath = id.slice(prefix.length);
-      const bundle = await rollup({
-        input: filepath,
-        plugins: pluginFactory(),
-      });
-      const { output } = await bundle.generate({
-        format: 'iife',
-        inlineDynamicImports: true,
-      });
-      const fileId = this.emitFile({
-        type: 'asset',
-        name: path.basename(filepath),
-        source: output[0].code,
-      });
-      return `export default import.meta.ROLLUP_FILE_URL_${fileId};`
-    }
-  }
-}
-
 function resolveEmptyDefault(modules = []) {
   modules = new Set(modules);
   const prefix = 'resolve-empty:';
   return {
     name: 'resolve-empty',
-    resolveId(id) {
-      if (modules.has(id)) return prefix + id;
-    },
-    load(id) {
-      if (!id.startsWith(prefix)) return;
-      return `export default {}`;
-    }
+    resolveId: (id) => modules.has(id) ? prefix + id : null,
+    load: (id) => id.startsWith(prefix) ? `export default {};` : null,
   }
 }
 
@@ -77,7 +30,6 @@ export default [
     external: Object.keys(pkg.dependencies),
     plugins: [
       resolve({ preferBuiltins: true }),
-      workerUrl(),
     ],
   },
   {
@@ -88,13 +40,9 @@ export default [
       assetFileNames: '[name]-[hash][extname]',
     },
     plugins: [
-      resolveEmptyDefault(['fs', 'http', 'https']),
-      resolve({
-        preferBuiltins: false,
-        mainFields: ['browser', 'module'],
-      }),
+      resolveEmptyDefault(['fs', 'http', 'https', 'through2']),
+      resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
-      workerUrl(),
     ],
   },
 ]

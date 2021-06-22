@@ -1,59 +1,48 @@
-import Worker from 'web-worker';
-import workerURL from "worker-url:./decoder.worker.js";
+import { Pool as tPool, spawn, Worker, Transfer } from 'threads';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
-// Ok to use type == 'module' even thought it's not supported in Firefox.
-// There are no import statemetns in the worker.
-const defaultWorkerFactory = () => new Worker(workerURL, { type: 'module' });
+/**
+ * @module pool
+ */
 
-// based on https://gist.github.com/developit/65a2212731f6b00a8aaa55d70c594f5c
+/**
+ * Pool for workers to decode chunks of the images.
+ */
 class Pool {
-  constructor(size = defaultPoolSize, workerFactory = defaultWorkerFactory) {
-    this.workerFactory = workerFactory;
-    let worker = workerFactory();
-    this.poolSize = size || 4;
-    this.used = 1;
-    this.pool = [worker];
-    this.jobs = [];
+  /**
+   * @constructor
+   * @param {Number} size The size of the pool. Defaults to the number of CPUs
+   *                      available. When this parameter is `null` or 0, then the
+   *                      decoding will be done in the main thread.
+   * @param {Worker} worker The decoder worker, loaded and initialised. Enables
+   *                        loading the worker using worker-loader(or others) externally
+   *                        when using this library as a webpack dependency.
+   */
+  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js')) {
+    this.pool = tPool(() => spawn(worker), size);
   }
 
-  decode(fileDirectory, buffer) {
-    // queue job
+  /**
+   * Decode the given block of bytes with the set compression method.
+   * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
+   * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
+   */
+  async decode(fileDirectory, buffer) {
     return new Promise((resolve, reject) => {
-      this.jobs.push({ fileDirectory, buffer, resolve, reject });
-      this._nextJob();
+      this.pool.queue(async (decode) => {
+        try {
+          const data = await decode(fileDirectory, Transfer(buffer));
+          resolve(data);
+        } catch (err) {
+          reject(err);
+        }
+      });
     });
   }
 
-  _nextJob() {
-    let worker = this.pool.pop();
-
-    if (!worker) {
-      if (this.used >= this.poolSize) return;
-      this.used++;
-      worker = this.workerFactory();
-    }
-
-    const job = this.jobs.shift();
-    if (!job) return;
-
-    const finish = () => {
-      this.pool.push(worker);
-      this._nextJob();
-    }
-
-    worker.onmessage = event => {
-      job.resolve(event.data);
-      finish();
-    };
-
-    worker.onerror = err => {
-      job.reject(err);
-      finish();
-    }
-
-    worker.postMessage(['decode', job.fileDirectory, job.buffer], [job.buffer]);
+  destroy() {
+    this.pool.terminate(true);
   }
 }
 
