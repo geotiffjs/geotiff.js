@@ -9,12 +9,13 @@
     "image",
     "raster"
   ],
-  "main": "dist/geotiff.cjs",
-  "module": "dist/geotiff.mjs",
-  "jsdelivr": "dist/geotiff.umd.js",
+  "main": "dist-node/geotiff.js",
+  "module": "dist-node/geotiff.mjs",
+  "jsdelivr": "dist-browser/geotiff.umd.js",
   "files": [
     "src",
-    "dist"
+    "dist-node",
+    "dist-browser"
   ],
   "engines": {
     "node": ">=12",
@@ -22,10 +23,10 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/geotiff.mjs",
-      "require": "./dist/geotiff.cjs",
-      "browser": "./dist/geotiff.module.js",
-      "umd": "./dist/umd/geotiff.js"
+      "import": "./dist-node/geotiff.mjs",
+      "require": "./dist-node/geotiff.js",
+      "browser": "./dist-browser/geotiff.module.js",
+      "umd": "./dist-browser/geotiff.js"
     }
   },
   "dependencies": {
@@ -71,13 +72,13 @@
   },
   "scripts": {
     "build": "npm run build:clean && rollup -c",
-    "build:clean": "rimraf dist-node/ dist-browser/ dist-node-esm/ dist-browser-esm/",
+    "build:clean": "rimraf dist-node/ dist-browser/",
     "dev": "parcel serve test/data/** test/index.html src/ --port 8090",
     "dev:clean": "rm -rf dist/ .cache/",
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js"
+    "test": "mocha --full-trace --require esm test/geotiff.spec.js"
   },
   "author": "Fabian Schindler",
   "contributors": [

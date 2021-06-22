@@ -20,11 +20,12 @@ function resolveEmptyDefault(modules = []) {
   }
 }
 
+// Hack to rename worker import with corresponding extension 
 const replaceWorkerName = (entryFileNames) => {
   const name = 'decoder.worker.js';
   return replace({ 
     preventAssignment: true,
-    [name]: `decoder.worker${entryFileNames.slice('[name]'.length)}`
+    [name]: `decoder.worker${entryFileNames.slice('[name]'.length)}`,
   });
 }
 
@@ -41,8 +42,8 @@ const node = (output) => {
     external: [...Object.keys(pkg.dependencies), 'threads/worker'],
     plugins: () => [
       resolve({ preferBuiltins: true }),
-      replaceWorkerName(output.entryFileNames),
-    ]
+      output.entryFileNames && replaceWorkerName(output.entryFileNames),
+    ],
   })
 }
 
@@ -54,14 +55,14 @@ const browser = (output) => {
       resolveEmptyDefault(['fs', 'http', 'https', 'through2']),
       resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
-      replaceWorkerName(output.entryFileNames),
+      output.entryFileNames && replaceWorkerName(output.entryFileNames),
     ],
   })
 }
 
 export default [
-  node({ dir: 'dist', format: 'cjs', entryFileNames: '[name].cjs' }),
-  node({ dir: 'dist', format: 'esm', entryFileNames: '[name].mjs' }),
-  browser({ dir: 'dist', name: 'GeoTIFF', format: 'umd', entryFileNames: '[name].umd.js' }),
-  browser({ dir: 'dist', format: 'esm', entryFileNames:'[name].module.js' }),
+  node({ dir: 'dist-node', format: 'cjs' }),
+  node({ dir: 'dist-node', format: 'esm', entryFileNames: '[name].mjs' }),
+  browser({ dir: 'dist-browser', format: 'umd', name: 'GeoTIFF' }),
+  browser({ dir: 'dist-browser', format: 'esm', entryFileNames: '[name].module.js' }),
 ].flat();
