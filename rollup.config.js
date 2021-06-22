@@ -21,6 +21,7 @@ function resolveEmptyDefault(modules = []) {
 }
 
 // Hack to rename worker import with corresponding extension 
+// const workerUrl = './decoder.worker.js'; -> const workerUrl = './decoder.worker.mjs';
 const replaceWorkerName = (entryFileNames) => {
   const name = 'decoder.worker.js';
   return replace({ 
@@ -61,8 +62,8 @@ const browser = (output) => {
 }
 
 export default [
-  node({ dir: 'dist-node', format: 'cjs' }),
+  node({ dir: 'dist-node', format: 'cjs', exports: 'named' }),
   node({ dir: 'dist-node', format: 'esm', entryFileNames: '[name].mjs' }),
-  browser({ dir: 'dist-browser', format: 'umd', name: 'GeoTIFF' }),
+  browser({ dir: 'dist-browser', format: 'umd', name: 'GeoTIFF', exports: 'named' }),
   browser({ dir: 'dist-browser', format: 'esm', entryFileNames: '[name].module.js' }),
 ].flat();

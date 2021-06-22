@@ -2,6 +2,13 @@ import { Pool as tPool, spawn, Worker, Transfer } from 'threads';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
 
+let workerUrl = './decoder.worker.js';
+if ('Worker' in globalThis) {
+  // 'threads' Worker wrapper doesn't work with URLs in Node, but 
+  // Workers in the browser can and are best for relative imports.
+  workerUrl = new URL(workerUrl, import.meta.url);
+}
+
 /**
  * @module pool
  */
@@ -19,7 +26,7 @@ class Pool {
    *                        loading the worker using worker-loader(or others) externally
    *                        when using this library as a webpack dependency.
    */
-  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js')) {
+  constructor(size = defaultPoolSize, worker = new Worker(workerUrl)) {
     this.pool = tPool(() => spawn(worker), size);
   }
 
