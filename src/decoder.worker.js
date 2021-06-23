@@ -1,5 +1,5 @@
 import { expose, Transfer } from 'threads/worker';
-import { getDecoder } from './compression';
+import { getDecoder } from './compression/index.js';
 
 async function decode(fileDirectory, buffer) {
   const decoder = getDecoder(fileDirectory);

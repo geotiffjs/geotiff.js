@@ -1,19 +1,19 @@
-import GeoTIFFImage from './geotiffimage';
-import DataView64 from './dataview64';
-import DataSlice from './dataslice';
-import Pool from './pool';
+import GeoTIFFImage from './geotiffimage.js';
+import DataView64 from './dataview64.js';
+import DataSlice from './dataslice.js';
+import Pool from './pool.js';
 
-import { makeRemoteSource } from './source/remote';
-import { makeBufferSource } from './source/arraybuffer';
-import { makeFileReaderSource } from './source/filereader';
-import { makeFileSource } from './source/file';
+import { makeRemoteSource } from './source/remote.js';
+import { makeBufferSource } from './source/arraybuffer.js';
+import { makeFileReaderSource } from './source/filereader.js';
+import { makeFileSource } from './source/file.js';
 
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
-import { writeGeotiff } from './geotiffwriter';
-import * as globals from './globals';
-import * as rgb from './rgb';
-import { getDecoder } from './compression';
-import { setLogger } from './logging';
+import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.js';
+import { writeGeotiff } from './geotiffwriter.js';
+import * as globals from './globals.js';
+import * as rgb from './rgb.js';
+import { getDecoder } from './compression/index.js';
+import { setLogger } from './logging.js';
 
 export { globals };
 export { rgb };

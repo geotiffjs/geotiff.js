@@ -1,10 +1,10 @@
-import { parseByteRanges, parseContentRange, parseContentType } from './httputils';
-import { BaseSource } from './basesource';
-import { BlockedSource } from './blockedsource';
+import { parseByteRanges, parseContentRange, parseContentType } from './httputils.js';
+import { BaseSource } from './basesource.js';
+import { BlockedSource } from './blockedsource.js';
 
-import { FetchClient } from './client/fetch';
-import { XHRClient } from './client/xhr';
-import { HttpClient } from './client/http';
+import { FetchClient } from './client/fetch.js';
+import { XHRClient } from './client/xhr.js';
+import { HttpClient } from './client/http.js';
 
 
 class RemoteSource extends BaseSource {

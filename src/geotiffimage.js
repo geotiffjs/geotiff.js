@@ -3,10 +3,10 @@
 import { getFloat16 } from '@petamoriken/float16';
 import txml from 'txml';
 
-import { photometricInterpretations, ExtraSamplesValues } from './globals';
-import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
-import { getDecoder } from './compression';
-import { resample, resampleInterleaved } from './resample';
+import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
+import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
+import { getDecoder } from './compression/index.js';
+import { resample, resampleInterleaved } from './resample.js';
 
 function sum(array, start, end) {
   let s = 0;

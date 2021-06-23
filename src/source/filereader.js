@@ -1,4 +1,4 @@
-import { BaseSource } from './basesource';
+import { BaseSource } from './basesource.js';
 
 
 class FileReaderSource extends BaseSource {
