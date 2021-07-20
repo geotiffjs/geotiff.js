@@ -10,6 +10,7 @@
     "raster"
   ],
   "main": "dist-node/geotiff.js",
+  "types": "dist-node/geotiff.d.ts",
   "module": "src/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
   "files": [
@@ -56,13 +57,16 @@
     "parcel-plugin-bundle-visualiser": "^1.2.0",
     "rimraf": "^3.0.2",
     "send-ranges": "^3.0.0",
-    "serve-static": "^1.14.1"
+    "serve-static": "^1.14.1",
+    "typescript": "^4.3.5"
   },
   "scripts": {
     "build": "npm run build:clean; run-p build:browser build:node;",
     "build:clean": "rimraf dist-node/ dist-browser/",
-    "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/",
-    "build:browser": "parcel build src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
+    "build:node": "parcel build src/geotiff.js --target node --out-dir dist-node/ && npm run build:node:types",
+    "build:node:types": "cp src/geotiff.d.ts dist-node/geotiff.d.ts",
+    "build:browser": "parcel build src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF --public-url . && npm run build:browser:types",
+    "build:browser:types": "cp src/geotiff.d.ts dist-browser/geotiff.d.ts",
     "watch:browser": "parcel watch src/geotiff.js --target browser --out-dir dist-browser/ --global GeoTIFF --public-url .",
     "dev": "parcel serve test/data/** test/index.html src/ --port 8090",
     "dev:clean": "rm -rf dist/ .cache/",
@@ -70,7 +74,8 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "prepare": "npm run build",
-    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js"
+    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js",
+    "test:types": "npx tsc test/types.ts --noEmit"
   },
   "author": "Fabian Schindler",
   "contributors": [
