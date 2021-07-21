@@ -73,7 +73,7 @@
     "lint:fix": "eslint src --fix",
     "prepare": "npm run build",
     "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js",
-    "test:types": "npm run tsc test/types.ts --noEmit"
+    "test:types": "npx tsc test/types.ts --noEmit"
   },
   "author": "Fabian Schindler",
   "contributors": [
