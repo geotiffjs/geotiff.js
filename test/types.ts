@@ -1,5 +1,5 @@
-// Internal test of Typescript types.  Imports from src not dist.
-// downstream TS users of geotiff should simply import the geotiff library and will get types along with the dist build
+// Internal test of Typescript types.
+// downstream TS users of geotiff should simply import the geotiff library and will get types from the build
 
 import GeoTIFF from '../src/geotiff';
 import { strict as assert } from 'assert';
