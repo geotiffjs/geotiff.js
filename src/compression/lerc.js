@@ -13,17 +13,6 @@ export default class LercDecoder extends BaseDecoder {
     this.addCompression = fileDirectory.LercParameters[LercParameters.AddCompression];
   }
 
-  interleavePixels(bandInterleavedData) {
-    const pixelInterleavedData = new bandInterleavedData.constructor(bandInterleavedData.length);
-    const lengthPerSample = bandInterleavedData.length / this.samplesPerPixel;
-    for (let i = 0; i < lengthPerSample; i++) {
-      for (let j = 0; j < this.samplesPerPixel; j++) {
-        pixelInterleavedData[i * this.samplesPerPixel + j] = bandInterleavedData[i + j * lengthPerSample];
-      }
-    }
-    return pixelInterleavedData;
-  }
-
   decodeBlock(buffer) {
     switch (this.addCompression) {
       case LercAddCompression.None:
@@ -35,9 +24,8 @@ export default class LercDecoder extends BaseDecoder {
         throw new Error(`Unsupported LERC additional compression method identifier: ${this.addCompression}`);
     }
 
-    const lercResult = Lerc.decode(buffer);
-    const lercData = lercResult.pixels[0]; // always band-interleaved
-    const decodedData = this.planarConfiguration === 1 ? this.interleavePixels(lercData) : lercData; // transform to pixel-interleaved if expected
-    return decodedData.buffer;
+    const lercResult = Lerc.decode(buffer, { returnPixelInterleavedDims: this.planarConfiguration === 1 });
+    const lercData = lercResult.pixels[0];
+    return lercData.buffer;
   }
 }
