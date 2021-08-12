@@ -1,7 +1,7 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
 import { getFloat16 } from '@petamoriken/float16';
-import txml from 'txml';
+import { parse } from 'txml/txml';
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
@@ -755,7 +755,7 @@ class GeoTIFFImage {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = txml(string.substring(0, string.length - 1));
+    const xmlDom = parse(string.substring(0, string.length - 1));
 
     if (!xmlDom[0].tagName) {
       throw new Error('Failed to parse GDAL metadata XML.');

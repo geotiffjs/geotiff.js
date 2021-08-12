@@ -1,9 +1,9 @@
-import { read, open, close } from 'fs';
+import fs from 'fs';
 import { BaseSource } from './basesource';
 
 function closeAsync(fd) {
   return new Promise((resolve, reject) => {
-    close(fd, (err) => {
+    fs.close(fd, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -15,7 +15,7 @@ function closeAsync(fd) {
 
 function openAsync(path, flags, mode = undefined) {
   return new Promise((resolve, reject) => {
-    open(path, flags, mode, (err, fd) => {
+    fs.open(path, flags, mode, (err, fd) => {
       if (err) {
         reject(err);
       } else {
@@ -27,7 +27,7 @@ function openAsync(path, flags, mode = undefined) {
 
 function readAsync(...args) {
   return new Promise((resolve, reject) => {
-    read(...args, (err, bytesRead, buffer) => {
+    fs.read(...args, (err, bytesRead, buffer) => {
       if (err) {
         reject(err);
       } else {

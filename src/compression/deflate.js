@@ -1,4 +1,4 @@
-import { inflate } from 'pako/lib/inflate';
+import { inflate } from 'pako';
 import BaseDecoder from './basedecoder';
 
 export default class DeflateDecoder extends BaseDecoder {
