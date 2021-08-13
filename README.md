@@ -9,6 +9,7 @@
 ## Changes
 
 - Replace JS-based `LZWDecoder` with WASM-based module. https://github.com/geotiffjs/geotiff.js/issues/172#issuecomment-689651449
+- Bump `pako` & `txml` versions and add fields to `package.json` to improve bundler support: https://github.com/geotiffjs/geotiff.js/issues/172#issuecomment-689651449
 
 ----
 
