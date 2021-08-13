@@ -8,6 +8,8 @@
 
 ## Changes
 
+- Replace JS-based `LZWDecoder` with WASM-based module. https://github.com/geotiffjs/geotiff.js/issues/172#issuecomment-689651449
+
 ----
 
 [![Node.js CI](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
