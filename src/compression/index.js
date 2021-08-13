@@ -11,7 +11,7 @@ export function getDecoder(fileDirectory) {
     case 1: // no compression
       return new RawDecoder();
     case 5: // LZW
-      return new LZWDecoder();
+      return new LZWDecoder(fileDirectory);
     case 6: // JPEG
       throw new Error('old style JPEG compression is not supported.');
     case 7: // JPEG
