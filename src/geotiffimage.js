@@ -448,9 +448,7 @@ class GeoTIFFImage {
           if (this.planarConfiguration === 2) {
             bytesPerPixel = this.getSampleByteSize(sampleIndex);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
-          promises.push(promise);
-          promise.then((tile) => {
+          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal).then((tile) => {
             const buffer = tile.data;
             const dataView = new DataView(buffer);
             const blockHeight = this.getBlockHeight(tile.y);
@@ -484,6 +482,7 @@ class GeoTIFFImage {
               }
             }
           });
+          promises.push(promise);
         }
       }
     }
