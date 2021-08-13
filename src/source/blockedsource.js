@@ -104,6 +104,8 @@ export class BlockedSource extends BaseSource {
     // Gather all of the new requests that this fetch call is contributing to `fetch`.
     const missingRequests = [];
     for (const blockId of missingBlockIds) {
+      // The requested missing block could already be in the cache
+      // instead of having its request still be outstanding.
       if (this.blockRequests.has(blockId)) {
         missingRequests.push(this.blockRequests.get(blockId));
       }
