@@ -109,7 +109,7 @@ export class BlockedSource extends BaseSource {
       }
     }
 
-    // Sctually await all pending requests that are needed for this `fetch`.
+    // Actually await all pending requests that are needed for this `fetch`.
     await Promise.allSettled(blockRequests.values());
     await Promise.allSettled(missingRequests.values());
 
