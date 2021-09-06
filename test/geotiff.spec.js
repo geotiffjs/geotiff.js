@@ -448,6 +448,16 @@ describe('RGB-tests', () => {
     const tiff = await GeoTIFF.fromSource(createSource('rgb_paletted.tiff'));
     await performRGBTest(tiff, options, comparisonRaster, 15);
   });
+
+  it('should read into non-interleaved arrays if requested', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('rgb.tiff'));
+    const image = await tiff.getImage();
+    const data = await image.readRGB({ ...options, interleave: false });
+    expect(data).to.have.lengthOf(3);
+    expect(data[0]).to.have.lengthOf(50 * 50);
+    expect(data[1]).to.have.lengthOf(50 * 50);
+    expect(data[2]).to.have.lengthOf(50 * 50);
+  });
 });
 
 describe("Abort signal", () => {
