@@ -83,7 +83,7 @@ export default class DataView64 {
   }
 
   getFloat16(offset, littleEndian) {
-    return getFloat16(this._dataView, littleEndian);
+    return getFloat16(this._dataView, offset, littleEndian);
   }
 
   getFloat32(offset, littleEndian) {
