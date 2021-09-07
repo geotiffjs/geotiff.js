@@ -408,7 +408,8 @@ class GeoTIFFImage {
    *                               to be aborted
    * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
    */
-  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal) {
+  async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width,
+    height, resampleMethod, signal) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
 
@@ -616,6 +617,9 @@ class GeoTIFFImage {
    *
    * @param {Object} [options] optional parameters
    * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {Boolean} [options.interleave=true] whether the data shall be read
+   *                                             in one single array or separate
+   *                                             arrays.
    * @param {Number} [options.pool=null] The optional decoder pool to use.
    * @param {number} [options.width] The desired width of the output. When the width is no the
    *                                 same as the images, resampling will be performed.
@@ -627,7 +631,8 @@ class GeoTIFFImage {
    *                                       to be aborted
    * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
-  async readRGB({ window, pool = null, width, height, resampleMethod, enableAlpha = false, signal } = {}) {
+  async readRGB({ window, interleave = true, pool = null, width, height,
+    resampleMethod, enableAlpha = false, signal } = {}) {
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -647,7 +652,7 @@ class GeoTIFFImage {
       }
       return this.readRasters({
         window,
-        interleave: true,
+        interleave,
         samples: s,
         pool,
         width,
@@ -712,6 +717,21 @@ class GeoTIFFImage {
       default:
         throw new Error('Unsupported photometric interpretation.');
     }
+
+    // if non-interleaved data is requested, we must split the channels
+    // into their respective arrays
+    if (!interleave) {
+      const red = new Uint8Array(data.length / 3);
+      const green = new Uint8Array(data.length / 3);
+      const blue = new Uint8Array(data.length / 3);
+      for (let i = 0, j = 0; i < data.length; i += 3, ++j) {
+        red[j] = data[i];
+        green[j] = data[i + 1];
+        blue[j] = data[i + 2];
+      }
+      data = [red, green, blue];
+    }
+
     data.width = raster.width;
     data.height = raster.height;
     return data;
