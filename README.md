@@ -450,6 +450,8 @@ on the fly rendering of the data contained in a GeoTIFF.
 </script>
 ```
 
+There's also a library called [geotiff-geokeys-to-proj4](https://github.com/matafokka/geotiff-geokeys-to-proj4), that allows for reprojecting pixel coordinates and, therefore, consuming geospatial data contained in GeoTIFF.
+
 ## BigTIFF support
 
 geotiff.js has a limited support for files in the BigTIFF format. The limitations
@@ -476,7 +478,6 @@ works with band interleaved images (see
 ## Planned stuff:
 
   * Better support of geospatial parameters:
-    * Parsing of EPSG identifiers
     * WKT representation
 
 ## Known Issues
