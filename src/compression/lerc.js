@@ -1,4 +1,4 @@
-import { inflate } from 'pako/lib/inflate';
+import { inflate } from 'pako';
 import Lerc from 'lerc';
 import BaseDecoder from './basedecoder';
 import { LercParameters, LercAddCompression } from '../globals';
