@@ -1,29 +1,24 @@
-import RawDecoder from './raw';
-import LZWDecoder from './lzw';
-import JpegDecoder from './jpeg';
-import DeflateDecoder from './deflate';
-import PackbitsDecoder from './packbits';
-import LercDecoder from './lerc';
+const registry = new Map();
 
-export function getDecoder(fileDirectory) {
-  switch (fileDirectory.Compression) {
-    case undefined:
-    case 1: // no compression
-      return new RawDecoder();
-    case 5: // LZW
-      return new LZWDecoder();
-    case 6: // JPEG
-      throw new Error('old style JPEG compression is not supported.');
-    case 7: // JPEG
-      return new JpegDecoder(fileDirectory);
-    case 8: // Deflate as recognized by Adobe
-    case 32946: // Deflate GDAL default
-      return new DeflateDecoder();
-    case 32773: // packbits
-      return new PackbitsDecoder();
-    case 34887: // LERC
-      return new LercDecoder(fileDirectory);
-    default:
-      throw new Error(`Unknown compression method identifier: ${fileDirectory.Compression}`);
-  }
+export function addDecoder(cases, importFn) {
+  if (!Array.isArray(cases)) cases = [cases];
+  cases.forEach(c => registry.set(c, importFn));
 }
+
+export async function getDecoder(fileDirectory) {
+  const importFn = registry.get(fileDirectory.Compression);
+  if (!importFn) {
+    throw new Error(`Unknown compression method identifier: ${fileDirectory.Compression}`);
+  }
+  const Decoder = await importFn();
+  return new Decoder(fileDirectory);
+}
+
+// Add default decoders to registry (end-user may override with other implementations)
+addDecoder([undefined, 1], () => import('./raw').then(m => m.default));
+addDecoder(5,              () => import('./lzw').then(m => m.default));
+addDecoder(6,              () => { throw new Error('old style JPEG compression is not supported.') });
+addDecoder(7,              () => import('./jpeg').then(m => m.default));
+addDecoder([8, 32946],     () => import('./deflate').then(m => m.default));
+addDecoder(32773,          () => import('./packbits').then(m => m.default));
+addDecoder(34887,          () => import('./lerc').then(m => m.default));

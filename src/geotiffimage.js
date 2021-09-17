@@ -599,7 +599,7 @@ class GeoTIFFImage {
       }
     }
 
-    const poolOrDecoder = pool || getDecoder(this.fileDirectory);
+    const poolOrDecoder = pool || await getDecoder(this.fileDirectory);
 
     const result = await this._readRaster(
       imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal,
