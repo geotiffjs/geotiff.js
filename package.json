@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@petamoriken/float16": "^1.0.7",
-    "content-type-parser": "^1.0.2",
     "lerc": "^3.0.0",
     "lru-cache": "^6.0.0",
     "pako": "^2.0.4",
