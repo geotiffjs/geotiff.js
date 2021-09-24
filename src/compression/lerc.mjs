@@ -1,7 +1,7 @@
 import { inflate } from 'pako';
 import Lerc from 'lerc';
-import BaseDecoder from './basedecoder';
-import { LercParameters, LercAddCompression } from '../globals';
+import BaseDecoder from './basedecoder.mjs';
+import { LercParameters, LercAddCompression } from '../globals.mjs';
 
 export default class LercDecoder extends BaseDecoder {
   constructor(fileDirectory) {

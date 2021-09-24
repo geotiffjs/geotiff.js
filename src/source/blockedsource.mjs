@@ -1,6 +1,6 @@
 import LRUCache from 'lru-cache';
-import { BaseSource } from './basesource';
-import { AbortError, AggregateError, wait, zip } from '../utils';
+import { BaseSource } from './basesource.mjs';
+import { AbortError, AggregateError, wait, zip } from '../utils.mjs';
 
 class Block {
   /**

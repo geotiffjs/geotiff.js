@@ -1,4 +1,4 @@
-import { BaseClient, BaseResponse } from './base';
+import { BaseClient, BaseResponse } from './base.mjs';
 
 
 class FetchResponse extends BaseResponse {

@@ -1,4 +1,4 @@
-import BaseDecoder from './basedecoder';
+import BaseDecoder from './basedecoder.mjs';
 
 
 export default class PackbitsDecoder extends BaseDecoder {

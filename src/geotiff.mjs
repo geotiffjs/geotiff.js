@@ -1,19 +1,19 @@
-import GeoTIFFImage from './geotiffimage';
-import DataView64 from './dataview64';
-import DataSlice from './dataslice';
-import Pool from './pool';
+import GeoTIFFImage from './geotiffimage.mjs';
+import DataView64 from './dataview64.mjs';
+import DataSlice from './dataslice.mjs';
+import Pool from './pool.mjs';
 
-import { makeRemoteSource } from './source/remote';
-import { makeBufferSource } from './source/arraybuffer';
-import { makeFileReaderSource } from './source/filereader';
-import { makeFileSource } from './source/file';
+import { makeRemoteSource } from './source/remote.mjs';
+import { makeBufferSource } from './source/arraybuffer.mjs';
+import { makeFileReaderSource } from './source/filereader.mjs';
+import { makeFileSource } from './source/file.mjs';
 
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals';
-import { writeGeotiff } from './geotiffwriter';
-import * as globals from './globals';
-import * as rgb from './rgb';
-import { getDecoder, addDecoder } from './compression';
-import { setLogger } from './logging';
+import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.mjs';
+import { writeGeotiff } from './geotiffwriter.mjs';
+import * as globals from './globals.mjs';
+import * as rgb from './rgb.mjs';
+import { getDecoder, addDecoder } from './compression/index.mjs';
+import { setLogger } from './logging.mjs';
 
 export { globals };
 export { rgb };

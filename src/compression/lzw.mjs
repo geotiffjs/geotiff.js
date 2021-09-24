@@ -1,4 +1,4 @@
-import BaseDecoder from './basedecoder';
+import BaseDecoder from './basedecoder.mjs';
 
 
 const MIN_BITS = 9;

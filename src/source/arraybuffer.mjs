@@ -1,5 +1,5 @@
-import { BaseSource } from './basesource';
-import { AbortError } from '../utils';
+import { BaseSource } from './basesource.mjs';
+import { AbortError } from '../utils.mjs';
 
 
 class ArrayBufferSource extends BaseSource {

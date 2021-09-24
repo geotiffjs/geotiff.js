@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { BaseSource } from './basesource';
+import { BaseSource } from './basesource.mjs';
 
 function closeAsync(fd) {
   return new Promise((resolve, reject) => {

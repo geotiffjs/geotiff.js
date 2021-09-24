@@ -2,8 +2,8 @@ import http from 'http';
 import https from 'https';
 import urlMod from 'url';
 
-import { BaseClient, BaseResponse } from './base';
-import { AbortError } from '../../utils';
+import { BaseClient, BaseResponse } from './base.mjs';
+import { AbortError } from '../../utils.mjs';
 
 
 class HttpResponse extends BaseResponse {
