@@ -19,7 +19,7 @@ class Pool {
    *                        loading the worker using worker-loader(or others) externally
    *                        when using this library as a webpack dependency.
    */
-  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js', { type: 'module' })) {
+  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.mjs', { type: 'module' })) {
     this.pool = tPool(() => spawn(worker), size);
   }
 
