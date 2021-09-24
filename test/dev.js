@@ -1,5 +1,6 @@
-import * as plotty from 'plotty';
 import { Pool, fromArrayBuffer, fromUrl } from '../src/geotiff';
+
+const route = (filename) => '/data/' + filename;
 
 const imageWindow = [0, 0, 500, 500];
 const tiffs = [
@@ -119,7 +120,7 @@ tiffs.forEach(async (filename) => {
 
   document.getElementById("canvases").appendChild(div);
 
-  const tiff = await fromUrl('http://localhost:8090/data/' + filename, {
+  const tiff = await fromUrl(route(filename), {
     allowFullFile: true,
     cache: true,
   });
@@ -149,7 +150,7 @@ rgbtiffs.forEach(async (filename) => {
 
   document.getElementById("canvases").appendChild(div);
 
-  const tiff = await fromUrl('http://localhost:8090/data/' + filename, {
+  const tiff = await fromUrl(route(filename), {
     allowFullFile: true,
     cache: true,
   });
