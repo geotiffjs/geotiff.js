@@ -5,14 +5,18 @@ import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 import 'isomorphic-fetch';
 import AbortController from "node-abort-controller";
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
-import { makeFetchSource, makeHttpSource } from '../src/source/remote';
-import { makeFileSource } from '../src/source/file';
-import { BlockedSource } from '../src/source/blockedsource';
-import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
-import DataSlice from '../src/dataslice';
-import DataView64 from '../src/dataview64';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff.mjs';
+import { makeFetchSource, makeHttpSource } from '../src/source/remote.mjs';
+import { makeFileSource } from '../src/source/file.mjs';
+import { BlockedSource } from '../src/source/blockedsource.mjs';
+import { chunk, toArray, toArrayRecursively, range } from '../src/utils.mjs';
+import DataSlice from '../src/dataslice.mjs';
+import DataView64 from '../src/dataview64.mjs';
 
 // Set up a node server to make tiffs available at localhost:3000/test/data
 let server = null;
@@ -248,13 +252,12 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
-  // FIXME: does not work with mocha
-  // it('should work with worker pool', async () => {
-  //   const pool = new Pool()
-  //   const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-  //   const image = await tiff.getImage();
-  //   await image.readRasters({ pool });
-  // });
+  it('should work with worker pool', async () => {
+	  const pool = new Pool()
+	  const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+	  const image = await tiff.getImage();
+	  await image.readRasters({ pool });
+  });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
