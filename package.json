@@ -17,6 +17,12 @@
     "dist-node",
     "dist-browser"
   ],
+  "exports": {
+    ".": {
+      "import": "./src/geotiff.mjs",
+      "require": "./dist-node/geotiff.js"
+    }
+  },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0",
     "browsers": "defaults"

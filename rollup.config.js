@@ -14,6 +14,6 @@ export default {
   plugins: [
     resolve({ browser: true }),
     commonjs(),
-	terser(),
+    terser(),
   ],
 };
