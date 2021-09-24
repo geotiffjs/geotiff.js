@@ -1,3 +1,4 @@
+import * as plotty from 'plotty';
 import { Pool, fromArrayBuffer, fromUrl } from '../src/geotiff';
 
 const imageWindow = [0, 0, 500, 500];
