@@ -9,11 +9,8 @@
     "image",
     "raster"
   ],
-  "alias": {
-    "txml/txml": "txml/dist/txml"
-  },
   "main": "dist-node/geotiff.js",
-  "module": "src/geotiff.js",
+  "module": "src/geotiff.mjs",
   "jsdelivr": "dist-browser/geotiff.js",
   "files": [
     "src",
@@ -21,7 +18,7 @@
     "dist-browser"
   ],
   "engines": {
-    "node": ">=10.19",
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0",
     "browsers": "defaults"
   },
   "dependencies": {
