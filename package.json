@@ -9,9 +9,6 @@
     "image",
     "raster"
   ],
-  "alias": {
-    "txml/txml": "txml/dist/txml"
-  },
   "main": "dist-node/geotiff.js",
   "module": "src/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
@@ -79,7 +76,8 @@
     "fs": false,
     "http": false,
     "https": false,
-    "url": false
+    "url": false,
+    "txml": "./node_modules/txml/dist/txml"
   },
   "sideEffects": false,
   "contributors": [
