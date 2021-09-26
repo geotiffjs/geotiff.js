@@ -1,7 +1,7 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
 import { getFloat16 } from '@petamoriken/float16';
-import { parse } from 'txml/txml';
+import { parse } from 'txml';
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
