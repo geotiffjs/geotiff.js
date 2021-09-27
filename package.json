@@ -9,9 +9,6 @@
     "image",
     "raster"
   ],
-  "alias": {
-    "txml/txml": "txml/dist/txml"
-  },
   "main": "dist-node/geotiff.js",
   "module": "src/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
@@ -31,7 +28,7 @@
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
     "threads": "^1.3.1",
-    "txml": "^5.0.0"
+    "xml-utils": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",

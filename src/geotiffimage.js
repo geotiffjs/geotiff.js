@@ -1,7 +1,8 @@
 /* eslint max-len: ["error", { "code": 120 }] */
 
 import { getFloat16 } from '@petamoriken/float16';
-import { parse } from 'txml/txml';
+import getAttribute from "xml-utils/get-attribute";
+import findTagsByName from 'xml-utils/find-tags-by-name';
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb';
@@ -775,27 +776,16 @@ class GeoTIFFImage {
       return null;
     }
     const string = this.fileDirectory.GDAL_METADATA;
-    const xmlDom = parse(string.substring(0, string.length - 1));
 
-    if (!xmlDom[0].tagName) {
-      throw new Error('Failed to parse GDAL metadata XML.');
-    }
-
-    const root = xmlDom[0];
-    if (root.tagName !== 'GDALMetadata') {
-      throw new Error('Unexpected GDAL metadata XML tag.');
-    }
-
-    let items = root.children
-      .filter((child) => child.tagName === 'Item');
+    let items = findTagsByName(string, 'Item');
 
     if (sample !== null) {
-      items = items.filter((item) => Number(item.attributes.sample) === sample);
+      items = items.filter((item) => Number(getAttribute(item, "sample")) === sample);
     }
 
     for (let i = 0; i < items.length; ++i) {
       const item = items[i];
-      metadata[item.attributes.name] = item.children[0];
+      metadata[getAttribute(item, "name")] = item.inner;
     }
     return metadata;
   }
