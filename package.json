@@ -77,7 +77,7 @@
     "http": false,
     "https": false,
     "url": false,
-    "txml": "./node_modules/txml/dist/txml"
+    "./src/txml": "./src/browser/txml"
   },
   "sideEffects": false,
   "contributors": [
