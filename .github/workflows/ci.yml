@@ -23,10 +23,9 @@ jobs:
     - run: npm test
     - name: action-slack
       uses: 8398a7/action-slack@v3.8.0
-      if: ${{ github.event_name != 'pull_request'}}
       with:
         status: ${{ job.status }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always()
+      if: ${{ github.event_name != 'pull_request'}}
