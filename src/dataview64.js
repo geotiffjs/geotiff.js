@@ -14,18 +14,20 @@ export default class DataView64 {
     const right = this.getUint32(offset + 4, littleEndian);
     let combined;
     if (littleEndian) {
-      combined = left + 2 ** 32 * right;
+      combined = left + ((2 ** 32) * right);
       if (!Number.isSafeInteger(combined)) {
         throw new Error(
-          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`
+          `${combined} exceeds MAX_SAFE_INTEGER. `
+          + 'Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
         );
       }
       return combined;
     }
-    combined = 2 ** 32 * left + right;
+    combined = ((2 ** 32) * left) + right;
     if (!Number.isSafeInteger(combined)) {
       throw new Error(
-        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`
+        `${combined} exceeds MAX_SAFE_INTEGER. `
+        + 'Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
       );
     }
 
@@ -35,8 +37,7 @@ export default class DataView64 {
   // adapted from https://stackoverflow.com/a/55338384/8060591
   getInt64(offset, littleEndian) {
     let value = 0;
-    const isNegative =
-      (this._dataView.getUint8(offset + (littleEndian ? 7 : 0)) & 0x80) > 0;
+    const isNegative = (this._dataView.getUint8(offset + (littleEndian ? 7 : 0)) & 0x80) > 0;
     let carrying = true;
     for (let i = 0; i < 8; i++) {
       let byte = this._dataView.getUint8(offset + (littleEndian ? i : 7 - i));
@@ -50,7 +51,7 @@ export default class DataView64 {
           byte = ~byte & 0xff;
         }
       }
-      value += byte * 256 ** i;
+      value += byte * (256 ** i);
     }
     if (isNegative) {
       value = -value;

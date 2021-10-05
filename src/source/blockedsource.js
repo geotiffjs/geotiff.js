@@ -23,7 +23,6 @@ class Block {
   }
 }
 
-
 class BlockGroup {
   /**
    *
@@ -37,7 +36,6 @@ class BlockGroup {
     this.blockIds = blockIds;
   }
 }
-
 
 export class BlockedSource extends BaseSource {
   /**

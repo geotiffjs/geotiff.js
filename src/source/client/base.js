@@ -18,7 +18,7 @@ export class BaseResponse {
    * @param {string} headerName the header name
    * @returns {string} the header value
    */
-  getHeader(headerName) {
+  getHeader(headerName) { // eslint-disable-line no-unused-vars
     throw new Error('not implemented');
   }
 
@@ -39,8 +39,7 @@ export class BaseClient {
    * Send a request with the options
    * @param {object} [options]
    */
-  async request({ headers, credentials, signal } = {}) {
-    throw new Error(`request is not implemented`);
+  async request({ headers, credentials, signal } = {}) { // eslint-disable-line no-unused-vars
+    throw new Error('request is not implemented');
   }
 }
-

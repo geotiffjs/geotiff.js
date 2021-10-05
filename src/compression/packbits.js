@@ -1,6 +1,5 @@
 import BaseDecoder from './basedecoder';
 
-
 export default class PackbitsDecoder extends BaseDecoder {
   decodeBlock(buffer) {
     const dataView = new DataView(buffer);

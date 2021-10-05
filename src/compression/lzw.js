@@ -1,6 +1,5 @@
 import BaseDecoder from './basedecoder';
 
-
 const MIN_BITS = 9;
 const CLEAR_CODE = 256; // clear code
 const EOI_CODE = 257; // end of information

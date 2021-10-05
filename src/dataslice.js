@@ -83,18 +83,20 @@ export default class DataSlice {
     const right = this.readUint32(offset + 4);
     let combined;
     if (this._littleEndian) {
-      combined = left + 2 ** 32 * right;
+      combined = left + ((2 ** 32) * right);
       if (!Number.isSafeInteger(combined)) {
         throw new Error(
-          `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+          `${combined} exceeds MAX_SAFE_INTEGER. `
+          + 'Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
         );
       }
       return combined;
     }
-    combined = 2 ** 32 * left + right;
+    combined = ((2 ** 32) * left) + right;
     if (!Number.isSafeInteger(combined)) {
       throw new Error(
-        `${combined} exceeds MAX_SAFE_INTEGER. Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues`,
+        `${combined} exceeds MAX_SAFE_INTEGER. `
+        + 'Precision may be lost. Please report if you get this message to https://github.com/geotiffjs/geotiff.js/issues',
       );
     }
 
@@ -104,13 +106,12 @@ export default class DataSlice {
   // adapted from https://stackoverflow.com/a/55338384/8060591
   readInt64(offset) {
     let value = 0;
-    const isNegative =
-      (this._dataView.getUint8(offset + (this._littleEndian ? 7 : 0)) & 0x80) >
-      0;
+    const isNegative = (this._dataView.getUint8(offset + (this._littleEndian ? 7 : 0)) & 0x80)
+      > 0;
     let carrying = true;
     for (let i = 0; i < 8; i++) {
       let byte = this._dataView.getUint8(
-        offset + (this._littleEndian ? i : 7 - i)
+        offset + (this._littleEndian ? i : 7 - i),
       );
       if (isNegative) {
         if (carrying) {
@@ -122,12 +123,12 @@ export default class DataSlice {
           byte = ~byte & 0xff;
         }
       }
-      value += byte * 256 ** i;
+      value += byte * (256 ** i);
     }
     if (isNegative) {
       value = -value;
     }
-    return value
+    return value;
   }
 
   readOffset(offset) {

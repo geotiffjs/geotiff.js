@@ -1,13 +1,14 @@
+/* eslint-disable no-unused-expressions */
 import isNode from 'detect-node';
 import { expect } from 'chai';
 import http from 'http';
 import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 import 'isomorphic-fetch';
-import AbortController from "node-abort-controller";
+import AbortController from 'node-abort-controller';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, Pool, fromUrls } from '../src/geotiff';
-import { makeFetchSource, makeHttpSource } from '../src/source/remote';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff';
+import { makeFetchSource } from '../src/source/remote';
 import { makeFileSource } from '../src/source/file';
 import { BlockedSource } from '../src/source/blockedsource';
 import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
@@ -73,32 +74,35 @@ function normalize(input) {
 
 function getMockMetaData(height, width) {
   return {
-    "ImageWidth": width, // only necessary if values aren't multi-dimensional
-    "ImageLength": height, // only necessary if values aren't multi-dimensional
-    "BitsPerSample": [8],
-    "Compression": 1, //no compression
-    "PhotometricInterpretation": 2,
-    "StripOffsets": [1054],
-    "SamplesPerPixel": 1,
-    "RowsPerStrip": [height],
-    "StripByteCounts": [width * height],
-    "PlanarConfiguration": 1,
-    "SampleFormat": [1],
-    "ModelPixelScale": [0.031355, 0.031355, 0],
-    "ModelTiepoint": [0, 0, 0, 11.331755000000001, 46.268645, 0],
-    "GeoKeyDirectory": [1, 1, 0, 5, 1024, 0, 1, 2, 1025, 0, 1, 1, 2048, 0, 1, 4326, 2049, 34737, 7, 0, 2054, 0, 1, 9102],
-    "GeoAsciiParams": "WGS 84",
-    "GTModelTypeGeoKey": 2,
-    "GTRasterTypeGeoKey": 1,
-    "GeographicTypeGeoKey": 4326,
-    "GeogCitationGeoKey": "WGS 84",
-    "GDAL_NODATA": "0",
+    ImageWidth: width, // only necessary if values aren't multi-dimensional
+    ImageLength: height, // only necessary if values aren't multi-dimensional
+    BitsPerSample: [8],
+    Compression: 1, // no compression
+    PhotometricInterpretation: 2,
+    StripOffsets: [1054],
+    SamplesPerPixel: 1,
+    RowsPerStrip: [height],
+    StripByteCounts: [width * height],
+    PlanarConfiguration: 1,
+    SampleFormat: [1],
+    ModelPixelScale: [0.031355, 0.031355, 0],
+    ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],
+    GeoKeyDirectory: [1, 1, 0, 5, 1024, 0, 1, 2, 1025, 0, 1, 1, 2048, 0, 1, 4326, 2049, 34737, 7, 0, 2054, 0, 1, 9102],
+    GeoAsciiParams: 'WGS 84',
+    GTModelTypeGeoKey: 2,
+    GTRasterTypeGeoKey: 1,
+    GeographicTypeGeoKey: 4326,
+    GeogCitationGeoKey: 'WGS 84',
+    GDAL_NODATA: '0',
   };
 }
 
 describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
-    const tiff = await fromUrls('http://localhost:3000/data/overviews_external.tiff', ['http://localhost:3000/data/overviews_external.tiff.ovr']);
+    const tiff = await fromUrls(
+      'http://localhost:3000/data/overviews_external.tiff',
+      ['http://localhost:3000/data/overviews_external.tiff.ovr'],
+    );
     const count = await tiff.getImageCount();
     expect(count).to.equal(5);
 
@@ -263,7 +267,6 @@ describe('GeoTIFF', () => {
   });
 });
 
-
 describe('n-bit uint tests', () => {
   const wnd = [100, 100, 150, 150];
   for (const n of [10, 11, 12, 13, 14, 15]) {
@@ -412,12 +415,14 @@ describe('ifdRequestTests', () => {
     tiff.ifdRequests[index] = tiff.parseFileDirectoryAt(offsets[index]);
     await tiff.getImage(index + 1);
     // first image slot is empty so we filter out the Promises, of which there are two
-    expect(tiff.ifdRequests.filter(ifdRequest => ifdRequest instanceof Promise).length).to.equal(2);
+    expect(
+      tiff.ifdRequests.filter((ifdRequest) => ifdRequest instanceof Promise).length,
+    ).to.equal(2);
   });
 
   it('should be able to manually set ifdRequests and readRasters', async () => {
     const tiff = await GeoTIFF.fromSource(createSource(source));
-    tiff.ifdRequests = offsets.map(offset => tiff.parseFileDirectoryAt(offset));
+    tiff.ifdRequests = offsets.map((offset) => tiff.parseFileDirectoryAt(offset));
     tiff.ifdRequests.forEach(async (_, i) => {
       const image = await tiff.getImage(i);
       image.readRasters();
@@ -460,10 +465,10 @@ describe('RGB-tests', () => {
   });
 });
 
-describe("Abort signal", () => {
-  const source = "multi-channel.ome.tif";
+describe('Abort signal', () => {
+  const source = 'multi-channel.ome.tif';
 
-  it("Abort signal on readRasters throws exception", async () => {
+  it('Abort signal on readRasters throws exception', async () => {
     const tiff = await GeoTIFF.fromSource(createSource(source));
     const image = await tiff.getImage(0);
     const abortController = new AbortController();
@@ -475,8 +480,8 @@ describe("Abort signal", () => {
       expect(e.name).to.equal('AbortError');
     }
   });
-  it("Abort signal on readRGB returns fill value array", async () => {
-    const tiff = await GeoTIFF.fromSource(createSource("rgb_paletted.tiff"));
+  it('Abort signal on readRGB returns fill value array', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('rgb_paletted.tiff'));
     const image = await tiff.getImage();
     const abortController = new AbortController();
     const { signal } = abortController;
@@ -529,16 +534,18 @@ describe('Geo metadata tests', async () => {
   });
 });
 
-describe("GDAL_METADATA tests", async () => {
+describe('GDAL_METADATA tests', async () => {
   it('should parse stats for specific sample', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('abetow-ERD2018-EBIRD_SCIENCE-20191109-a5cf4cb2_hr_2018_abundance_median.tiff'));
+    const tiff = await GeoTIFF.fromSource(
+      createSource('abetow-ERD2018-EBIRD_SCIENCE-20191109-a5cf4cb2_hr_2018_abundance_median.tiff'),
+    );
     const image = await tiff.getImage();
     const metadata = await image.getGDALMetadata(10);
     expect(metadata).to.deep.equal({
       STATISTICS_MAXIMUM: '7.2544522285461',
       STATISTICS_MEAN: 'nan',
       STATISTICS_MINIMUM: '0',
-      STATISTICS_STDDEV: 'nan'
+      STATISTICS_STDDEV: 'nan',
     });
   });
 
@@ -550,7 +557,7 @@ describe("GDAL_METADATA tests", async () => {
       STATISTICS_MAXIMUM: '100',
       STATISTICS_MEAN: '28.560288669249',
       STATISTICS_MINIMUM: '0',
-      STATISTICS_STDDEV: '39.349526064368'
+      STATISTICS_STDDEV: '39.349526064368',
     });
   });
 
@@ -559,7 +566,7 @@ describe("GDAL_METADATA tests", async () => {
     const image = await tiff.getImage();
     const metadata = await image.getGDALMetadata();
     expect(metadata).to.deep.equal({
-      LAYER_TYPE: 'athematic'
+      LAYER_TYPE: 'athematic',
     });
   });
 
@@ -568,7 +575,7 @@ describe("GDAL_METADATA tests", async () => {
     const image = await tiff.getImage();
     const metadata = await image.getGDALMetadata();
     expect(metadata).to.deep.equal({
-      COLORINTERP: 'Palette'
+      COLORINTERP: 'Palette',
     });
   });
 
@@ -580,7 +587,7 @@ describe("GDAL_METADATA tests", async () => {
       STATISTICS_MAXIMUM: '332.6073328654',
       STATISTICS_MEAN: '83.638959236148',
       STATISTICS_MINIMUM: '18.103807449341',
-      STATISTICS_STDDEV: '69.590554367352'
+      STATISTICS_STDDEV: '69.590554367352',
     });
   });
 
@@ -591,7 +598,7 @@ describe("GDAL_METADATA tests", async () => {
     expect(metadata).to.deep.equal({
       creationTime: '1497289465',
       creationTimeString: '2017-06-12T17:44:25.466257Z',
-      name: 'Wind_Dir_SFC'
+      name: 'Wind_Dir_SFC',
     });
   });
 });
@@ -663,10 +670,10 @@ describe('fillValue', async () => {
   });
 });
 
-describe("64 bit tests", () => {
-  it("DataView64 uint64 tests", () => {
+describe('64 bit tests', () => {
+  it('DataView64 uint64 tests', () => {
     const littleEndianBytes = new Uint8Array([
-      // (2 ** 53 - 1)
+      // ((2 ** 53) - 1)
       // left
       0xff,
       0xff,
@@ -691,7 +698,7 @@ describe("64 bit tests", () => {
     ]);
     const littleEndianView = new DataView64(littleEndianBytes.buffer);
     const bigEndianBytes = new Uint8Array([
-      // (2 ** 53 - 1)
+      // ((2 ** 53) - 1)
       // left
       0x00,
       0x1f,
@@ -717,8 +724,8 @@ describe("64 bit tests", () => {
     const bigEndianView = new DataView64(bigEndianBytes.buffer);
     const readLittleEndianBytes = littleEndianView.getUint64(0, true);
     const readBigEndianBytes = bigEndianView.getUint64(0, false);
-    expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
-    expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
+    expect(readLittleEndianBytes).to.equal((2 ** 53) - 1);
+    expect(readBigEndianBytes).to.equal((2 ** 53) - 1);
     expect(() => {
       littleEndianView.getUint64(8, true);
     }).to.throw();
@@ -727,7 +734,7 @@ describe("64 bit tests", () => {
     }).to.throw();
   });
 
-  it("DataView64 negative int64 tests", () => {
+  it('DataView64 negative int64 tests', () => {
     const littleEndianBytes = new Uint8Array([
       // -(2 ** 32 - 1)
       // left
@@ -758,13 +765,13 @@ describe("64 bit tests", () => {
     const bigEndianView = new DataView64(bigEndianBytes.buffer);
     const readLittleEndianBytes = littleEndianView.getInt64(0, true);
     const readBigEndianBytes = bigEndianView.getInt64(0, false);
-    expect(readLittleEndianBytes).to.equal(-(2 ** 52 - 1));
-    expect(readBigEndianBytes).to.equal(-(2 ** 52 - 1));
+    expect(readLittleEndianBytes).to.equal(-((2 ** 52) - 1));
+    expect(readBigEndianBytes).to.equal(-((2 ** 52) - 1));
   });
 
-  it("DataView64 positive int64 tests", () => {
+  it('DataView64 positive int64 tests', () => {
     const littleEndianBytes = new Uint8Array([
-      // (2 ** 52 - 1)
+      // ((2 ** 52) - 1)
       // left
       0xff,
       0xff,
@@ -778,7 +785,7 @@ describe("64 bit tests", () => {
     ]);
     const littleEndianView = new DataView64(littleEndianBytes.buffer);
     const bigEndianBytes = new Uint8Array([
-      // (2 ** 52 - 1)
+      // ((2 ** 52) - 1)
       // left
       0x00,
       0x0f,
@@ -793,13 +800,13 @@ describe("64 bit tests", () => {
     const bigEndianView = new DataView64(bigEndianBytes.buffer);
     const readLittleEndianBytes = littleEndianView.getInt64(0, true);
     const readBigEndianBytes = bigEndianView.getInt64(0, false);
-    expect(readLittleEndianBytes).to.equal(2 ** 52 - 1);
-    expect(readBigEndianBytes).to.equal(2 ** 52 - 1);
+    expect(readLittleEndianBytes).to.equal((2 ** 52) - 1);
+    expect(readBigEndianBytes).to.equal((2 ** 52) - 1);
   });
 
-  it("DataSlice positive int64 tests", () => {
+  it('DataSlice positive int64 tests', () => {
     const littleEndianBytes = new Uint8Array([
-      // (2 ** 52 - 1)
+      // ((2 ** 52) - 1)
       // left
       0xff,
       0xff,
@@ -815,10 +822,10 @@ describe("64 bit tests", () => {
       littleEndianBytes.buffer,
       0,
       true,
-      true
+      true,
     );
     const bigEndianBytes = new Uint8Array([
-      // (2 ** 52 - 1)
+      // ((2 ** 52) - 1)
       // left
       0x00,
       0x0f,
@@ -833,11 +840,11 @@ describe("64 bit tests", () => {
     const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
     const readLittleEndianBytes = littleEndianSlice.readInt64(0, true);
     const readBigEndianBytes = bigEndianSlice.readInt64(0, false);
-    expect(readLittleEndianBytes).to.equal(2 ** 52 - 1);
-    expect(readBigEndianBytes).to.equal(2 ** 52 - 1);
+    expect(readLittleEndianBytes).to.equal((2 ** 52) - 1);
+    expect(readBigEndianBytes).to.equal((2 ** 52) - 1);
   });
 
-  it("DataSlice negative int64 tests", () => {
+  it('DataSlice negative int64 tests', () => {
     const littleEndianBytes = new Uint8Array([
       // -(2 ** 32 - 1)
       // left
@@ -855,7 +862,7 @@ describe("64 bit tests", () => {
       littleEndianBytes.buffer,
       0,
       true,
-      true
+      true,
     );
     const bigEndianBytes = new Uint8Array([
       // -(2 ** 32 - 1)
@@ -873,13 +880,13 @@ describe("64 bit tests", () => {
     const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
     const readLittleEndianBytes = littleEndianSlice.readInt64(0, true);
     const readBigEndianBytes = bigEndianSlice.readInt64(0, false);
-    expect(readLittleEndianBytes).to.equal(-(2 ** 52 - 1));
-    expect(readBigEndianBytes).to.equal(-(2 ** 52 - 1));
+    expect(readLittleEndianBytes).to.equal(-((2 ** 52) - 1));
+    expect(readBigEndianBytes).to.equal(-((2 ** 52) - 1));
   });
 
-  it("DataSlice uint64 bit tests", () => {
+  it('DataSlice uint64 bit tests', () => {
     const littleEndianBytes = new Uint8Array([
-      // (2 ** 53 - 1)
+      // ((2 ** 53) - 1)
       // left
       0xff,
       0xff,
@@ -906,10 +913,10 @@ describe("64 bit tests", () => {
       littleEndianBytes.buffer,
       0,
       true,
-      true
+      true,
     );
     const bigEndianBytes = new Uint8Array([
-      // (2 ** 53 - 1)
+      // ((2 ** 53) - 1)
       // left
       0x00,
       0x1f,
@@ -935,8 +942,8 @@ describe("64 bit tests", () => {
     const bigEndianSlice = new DataSlice(bigEndianBytes.buffer, 0, false, true);
     const readLittleEndianBytes = littleEndianSlice.readOffset(0);
     const readBigEndianBytes = bigEndianSlice.readOffset(0);
-    expect(readLittleEndianBytes).to.equal(2 ** 53 - 1);
-    expect(readBigEndianBytes).to.equal(2 ** 53 - 1);
+    expect(readLittleEndianBytes).to.equal((2 ** 53) - 1);
+    expect(readBigEndianBytes).to.equal((2 ** 53) - 1);
     expect(() => {
       littleEndianSlice.readOffset(8);
     }).to.throw();
@@ -951,17 +958,19 @@ describe('writeTests', () => {
     const originalValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const metadata = {
       height: 3,
-      width: 3
+      width: 3,
     };
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
-    expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
+    expect(
+      JSON.stringify(newValues.slice(0, -1)),
+    ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
 
     const geoKeys = image.getGeoKeys();
-    expect(geoKeys).to.be.an("object");
+    expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
     expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
@@ -970,40 +979,40 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
+    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
     expect(fileDirectory.ImageLength).to.equal(3);
     expect(fileDirectory.ImageWidth).to.equal(3);
     expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
     expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.PhotometricInterpretation).to.equal(1);
     expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal("[1000]"); //hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
     expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1]));
     expect(fileDirectory.SamplesPerPixel).to.equal(1);
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
   });
 
-  it("should write rgb data with sensible defaults", async () => {
+  it('should write rgb data with sensible defaults', async () => {
     const originalRed = [
-      [ 255, 255, 255 ],
-      [ 0, 0, 0 ],
-      [ 0, 0, 0 ]
+      [255, 255, 255],
+      [0, 0, 0],
+      [0, 0, 0],
     ];
     const originalGreen = [
-      [ 0, 0, 0 ],
-      [ 255, 255, 255 ],
-      [ 0, 0, 0 ]
+      [0, 0, 0],
+      [255, 255, 255],
+      [0, 0, 0],
     ];
     const originalBlue = [
-      [ 0, 0, 0 ],
-      [ 0, 0, 0 ],
-      [ 255, 255, 255 ]
+      [0, 0, 0],
+      [0, 0, 0],
+      [255, 255, 255],
     ];
     const originalValues = [originalRed, originalGreen, originalBlue];
     const metadata = {
       height: 3,
-      width: 3
+      width: 3,
     };
 
     const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
@@ -1018,30 +1027,30 @@ describe('writeTests', () => {
     expect(normalize(blue)).to.equal(normalize(originalBlue));
 
     const geoKeys = image.getGeoKeys();
-    expect(geoKeys).to.be.an("object");
+    expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
     expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
     const { fileDirectory } = image;
-    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8,8,8]));
+    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
+    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
     expect(fileDirectory.ImageLength).to.equal(3);
     expect(fileDirectory.ImageWidth).to.equal(3);
     expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
     expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.PhotometricInterpretation).to.equal(2);
     expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal("[1000]"); //hardcoded at 2000 now rather than calculated
-    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1, 1, 1 ]));
+    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1, 1, 1]));
     expect(fileDirectory.SamplesPerPixel).to.equal(3);
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
-    expect(toArray(fileDirectory.StripByteCounts).toString()).to.equal("27");
+    expect(toArray(fileDirectory.StripByteCounts).toString()).to.equal('27');
   });
 
-  it("should write flattened pixel values", async () => {
+  it('should write flattened pixel values', async () => {
     const originalValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const height = 3;
     const width = 3;
@@ -1052,16 +1061,18 @@ describe('writeTests', () => {
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
-    expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
+    expect(
+      JSON.stringify(newValues.slice(0, -1)),
+    ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
   });
 
-  it("should write pixel values in two dimensions", async () => {
+  it('should write pixel values in two dimensions', async () => {
     const originalValues = [
       [
         [1, 2, 3],
         [4, 5, 6],
-        [7, 8, 9]
-      ]
+        [7, 8, 9],
+      ],
     ];
     const height = 3;
     const width = 3;
@@ -1071,14 +1082,15 @@ describe('writeTests', () => {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
     const image = await newGeoTiff.getImage();
     const newValues = await image.readRasters();
-    const newValuesReshaped = toArray(newValues).map(function(band) {
+    const newValuesReshaped = toArray(newValues).map((band) => {
       return chunk(band, width);
     });
-    expect(JSON.stringify(newValuesReshaped.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
+    expect(
+      JSON.stringify(newValuesReshaped.slice(0, -1)),
+    ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
   });
 
-
-  it("should write metadata correctly", async () => {
+  it('should write metadata correctly', async () => {
     const height = 12;
     const width = 12;
     const originalValues = range(height * width);
@@ -1089,24 +1101,26 @@ describe('writeTests', () => {
     const image = await newGeoTiff.getImage();
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
-    expect(JSON.stringify(newValues.slice(0,-1))).to.equal(JSON.stringify(originalValues.slice(0,-1)));
+    expect(
+      JSON.stringify(newValues.slice(0, -1)),
+    ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
 
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
     expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal("WGS 84\u0000");
+    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
     expect(fileDirectory.ImageLength).to.equal(height);
     expect(fileDirectory.ImageWidth).to.equal(width);
     expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
     expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.PhotometricInterpretation).to.equal(2);
     expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal("[1000]"); //hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
     expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1]));
     expect(fileDirectory.SamplesPerPixel).to.equal(1);
     expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(height));
     expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
-    expect(fileDirectory.GDAL_NODATA).to.equal("0\u0000");
+    expect(fileDirectory.GDAL_NODATA).to.equal('0\u0000');
   });
 });
 

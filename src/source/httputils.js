@@ -1,4 +1,3 @@
-
 const CRLFCRLF = '\r\n\r\n';
 
 /*
@@ -23,10 +22,10 @@ function itemsToObject(items) {
 function parseHeaders(text) {
   const items = text
     .split('\r\n')
-    .map(line => {
-      const kv = line.split(':').map(str => str.trim());
+    .map((line) => {
+      const kv = line.split(':').map((str) => str.trim());
       kv[0] = kv[0].toLowerCase();
-      return kv
+      return kv;
     });
 
   return itemsToObject(items);
@@ -86,7 +85,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
   // TODO: more efficient to check for `--` in bytes directly
   for (let i = 0; i < 10; ++i) {
     const text = decoder.decode(
-      new Uint8Array(responseArrayBuffer, i, startBoundary.length)
+      new Uint8Array(responseArrayBuffer, i, startBoundary.length),
     );
     if (text === startBoundary) {
       offset = i;
@@ -94,7 +93,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
   }
 
   if (offset === null) {
-    throw new Error("Could not find initial boundary");
+    throw new Error('Could not find initial boundary');
   }
 
   while (offset < responseArrayBuffer.byteLength) {

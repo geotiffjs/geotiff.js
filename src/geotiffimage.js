@@ -1,7 +1,5 @@
-/* eslint max-len: ["error", { "code": 120 }] */
-
 import { getFloat16 } from '@petamoriken/float16';
-import getAttribute from "xml-utils/get-attribute";
+import getAttribute from 'xml-utils/get-attribute';
 import findTagsByName from 'xml-utils/find-tags-by-name';
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals';
@@ -113,7 +111,6 @@ function normalizeArray(inBuffer, format, planarConfiguration, samplesPerPixel, 
           } else {
             outArray[outIndex] = (view.getUint32(byteOffset) >> (32 - bitsPerSample) - innerBitOffset) & bitMask;
           }
-
 
           // let outWord = 0;
           // for (let bit = 0; bit < bitsPerSample; ++bit) {
@@ -782,12 +779,12 @@ class GeoTIFFImage {
     let items = findTagsByName(string, 'Item');
 
     if (sample !== null) {
-      items = items.filter((item) => Number(getAttribute(item, "sample")) === sample);
+      items = items.filter((item) => Number(getAttribute(item, 'sample')) === sample);
     }
 
     for (let i = 0; i < items.length; ++i) {
       const item = items[i];
-      metadata[getAttribute(item, "name")] = item.inner;
+      metadata[getAttribute(item, 'name')] = item.inner;
     }
     return metadata;
   }

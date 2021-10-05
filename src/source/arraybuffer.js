@@ -1,7 +1,6 @@
 import { BaseSource } from './basesource';
 import { AbortError } from '../utils';
 
-
 class ArrayBufferSource extends BaseSource {
   constructor(arrayBuffer) {
     super();

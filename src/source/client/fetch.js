@@ -1,6 +1,5 @@
 import { BaseClient, BaseResponse } from './base';
 
-
 class FetchResponse extends BaseResponse {
   /**
    * BaseResponse facade for fetch API Response

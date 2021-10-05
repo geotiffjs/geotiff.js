@@ -232,7 +232,6 @@ export const LercAddCompression = {
   Deflate: 1,
 };
 
-
 export const geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',

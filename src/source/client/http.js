@@ -5,7 +5,6 @@ import urlMod from 'url';
 import { BaseClient, BaseResponse } from './base';
 import { AbortError } from '../../utils';
 
-
 class HttpResponse extends BaseResponse {
   /**
    * BaseResponse facade for node HTTP/HTTPS API Response
@@ -37,6 +36,7 @@ export class HttpClient extends BaseClient {
     this.parsedUrl = urlMod.parse(this.url);
     this.httpApi = (this.parsedUrl.protocol === 'http:' ? http : https);
   }
+
   constructRequest(headers, signal) {
     return new Promise((resolve, reject) => {
       const request = this.httpApi.get(
@@ -45,7 +45,7 @@ export class HttpClient extends BaseClient {
           headers,
         },
         (response) => {
-          const dataPromise = new Promise((resolve) => {
+          const dataPromise = new Promise((resolveData) => {
             const chunks = [];
 
             // collect chunks
@@ -56,7 +56,7 @@ export class HttpClient extends BaseClient {
             // concatenate all chunks and resolve the promise with the resulting buffer
             response.on('end', () => {
               const data = Buffer.concat(chunks).buffer;
-              resolve(data);
+              resolveData(data);
             });
             response.on('error', reject);
           });
@@ -73,6 +73,7 @@ export class HttpClient extends BaseClient {
       }
     });
   }
+
   async request({ headers, signal } = {}) {
     const response = await this.constructRequest(headers, signal);
     return response;

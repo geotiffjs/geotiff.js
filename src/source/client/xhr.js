@@ -1,7 +1,6 @@
 import { BaseClient, BaseResponse } from './base';
 import { AbortError } from '../../utils';
 
-
 class XHRResponse extends BaseResponse {
   /**
    * BaseResponse facade for XMLHttpRequest

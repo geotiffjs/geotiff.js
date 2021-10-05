@@ -94,7 +94,6 @@ _binBE.writeDouble = (buff, p, n) => {
   });
 };
 
-
 const _writeIFD = (bin, data, _offset, ifd) => {
   let offset = _offset;
 
@@ -374,7 +373,6 @@ export function writeGeotiff(data, metadata) {
     metadata.SampleFormat = times(numBands, () => 1);
   }
 
-
   const geoKeys = Object.keys(metadata)
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
@@ -434,7 +432,6 @@ export function writeGeotiff(data, metadata) {
       metadata[name] = toArray(metadata[name]);
     }
   });
-
 
   const encodedMetadata = convertToTids(metadata);
 
