@@ -81,6 +81,6 @@ gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co TILED=YES initial.tiff flo
 gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co INTERLEAVE=BAND initial.tiff float_n_bit_interleave_16.tiff || true
 
 # GDAL_METADATA support
-wget https://github.com/GeoTIFF/test-data/archive/refs/heads/main.zip -O geotiff-test-data.zip
-unzip -j -o geotiff-test-data.zip "test-data-main/files/*" -d .
+wget https://github.com/GeoTIFF/test-data/archive/8ac198032d8b02160049ca161e8108e3d38176f3.zip -O geotiff-test-data.zip
+unzip -j -o geotiff-test-data.zip "test-data-*/files/*" -d .
 rm geotiff-test-data.zip
