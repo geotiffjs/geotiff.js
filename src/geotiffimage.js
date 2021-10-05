@@ -412,16 +412,18 @@ class GeoTIFFImage {
     height, resampleMethod, signal) {
     const tileWidth = this.getTileWidth();
     const tileHeight = this.getTileHeight();
+    const imageWidth = this.getWidth();
+    const imageHeight = this.getHeight();
 
     const minXTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
     const maxXTile = Math.min(
       Math.ceil(imageWindow[2] / tileWidth),
-      Math.ceil(this.getWidth() / this.getTileWidth()),
+      Math.ceil(imageWidth / tileWidth),
     );
     const minYTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
     const maxYTile = Math.min(
       Math.ceil(imageWindow[3] / tileHeight),
-      Math.ceil(this.getHeight() / this.getTileHeight()),
+      Math.ceil(imageHeight / tileHeight),
     );
     const windowWidth = imageWindow[2] - imageWindow[0];
 
@@ -461,8 +463,8 @@ class GeoTIFFImage {
             const lastCol = (tile.x + 1) * tileWidth;
             const reader = sampleReaders[si];
 
-            const ymax = Math.min(blockHeight, blockHeight - (lastLine - imageWindow[3]));
-            const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
+            const ymax = Math.min(blockHeight, blockHeight - (lastLine - imageWindow[3]), imageHeight - firstLine);
+            const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]), imageWidth - firstCol);
 
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
