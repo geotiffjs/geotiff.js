@@ -76,8 +76,7 @@
     "fs": false,
     "http": false,
     "https": false,
-    "url": false,
-    "./src/txml": "./src/browser/txml"
+    "url": false
   },
   "sideEffects": false,
   "contributors": [
