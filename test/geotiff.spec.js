@@ -549,6 +549,53 @@ describe('COG tests', async () => {
     expect(ghostValues).to.be.null;
   });
 });
+
+describe('fillValue', async () => {
+  it('should fill pixels outside the image area (to the left and above)', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const image = await tiff.getImage(0);
+    const data = await image.readRasters({ window: [-1, -1, 0, 0], fillValue: 42 });
+    expect(data).to.have.lengthOf(15);
+    for (const band of data) {
+      expect(band).to.have.lengthOf(1);
+      expect(band).to.deep.equal(new Uint16Array([42]));
+    }
+  });
+
+  it('should fill pixels outside the image area (to the right and below)', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const image = await tiff.getImage(0);
+    const data = await image.readRasters({ window: [512, 512, 513, 513], fillValue: 42 });
+    expect(data).to.have.lengthOf(15);
+    for (const band of data) {
+      expect(band).to.have.lengthOf(1);
+      expect(band).to.deep.equal(new Uint16Array([42]));
+    }
+  });
+
+  it('should fill areas in overview tiles outside the image extent (left)', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const image = await tiff.getImage(1);
+    const data = await image.readRasters({ window: [269, 0, 270, 1], fillValue: 42 });
+    expect(data).to.have.lengthOf(15);
+    for (const band of data) {
+      expect(band).to.have.lengthOf(1);
+      expect(band).to.deep.equal(new Uint16Array([42]));
+    }
+  });
+
+  it('should fill areas in overview tiles outside the image extent (below)', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
+    const image = await tiff.getImage(1);
+    const data = await image.readRasters({ window: [0, 224, 1, 225], fillValue: 42 });
+    expect(data).to.have.lengthOf(15);
+    for (const band of data) {
+      expect(band).to.have.lengthOf(1);
+      expect(band).to.deep.equal(new Uint16Array([42]));
+    }
+  });
+});
+
 describe("64 bit tests", () => {
   it("DataView64 uint64 tests", () => {
     const littleEndianBytes = new Uint8Array([

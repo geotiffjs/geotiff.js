@@ -1,7 +1,10 @@
 name: Node.js CI
 
 on:
-  [ push ]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   ci:
@@ -25,4 +28,4 @@ jobs:
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always()
+      if: ${{ github.event_name != 'pull_request'}}
