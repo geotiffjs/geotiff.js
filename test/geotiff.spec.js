@@ -529,6 +529,73 @@ describe('Geo metadata tests', async () => {
   });
 });
 
+describe("GDAL_METADATA tests", async () => {
+  it('should parse stats for specific sample', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('abetow-ERD2018-EBIRD_SCIENCE-20191109-a5cf4cb2_hr_2018_abundance_median.tiff'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata(10);
+    expect(metadata).to.deep.equal({
+      STATISTICS_MAXIMUM: '7.2544522285461',
+      STATISTICS_MEAN: 'nan',
+      STATISTICS_MINIMUM: '0',
+      STATISTICS_STDDEV: 'nan'
+    });
+  });
+
+  it('should parse stats for single-band GeoTIFF', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('nt_20201024_f18_nrt_s.tif'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      STATISTICS_MAXIMUM: '100',
+      STATISTICS_MEAN: '28.560288669249',
+      STATISTICS_MINIMUM: '0',
+      STATISTICS_STDDEV: '39.349526064368'
+    });
+  });
+
+  it('should parse layer type', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('eu_pasture.tiff'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      LAYER_TYPE: 'athematic'
+    });
+  });
+
+  it('should parse color interpretation', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('utm.tif'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      COLORINTERP: 'Palette'
+    });
+  });
+
+  it('should parse stats for another single-band GeoTIFF', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('vestfold.tif'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      STATISTICS_MAXIMUM: '332.6073328654',
+      STATISTICS_MEAN: '83.638959236148',
+      STATISTICS_MINIMUM: '18.103807449341',
+      STATISTICS_STDDEV: '69.590554367352'
+    });
+  });
+
+  it('should parse creation times', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('wind_direction.tif'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      creationTime: '1497289465',
+      creationTimeString: '2017-06-12T17:44:25.466257Z',
+      name: 'Wind_Dir_SFC'
+    });
+  });
+});
+
 describe('COG tests', async () => {
   it('should parse the header ghost area when present', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));

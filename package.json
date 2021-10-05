@@ -28,7 +28,7 @@
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
     "threads": "^1.7.0",
-    "txml": "^5.0.0"
+    "xml-utils": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
@@ -76,8 +76,7 @@
     "fs": false,
     "http": false,
     "https": false,
-    "url": false,
-    "./src/txml": "./src/browser/txml"
+    "url": false
   },
   "sideEffects": false,
   "contributors": [
