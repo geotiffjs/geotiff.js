@@ -1,25 +1,32 @@
 module.exports = {
-  'extends': 'airbnb',
-  'env': {
-    'mocha': true,
-    'browser': true,
-    'worker': true,
-    'node': true
+  extends: 'airbnb-base',
+  env: {
+    mocha: true,
+    browser: true,
+    worker: true,
+    node: true,
   },
-  'rules': {
+  ignorePatterns: [
+    'test/lib/**/*',
+  ],
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
+  rules: {
     'no-underscore-dangle': 0,
     'class-methods-use-this': 0,
     'no-plusplus': 0,
     'no-loop-func': 0,
     'no-mixed-operators': [
       'error', {
-        'allowSamePrecedence': true
-      }
+        allowSamePrecedence: true,
+      },
     ],
     'no-param-reassign': [
       'error', {
-        'props': false
-      }
+        props: false,
+      },
     ],
     'no-prototype-builtins': 0,
     'no-restricted-syntax': [
@@ -30,6 +37,7 @@ module.exports = {
     'no-console': 0,
     'no-bitwise': 0,
     'max-classes-per-file': 0,
+    'max-len': ['error', { code: 130 }],
     'import/prefer-default-export': 0,
     'prefer-default-export': 0,
     'func-names': 0,
@@ -37,9 +45,9 @@ module.exports = {
     'function-paren-newline': 0,
     'object-curly-newline': 0,
     'no-await-in-loop': 0,
-    'prefer-destructuring': ['error', { 'object': true, 'array': false }],
-    'curly': ['error', 'all'],
-    'brace-style': ['error', '1tbs', { 'allowSingleLine': false }],
-    'no-else-return': 0
-  }
+    'prefer-destructuring': ['error', { object: true, array: false }],
+    curly: ['error', 'all'],
+    'brace-style': ['error', '1tbs', { allowSingleLine: false }],
+    'no-else-return': 0,
+  },
 };

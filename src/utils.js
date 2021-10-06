@@ -118,7 +118,6 @@ export function parseContentRange(headerValue) {
   return null;
 }
 
-
 /*
  * Promisified wrapper around 'setTimeout' to allow 'await'
  */
@@ -131,7 +130,6 @@ export function zip(a, b) {
   const B = Array.isArray(b) ? b : Array.from(b);
   return A.map((k, i) => [k, B[i]]);
 }
-
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 export class AbortError extends Error {

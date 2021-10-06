@@ -6,7 +6,6 @@ import { FetchClient } from './client/fetch';
 import { XHRClient } from './client/xhr';
 import { HttpClient } from './client/http';
 
-
 class RemoteSource extends BaseSource {
   /**
    *
@@ -46,7 +45,7 @@ class RemoteSource extends BaseSource {
     }
 
     // otherwise make a single request for each slice
-    return await Promise.all(
+    return Promise.all(
       slices.map((slice) => this.fetchSlice(slice, signal)),
     );
   }
@@ -151,7 +150,6 @@ class RemoteSource extends BaseSource {
   }
 }
 
-
 function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   if (blockSize === null) {
     return source;
@@ -183,7 +181,6 @@ export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile
  * @param {object} options
  */
 export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
-
   if (typeof fetch === 'function' && !forceXHR) {
     return makeFetchSource(url, clientOptions);
   }

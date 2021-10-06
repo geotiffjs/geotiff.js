@@ -18,7 +18,7 @@ export default class LercDecoder extends BaseDecoder {
       case LercAddCompression.None:
         break;
       case LercAddCompression.Deflate:
-        buffer = inflate(new Uint8Array(buffer)).buffer;
+        buffer = inflate(new Uint8Array(buffer)).buffer; // eslint-disable-line no-param-reassign, prefer-destructuring
         break;
       default:
         throw new Error(`Unsupported LERC additional compression method identifier: ${this.addCompression}`);

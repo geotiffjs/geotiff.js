@@ -164,7 +164,6 @@ class GeoTIFFImageIndexError extends Error {
   }
 }
 
-
 class GeoTIFFBase {
   /**
    * (experimental) Reads raster data from the best fitting image. This function uses
@@ -291,7 +290,6 @@ class GeoTIFFBase {
   }
 }
 
-
 /**
  * The abstraction for a whole GeoTIFF file.
  * @augments GeoTIFFBase
@@ -344,9 +342,9 @@ class GeoTIFF extends GeoTIFFBase {
     const offsetSize = this.bigTiff ? 8 : 2;
 
     let dataSlice = await this.getSlice(offset);
-    const numDirEntries = this.bigTiff ?
-      dataSlice.readUint64(offset) :
-      dataSlice.readUint16(offset);
+    const numDirEntries = this.bigTiff
+      ? dataSlice.readUint64(offset)
+      : dataSlice.readUint16(offset);
 
     // if the slice does not cover the whole IFD, request a bigger slice, where the
     // whole IFD fits: num of entries + n x tag length + offset to next IFD
@@ -362,9 +360,9 @@ class GeoTIFF extends GeoTIFFBase {
     for (let entryCount = 0; entryCount < numDirEntries; i += entrySize, ++entryCount) {
       const fieldTag = dataSlice.readUint16(i);
       const fieldType = dataSlice.readUint16(i + 2);
-      const typeCount = this.bigTiff ?
-        dataSlice.readUint64(i + 4) :
-        dataSlice.readUint32(i + 4);
+      const typeCount = this.bigTiff
+        ? dataSlice.readUint64(i + 4)
+        : dataSlice.readUint32(i + 4);
 
       let fieldValues;
       let value;
@@ -391,8 +389,8 @@ class GeoTIFF extends GeoTIFFBase {
       }
 
       // unpack single values from the array
-      if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1 &&
-        !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+      if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1
+        && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
         value = fieldValues[0];
       } else {
         value = fieldValues;
@@ -511,8 +509,8 @@ class GeoTIFF extends GeoTIFFBase {
       this.ghostValues = {};
       fullString
         .split('\n')
-        .filter(line => line.length > 0)
-        .map(line => line.split('='))
+        .filter((line) => line.length > 0)
+        .map((line) => line.split('='))
         .forEach(([key, value]) => {
           this.ghostValues[key] = value;
         });

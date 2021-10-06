@@ -1,6 +1,5 @@
 import { BaseSource } from './basesource';
 
-
 class FileReaderSource extends BaseSource {
   constructor(file) {
     super();

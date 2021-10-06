@@ -1,28 +1,29 @@
-import { Pool, fromArrayBuffer, fromUrl } from '../src/geotiff';
+/* global plotty:false */
+import { Pool, fromUrl } from '../src/geotiff';
 
 const imageWindow = [0, 0, 500, 500];
 const tiffs = [
-  "stripped.tiff",
-  "tiled.tiff",
-  "interleave.tiff",
-  "tiledplanar.tiff",
-  "float32.tiff",
-  "uint32.tiff",
-  "int32.tiff",
-  "float64.tiff",
-  "lzw.tiff",
-  "tiledplanarlzw.tiff",
-  "float64lzw.tiff",
-  "lzw_predictor.tiff",
-  "deflate.tiff",
-  "deflate_predictor.tiff",
-  "deflate_predictor_tiled.tiff",
-  "lerc.tiff",
-  "lerc_interleave.tiff",
-  "lerc_deflate.tiff",
-  "float32lerc.tiff",
-  "float32lerc_interleave.tiff",
-  "float32lerc_deflate.tiff",
+  'stripped.tiff',
+  'tiled.tiff',
+  'interleave.tiff',
+  'tiledplanar.tiff',
+  'float32.tiff',
+  'uint32.tiff',
+  'int32.tiff',
+  'float64.tiff',
+  'lzw.tiff',
+  'tiledplanarlzw.tiff',
+  'float64lzw.tiff',
+  'lzw_predictor.tiff',
+  'deflate.tiff',
+  'deflate_predictor.tiff',
+  'deflate_predictor_tiled.tiff',
+  'lerc.tiff',
+  'lerc_interleave.tiff',
+  'lerc_deflate.tiff',
+  'float32lerc.tiff',
+  'float32lerc_interleave.tiff',
+  'float32lerc_deflate.tiff',
   // "n_bit_tiled_10.tiff",
   // "n_bit_11.tiff",
   // "n_bit_12.tiff",
@@ -39,23 +40,23 @@ const tiffs = [
 ];
 
 const rgbtiffs = [
-  "stripped.tiff",
-  "rgb.tiff",
-  "BigTIFF.tif",
-  "rgb_paletted.tiff",
-  "cmyk.tif",
-  "ycbcr.tif",
-  "cielab.tif",
-  "5ae862e00b093000130affda.tif",
-  "jpeg.tiff",
-  "jpeg_ycbcr.tiff",
-]
+  'stripped.tiff',
+  'rgb.tiff',
+  'BigTIFF.tif',
+  'rgb_paletted.tiff',
+  'cmyk.tif',
+  'ycbcr.tif',
+  'cielab.tif',
+  '5ae862e00b093000130affda.tif',
+  'jpeg.tiff',
+  'jpeg_ycbcr.tiff',
+];
 
 const pool = new Pool();
 
-const bandsSelect = document.getElementById("bands");
+const bandsSelect = document.getElementById('bands');
 for (let i = 0; i < 15; ++i) {
-  const option = document.createElement("option");
+  const option = document.createElement('option');
   option.value = i;
   option.text = i + 1;
   bandsSelect.appendChild(option);
@@ -69,10 +70,10 @@ async function render(image, sample, canvas, width, height) {
       fillValue: 0,
       pool,
     });
-    const plot = new plotty.plot(canvas, data[0], width, height, [10, 65000], "viridis", false);
+    const plot = new plotty.plot(canvas, data[0], width, height, [10, 65000], 'viridis', false); // eslint-disable-line new-cap
     plot.render();
   } catch (exc) {
-    return;
+    // pass
   }
 }
 
@@ -83,7 +84,7 @@ async function renderRGB(image, canvas, width, height) {
       pool,
     });
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     const imageData = ctx.createImageData(width, height);
     const { data } = imageData;
     let o = 0;
@@ -95,20 +96,18 @@ async function renderRGB(image, canvas, width, height) {
       o += 4;
     }
     ctx.putImageData(imageData, 0, 0);
-
-
   } catch (exc) {
-    return;
+    // pass
   }
 }
 
 tiffs.forEach(async (filename) => {
-  const div = document.createElement("div");
-  div.style.float = "left";
-  const header = document.createElement("p");
+  const div = document.createElement('div');
+  div.style.float = 'left';
+  const header = document.createElement('p');
   header.innerHTML = filename;
 
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.id = filename;
   canvas.width = imageWindow[2] - imageWindow[0];
   canvas.height = imageWindow[3] - imageWindow[1];
@@ -116,9 +115,9 @@ tiffs.forEach(async (filename) => {
   div.appendChild(header);
   div.appendChild(canvas);
 
-  document.getElementById("canvases").appendChild(div);
+  document.getElementById('canvases').appendChild(div);
 
-  const tiff = await fromUrl('http://localhost:8090/data/' + filename, {
+  const tiff = await fromUrl(`http://localhost:8090/data/${filename}`, {
     allowFullFile: true,
     cache: true,
   });
@@ -126,19 +125,18 @@ tiffs.forEach(async (filename) => {
 
   await render(image, 0, canvas, canvas.width, canvas.height);
 
-  bandsSelect.addEventListener("change", function (e) {
-    render(image, parseInt(bandsSelect.options[bandsSelect.selectedIndex].value), canvas, canvas.width, canvas.height);
+  bandsSelect.addEventListener('change', () => {
+    render(image, parseInt(bandsSelect.options[bandsSelect.selectedIndex].value, 10), canvas, canvas.width, canvas.height);
   });
 });
 
-
 rgbtiffs.forEach(async (filename) => {
-  const div = document.createElement("div");
-  div.style.float = "left";
-  const header = document.createElement("p");
+  const div = document.createElement('div');
+  div.style.float = 'left';
+  const header = document.createElement('p');
   header.innerHTML = filename;
 
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.id = filename;
   canvas.width = imageWindow[2] - imageWindow[0];
   canvas.height = imageWindow[3] - imageWindow[1];
@@ -146,9 +144,9 @@ rgbtiffs.forEach(async (filename) => {
   div.appendChild(header);
   div.appendChild(canvas);
 
-  document.getElementById("canvases").appendChild(div);
+  document.getElementById('canvases').appendChild(div);
 
-  const tiff = await fromUrl('http://localhost:8090/data/' + filename, {
+  const tiff = await fromUrl(`http://localhost:8090/data/${filename}`, {
     allowFullFile: true,
     cache: true,
   });
@@ -156,8 +154,6 @@ rgbtiffs.forEach(async (filename) => {
 
   await renderRGB(image, canvas, canvas.width, canvas.height);
 });
-
-
 
 // tiffs.forEach(function (filename) {
 //   const xhr = new XMLHttpRequest();

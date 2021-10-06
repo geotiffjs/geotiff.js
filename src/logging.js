@@ -1,4 +1,3 @@
-
 /**
  * A no-op logger
  */

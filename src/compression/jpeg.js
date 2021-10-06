@@ -23,7 +23,6 @@ import BaseDecoder from './basedecoder';
 //   in PostScript Level 2, Technical Note #5116
 //   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
 
-
 const dctZigZag = new Int32Array([
   0,
   1, 8,
