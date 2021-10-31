@@ -972,7 +972,6 @@ describe('writeTests', () => {
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
-    expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
@@ -1029,7 +1028,6 @@ describe('writeTests', () => {
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
-    expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
