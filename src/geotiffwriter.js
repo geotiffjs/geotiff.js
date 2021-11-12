@@ -123,7 +123,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
 
     let val = ifd[key];
 
-    if (typeof val === 'undefined') {
+    if (val === undefined) {
       throw new Error(`failed to get value for key ${key}`);
     }
 
@@ -290,16 +290,7 @@ const toArray = (input) => {
 const metadataDefaults = [
   ['Compression', 1], // no compression
   ['PlanarConfiguration', 1],
-  ['XPosition', 0],
-  ['YPosition', 0],
-  ['ResolutionUnit', 1], // Code 1 for actual pixel count or 2 for pixels per inch.
-  ['ExtraSamples', 0], // should this be an array??
-  ['GeoAsciiParams', 'WGS 84\u0000'],
-  ['ModelTiepoint', [0, 0, 0, -180, 90, 0]], // raster fits whole globe
-  ['GTModelTypeGeoKey', 2],
-  ['GTRasterTypeGeoKey', 1],
-  ['GeographicTypeGeoKey', 4326],
-  ['GeogCitationGeoKey', 'WGS 84'],
+  ['ExtraSamples', 0],
 ];
 
 export function writeGeotiff(data, metadata) {
@@ -373,9 +364,31 @@ export function writeGeotiff(data, metadata) {
     metadata.SampleFormat = times(numBands, () => 1);
   }
 
+  // if didn't pass in projection information, assume the popular 4326 "geographic projection"
+  if (!metadata.hasOwnProperty('GeographicTypeGeoKey') && !metadata.hasOwnProperty('ProjectedCSTypeGeoKey')) {
+    metadata.GeographicTypeGeoKey = 4326;
+    metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+    metadata.GeogCitationGeoKey = 'WGS 84';
+    metadata.GTModelTypeGeoKey = 2;
+  }
+
   const geoKeys = Object.keys(metadata)
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
+
+  if (!metadata.GeoAsciiParams) {
+    let geoAsciiParams = '';
+    geoKeys.forEach((name) => {
+      const code = Number(name2code[name]);
+      const tagType = fieldTagTypes[code];
+      if (tagType === 'ASCII') {
+        geoAsciiParams += `${metadata[name].toString()}\u0000`;
+      }
+    });
+    if (geoAsciiParams.length > 0) {
+      metadata.GeoAsciiParams = geoAsciiParams;
+    }
+  }
 
   if (!metadata.GeoKeyDirectory) {
     const NumberOfKeys = geoKeys.length;
@@ -421,7 +434,9 @@ export function writeGeotiff(data, metadata) {
     'GTRasterTypeGeoKey',
     'ImageLength', // synonym of ImageHeight
     'ImageWidth',
+    'Orientation',
     'PhotometricInterpretation',
+    'ProjectedCSTypeGeoKey',
     'PlanarConfiguration',
     'ResolutionUnit',
     'SamplesPerPixel',

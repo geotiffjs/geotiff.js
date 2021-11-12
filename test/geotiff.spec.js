@@ -656,7 +656,7 @@ describe('fillValue', async () => {
       expect(band).to.have.lengthOf(1);
       expect(band).to.deep.equal(new Uint16Array([42]));
     }
-  });
+  }).timeout(10000);
 
   it('should fill areas in overview tiles outside the image extent (below)', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
@@ -667,7 +667,7 @@ describe('fillValue', async () => {
       expect(band).to.have.lengthOf(1);
       expect(band).to.deep.equal(new Uint16Array([42]));
     }
-  });
+  }).timeout(10000);
 });
 
 describe('64 bit tests', () => {
@@ -972,7 +972,6 @@ describe('writeTests', () => {
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
-    expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
@@ -1029,7 +1028,6 @@ describe('writeTests', () => {
     const geoKeys = image.getGeoKeys();
     expect(geoKeys).to.be.an('object');
     expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
-    expect(geoKeys.GTRasterTypeGeoKey).to.equal(1);
     expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
