@@ -116,7 +116,7 @@ export class BlockedSource extends BaseSource {
     }
 
     // actually await all pending requests
-    let results = await Promise.allSettled(blockRequests.values());
+    let results = await Promise.allSettled(Array.from(blockRequests.values()));
 
     // perform retries if a block was interrupted by a previous signal
     if (results.some((result) => result.status === 'rejected')) {
