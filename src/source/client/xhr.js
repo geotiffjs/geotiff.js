@@ -1,5 +1,5 @@
-import { BaseClient, BaseResponse } from './base';
-import { AbortError } from '../../utils';
+import { BaseClient, BaseResponse } from './base.js';
+import { AbortError } from '../../utils.js';
 
 class XHRResponse extends BaseResponse {
   /**

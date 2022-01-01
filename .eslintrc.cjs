@@ -49,5 +49,6 @@ module.exports = {
     curly: ['error', 'all'],
     'brace-style': ['error', '1tbs', { allowSingleLine: false }],
     'no-else-return': 0,
+    'import/extensions': ['error', { js: 'always', json: 'always' }],
   },
 };

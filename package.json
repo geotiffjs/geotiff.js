@@ -9,6 +9,7 @@
     "image",
     "raster"
   ],
+  "type": "module",
   "main": "dist-node/geotiff.js",
   "module": "src/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
@@ -64,7 +65,7 @@
     "dev": "parcel serve test/data/** test/index.html src/ --port 8090",
     "dev:clean": "rm -rf dist/ .cache/",
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
-    "lint": "eslint src test *.js",
+    "lint": "eslint src test *.cjs",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
     "pretest": "npm run lint",
