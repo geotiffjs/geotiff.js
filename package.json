@@ -35,7 +35,6 @@
     "@babel/core": "^7.8.7",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.10.2",
-    "@babel/register": "^7.8.6",
     "chai": "^4.2.0",
     "detect-node": "^2.0.4",
     "eslint": "^7.32.0",
@@ -69,7 +68,7 @@
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
     "pretest": "npm run lint",
-    "test": "mocha --full-trace --require @babel/register test/geotiff.spec.js"
+    "test": "mocha --full-trace test/geotiff.spec.js"
   },
   "author": "Fabian Schindler",
   "browser": {

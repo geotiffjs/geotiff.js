@@ -8,7 +8,7 @@ import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 
 import { dirname } from 'path';
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff.js';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../src/geotiff.js';
 import { makeFetchSource } from '../src/source/remote.js';
 import { makeFileSource } from '../src/source/file.js';
 import { BlockedSource } from '../src/source/blockedsource.js';
@@ -256,13 +256,13 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
-  // FIXME: does not work with mocha
-  // it('should work with worker pool', async () => {
-  //   const pool = new Pool()
-  //   const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-  //   const image = await tiff.getImage();
-  //   await image.readRasters({ pool });
-  // });
+  it('should work with worker pool', async () => {
+    const pool = new Pool();
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    await image.readRasters({ pool });
+    pool.destroy();
+  });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
