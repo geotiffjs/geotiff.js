@@ -1,6 +1,7 @@
-import { Pool as tPool, spawn, Worker, Transfer } from 'threads';
+import { getDecoder } from './compression';
+import { create as createWorker } from './worker/decoder';
 
-const defaultPoolSize = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : null;
+const defaultPoolSize = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 2) : 2;
 
 /**
  * @module pool
@@ -15,12 +16,17 @@ class Pool {
    * @param {Number} size The size of the pool. Defaults to the number of CPUs
    *                      available. When this parameter is `null` or 0, then the
    *                      decoding will be done in the main thread.
-   * @param {Worker} worker The decoder worker, loaded and initialised. Enables
-   *                        loading the worker using worker-loader(or others) externally
-   *                        when using this library as a webpack dependency.
    */
-  constructor(size = defaultPoolSize, worker = new Worker('./decoder.worker.js')) {
-    this.pool = tPool(() => spawn(worker), size);
+  constructor(size = defaultPoolSize) {
+    this.workers = null;
+    this.size = size;
+    this.messageId = 0;
+    if (size) {
+      this.workers = [];
+      for (let i = 0; i < size; i++) {
+        this.workers.push({ worker: createWorker(), idle: true });
+      }
+    }
   }
 
   /**
@@ -28,21 +34,33 @@ class Pool {
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
    * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
    */
-  async decode(fileDirectory, buffer) {
-    return new Promise((resolve, reject) => {
-      this.pool.queue(async (decode) => {
-        try {
-          const data = await decode(fileDirectory, Transfer(buffer));
-          resolve(data);
-        } catch (err) {
-          reject(err);
-        }
+  decode(fileDirectory, buffer) {
+    return this.size === 0
+      ? getDecoder(fileDirectory).then((decoder) => decoder.decode(fileDirectory, buffer))
+      : new Promise((resolve) => {
+        const worker = this.workers.find((candidate) => candidate.idle)
+          || this.workers[Math.floor(Math.random() * this.size)];
+        worker.idle = false;
+        const id = this.messageId++;
+        const onMessage = (e) => {
+          if (e.data.id === id) {
+            worker.idle = true;
+            resolve(e.data.decoded);
+            worker.worker.removeEventListener('message', onMessage);
+          }
+        };
+        worker.worker.addEventListener('message', onMessage);
+        worker.worker.postMessage({ fileDirectory, buffer, id }, [buffer]);
       });
-    });
   }
 
   destroy() {
-    this.pool.terminate(true);
+    if (this.workers) {
+      this.workers.forEach((worker) => {
+        worker.worker.terminate();
+      });
+      this.workers = null;
+    }
   }
 }
 

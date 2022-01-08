@@ -8,13 +8,13 @@ import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff.js';
-import { makeFetchSource } from '../src/source/remote.js';
-import { makeFileSource } from '../src/source/file.js';
-import { BlockedSource } from '../src/source/blockedsource.js';
-import { chunk, toArray, toArrayRecursively, range } from '../src/utils.js';
-import DataSlice from '../src/dataslice.js';
-import DataView64 from '../src/dataview64.js';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff';
+import { makeFetchSource } from '../dist-module/source/remote';
+import { makeFileSource } from '../dist-module/source/file';
+import { BlockedSource } from '../dist-module/source/blockedsource';
+import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils';
+import DataSlice from '../dist-module/dataslice';
+import DataView64 from '../dist-module/dataview64';
 
 const __dirname = dirname(new URL(import.meta.url).pathname);
 
@@ -255,13 +255,13 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
-  // FIXME: does not work with mocha
-  // it('should work with worker pool', async () => {
-  //   const pool = new Pool()
-  //   const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-  //   const image = await tiff.getImage();
-  //   await image.readRasters({ pool });
-  // });
+  it('should work with worker pool', async () => {
+    const pool = new Pool();
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    await image.readRasters({ pool });
+    pool.destroy();
+  });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));

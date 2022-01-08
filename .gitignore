@@ -3,5 +3,6 @@ node_modules
 dist
 dist-node
 dist-browser
+dist-module
 docs
 .DS_Store
