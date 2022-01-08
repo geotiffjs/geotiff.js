@@ -1,6 +1,6 @@
 /* global globalThis */
 /* eslint-disable import/no-mutable-exports */
-import { getDecoder } from '../compression';
+import { getDecoder } from '../compression/index.js';
 
 const worker = globalThis;
 

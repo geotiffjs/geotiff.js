@@ -8,13 +8,13 @@ import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff';
-import { makeFetchSource } from '../dist-module/source/remote';
-import { makeFileSource } from '../dist-module/source/file';
-import { BlockedSource } from '../dist-module/source/blockedsource';
-import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils';
-import DataSlice from '../dist-module/dataslice';
-import DataView64 from '../dist-module/dataview64';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
+import { makeFetchSource } from '../dist-module/source/remote.js';
+import { makeFileSource } from '../dist-module/source/file.js';
+import { BlockedSource } from '../dist-module/source/blockedsource.js';
+import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.js';
+import DataSlice from '../dist-module/dataslice.js';
+import DataView64 from '../dist-module/dataview64.js';
 
 const __dirname = dirname(new URL(import.meta.url).pathname);
 

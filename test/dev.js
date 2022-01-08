@@ -1,5 +1,5 @@
 /* global plotty:false */
-import { Pool, fromUrl } from '../dist-module/geotiff';
+import { Pool, fromUrl } from '../dist-module/geotiff.js';
 
 const imageWindow = [0, 0, 500, 500];
 const tiffs = [
