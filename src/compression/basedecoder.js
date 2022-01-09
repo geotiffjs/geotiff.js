@@ -1,4 +1,4 @@
-import { applyPredictor } from '../predictor';
+import { applyPredictor } from '../predictor.js';
 
 export default class BaseDecoder {
   async decode(fileDirectory, buffer) {

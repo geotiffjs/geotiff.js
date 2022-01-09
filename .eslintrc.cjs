@@ -39,6 +39,7 @@ module.exports = {
     'max-classes-per-file': 0,
     'max-len': ['error', { code: 130 }],
     'import/prefer-default-export': 0,
+    'import/extensions': ['error', 'always'],
     'prefer-default-export': 0,
     'func-names': 0,
     'arrow-body-style': 0,
