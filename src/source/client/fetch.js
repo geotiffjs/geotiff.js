@@ -1,4 +1,4 @@
-import { BaseClient, BaseResponse } from './base';
+import { BaseClient, BaseResponse } from './base.js';
 
 class FetchResponse extends BaseResponse {
   /**

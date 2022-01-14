@@ -1,4 +1,4 @@
-import BaseDecoder from './basedecoder';
+import BaseDecoder from './basedecoder.js';
 
 export default class PackbitsDecoder extends BaseDecoder {
   decodeBlock(buffer) {

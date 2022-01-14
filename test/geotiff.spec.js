@@ -6,14 +6,17 @@ import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
+import { dirname } from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff';
-import { makeFetchSource } from '../src/source/remote';
-import { makeFileSource } from '../src/source/file';
-import { BlockedSource } from '../src/source/blockedsource';
-import { chunk, toArray, toArrayRecursively, range } from '../src/utils';
-import DataSlice from '../src/dataslice';
-import DataView64 from '../src/dataview64';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff.js';
+import { makeFetchSource } from '../src/source/remote.js';
+import { makeFileSource } from '../src/source/file.js';
+import { BlockedSource } from '../src/source/blockedsource.js';
+import { chunk, toArray, toArrayRecursively, range } from '../src/utils.js';
+import DataSlice from '../src/dataslice.js';
+import DataView64 from '../src/dataview64.js';
+
+const __dirname = dirname(new URL(import.meta.url).pathname);
 
 // Set up a node server to make tiffs available at localhost:3000/test/data
 let server = null;

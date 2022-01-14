@@ -1,5 +1,5 @@
 import { inflate } from 'pako';
-import BaseDecoder from './basedecoder';
+import BaseDecoder from './basedecoder.js';
 
 export default class DeflateDecoder extends BaseDecoder {
   decodeBlock(buffer) {
