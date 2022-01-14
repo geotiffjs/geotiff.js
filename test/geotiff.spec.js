@@ -8,28 +8,31 @@ import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls } from '../src/geotiff.js';
-import { makeFetchSource } from '../src/source/remote.js';
-import { makeFileSource } from '../src/source/file.js';
-import { BlockedSource } from '../src/source/blockedsource.js';
-import { chunk, toArray, toArrayRecursively, range } from '../src/utils.js';
-import DataSlice from '../src/dataslice.js';
-import DataView64 from '../src/dataview64.js';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
+import { makeFetchSource } from '../dist-module/source/remote.js';
+import { makeFileSource } from '../dist-module/source/file.js';
+import { BlockedSource } from '../dist-module/source/blockedsource.js';
+import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.js';
+import DataSlice from '../dist-module/dataslice.js';
+import DataView64 from '../dist-module/dataview64.js';
 
 const __dirname = dirname(new URL(import.meta.url).pathname);
 
-// Set up a node server to make tiffs available at localhost:3000/test/data
+// Set up a node server to make tiffs available at localhost:3000/test/data, and a worker pool
 let server = null;
+let pool = null;
 before(async () => {
   const serve = serveStatic(__dirname);
   server = http.createServer((req, res) => {
     serve(req, res, finalhandler(req, res));
   });
   server.listen(3000);
+  pool = new Pool();
 });
 
 after(async () => {
   server.close();
+  pool.destroy();
 });
 
 function createSource(filename) {
@@ -255,13 +258,13 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 
-  // FIXME: does not work with mocha
-  // it('should work with worker pool', async () => {
-  //   const pool = new Pool()
-  //   const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-  //   const image = await tiff.getImage();
-  //   await image.readRasters({ pool });
-  // });
+  it('should work with worker pool', async () => {
+    const testPool = new Pool();
+    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+    const image = await tiff.getImage();
+    await image.readRasters({ pool: testPool });
+    testPool.destroy();
+  });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
@@ -650,10 +653,10 @@ describe('fillValue', async () => {
     }
   });
 
-  it('should fill areas in overview tiles outside the image extent (left)', async () => {
+  it('should fill areas in overview tiles outside the image extent (left, with worker pool)', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
     const image = await tiff.getImage(1);
-    const data = await image.readRasters({ window: [269, 0, 270, 1], fillValue: 42 });
+    const data = await image.readRasters({ window: [269, 0, 270, 1], fillValue: 42, pool });
     expect(data).to.have.lengthOf(15);
     for (const band of data) {
       expect(band).to.have.lengthOf(1);
@@ -661,10 +664,10 @@ describe('fillValue', async () => {
     }
   }).timeout(10000);
 
-  it('should fill areas in overview tiles outside the image extent (below)', async () => {
+  it('should fill areas in overview tiles outside the image extent (below, with worker pool)', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('cog.tiff'));
     const image = await tiff.getImage(1);
-    const data = await image.readRasters({ window: [0, 224, 1, 225], fillValue: 42 });
+    const data = await image.readRasters({ window: [0, 224, 1, 225], fillValue: 42, pool });
     expect(data).to.have.lengthOf(15);
     for (const band of data) {
       expect(band).to.have.lengthOf(1);

@@ -296,28 +296,6 @@ const data = await image.readRasters({ pool });
 It is possible to provide a pool size (i.e: number of workers), by default the number
 of available processors is used.
 
-Because of the way WebWorker work (pun intended), there is a considerable overhead
-involved when using the `Pool`, as all the data must be copied and cannot be simply be
-shared. But the benefits are two-fold. First: for larger image reads the overall time
-is still likely to be reduced and second: the main thread is relieved which helps to
-uphold responsiveness.
-
-If you want to use the Worker Pool in a project built with webpack (ex: VueJS or React) you have to install `threads-plugin` and add the plugin to your `webpack.config.js`:
-```
-npm install -D threads-plugin
-```
-
-```javascript
-const ThreadsPlugin = require('threads-plugin')
-
-module.exports = {
-  // ...
-  plugins: [
-    new ThreadsPlugin()
-  ]
-}
-````
-
 ### Dealing with visual data
 
 The TIFF specification provides various ways to encode visual data. In the

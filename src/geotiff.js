@@ -451,7 +451,7 @@ class GeoTIFF extends GeoTIFFBase {
    * Get the n-th internal subfile of an image. By default, the first is returned.
    *
    * @param {Number} [index=0] the index of the image to return.
-   * @returns {GeoTIFFImage} the image at the given index
+   * @returns {Promise<GeoTIFFImage>} the image at the given index
    */
   async getImage(index = 0) {
     const ifd = await this.requestIFD(index);
