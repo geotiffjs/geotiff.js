@@ -116,6 +116,9 @@ export const fieldTagNames = {
   0x87AF: 'GeoKeyDirectory',
   0x87B0: 'GeoDoubleParams',
   0x87B1: 'GeoAsciiParams',
+
+  // LERC
+  0xC5F2: 'LercParameters',
 };
 
 export const fieldTags = {};
@@ -142,6 +145,7 @@ export const fieldTagTypes = {
   286: 'SHORT',
   287: 'RATIONAL',
   296: 'SHORT',
+  297: 'SHORT',
   305: 'ASCII',
   306: 'ASCII',
   338: 'SHORT',
@@ -152,6 +156,8 @@ export const fieldTagTypes = {
   1025: 'SHORT',
   2048: 'SHORT',
   2049: 'ASCII',
+  3072: 'SHORT',
+  3073: 'ASCII',
   33550: 'DOUBLE',
   33922: 'DOUBLE',
   34665: 'LONG',
@@ -169,6 +175,7 @@ export const arrayFields = [
   fieldTags.StripRowCounts,
   fieldTags.TileByteCounts,
   fieldTags.TileOffsets,
+  fieldTags.SubIFDs,
 ];
 
 export const fieldTypeNames = {
@@ -218,6 +225,15 @@ export const ExtraSamplesValues = {
   Unassalpha: 2,
 };
 
+export const LercParameters = {
+  Version: 0,
+  AddCompression: 1,
+};
+
+export const LercAddCompression = {
+  None: 0,
+  Deflate: 1,
+};
 
 export const geoKeyNames = {
   1024: 'GTModelTypeGeoKey',

@@ -1,4 +1,3 @@
-
 function decodeRowAcc(row, stride) {
   let length = row.length - stride;
   let offset = 0;

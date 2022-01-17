@@ -1,9 +1,9 @@
-/* eslint-disable global-require */
+/* eslint-disable global-require, no-unused-expressions */
 import isNode from 'detect-node';
 import 'isomorphic-fetch';
 import { expect } from 'chai';
 
-import { makeFetchSource } from '../src/geotiff';
+import { makeFetchSource } from '../src/source/remote.js';
 
 const port = 9999;
 let server = null;

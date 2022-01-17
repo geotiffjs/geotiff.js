@@ -1,4 +1,4 @@
-import BaseDecoder from './basedecoder';
+import BaseDecoder from './basedecoder.js';
 
 /* -*- tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
@@ -22,7 +22,6 @@ import BaseDecoder from './basedecoder';
 // - The Adobe Application-Specific JPEG markers in the Supporting the DCT Filters
 //   in PostScript Level 2, Technical Note #5116
 //   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
-
 
 const dctZigZag = new Int32Array([
   0,

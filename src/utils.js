@@ -117,3 +117,42 @@ export function parseContentRange(headerValue) {
 
   return null;
 }
+
+/*
+ * Promisified wrapper around 'setTimeout' to allow 'await'
+ */
+export async function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+export function zip(a, b) {
+  const A = Array.isArray(a) ? a : Array.from(a);
+  const B = Array.isArray(b) ? b : Array.from(b);
+  return A.map((k, i) => [k, B[i]]);
+}
+
+// Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
+export class AbortError extends Error {
+  constructor(params) {
+    // Pass remaining arguments (including vendor specific ones) to parent constructor
+    super(params);
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AbortError);
+    }
+
+    this.name = 'AbortError';
+  }
+}
+
+export class CustomAggregateError extends Error {
+  constructor(errors, message) {
+    super(message);
+    this.errors = errors;
+    this.message = message;
+    this.name = 'AggregateError';
+  }
+}
+
+export const AggregateError = CustomAggregateError;

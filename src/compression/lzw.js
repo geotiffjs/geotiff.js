@@ -1,5 +1,4 @@
-import BaseDecoder from './basedecoder';
-
+import BaseDecoder from './basedecoder.js';
 
 const MIN_BITS = 9;
 const CLEAR_CODE = 256; // clear code

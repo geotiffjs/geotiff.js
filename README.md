@@ -1,5 +1,5 @@
 # geotiff.js
-[![Build Status](https://travis-ci.org/geotiffjs/geotiff.js.svg)](https://travis-ci.org/geotiffjs/geotiff.js) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
+[![Node.js CI](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml) [![npm version](https://badge.fury.io/js/geotiff.svg)](https://badge.fury.io/js/geotiff) [![Gitter chat](https://badges.gitter.im/geotiffjs/geotiff.js.png)](https://gitter.im/geotiffjs/Lobby)
 
 Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.
@@ -21,13 +21,15 @@ Currently available functionality:
     * pixel interleaved images
   * Supported data-types:
     * (U)Int8/16/32
-    * Float32/64
+    * UInt1-31 (with some drawbacks)
+    * Float16/32/64
   * Enabled compressions:
     * no compression
     * Packbits
     * LZW
     * Deflate (with floating point or horizontal predictor support)
     * JPEG
+    * LERC (with additional Deflate compression support)
   * Automatic selection of overview level to read from
   * Subsetting via an image window or bounding box and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
@@ -47,7 +49,7 @@ Further documentation can be found [here](https://geotiffjs.github.io/geotiff.js
 
 * [Contour generation using d3-contour](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
-[![contour](https://pbs.twimg.com/card_img/850410549196271616/ZKcdfREH?format=jpg&name=600x314)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+[![contour](https://user-images.githubusercontent.com/482265/112866402-0b219880-90ba-11eb-9dda-5f1d9ed9bafc.jpg)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
 ## Setup
 
@@ -129,8 +131,10 @@ geotiff.js works with both `require`, `import` and the global variable `GeoTIFF`
 
 ```javascript
 const GeoTIFF = require('geotiff');
+const { fromUrl, fromUrls, fromArrayBuffer, fromBlob } = GeoTIFF;
+
 // or
-import GeoTIFF from 'geotiff';
+import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
 ```
 
 or:
@@ -148,12 +152,12 @@ there are shortcuts available. The following creates a source that reads from a
 remote GeoTIFF referenced by a URL:
 
 ```javascript
-GeoTIFF.fromUrl(someUrl)
+fromUrl(someUrl)
   .then(tiff => { /* ... */});
 
 // or when using async/await
 (async function() {
-  const tiff = await GeoTIFF.fromUrl(someUrl);
+  const tiff = await fromUrl(someUrl);
   // ...
 })()
 ```
@@ -169,7 +173,7 @@ options are reading from a local `ArrayBuffer`:
 // using local ArrayBuffer
 const response = await fetch(someUrl);
 const arrayBuffer = await response.arrayBuffer();
-const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+const tiff = await fromArrayBuffer(arrayBuffer);
 ```
 
 or a `Blob`/`File`:
@@ -179,7 +183,7 @@ or a `Blob`/`File`:
 <script>
   const input = document.getElementById('file'):
   input.onchange = async function() {
-    const tiff = await GeoTIFF.fromBlob(input.files[0]);
+    const tiff = await fromBlob(input.files[0]);
   }
 </script>
 ```
@@ -292,28 +296,6 @@ const data = await image.readRasters({ pool });
 It is possible to provide a pool size (i.e: number of workers), by default the number
 of available processors is used.
 
-Because of the way WebWorker work (pun intended), there is a considerable overhead
-involved when using the `Pool`, as all the data must be copied and cannot be simply be
-shared. But the benefits are two-fold. First: for larger image reads the overall time
-is still likely to be reduced and second: the main thread is relieved which helps to
-uphold responsiveness.
-
-If you want to use the Worker Pool in a project built with webpack (ex: VueJS or React) you have to install `threads-plugin` and add the plugin to your `webpack.config.js`:
-```
-npm install -D threads-plugin
-```
-
-```javascript
-const ThreadsPlugin = require('threads-plugin')
-
-module.exports = {
-  // ...
-  plugins: [
-    new ThreadsPlugin()
-  ]
-}
-````
-
 ### Dealing with visual data
 
 The TIFF specification provides various ways to encode visual data. In the
@@ -363,18 +345,36 @@ images by index or read data using `readRasters`. Toget such a file use the `fro
 factory function:
 
 ```javascript
-const multiTiff = await GeoTIFF.fromUrls(
+const multiTiff = await fromUrls(
   'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
   ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
 );
 ```
 
+### AbortController Support
+
+Geotiff.js supports the use of [`AbortController`s](https://developer.mozilla.org/en-US/docs/Web/API/AbortController). Calls to `getRasters`, `readRGB` and `getTileOrStrip` will throw an `Error` with name `AbortSignal` similar to the browser's `fetch` behavior.
+
+```javascript
+const abortController = new AbortController();
+const { signal } = abortController;
+abortController.abort();
+try {
+  const data = await tiff.readRasters({ signal });
+} catch(e) {
+  if (err.name === 'AbortError') {
+    // do stuff
+  }
+}
+```
+
 ### Writing GeoTIFFs (Beta Version)
+
 You can create a binary representation of a GeoTIFF using `writeArrayBuffer`.
 This function returns an ArrayBuffer which you can then save as a .tif file.
 :warning: writeArrayBuffer currently writes the values uncompressed
 ```javascript
-import { writeArrayBuffer } from 'geotiff';
+import GeoTIFF, { writeArrayBuffer } from 'geotiff';
 
 const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const metadata = {
@@ -410,7 +410,7 @@ on the fly rendering of the data contained in a GeoTIFF.
   // ...
 
   (async function() {
-    const tiff = await GeoTIFF.fromUrl(url);
+    const tiff = await fromUrl(url);
     const image = await tiff.getImage();
     const data = await image.readRasters();
 
@@ -428,6 +428,8 @@ on the fly rendering of the data contained in a GeoTIFF.
 </script>
 ```
 
+There's also a library called [geotiff-geokeys-to-proj4](https://github.com/matafokka/geotiff-geokeys-to-proj4), that allows for reprojecting pixel coordinates and, therefore, consuming geospatial data contained in GeoTIFF.
+
 ## BigTIFF support
 
 geotiff.js has a limited support for files in the BigTIFF format. The limitations
@@ -444,11 +446,21 @@ a reasonable support, the following is implemented:
     cause problems for some compression algorithms if those arrays are used for
     pixel values.
 
+## n-bit Support
+
+geotiff.js has some n-bit support which means that it supports unsigned integer
+data reading with each element using a non-multiple of 8 bit depth. This only
+works with band interleaved images (see
+[this related issue](https://github.com/geotiffjs/geotiff.js/issues/202)).
+
 ## Planned stuff:
 
   * Better support of geospatial parameters:
-    * Parsing of EPSG identifiers
     * WKT representation
+
+## Known Issues
+
+The open issues can be found on [GitHub](https://github.com/geotiffjs/geotiff.js/issues).
 
 ## Contribution
 
@@ -458,6 +470,7 @@ look into it ASAP.
 Pull requests are welcome as well!
 
 ## Community Packages
+
 A list of community packages can be found in [COMMUNITY.md](COMMUNITY.md)
 
 ## Acknowledgements
