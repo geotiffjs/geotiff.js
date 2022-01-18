@@ -1,3 +1,4 @@
+/** @module geotiffimage */
 import { getFloat16 } from '@petamoriken/float16';
 import getAttribute from 'xml-utils/get-attribute.js';
 import findTagsByName from 'xml-utils/find-tags-by-name.js';
@@ -6,6 +7,29 @@ import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
 import { getDecoder } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
+
+/**
+ * @typedef {Object} ReadRasterOptions
+ * @property {Array<number>} [window=whole window] the subset to read data from in pixels.
+ * @property {Array<number>} [bbox=whole image] the subset to read data from in
+ *                                           geographical coordinates.
+ * @property {Array<number>} [samples=all samples] the selection of samples to read from. Default is all samples.
+ * @property {boolean} [interleave=false] whether the data shall be read
+ *                                             in one single array or separate
+ *                                             arrays.
+ * @property {Pool} [pool=null] The optional decoder pool to use.
+ * @property {number} [width] The desired width of the output. When the width is not the
+ *                                 same as the images, resampling will be performed.
+ * @property {number} [height] The desired height of the output. When the width is not the
+ *                                  same as the images, resampling will be performed.
+ * @property {string} [resampleMethod='nearest'] The desired resampling method.
+ * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                                       to be aborted
+ * @property {number|number[]} [fillValue] The value to use for parts of the image
+ *                                              outside of the images extent. When multiple
+ *                                              samples are requested, an array of fill values
+ *                                              can be passed.
+ */
 
 function sum(array, start, end) {
   let s = 0;
@@ -330,7 +354,7 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise.<ArrayBuffer>}
@@ -398,7 +422,7 @@ class GeoTIFFImage {
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into
    * @param {Boolean} interleave Whether or not to write in an interleaved manner
-   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @param {number} width the width of window to be read into
    * @param {number} height the height of window to be read into
    * @param {number} resampleMethod the resampling method to be used when interpolating
@@ -528,26 +552,7 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {Object} [options={}] optional parameters
-   * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Array} [options.samples=all samples] the selection of samples to read from.
-   * @param {Boolean} [options.interleave=false] whether the data shall be read
-   *                                             in one single array or separate
-   *                                             arrays.
-   * @param {Number} [options.pool=null] The optional decoder pool to use.
-   * @param {number} [options.width] The desired width of the output. When the width is
-   *                                 not the same as the images, resampling will be
-   *                                 performed.
-   * @param {number} [options.height] The desired height of the output. When the width
-   *                                  is not the same as the images, resampling will
-   *                                  be performed.
-   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [options.fillValue] The value to use for parts of the image
-   *                                              outside of the images extent. When
-   *                                              multiple samples are requested, an
-   *                                              array of fill values can be passed.
-   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
-   *                                       to be aborted
+   * @param {ReadRasterOptions} [options={}] optional parameters
    * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
@@ -616,20 +621,20 @@ class GeoTIFFImage {
    * When provided, only a subset of the raster is read for each sample.
    *
    * @param {Object} [options] optional parameters
-   * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Boolean} [options.interleave=true] whether the data shall be read
+   * @param {Array<number>} [options.window] the subset to read data from in pixels.
+   * @param {boolean} [options.interleave=true] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {import("./geotiff").Pool} [options.pool=null] The optional decoder pool to use.
    * @param {number} [options.width] The desired width of the output. When the width is no the
    *                                 same as the images, resampling will be performed.
    * @param {number} [options.height] The desired height of the output. When the width is no the
    *                                  same as the images, resampling will be performed.
    * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {bool} [options.enableAlpha=false] Enable reading alpha channel if present.
+   * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
    * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
    *                                       to be aborted
-   * @returns {Promise.<TypedArray|TypedArray[]>} the RGB array as a Promise
+   * @returns {Promise.<import("./geotiff").TypedArray|import("./geotiff").TypedArray[]>} the RGB array as a Promise
    */
   async readRGB({ window, interleave = true, pool = null, width, height,
     resampleMethod, enableAlpha = false, signal } = {}) {
@@ -766,7 +771,7 @@ class GeoTIFFImage {
    * If sample is passed to null, dataset-level metadata will be returned.
    * Otherwise only metadata specific to the provided sample will be returned.
    *
-   * @param {Number} [sample=null] The sample index.
+   * @param {number} [sample=null] The sample index.
    * @returns {Object}
    */
   getGDALMetadata(sample = null) {
@@ -791,7 +796,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the GDAL nodata value
-   * @returns {Number} or null
+   * @returns {number|null}
    */
   getGDALNoData() {
     if (!this.fileDirectory.GDAL_NODATA) {
@@ -804,7 +809,7 @@ class GeoTIFFImage {
   /**
    * Returns the image origin as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
-   * @returns {Array} The origin as a vector
+   * @returns {Array<number>} The origin as a vector
    */
   getOrigin() {
     const tiePoints = this.fileDirectory.ModelTiepoint;
@@ -832,7 +837,7 @@ class GeoTIFFImage {
    * @param {GeoTIFFImage} [referenceImage=null] A reference image to calculate the resolution from
    *                                             in cases when the current image does not have the
    *                                             required tags on its own.
-   * @returns {Array} The resolution as a vector
+   * @returns {Array<number>} The resolution as a vector
    */
   getResolution(referenceImage = null) {
     const modelPixelScale = this.fileDirectory.ModelPixelScale;
@@ -877,7 +882,7 @@ class GeoTIFFImage {
    * Returns the image bounding box as an array of 4 values: min-x, min-y,
    * max-x and max-y. When the image has no affine transformation, then an
    * exception is thrown.
-   * @returns {Array} The bounding box
+   * @returns {Array<number>} The bounding box
    */
   getBoundingBox() {
     const origin = this.getOrigin();

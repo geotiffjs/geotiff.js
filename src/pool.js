@@ -23,7 +23,7 @@ class Pool {
    * A worker that uses a custom lzw decoder would look like this `my-custom-worker.js` file:
    * ```js
    * import { addDecoder, getDecoder } from 'geotiff';
-   * addDecoder(5, () => import('./my-custom-lzw').then(m => m.default));
+   * addDecoder(5, () => import ('./my-custom-lzw').then((m) => m.default));
    * self.addEventListener('message', async (e) => {
    *   const { id, fileDirectory, buffer } = e.data;
    *   const decoder = await getDecoder(fileDirectory);

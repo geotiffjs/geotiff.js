@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "lib": ["ES2020"],
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "emitDeclarationOnly": true,
+    "importHelpers": false,
+    "strict": false,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "inlineSources": false,
+    "downlevelIteration": true
+  },
+  "include": [
+    "./src/**/*.js"
+  ]
+}
