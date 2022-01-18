@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: RemoteSource</title>
+    <title>JSDoc: Class: GeoTIFFBase</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: RemoteSource</h1>
+    <h1 class="page-title">Class: GeoTIFFBase</h1>
 
     
 
@@ -28,7 +28,8 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>RemoteSource<span class="signature">(client, headers, maxRanges, allowFullFile)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="module-geotiff.html">geotiff</a>~</span>GeoTIFFBase<span class="signature">()</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -41,7 +42,7 @@
     
 
     
-    <h4 class="name" id="RemoteSource"><span class="type-signature"></span>new RemoteSource<span class="signature">(client, headers, maxRanges, allowFullFile)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="GeoTIFFBase"><span class="type-signature"></span>new GeoTIFFBase<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -54,124 +55,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>client</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="BaseClient.html">BaseClient</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>maxRanges</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">numbers</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>allowFullFile</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -207,7 +90,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source_remote.js.html">source/remote.js</a>, <a href="source_remote.js.html#line9">line 9</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line173">line 173</a>
     </li></ul></dd>
     
 
@@ -241,17 +124,6 @@
     </div>
 
     
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li>module:source/basesource.BaseSource</li>
-    </ul>
-
-
-    
 
     
 
@@ -274,12 +146,22 @@
     
 
     
-    <h4 class="name" id="fetch"><span class="type-signature">(async) </span>fetch<span class="signature">(slices)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;<a href="module-geotiff.html#~TypedArray">module:geotiff~TypedArray</a>>)>}</span></h4>
     
 
     
 
 
+
+<div class="description">
+    <p>(experimental) Reads raster data from the best fitting image. This function uses
+the image with the lowest resolution that is still a higher resolution than the
+requested resolution.
+When specified, the <code>bbox</code> option is translated to the <code>window</code> option and the
+<code>resX</code> and <code>resY</code> to <code>width</code> and <code>height</code> respectively.
+Then, the readRasters method of the selected
+image is called and the result returned.</p>
+</div>
 
 
 
@@ -302,7 +184,11 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -314,23 +200,39 @@
 
         <tr>
             
-                <td class="name"><code>slices</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;<a href="global.html#Slice">Slice</a>></span>
+<span class="param-type"><a href="module-geotiffimage.html#~ReadRasterOptions">module:geotiffimage~ReadRasterOptions</a></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"></td>
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>optional parameters</p></td>
         </tr>
 
     
@@ -371,12 +273,19 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="source_remote.js.html">source/remote.js</a>, <a href="source_remote.js.html#line30">line 30</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>GeoTIFFImage.readRasters</li>
+        </ul>
+    </dd>
     
 
     
@@ -396,6 +305,28 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the decoded arrays as a promise</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;<a href="module-geotiff.html#~TypedArray">module:geotiff~TypedArray</a>>)></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 

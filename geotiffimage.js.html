@@ -26,7 +26,8 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { getFloat16 } from '@petamoriken/float16';
+            <pre class="prettyprint source linenums"><code>/** @module geotiffimage */
+import { getFloat16 } from '@petamoriken/float16';
 import getAttribute from 'xml-utils/get-attribute.js';
 import findTagsByName from 'xml-utils/find-tags-by-name.js';
 
@@ -34,6 +35,29 @@ import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
 import { getDecoder } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
+
+/**
+ * @typedef {Object} ReadRasterOptions
+ * @property {Array&lt;number>} [window=whole window] the subset to read data from in pixels.
+ * @property {Array&lt;number>} [bbox=whole image] the subset to read data from in
+ *                                           geographical coordinates.
+ * @property {Array&lt;number>} [samples=all samples] the selection of samples to read from. Default is all samples.
+ * @property {boolean} [interleave=false] whether the data shall be read
+ *                                             in one single array or separate
+ *                                             arrays.
+ * @property {Pool} [pool=null] The optional decoder pool to use.
+ * @property {number} [width] The desired width of the output. When the width is not the
+ *                                 same as the images, resampling will be performed.
+ * @property {number} [height] The desired height of the output. When the width is not the
+ *                                  same as the images, resampling will be performed.
+ * @property {string} [resampleMethod='nearest'] The desired resampling method.
+ * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                                       to be aborted
+ * @property {number|number[]} [fillValue] The value to use for parts of the image
+ *                                              outside of the images extent. When multiple
+ *                                              samples are requested, an array of fill values
+ *                                              can be passed.
+ */
 
 function sum(array, start, end) {
   let s = 0;
@@ -358,7 +382,7 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise.&lt;ArrayBuffer>}
@@ -426,7 +450,7 @@ class GeoTIFFImage {
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into
    * @param {Boolean} interleave Whether or not to write in an interleaved manner
-   * @param {Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @param {number} width the width of window to be read into
    * @param {number} height the height of window to be read into
    * @param {number} resampleMethod the resampling method to be used when interpolating
@@ -556,26 +580,7 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {Object} [options={}] optional parameters
-   * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Array} [options.samples=all samples] the selection of samples to read from.
-   * @param {Boolean} [options.interleave=false] whether the data shall be read
-   *                                             in one single array or separate
-   *                                             arrays.
-   * @param {Number} [options.pool=null] The optional decoder pool to use.
-   * @param {number} [options.width] The desired width of the output. When the width is
-   *                                 not the same as the images, resampling will be
-   *                                 performed.
-   * @param {number} [options.height] The desired height of the output. When the width
-   *                                  is not the same as the images, resampling will
-   *                                  be performed.
-   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {number|number[]} [options.fillValue] The value to use for parts of the image
-   *                                              outside of the images extent. When
-   *                                              multiple samples are requested, an
-   *                                              array of fill values can be passed.
-   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
-   *                                       to be aborted
+   * @param {ReadRasterOptions} [options={}] optional parameters
    * @returns {Promise.&lt;(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters({
@@ -644,20 +649,20 @@ class GeoTIFFImage {
    * When provided, only a subset of the raster is read for each sample.
    *
    * @param {Object} [options] optional parameters
-   * @param {Array} [options.window=whole image] the subset to read data from.
-   * @param {Boolean} [options.interleave=true] whether the data shall be read
+   * @param {Array&lt;number>} [options.window] the subset to read data from in pixels.
+   * @param {boolean} [options.interleave=true] whether the data shall be read
    *                                             in one single array or separate
    *                                             arrays.
-   * @param {Number} [options.pool=null] The optional decoder pool to use.
+   * @param {import("./geotiff").Pool} [options.pool=null] The optional decoder pool to use.
    * @param {number} [options.width] The desired width of the output. When the width is no the
    *                                 same as the images, resampling will be performed.
    * @param {number} [options.height] The desired height of the output. When the width is no the
    *                                  same as the images, resampling will be performed.
    * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {bool} [options.enableAlpha=false] Enable reading alpha channel if present.
+   * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
    * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
    *                                       to be aborted
-   * @returns {Promise.&lt;TypedArray|TypedArray[]>} the RGB array as a Promise
+   * @returns {Promise.&lt;import("./geotiff").TypedArray|import("./geotiff").TypedArray[]>} the RGB array as a Promise
    */
   async readRGB({ window, interleave = true, pool = null, width, height,
     resampleMethod, enableAlpha = false, signal } = {}) {
@@ -794,7 +799,7 @@ class GeoTIFFImage {
    * If sample is passed to null, dataset-level metadata will be returned.
    * Otherwise only metadata specific to the provided sample will be returned.
    *
-   * @param {Number} [sample=null] The sample index.
+   * @param {number} [sample=null] The sample index.
    * @returns {Object}
    */
   getGDALMetadata(sample = null) {
@@ -819,7 +824,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the GDAL nodata value
-   * @returns {Number} or null
+   * @returns {number|null}
    */
   getGDALNoData() {
     if (!this.fileDirectory.GDAL_NODATA) {
@@ -832,7 +837,7 @@ class GeoTIFFImage {
   /**
    * Returns the image origin as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
-   * @returns {Array} The origin as a vector
+   * @returns {Array&lt;number>} The origin as a vector
    */
   getOrigin() {
     const tiePoints = this.fileDirectory.ModelTiepoint;
@@ -860,7 +865,7 @@ class GeoTIFFImage {
    * @param {GeoTIFFImage} [referenceImage=null] A reference image to calculate the resolution from
    *                                             in cases when the current image does not have the
    *                                             required tags on its own.
-   * @returns {Array} The resolution as a vector
+   * @returns {Array&lt;number>} The resolution as a vector
    */
   getResolution(referenceImage = null) {
     const modelPixelScale = this.fileDirectory.ModelPixelScale;
@@ -905,7 +910,7 @@ class GeoTIFFImage {
    * Returns the image bounding box as an array of 4 values: min-x, min-y,
    * max-x and max-y. When the image has no affine transformation, then an
    * exception is thrown.
-   * @returns {Array} The bounding box
+   * @returns {Array&lt;number>} The bounding box
    */
   getBoundingBox() {
     const origin = this.getOrigin();
@@ -937,13 +942,13 @@ export default GeoTIFFImage;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="Block.html">Block</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-geotiff.html">geotiff</a></li><li><a href="module-geotiffimage.html">geotiffimage</a></li><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="ArrayBufferSource.html">ArrayBufferSource</a></li><li><a href="BaseClient.html">BaseClient</a></li><li><a href="BaseResponse.html">BaseResponse</a></li><li><a href="BaseSource.html">BaseSource</a></li><li><a href="Block.html">Block</a></li><li><a href="BlockedSource.html">BlockedSource</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="CustomAggregateError.html">CustomAggregateError</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchClient.html">FetchClient</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="FileReaderSource.html">FileReaderSource</a></li><li><a href="FileSource.html">FileSource</a></li><li><a href="HttpClient.html">HttpClient</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="JpegStreamReader.html">JpegStreamReader</a></li><li><a href="module-geotiffimage-GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-geotiff-GeoTIFF.html">GeoTIFF</a></li><li><a href="module-geotiff-GeoTIFFBase.html">GeoTIFFBase</a></li><li><a href="module-geotiff-GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="module-geotiff-ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-geotiff-MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRClient.html">XHRClient</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Jan 14 2022 15:46:42 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Jan 18 2022 14:55:44 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>

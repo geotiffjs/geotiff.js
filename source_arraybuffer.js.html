@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: source/basesource.js</title>
+    <title>JSDoc: Source: source/arraybuffer.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: source/basesource.js</h1>
+    <h1 class="page-title">Source: source/arraybuffer.js</h1>
 
     
 
@@ -26,43 +26,25 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @typedef Slice
- * @property {number} offset
- * @property {number} length
- */
+            <pre class="prettyprint source linenums"><code>import { BaseSource } from './basesource.js';
+import { AbortError } from '../utils.js';
 
-export class BaseSource {
-  /**
-   *
-   * @param {Slice[]} slices
-   * @returns {ArrayBuffer[]}
-   */
-  async fetch(slices, signal = undefined) {
-    return Promise.all(
-      slices.map((slice) => this.fetchSlice(slice, signal)),
-    );
+class ArrayBufferSource extends BaseSource {
+  constructor(arrayBuffer) {
+    super();
+    this.arrayBuffer = arrayBuffer;
   }
 
-  /**
-   *
-   * @param {Slice} slice
-   * @returns {ArrayBuffer}
-   */
-  async fetchSlice(slice) {
-    throw new Error(`fetching of slice ${slice} not possible, not implemented`);
+  fetchSlice(slice, signal) {
+    if (signal &amp;&amp; signal.aborted) {
+      throw new AbortError('Request aborted');
+    }
+    return this.arrayBuffer.slice(slice.offset, slice.offset + slice.length);
   }
+}
 
-  /**
-   * Returns the filesize if already determined and null otherwise
-   */
-  get fileSize() {
-    return null;
-  }
-
-  async close() {
-    // no-op by default
-  }
+export function makeBufferSource(arrayBuffer) {
+  return new ArrayBufferSource(arrayBuffer);
 }
 </code></pre>
         </article>

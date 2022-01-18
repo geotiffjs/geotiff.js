@@ -28,7 +28,8 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="module-geotiff.html">geotiff</a>~</span>GeoTIFF<span class="signature">(source, littleEndian, bigTiff, firstIFDOffset, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
             <div class="class-description"><p>The abstraction for a whole GeoTIFF file.</p></div>
         
@@ -93,7 +94,7 @@
             <td class="type">
             
                 
-<span class="param-type">Source</span>
+<span class="param-type">*</span>
 
 
             
@@ -124,7 +125,7 @@
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">boolean</span>
 
 
             
@@ -155,7 +156,7 @@
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">boolean</span>
 
 
             
@@ -186,7 +187,7 @@
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
             
@@ -218,7 +219,7 @@ to the first IFD.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="module-geotiff.html#~GeoTIFFOptions">module:geotiff~GeoTIFFOptions</a></span>
 
 
             
@@ -238,76 +239,7 @@ to the first IFD.</p></td>
 
             
 
-            <td class="description last"><p>further options.</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>cache</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>whether or not decoded tiles shall be cached.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>further options.</p></td>
         </tr>
 
     
@@ -348,7 +280,7 @@ to the first IFD.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line297">line 297</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -388,7 +320,9 @@ to the first IFD.</p></td>
 
 
     <ul>
-        <li><a href="GeoTIFFBase.html">GeoTIFFBase</a></li>
+        <li>GeoTIFFBase</li>
+    
+        <li><a href="module-geotiff-GeoTIFFBase.html">module:geotiff~GeoTIFFBase</a></li>
     </ul>
 
 
@@ -415,7 +349,7 @@ to the first IFD.</p></td>
     
 
     
-    <h4 class="name" id=".fromSource"><span class="type-signature">(async, static) </span>fromSource<span class="signature">(source, options, signal<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".fromSource"><span class="type-signature">(async, static) </span>fromSource<span class="signature">(source, options<span class="signature-attributes">opt</span>, signal<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -467,7 +401,7 @@ to the first IFD.</p></td>
             <td class="type">
             
                 
-<span class="param-type">source~Source</span>
+<span class="param-type">*</span>
 
 
             
@@ -498,7 +432,7 @@ to the first IFD.</p></td>
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><a href="module-geotiff.html#~GeoTIFFOptions">module:geotiff~GeoTIFFOptions</a></span>
 
 
             
@@ -506,6 +440,8 @@ to the first IFD.</p></td>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -591,7 +527,7 @@ to be aborted</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line529">line 529</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line520">line 520</a>
     </li></ul></dd>
     
 
@@ -681,7 +617,7 @@ to be closed but only if it has been constructed from a file.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line568">line 568</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line559">line 559</a>
     </li></ul></dd>
     
 
@@ -770,7 +706,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line493">line 493</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line484">line 484</a>
     </li></ul></dd>
     
 
@@ -828,7 +764,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
 
     
-    <h4 class="name" id="getImage"><span class="type-signature">(async) </span>getImage<span class="signature">(index<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="GeoTIFFImage.html">GeoTIFFImage</a>>}</span></h4>
+    <h4 class="name" id="getImage"><span class="type-signature">(async) </span>getImage<span class="signature">(index<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="module-geotiffimage-GeoTIFFImage.html">module:geotiffimage~GeoTIFFImage</a>>}</span></h4>
     
 
     
@@ -882,7 +818,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
             
@@ -949,7 +885,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line456">line 456</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line447">line 447</a>
     </li></ul></dd>
     
 
@@ -989,7 +925,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="GeoTIFFImage.html">GeoTIFFImage</a>></span>
+<span class="param-type">Promise.&lt;<a href="module-geotiffimage-GeoTIFFImage.html">module:geotiffimage~GeoTIFFImage</a>></span>
 
 
     </dd>
@@ -1007,7 +943,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
 
     
-    <h4 class="name" id="getImageCount"><span class="type-signature">(async) </span>getImageCount<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    <h4 class="name" id="getImageCount"><span class="type-signature">(async) </span>getImageCount<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
     
 
     
@@ -1059,7 +995,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line469">line 469</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line460">line 460</a>
     </li></ul></dd>
     
 
@@ -1099,7 +1035,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     </dt>
     <dd>
         
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -1117,7 +1053,7 @@ See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference</p>
     
 
     
-    <h4 class="name" id="parseFileDirectoryAt"><span class="type-signature">(async) </span>parseFileDirectoryAt<span class="signature">(offset)</span><span class="type-signature"> &rarr; {<a href="ImageFileDirectory.html">ImageFileDirectory</a>}</span></h4>
+    <h4 class="name" id="parseFileDirectoryAt"><span class="type-signature">(async) </span>parseFileDirectoryAt<span class="signature">(offset)</span><span class="type-signature"> &rarr; {<a href="module-geotiff-ImageFileDirectory.html">module:geotiff~ImageFileDirectory</a>}</span></h4>
     
 
     
@@ -1221,7 +1157,7 @@ the headers or other IFDs).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line340">line 340</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line331">line 331</a>
     </li></ul></dd>
     
 
@@ -1261,7 +1197,7 @@ the headers or other IFDs).</p>
     </dt>
     <dd>
         
-<span class="param-type"><a href="ImageFileDirectory.html">ImageFileDirectory</a></span>
+<span class="param-type"><a href="module-geotiff-ImageFileDirectory.html">module:geotiff~ImageFileDirectory</a></span>
 
 
     </dd>
@@ -1279,7 +1215,7 @@ the headers or other IFDs).</p>
     
 
     
-    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;TypedArray>)>}</span></h4>
+    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(TypedArray|Array.&lt;<a href="module-geotiff.html#~TypedArray">module:geotiff~TypedArray</a>>)>}</span></h4>
     
 
     
@@ -1292,7 +1228,7 @@ the image with the lowest resolution that is still a higher resolution than the
 requested resolution.
 When specified, the <code>bbox</code> option is translated to the <code>window</code> option and the
 <code>resX</code> and <code>resY</code> to <code>width</code> and <code>height</code> respectively.
-Then, the <a href="GeoTIFFImage.html#readRasters">readRasters</a> method of the selected
+Then, the readRasters method of the selected
 image is called and the result returned.</p>
 </div>
 
@@ -1339,7 +1275,7 @@ image is called and the result returned.</p>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="module-geotiffimage.html#~ReadRasterOptions">module:geotiffimage~ReadRasterOptions</a></span>
 
 
             
@@ -1365,431 +1301,7 @@ image is called and the result returned.</p>
                 </td>
             
 
-            <td class="description last"><p>optional parameters</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>window</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    whole image
-                
-                </td>
-            
-
-            <td class="description last"><p>the subset to read data from.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>bbox</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    whole image
-                
-                </td>
-            
-
-            <td class="description last"><p>the subset to read data from in
-geographical coordinates.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>samples</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    all samples
-                
-                </td>
-            
-
-            <td class="description last"><p>the selection of samples to read from.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>interleave</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>whether the data shall be read
-in one single array or separate
-arrays.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pool</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last"><p>The optional decoder pool to use.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>width</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The desired width of the output. When the width is not the
-same as the images, resampling will be performed.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>height</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The desired height of the output. When the width is not the
-same as the images, resampling will be performed.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>resampleMethod</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    'nearest'
-                
-                </td>
-            
-
-            <td class="description last"><p>The desired resampling method.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>signal</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">AbortSignal</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>An AbortSignal that may be signalled if the request is
-to be aborted</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fillValue</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-|
-
-<span class="param-type">Array.&lt;Number></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The value to use for parts of the image
-outside of the images extent. When multiple
-samples are requested, an array of fill values
-can be passed.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"><p>optional parameters</p></td>
         </tr>
 
     
@@ -1812,7 +1324,7 @@ can be passed.</p></td>
     
     <dt class="tag-overrides">Overrides:</dt>
     <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="GeoTIFFBase.html#readRasters">GeoTIFFBase#readRasters</a>
+        <a href="module-geotiff-GeoTIFFBase.html#readRasters">module:geotiff~GeoTIFFBase#readRasters</a>
     </li></ul></dd>
     
 
@@ -1835,7 +1347,7 @@ can be passed.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line199">line 199</a>
+        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
@@ -1882,7 +1394,7 @@ can be passed.</p></td>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;TypedArray>)></span>
+<span class="param-type">Promise.&lt;(TypedArray|Array.&lt;<a href="module-geotiff.html#~TypedArray">module:geotiff~TypedArray</a>>)></span>
 
 
     </dd>
@@ -1910,13 +1422,13 @@ can be passed.</p></td>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="Block.html">Block</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="GeoTIFF.html">GeoTIFF</a></li><li><a href="GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fromArrayBuffer">fromArrayBuffer</a></li><li><a href="global.html#fromBlob">fromBlob</a></li><li><a href="global.html#fromFile">fromFile</a></li><li><a href="global.html#fromUrl">fromUrl</a></li><li><a href="global.html#fromUrls">fromUrls</a></li><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li><li><a href="global.html#writeArrayBuffer">writeArrayBuffer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-geotiff.html">geotiff</a></li><li><a href="module-geotiffimage.html">geotiffimage</a></li><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="ArrayBufferSource.html">ArrayBufferSource</a></li><li><a href="BaseClient.html">BaseClient</a></li><li><a href="BaseResponse.html">BaseResponse</a></li><li><a href="BaseSource.html">BaseSource</a></li><li><a href="Block.html">Block</a></li><li><a href="BlockedSource.html">BlockedSource</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="CustomAggregateError.html">CustomAggregateError</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchClient.html">FetchClient</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="FileReaderSource.html">FileReaderSource</a></li><li><a href="FileSource.html">FileSource</a></li><li><a href="HttpClient.html">HttpClient</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="JpegStreamReader.html">JpegStreamReader</a></li><li><a href="module-geotiffimage-GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-geotiff-GeoTIFF.html">GeoTIFF</a></li><li><a href="module-geotiff-GeoTIFFBase.html">GeoTIFFBase</a></li><li><a href="module-geotiff-GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="module-geotiff-ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-geotiff-MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRClient.html">XHRClient</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#setLogger">setLogger</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Jan 14 2022 15:46:42 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Jan 18 2022 14:55:44 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
