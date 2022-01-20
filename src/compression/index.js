@@ -26,3 +26,4 @@ addDecoder(7, () => import('./jpeg.js').then((m) => m.default));
 addDecoder([8, 32946], () => import('./deflate.js').then((m) => m.default));
 addDecoder(32773, () => import('./packbits.js').then((m) => m.default));
 addDecoder(34887, () => import('./lerc.js').then((m) => m.default));
+addDecoder(50001, () => import('./webimage.js').then((m) => m.default));
