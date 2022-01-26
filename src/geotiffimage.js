@@ -783,7 +783,9 @@ class GeoTIFFImage {
 
     let items = findTagsByName(string, 'Item');
 
-    if (sample !== null) {
+    if (sample === null) {
+      items = items.filter((item) => getAttribute(item, 'sample') === undefined);
+    } else {
       items = items.filter((item) => Number(getAttribute(item, 'sample')) === sample);
     }
 

@@ -84,3 +84,6 @@ gdal_translate -of GTiff -co NBITS=16 -ot Float32 -co INTERLEAVE=BAND initial.ti
 wget https://github.com/GeoTIFF/test-data/archive/8ac198032d8b02160049ca161e8108e3d38176f3.zip -O geotiff-test-data.zip
 unzip -j -o geotiff-test-data.zip "test-data-*/files/*" -d .
 rm geotiff-test-data.zip
+
+# add top-level metadata to a tiff for testing purposes
+gdal_edit.py -mo DATUM=WGS84 wind_direction.tif
