@@ -558,8 +558,8 @@ describe('GDAL_METADATA tests', async () => {
   it('should parse stats for single-band GeoTIFF', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('nt_20201024_f18_nrt_s.tif'));
     const image = await tiff.getImage();
-    const metadata = await image.getGDALMetadata();
-    expect(metadata).to.deep.equal({
+    expect(await image.getGDALMetadata(), {}); // no top-level-stats
+    expect(await image.getGDALMetadata(0)).to.deep.equal({
       STATISTICS_MAXIMUM: '100',
       STATISTICS_MEAN: '28.560288669249',
       STATISTICS_MINIMUM: '0',
@@ -570,7 +570,7 @@ describe('GDAL_METADATA tests', async () => {
   it('should parse layer type', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('eu_pasture.tiff'));
     const image = await tiff.getImage();
-    const metadata = await image.getGDALMetadata();
+    const metadata = await image.getGDALMetadata(0);
     expect(metadata).to.deep.equal({
       LAYER_TYPE: 'athematic',
     });
@@ -579,7 +579,7 @@ describe('GDAL_METADATA tests', async () => {
   it('should parse color interpretation', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('utm.tif'));
     const image = await tiff.getImage();
-    const metadata = await image.getGDALMetadata();
+    const metadata = await image.getGDALMetadata(0);
     expect(metadata).to.deep.equal({
       COLORINTERP: 'Palette',
     });
@@ -588,7 +588,7 @@ describe('GDAL_METADATA tests', async () => {
   it('should parse stats for another single-band GeoTIFF', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('vestfold.tif'));
     const image = await tiff.getImage();
-    const metadata = await image.getGDALMetadata();
+    const metadata = await image.getGDALMetadata(0);
     expect(metadata).to.deep.equal({
       STATISTICS_MAXIMUM: '332.6073328654',
       STATISTICS_MEAN: '83.638959236148',
@@ -600,11 +600,20 @@ describe('GDAL_METADATA tests', async () => {
   it('should parse creation times', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('wind_direction.tif'));
     const image = await tiff.getImage();
-    const metadata = await image.getGDALMetadata();
+    const metadata = await image.getGDALMetadata(0);
     expect(metadata).to.deep.equal({
       creationTime: '1497289465',
       creationTimeString: '2017-06-12T17:44:25.466257Z',
       name: 'Wind_Dir_SFC',
+    });
+  });
+
+  it('should parse top-level metadata when no sample is specified', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('wind_direction.tif'));
+    const image = await tiff.getImage();
+    const metadata = await image.getGDALMetadata();
+    expect(metadata).to.deep.equal({
+      DATUM: 'WGS84',
     });
   });
 });
