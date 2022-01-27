@@ -15,13 +15,13 @@
   "jsdelivr": "dist-browser/geotiff.js",
   "exports": {
     ".": {
-      "import": "./src/geotiff.js",
+      "import": "./dist-module/geotiff.js",
       "require": "./dist-node/geotiff.js",
       "browser": "./dist-browser/geotiff.js"
     }
   },
   "files": [
-    "src",
+    "dist-module",
     "dist-node",
     "dist-browser"
   ],
