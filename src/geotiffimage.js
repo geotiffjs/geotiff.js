@@ -31,6 +31,8 @@ import { resample, resampleInterleaved } from './resample.js';
  *                                              can be passed.
  */
 
+/** @typedef {import("./geotiff.js").TypedArray} TypedArray */
+
 function sum(array, start, end) {
   let s = 0;
   for (let i = start; i < end; ++i) {
@@ -634,7 +636,7 @@ class GeoTIFFImage {
    * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
    * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
    *                                       to be aborted
-   * @returns {Promise.<import("./geotiff").TypedArray|import("./geotiff").TypedArray[]>} the RGB array as a Promise
+   * @returns {Promise<TypedArray|TypedArray[]>} the RGB array as a Promise
    */
   async readRGB({ window, interleave = true, pool = null, width, height,
     resampleMethod, enableAlpha = false, signal } = {}) {
