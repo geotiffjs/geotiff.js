@@ -63,7 +63,7 @@ class Pool {
   /**
    * Decode the given block of bytes with the set compression method.
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
-   * @returns {Promise.<ArrayBuffer>} the decoded result as a `Promise`
+   * @returns {Promise<ArrayBuffer>} the decoded result as a `Promise`
    */
   async decode(fileDirectory, buffer) {
     if (this._awaitingDecoder) {

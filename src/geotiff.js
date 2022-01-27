@@ -181,7 +181,7 @@ class GeoTIFFBase {
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
    * @param {import('./geotiffimage').ReadRasterOptions} [options={}] optional parameters
-   * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
+   * @returns {Promise<(TypedArray|TypedArray[])>} the decoded arrays as a promise
    */
   async readRasters(options = {}) {
     const { window: imageWindow, width, height } = options;
@@ -326,7 +326,7 @@ class GeoTIFF extends GeoTIFFBase {
    * this function must be called with caution (e.g only using the IFD offsets from
    * the headers or other IFDs).
    * @param {number} offset the offset to parse the IFD at
-   * @returns {ImageFileDirectory} the parsed IFD
+   * @returns {Promise<ImageFileDirectory>} the parsed IFD
    */
   async parseFileDirectoryAt(offset) {
     const entrySize = this.bigTiff ? 20 : 12;
@@ -455,7 +455,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Returns the count of the internal subfiles.
    *
-   * @returns {number} the number of internal subfile images
+   * @returns {Promise<number>} the number of internal subfile images
    */
   async getImageCount() {
     let index = 0;
@@ -479,7 +479,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Get the values of the COG ghost area as a parsed map.
    * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
-   * @returns {Object} the parsed ghost area or null, if no such area was found
+   * @returns {Promise<Object>} the parsed ghost area or null, if no such area was found
    */
   async getGhostValues() {
     const offset = this.bigTiff ? 16 : 8;
@@ -600,7 +600,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
    * Get the n-th internal subfile of an image. By default, the first is returned.
    *
    * @param {number} [index=0] the index of the image to return.
-   * @returns {GeoTIFFImage} the image at the given index
+   * @returns {Promise<GeoTIFFImage>} the image at the given index
    */
   async getImage(index = 0) {
     await this.getImageCount();
@@ -629,7 +629,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
   /**
    * Returns the count of the internal subfiles.
    *
-   * @returns {number} the number of internal subfile images
+   * @returns {Promise<number>} the number of internal subfile images
    */
   async getImageCount() {
     if (this.imageCount !== null) {
@@ -652,7 +652,7 @@ export { MultiGeoTIFF };
  *                           See {@link makeRemoteSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
- * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
   return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
@@ -680,7 +680,7 @@ export async function fromArrayBuffer(arrayBuffer, signal) {
  * @param {string} path The file path to read from.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
- * @returns {Promise.<GeoTIFF>} The resulting GeoTIFF file.
+ * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path, signal) {
   return GeoTIFF.fromSource(makeFileSource(path), signal);
@@ -725,7 +725,7 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
  * @param {(Array)} array of pixel values
  * @returns {metadata} metadata
  */
-export async function writeArrayBuffer(values, metadata) {
+export function writeArrayBuffer(values, metadata) {
   return writeGeotiff(values, metadata);
 }
 
