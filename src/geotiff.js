@@ -730,3 +730,4 @@ export function writeArrayBuffer(values, metadata) {
 }
 
 export { Pool };
+export { GeoTIFFImage };
