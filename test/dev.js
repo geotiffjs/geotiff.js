@@ -1,5 +1,5 @@
-/* global plotty:false */
-import { Pool, fromUrl } from '../dist-module/geotiff.js';
+/* global GeoTIFF:false, plotty:false */
+const { Pool, fromUrl } = GeoTIFF;
 
 const imageWindow = [0, 0, 500, 500];
 const tiffs = [
@@ -117,7 +117,7 @@ tiffs.forEach(async (filename) => {
 
   document.getElementById('canvases').appendChild(div);
 
-  const tiff = await fromUrl(`http://localhost:8090/data/${filename}`, {
+  const tiff = await fromUrl(`http://localhost:8090/test/data/${filename}`, {
     allowFullFile: true,
     cache: true,
   });
@@ -146,7 +146,7 @@ rgbtiffs.forEach(async (filename) => {
 
   document.getElementById('canvases').appendChild(div);
 
-  const tiff = await fromUrl(`http://localhost:8090/data/${filename}`, {
+  const tiff = await fromUrl(`http://localhost:8090/test/data/${filename}`, {
     allowFullFile: true,
     cache: true,
   });
