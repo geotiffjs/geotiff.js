@@ -26,8 +26,7 @@
     "dist-browser"
   ],
   "engines": {
-    "node": ">=10.19",
-    "browsers": "defaults"
+    "node": ">=10.19"
   },
   "dependencies": {
     "@petamoriken/float16": "^3.4.7",
