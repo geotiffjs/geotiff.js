@@ -110,8 +110,8 @@ export class BlockedSource extends BaseSource {
     }
 
     // Actually await all pending requests that are needed for this `fetch`.
-    await Promise.allSettled(blockRequests.values());
-    await Promise.allSettled(missingRequests.values());
+    await Promise.allSettled(blockRequests);
+    await Promise.allSettled(missingRequests);
 
     // Perform retries if a block was interrupted by a previous signal
     const abortedBlockRequests = [];
@@ -128,7 +128,7 @@ export class BlockedSource extends BaseSource {
         }
         abortedBlockRequests.push(block);
       }
-      await Promise.allSettled(Array.from(abortedBlockRequests.values()));
+      await Promise.allSettled(abortedBlockRequests);
     }
 
     // throw an  abort error
@@ -186,7 +186,7 @@ export class BlockedSource extends BaseSource {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
-                this.blockCache.del(blockId);
+                this.blockCache.delete(blockId);
                 this.abortedBlockIds.add(blockId);
               } else {
                 throw err;
