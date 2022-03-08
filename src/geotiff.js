@@ -18,6 +18,7 @@ import { setLogger } from './logging.js';
 
 export { globals };
 export { rgb };
+export { default as BaseDecoder } from './compression/basedecoder.js';
 export { getDecoder, addDecoder };
 export { setLogger };
 
