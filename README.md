@@ -355,7 +355,11 @@ const multiTiff = await fromUrls(
 
 Geotiff.js supports the use of [`AbortController`s](https://developer.mozilla.org/en-US/docs/Web/API/AbortController). Calls to `getRasters`, `readRGB` and `getTileOrStrip` will throw an `Error` with name `AbortSignal` similar to the browser's `fetch` behavior.
 
+You need to set the `cacheSize` parameter to `0` to enable this feature due to cache consistency issues - otherwise, once the cache becomes full,
+it will lose its consistency.
+
 ```javascript
+const tiff = await fromUrl(source, { cacheSize: 0 });
 const abortController = new AbortController();
 const { signal } = abortController;
 abortController.abort();
