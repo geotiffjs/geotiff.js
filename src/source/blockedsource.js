@@ -186,7 +186,8 @@ export class BlockedSource extends BaseSource {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
-                this.blockCache.delete(blockId);
+                // lru-cache < 7.3 uses `.del` instead of `.delete`.
+                this.blockCache.del(blockId);
                 this.abortedBlockIds.add(blockId);
               } else {
                 throw err;

@@ -31,7 +31,7 @@
   "dependencies": {
     "@petamoriken/float16": "^3.4.7",
     "lerc": "^3.0.0",
-    "lru-cache": "^7.4.1",
+    "lru-cache": "^6.0.0",
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
     "web-worker": "^1.2.0",
