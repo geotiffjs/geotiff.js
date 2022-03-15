@@ -1,4 +1,4 @@
-import LRUCache from 'lru-cache';
+import QuickLRU from 'quick-lru';
 import { BaseSource } from './basesource.js';
 import { AbortError, AggregateError, wait, zip } from '../utils.js';
 
@@ -48,7 +48,7 @@ export class BlockedSource extends BaseSource {
     this.source = source;
     this.blockSize = blockSize;
 
-    this.blockCache = new LRUCache({ max: cacheSize });
+    this.blockCache = new QuickLRU({ maxSize: cacheSize });
 
     // mapping blockId -> Block instance
     this.blockRequests = new Map();
