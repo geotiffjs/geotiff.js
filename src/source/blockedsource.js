@@ -1,4 +1,4 @@
-import LRUCache from 'lru-cache';
+import QuickLRU from 'quick-lru';
 import { BaseSource } from './basesource.js';
 import { AbortError, AggregateError, wait, zip } from '../utils.js';
 
@@ -48,7 +48,7 @@ export class BlockedSource extends BaseSource {
     this.source = source;
     this.blockSize = blockSize;
 
-    this.blockCache = new LRUCache({ max: cacheSize });
+    this.blockCache = new QuickLRU({ maxSize: cacheSize });
 
     // mapping blockId -> Block instance
     this.blockRequests = new Map();
@@ -186,8 +186,7 @@ export class BlockedSource extends BaseSource {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
-                // lru-cache < 7.3 uses `.del` instead of `.delete`.
-                this.blockCache.del(blockId);
+                this.blockCache.delete(blockId);
                 this.abortedBlockIds.add(blockId);
               } else {
                 throw err;
