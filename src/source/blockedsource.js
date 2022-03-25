@@ -40,8 +40,10 @@ class BlockGroup {
 export class BlockedSource extends BaseSource {
   /**
    *
-   * @param {Source} source The underlying source that shall be blocked and cached
+   * @param {BaseSource} source The underlying source that shall be blocked and cached
    * @param {object} options
+   * @param {number} [options.blockSize]
+   * @param {number} [options.cacheSize]
    */
   constructor(source, { blockSize = 65536, cacheSize = 100 } = {}) {
     super();
@@ -65,7 +67,7 @@ export class BlockedSource extends BaseSource {
 
   /**
    *
-   * @param {basesource/Slice[]} slices
+   * @param {import("./basesource").Slice[]} slices
    */
   async fetch(slices, signal) {
     const blockRequests = [];
@@ -241,7 +243,7 @@ export class BlockedSource extends BaseSource {
 
   /**
    *
-   * @param {Slice[]} slices
+   * @param {import("./basesource").Slice[]} slices
    * @param {Map} blocks
    */
   readSliceData(slices, blocks) {
