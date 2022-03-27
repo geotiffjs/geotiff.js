@@ -180,7 +180,7 @@ class GeoTIFFImage {
    * @param {DataView} dataView The DataView for the underlying file.
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
-   * @param {Source} source The datasource to read from
+   * @param {import('./source/basesource').BaseSource} source The datasource to read from
    */
   constructor(fileDirectory, geoKeys, dataView, littleEndian, cache, source) {
     this.fileDirectory = fileDirectory;
@@ -356,7 +356,7 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise.<ArrayBuffer>}
