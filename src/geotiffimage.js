@@ -32,6 +32,7 @@ import { resample, resampleInterleaved } from './resample.js';
  */
 
 /** @typedef {import("./geotiff.js").TypedArray} TypedArray */
+/** @typedef {import("./geotiff.js").ReadRasterResult} ReadRasterResult */
 
 function sum(array, start, end) {
   let s = 0;
@@ -422,7 +423,7 @@ class GeoTIFFImage {
    * @private
    * @param {Array} imageWindow The image window in pixel coordinates
    * @param {Array} samples The selected samples (0-based indices)
-   * @param {TypedArray[]|TypedArray} valueArrays The array(s) to write into
+   * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
    * @param {Boolean} interleave Whether or not to write in an interleaved manner
    * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
    * @param {number} width the width of window to be read into
@@ -430,7 +431,7 @@ class GeoTIFFImage {
    * @param {number} resampleMethod the resampling method to be used when interpolating
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
-   * @returns {Promise<TypedArray[]>|Promise<TypedArray>}
+   * @returns {Promise<ReadRasterResult>}
    */
   async _readRaster(imageWindow, samples, valueArrays, interleave, poolOrDecoder, width,
     height, resampleMethod, signal) {
@@ -554,7 +555,7 @@ class GeoTIFFImage {
    * of the raster is read for each sample.
    *
    * @param {ReadRasterOptions} [options={}] optional parameters
-   * @returns {Promise.<(TypedArray|TypedArray[])>} the decoded arrays as a promise
+   * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
   async readRasters({
     window: wnd, samples = [], interleave, pool = null,
@@ -635,7 +636,7 @@ class GeoTIFFImage {
    * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
    * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
    *                                       to be aborted
-   * @returns {Promise<TypedArray|TypedArray[]>} the RGB array as a Promise
+   * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
    */
   async readRGB({ window, interleave = true, pool = null, width, height,
     resampleMethod, enableAlpha = false, signal } = {}) {

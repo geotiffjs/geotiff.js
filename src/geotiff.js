@@ -27,6 +27,10 @@ export { setLogger };
  * TypedArray
  */
 
+/**
+ * @typedef { (TypedArray | TypedArray[]) & { height: number; width: number } } ReadRasterResult
+ */
+
 function getFieldTypeLength(fieldType) {
   switch (fieldType) {
     case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
@@ -182,7 +186,7 @@ class GeoTIFFBase {
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
    * @param {import('./geotiffimage').ReadRasterOptions} [options={}] optional parameters
-   * @returns {Promise<(TypedArray|TypedArray[])>} the decoded arrays as a promise
+   * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
   async readRasters(options = {}) {
     const { window: imageWindow, width, height } = options;
