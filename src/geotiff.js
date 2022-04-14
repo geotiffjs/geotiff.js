@@ -5,7 +5,8 @@ import DataSlice from './dataslice.js';
 import Pool from './pool.js';
 
 import { makeRemoteSource } from './source/remote.js';
-import { makeBufferSource } from './source/arraybuffer.js';
+import { makeBufferSource } from './source/buffer.js';
+import { makeArrayBufferSource } from './source/arraybuffer.js';
 import { makeFileReaderSource } from './source/filereader.js';
 import { makeFileSource } from './source/file.js';
 
@@ -672,8 +673,8 @@ class MultiGeoTIFF extends GeoTIFFBase {
 export { MultiGeoTIFF };
 
 /**
- * Creates a new GeoTIFF from a remote URL.
- * @param {string} url The URL to access the image from
+ * Construct a new GeoTIFF from a remote URL.
+ * @param {string} url The URL to access the image from.
  * @param {object} [options] Additional options to pass to the source.
  *                           See {@link makeRemoteSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
@@ -685,23 +686,36 @@ export async function fromUrl(url, options = {}, signal) {
 }
 
 /**
+ * Construct a new GeoTIFF from a Buffer. This uses the
+ * [Node.js Buffer API]{@link https://nodejs.org/api/buffer.html} and is
+ * not available on browsers.
+ * @param {Buffer} buffer The Node.js Buffer to read from.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
+ * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
+ */
+export async function fromBuffer(buffer, signal) {
+  return GeoTIFF.fromSource(makeBufferSource(buffer), signal);
+}
+
+/**
  * Construct a new GeoTIFF from an
  * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
- * @param {ArrayBuffer} arrayBuffer The data to read the file from.
+ * @param {ArrayBuffer} arrayBuffer The array buffer to read from.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromArrayBuffer(arrayBuffer, signal) {
-  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), signal);
+  return GeoTIFF.fromSource(makeArrayBufferSource(arrayBuffer), signal);
 }
 
 /**
- * Construct a GeoTIFF from a local file path. This uses the node
- * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
+ * Construct a new GeoTIFF from a local file path. This uses the
+ * [Node.js filesystem API]{@link https://nodejs.org/api/fs.html} and is
  * not available on browsers.
  *
- * N.B. After the GeoTIFF has been completely processed it needs
+ * N.B.: After the GeoTIFF has been completely processed, it needs
  * to be closed but only if it has been constructed from a file.
  * @param {string} path The file path to read from.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is

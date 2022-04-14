@@ -1,7 +1,7 @@
 import { BaseSource } from './basesource.js';
 import { AbortError } from '../utils.js';
 
-class ArrayBufferSource extends BaseSource {
+export class ArrayBufferSource extends BaseSource {
   constructor(arrayBuffer) {
     super();
     this.arrayBuffer = arrayBuffer;
@@ -15,6 +15,6 @@ class ArrayBufferSource extends BaseSource {
   }
 }
 
-export function makeBufferSource(arrayBuffer) {
+export function makeArrayBufferSource(arrayBuffer) {
   return new ArrayBufferSource(arrayBuffer);
 }
