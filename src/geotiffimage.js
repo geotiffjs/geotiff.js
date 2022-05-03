@@ -288,16 +288,18 @@ class GeoTIFFImage {
   }
 
   getSampleByteSize(i) {
+    if (!this.fileDirectory.BitsPerSample || this.fileDirectory.BitsPerSample.length === 0) {
+      return;
+    }
     if (i >= this.fileDirectory.BitsPerSample.length) {
-      throw new RangeError(`Sample index ${i} is out of range.`);
+      i = 0;
     }
     return Math.ceil(this.fileDirectory.BitsPerSample[i] / 8);
   }
 
   getReaderForSample(sampleIndex) {
-    const format = this.fileDirectory.SampleFormat
-      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
-    const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+    const format = this.getSampleFormat(sampleIndex);
+    const bitsPerSample = this.getBitsPerSample(sampleIndex);
     switch (format) {
       case 1: // unsigned integer data
         if (bitsPerSample <= 8) {
@@ -338,12 +340,19 @@ class GeoTIFFImage {
   }
 
   getSampleFormat(sampleIndex = 0) {
-    return this.fileDirectory.SampleFormat
-      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    if (!this.fileDirectory.SampleFormat || this.fileDirectory.SampleFormat.length === 0) {
+      return 1;
+    }
+    return typeof this.fileDirectory.SampleFormat[sampleIndex] !== 'undefined'
+      ? this.fileDirectory.SampleFormat[sampleIndex] : this.fileDirectory.SampleFormat[0];
   }
 
   getBitsPerSample(sampleIndex = 0) {
-    return this.fileDirectory.BitsPerSample[sampleIndex];
+    if (!this.fileDirectory.BitsPerSample || this.fileDirectory.BitsPerSample.length === 0) {
+      return;
+    }
+    return typeof this.fileDirectory.BitsPerSample[sampleIndex] !== 'undefined'
+      ? this.fileDirectory.BitsPerSample[sampleIndex] : this.fileDirectory.BitsPerSample[0];
   }
 
   getArrayForSample(sampleIndex, size) {
