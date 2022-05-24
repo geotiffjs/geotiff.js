@@ -382,6 +382,16 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
+
+    if (byteCount === 0) {
+      const nPixels = this.getBlockHeight(y) * this.getTileWidth();
+      const bytesPerPixel = (this.planarConfiguration === 2) ? this.getSampleByteSize(sample) : this.getBytesPerPixel();
+      const data = new ArrayBuffer(nPixels * bytesPerPixel);
+      const view = this.getArrayForSample(sample, data);
+      view.fill(this.getGDALNoData() || 0);
+      return { x, y, sample, data };
+    }
+
     const slice = (await this.source.fetch([{ offset, length: byteCount }], signal))[0];
 
     let request;
