@@ -13,6 +13,7 @@
   "main": "dist-node/geotiff.js",
   "module": "dist-module/geotiff.js",
   "jsdelivr": "dist-browser/geotiff.js",
+  "unpkg": "dist-browser/geotiff.js",  
   "exports": {
     ".": {
       "import": "./dist-module/geotiff.js",
