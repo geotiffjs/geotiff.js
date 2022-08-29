@@ -619,7 +619,7 @@ class GeoTIFFImage {
    * interleaved typed array.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
    * When no other method is applicable, the first sample is used to produce a
-   * greayscale image.
+   * grayscale image.
    * When provided, only a subset of the raster is read for each sample.
    *
    * @param {Object} [options] optional parameters

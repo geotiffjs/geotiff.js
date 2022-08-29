@@ -85,9 +85,9 @@ class RemoteSource extends BaseSource {
       if (slices.length > 1) {
         // we requested more than one slice, but got only the first
         // unfortunately, some HTTP Servers don't support multi-ranges
-        // and return onyl the first
+        // and return only the first
 
-        // get the rest of the slices and fetch them iteratetively
+        // get the rest of the slices and fetch them iteratively
         const others = await Promise.all(slices.slice(1).map((slice) => this.fetchSlice(slice, signal)));
         return first.concat(others);
       }
