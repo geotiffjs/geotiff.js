@@ -122,8 +122,6 @@ or you can use the prebuilt version with a CDN:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
 ```
-Note: Currently the CDN installation is not compatible with GeoTIFF workers pool `GeoTIFF.Pool`.
-
 
 ## Usage
 
@@ -140,10 +138,9 @@ import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
 or:
 
 ```html
-<script async src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+<script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
 <script>
   console.log(GeoTIFF);
-  // Note: GeoTIFF.Pool will not work
 </script>
 ```
 
