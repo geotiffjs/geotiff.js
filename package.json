@@ -21,6 +21,26 @@
       "browser": "./dist-browser/geotiff.js"
     }
   },
+  "typesVersions": {
+    "*": {
+      "globals": ["dist-module/globals.d.ts"],
+      "rgb": ["dist-module/rgb.d.ts"],
+      "BaseDecoder": ["dist-module/compression/BaseDecoder.d.ts"],
+      "getDecoder": ["dist-module/compression/index.d.ts"],
+      "addDecoder": ["dist-module/compression/index.d.ts"],
+      "setLogger": ["dist-module/logging.d.ts"],
+      "GeoTIFF": ["dist-module/geotiff.d.ts"],
+      "MultiGeoTIFF": ["dist-module/geotiff.d.ts"],
+      "fromUrl": ["dist-module/geotiff.d.ts"],
+      "fromArrayBuffer": ["dist-module/geotiff.d.ts"],
+      "fromFile": ["dist-module/geotiff.d.ts"],
+      "fromBlob": ["dist-module/geotiff.d.ts"],
+      "fromUrls": ["dist-module/geotiff.d.ts"],
+      "writeArrayBuffer": ["dist-module/geotiff.d.ts"],
+      "Pool": ["dist-module/pool.d.ts"],
+      "GeoTIFFImage": ["dist-module/geotiffimage.d.ts"]
+    }
+  },
   "files": [
     "dist-module",
     "dist-node",
