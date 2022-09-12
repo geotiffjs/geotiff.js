@@ -75,7 +75,7 @@
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^7.0.1",
-    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-fetch": "^3.0.0",
     "jsdoc": "^3.6.4",
     "jsdoc-plugin-intersection": "^1.0.4",
     "jsdoc-plugin-typescript": "^2.0.6",
