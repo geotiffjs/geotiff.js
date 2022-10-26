@@ -391,6 +391,7 @@ import { writeArrayBuffer } from 'geotiff';
 
 const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const metadata = {
+  GeographicTypeGeoKey: 4326,
   height: 3,
   ModelPixelScale: [0.031355, 0.031355, 0],
   ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],
