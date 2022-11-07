@@ -50,7 +50,15 @@ export class BlockedSource extends BaseSource {
     this.source = source;
     this.blockSize = blockSize;
 
-    this.blockCache = new QuickLRU({ maxSize: cacheSize });
+    this.blockCache = new QuickLRU({
+      maxSize: cacheSize,
+      onEviction: (blockId, block) => {
+        this.evictedBlocks.set(blockId, block);
+      },
+    });
+
+    /** @type {Map<number, Block>} */
+    this.evictedBlocks = new Map();
 
     // mapping blockId -> Block instance
     this.blockRequests = new Map();
@@ -73,6 +81,7 @@ export class BlockedSource extends BaseSource {
     const blockRequests = [];
     const missingBlockIds = [];
     const allBlockIds = [];
+    this.evictedBlocks.clear();
 
     for (const { offset, length } of slices) {
       let top = offset + length;
@@ -138,7 +147,7 @@ export class BlockedSource extends BaseSource {
       throw new AbortError('Request was aborted');
     }
 
-    const blocks = allBlockIds.map((id) => this.blockCache.get(id));
+    const blocks = allBlockIds.map((id) => this.blockCache.get(id) || this.evictedBlocks.get(id));
     const failedBlocks = blocks.filter((i) => !i);
     if (failedBlocks.length) {
       throw new AggregateError(failedBlocks, 'Request failed');
