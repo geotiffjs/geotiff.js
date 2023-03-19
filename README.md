@@ -95,7 +95,7 @@ console.log(`Pixel covers the following GPS area:`, gpsBBox);
 const rasters = await image.readRasters();
 const { width, [0]: raster } = rasters;
 const elevation = raster[x + y * width];
-console.log(`The elevation for tile[${x}][${y}] is ${elevation}m`);
+console.log(`The elevation at (${lat},${long}) is ${elevation}m`);
 ```
 
 ## Advanced Example Usage
