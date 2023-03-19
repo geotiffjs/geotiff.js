@@ -48,7 +48,6 @@ Geotiff gives you access to all GeoTIFF metadata, but does not offer any one spe
 As an example, here is how you would resolve GPS coordinates to elevation in a GeoTIFF that encodes WGS-84 compliant geo data:
 
 ```js
-import fs from "fs";
 import { fromUrl, fromArrayBuffer, fromBlob  } from "geotiff";
 
 const lerp = (a, b, t) => (1 - t) * a + t * b;
