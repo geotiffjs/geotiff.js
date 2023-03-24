@@ -43,6 +43,64 @@ Further documentation can be found [here](https://geotiffjs.github.io/geotiff.js
 
 ## Example Usage
 
+Geotiff gives you access to all GeoTIFF metadata, but does not offer any one specific higher level API (such as GDAL) for things like transforms or data extraction. However, you can write your own higher level API using this library, given your specific dataset needs.
+
+As an example, here is how you would resolve GPS coordinates to elevation in a GeoTIFF that encodes WGS-84 compliant geo data:
+
+```js
+import { fromUrl, fromArrayBuffer, fromBlob  } from "geotiff";
+
+const lerp = (a, b, t) => (1 - t) * a + t * b;
+
+function transform(a, b, M, roundToInt = false) {
+  const round = (v) => (roundToInt ? v | 0 : v);
+  return [
+    round(M[0] + M[1] * a + M[2] * b),
+    round(M[3] + M[4] * a + M[5] * b),
+  ];
+}
+
+// Load our data tile from url, arraybuffer, or blob, so we can work with it:
+const tiff = await fromArrayBuffer(...);
+const image = await tiff.getImage(); // by default, the first image is read.
+
+// Construct the WGS-84 forward and inverse affine matrices:
+const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
+let [sx, sy, sz] = s;
+let [px, py, k, gx, gy, gz] = t;
+sy = -sy; // WGS-84 tiles have a "flipped" y component
+
+const pixelToGPS = [gx, sx, 0, gy, 0, sy];
+console.log(`pixel to GPS transform matrix:`, pixelToGPS);
+
+const gpsToPixel = [-gx / sx, 1 / sx, 0, -gy / sy, 0, 1 / sy];
+console.log(`GPS to pixel transform matrix:`, gpsToPixel);
+
+// Convert a GPS coordinate to a pixel coordinate in our tile:
+const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
+const lat = lerp(gy1, gy2, Math.random());
+const long = lerp(gx1, gx2, Math.random());
+console.log(`Looking up GPS coordinate (${lat.toFixed(6)},${long.toFixed(6)})`);
+
+const [x, y] = transform(long, lat, gpsToPixel, true);
+console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
+
+// And as each pixel in the tile covers a geographic area, not a single
+// GPS coordinate, get the area that this pixel covers:
+const gpsBBox = [transform(x, y, pixelToGPS), transform(x + 1, y + 1, pixelToGPS)];
+console.log(`Pixel covers the following GPS area:`, gpsBBox);
+
+// Finally, retrieve the elevation associated with this pixel's geographic area:
+const rasters = await image.readRasters();
+const { width, [0]: raster } = rasters;
+const elevation = raster[x + y * width];
+console.log(`The elevation at (${lat.toFixed(6)},${long.toFixed(6)}) is ${elevation}m`);
+```
+
+## Advanced Example Usage
+
+For more advanced examples of `geotiff` in larger codebases, please have a look at the following projects:
+
 * [Slice view using Cesium.js (TAMP project)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
 
 [![3D slice view](http://img.youtube.com/vi/E6kFLtKgeJ8/0.jpg)](http://www.youtube.com/watch?v=E6kFLtKgeJ8)
