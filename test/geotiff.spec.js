@@ -538,6 +538,13 @@ describe('Geo metadata tests', async () => {
     expect(image.getGeoKeys()).to.have.property('GeographicTypeGeoKey');
     expect(image.getGeoKeys().GeographicTypeGeoKey).to.equal(4326);
   });
+
+  it('should be able to get the bounding box of skewed images', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('umbra_mount_yasur.tiff'));
+    const image = await tiff.getImage();
+    expect(image.getBoundingBox()).to.be.an('array');
+    expect(image.getBoundingBox()).to.be.deep.equal([336494.9320674397, 7839364.913043569, 337934.4836350695, 7840804.464611199]);
+  });
 });
 
 describe('GDAL_METADATA tests', async () => {
