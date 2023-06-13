@@ -78,6 +78,20 @@ function normalize(input) {
   return JSON.stringify(toArrayRecursively(input));
 }
 
+function generateTestDataArray(min, max, length, onlyWholeNumbers) {
+  const data = [];
+
+  for (let i = 0; i < length; i++) {
+    let randomValue = (Math.random() * (max - min + 1)) + min;
+    if (onlyWholeNumbers) {
+      randomValue = Math.floor(randomValue);
+    }
+    data.push(randomValue);
+  }
+
+  return data;
+}
+
 function getMockMetaData(height, width) {
   return {
     ImageWidth: width, // only necessary if values aren't multi-dimensional
@@ -103,11 +117,46 @@ function getMockMetaData(height, width) {
   };
 }
 
+describe('writeTypedArrays', () => {
+  const dataLength = 512 * 512 * 4;
+
+  const variousDataTypeExamples = [
+    generateTestDataArray(0, 255, dataLength, true),
+    new Uint8Array(generateTestDataArray(0, 255, dataLength, true)),
+    new Uint16Array(generateTestDataArray(0, 65535, dataLength, true)),
+    new Uint32Array(generateTestDataArray(0, 4294967295, dataLength, true)),
+    new Float32Array(generateTestDataArray(-3.4e+38, 3.4e+38, dataLength, false)),
+  ];
+
+  const height = Math.sqrt(dataLength);
+  const width = Math.sqrt(dataLength);
+
+  for (let s = 0; s < variousDataTypeExamples.length; ++s) {
+    const originalValues = variousDataTypeExamples[s];
+    const dataType = originalValues.constructor.name;
+
+    it(`should write ${dataType}`, async () => {
+      const metadata = {
+        height,
+        width,
+      };
+
+      const newGeoTiffAsBinaryData = await writeArrayBuffer((originalValues), metadata);
+      const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+      const image = await newGeoTiff.getImage();
+      const newValues = await image.readRasters();
+      const valueArray = toArrayRecursively(newValues)[0];
+      const originalValueArray = Array.from(originalValues);
+      expect(valueArray).to.be.deep.equal(originalValueArray);
+    });
+  }
+});
+
 describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
     const tiff = await fromUrls(
-      'http://localhost:3000/data/overviews_external.tiff',
-      ['http://localhost:3000/data/overviews_external.tiff.ovr'],
+        'http://localhost:3000/data/overviews_external.tiff',
+        ['http://localhost:3000/data/overviews_external.tiff.ovr'],
     );
     const count = await tiff.getImageCount();
     expect(count).to.equal(5);
@@ -422,7 +471,7 @@ describe('ifdRequestTests', () => {
     await tiff.getImage(index + 1);
     // first image slot is empty so we filter out the Promises, of which there are two
     expect(
-      tiff.ifdRequests.filter((ifdRequest) => ifdRequest instanceof Promise).length,
+        tiff.ifdRequests.filter((ifdRequest) => ifdRequest instanceof Promise).length,
     ).to.equal(2);
   });
 
@@ -550,7 +599,7 @@ describe('Geo metadata tests', async () => {
 describe('GDAL_METADATA tests', async () => {
   it('should parse stats for specific sample', async () => {
     const tiff = await GeoTIFF.fromSource(
-      createSource('abetow-ERD2018-EBIRD_SCIENCE-20191109-a5cf4cb2_hr_2018_abundance_median.tiff'),
+        createSource('abetow-ERD2018-EBIRD_SCIENCE-20191109-a5cf4cb2_hr_2018_abundance_median.tiff'),
     );
     const image = await tiff.getImage();
     const metadata = await image.getGDALMetadata(10);
@@ -841,10 +890,10 @@ describe('64 bit tests', () => {
       0x00,
     ]);
     const littleEndianSlice = new DataSlice(
-      littleEndianBytes.buffer,
-      0,
-      true,
-      true,
+        littleEndianBytes.buffer,
+        0,
+        true,
+        true,
     );
     const bigEndianBytes = new Uint8Array([
       // ((2 ** 52) - 1)
@@ -881,10 +930,10 @@ describe('64 bit tests', () => {
       0xff,
     ]);
     const littleEndianSlice = new DataSlice(
-      littleEndianBytes.buffer,
-      0,
-      true,
-      true,
+        littleEndianBytes.buffer,
+        0,
+        true,
+        true,
     );
     const bigEndianBytes = new Uint8Array([
       // -(2 ** 32 - 1)
@@ -932,10 +981,10 @@ describe('64 bit tests', () => {
       0xff,
     ]);
     const littleEndianSlice = new DataSlice(
-      littleEndianBytes.buffer,
-      0,
-      true,
-      true,
+        littleEndianBytes.buffer,
+        0,
+        true,
+        true,
     );
     const bigEndianBytes = new Uint8Array([
       // ((2 ** 53) - 1)
@@ -988,7 +1037,7 @@ describe('writeTests', () => {
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
     expect(
-      JSON.stringify(newValues.slice(0, -1)),
+        JSON.stringify(newValues.slice(0, -1)),
     ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
 
     const geoKeys = image.getGeoKeys();
@@ -1082,7 +1131,7 @@ describe('writeTests', () => {
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
     expect(
-      JSON.stringify(newValues.slice(0, -1)),
+        JSON.stringify(newValues.slice(0, -1)),
     ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
   });
 
@@ -1106,7 +1155,7 @@ describe('writeTests', () => {
       return chunk(band, width);
     });
     expect(
-      JSON.stringify(newValuesReshaped.slice(0, -1)),
+        JSON.stringify(newValuesReshaped.slice(0, -1)),
     ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
   });
 
@@ -1122,7 +1171,7 @@ describe('writeTests', () => {
     const rasters = await image.readRasters();
     const newValues = toArrayRecursively(rasters[0]);
     expect(
-      JSON.stringify(newValues.slice(0, -1)),
+        JSON.stringify(newValues.slice(0, -1)),
     ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
 
     const { fileDirectory } = image;
