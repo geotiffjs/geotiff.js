@@ -426,8 +426,8 @@ export function writeGeotiff(data, metadata) {
   }
 
   const geoKeys = Object.keys(metadata)
-      .filter((key) => endsWith(key, 'GeoKey'))
-      .sort((a, b) => name2code[a] - name2code[b]);
+    .filter((key) => endsWith(key, 'GeoKey'))
+    .sort((a, b) => name2code[a] - name2code[b]);
 
   if (!metadata.GeoAsciiParams) {
     let geoAsciiParams = '';
