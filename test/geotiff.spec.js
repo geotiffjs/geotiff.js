@@ -981,10 +981,10 @@ describe('64 bit tests', () => {
       0xff,
     ]);
     const littleEndianSlice = new DataSlice(
-        littleEndianBytes.buffer,
-        0,
-        true,
-        true,
+      littleEndianBytes.buffer,
+      0,
+      true,
+      true,
     );
     const bigEndianBytes = new Uint8Array([
       // ((2 ** 53) - 1)
