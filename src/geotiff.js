@@ -4,10 +4,11 @@ import DataView64 from './dataview64.js';
 import DataSlice from './dataslice.js';
 import Pool from './pool.js';
 
-import { makeRemoteSource } from './source/remote.js';
+import { makeRemoteSource, makeCustomSource } from './source/remote.js';
 import { makeBufferSource } from './source/arraybuffer.js';
 import { makeFileReaderSource } from './source/filereader.js';
 import { makeFileSource } from './source/file.js';
+import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.js';
 import { writeGeotiff } from './geotiffwriter.js';
@@ -685,6 +686,19 @@ export async function fromUrl(url, options = {}, signal) {
 }
 
 /**
+ * Creates a new GeoTIFF from a custom {@link BaseClient}.
+ * @param {BaseClient} client The client.
+ * @param {object} [options] Additional options to pass to the source.
+ *                           See {@link makeRemoteSource} for details.
+ * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                               to be aborted
+ * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
+ */
+export async function fromCustomClient(client, options = {}, signal) {
+  return GeoTIFF.fromSource(makeCustomSource(client, options), signal);
+}
+
+/**
  * Construct a new GeoTIFF from an
  * [ArrayBuffer]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer}.
  * @param {ArrayBuffer} arrayBuffer The data to read the file from.
@@ -757,3 +771,4 @@ export function writeArrayBuffer(values, metadata) {
 
 export { Pool };
 export { GeoTIFFImage };
+export { BaseClient, BaseResponse };

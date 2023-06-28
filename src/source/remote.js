@@ -175,6 +175,11 @@ export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  return maybeWrapInBlockedSource(source, blockOptions);
+}
+
 /**
  *
  * @param {string} url
