@@ -470,13 +470,18 @@ class GeoTIFFImage {
 
     for (let yTile = minYTile; yTile < maxYTile; ++yTile) {
       for (let xTile = minXTile; xTile < maxXTile; ++xTile) {
+        let getPromise;
+        if (this.planarConfiguration === 1) {
+          getPromise = this.getTileOrStrip(xTile, yTile, 0, poolOrDecoder, signal);
+        }
         for (let sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
           const si = sampleIndex;
           const sample = samples[sampleIndex];
           if (this.planarConfiguration === 2) {
-            bytesPerPixel = this.getSampleByteSize(sampleIndex);
+            bytesPerPixel = this.getSampleByteSize(sample);
+            getPromise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal).then((tile) => {
+          const promise = getPromise.then((tile) => {
             const buffer = tile.data;
             const dataView = new DataView(buffer);
             const blockHeight = this.getBlockHeight(tile.y);
