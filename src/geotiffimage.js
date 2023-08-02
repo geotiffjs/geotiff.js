@@ -382,12 +382,12 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
-    const slice = (await this.source.fetch([{ offset, length: byteCount }], signal))[0];
 
     let request;
     if (tiles === null || !tiles[index]) {
     // resolve each request by potentially applying array normalization
       request = (async () => {
+        const slice = (await this.source.fetch([{ offset, length: byteCount }], signal))[0];
         let data = await poolOrDecoder.decode(this.fileDirectory, slice);
         const sampleFormat = this.getSampleFormat();
         const bitsPerSample = this.getBitsPerSample();
@@ -408,6 +408,11 @@ class GeoTIFFImage {
       // set the cache
       if (tiles !== null) {
         tiles[index] = request;
+        request.catch(() => {
+          if (tiles[index] === request) {
+            tiles[index] = null;
+          }
+        });
       }
     } else {
       // get from the cache
