@@ -442,6 +442,7 @@ export function writeGeotiff(data, metadata) {
     'SamplesPerPixel',
     'XPosition',
     'YPosition',
+    'RowsPerStrip',
   ].forEach((name) => {
     if (metadata[name]) {
       metadata[name] = toArray(metadata[name]);
