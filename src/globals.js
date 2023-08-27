@@ -163,6 +163,7 @@ export const fieldTagTypes = {
   34264: 'DOUBLE',
   34665: 'LONG',
   34735: 'SHORT',
+  34736: 'DOUBLE',
   34737: 'ASCII',
   42113: 'ASCII',
 };
