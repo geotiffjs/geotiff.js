@@ -420,8 +420,8 @@ export function writeGeotiff(data, metadata) {
   }
 
   // delete GeoKeys from metadata, because stored in GeoKeyDirectory tag
-  for (const geoKey in geoKeys) {
-    if (geoKeys.hasOwnProperty(geoKey)) {
+  for (const geoKey of geoKeys) {
+    if (metadata.hasOwnProperty(geoKey)) {
       delete metadata[geoKey];
     }
   }
