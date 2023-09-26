@@ -93,7 +93,7 @@ export class BlockedSource extends BaseSource {
 
       const firstBlockOffset = Math.floor(offset / this.blockSize) * this.blockSize;
 
-      for (let current = firstBlockOffset; current < top; current += this.blockSize) {
+      for (let current = firstBlockOffset; current <= top; current += this.blockSize) {
         const blockId = Math.floor(current / this.blockSize);
         if (!this.blockCache.has(blockId) && !this.blockRequests.has(blockId)) {
           this.blockIdsToFetch.add(blockId);
