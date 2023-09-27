@@ -64,7 +64,7 @@ class RemoteSource extends BaseSource {
 
     if (!response.ok) {
       throw new Error('Error fetching data.');
-    } else if (response.status === 206) {
+    } else if (response.status === 206 || (response.status === 200 && this.client.url.startsWith('file:///'))) {
       const { type, params } = parseContentType(response.getHeader('content-type'));
       if (type === 'multipart/byteranges') {
         const byteRanges = parseByteRanges(await response.getData(), params.boundary);
