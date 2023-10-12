@@ -235,6 +235,7 @@ export const LercParameters = {
 export const LercAddCompression = {
   None: 0,
   Deflate: 1,
+  Zstandard: 2,
 };
 
 export const geoKeyNames = {

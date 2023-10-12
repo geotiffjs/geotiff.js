@@ -1,7 +1,10 @@
 import { inflate } from 'pako';
 import Lerc from 'lerc';
+import { ZSTDDecoder } from 'zstddec';
 import BaseDecoder from './basedecoder.js';
 import { LercParameters, LercAddCompression } from '../globals.js';
+
+export const zstd = new ZSTDDecoder();
 
 export default class LercDecoder extends BaseDecoder {
   constructor(fileDirectory) {
@@ -19,6 +22,9 @@ export default class LercDecoder extends BaseDecoder {
         break;
       case LercAddCompression.Deflate:
         buffer = inflate(new Uint8Array(buffer)).buffer; // eslint-disable-line no-param-reassign, prefer-destructuring
+        break;
+      case LercAddCompression.Zstandard:
+        buffer = zstd.decode(new Uint8Array(buffer)).buffer; // eslint-disable-line no-param-reassign, prefer-destructuring
         break;
       default:
         throw new Error(`Unsupported LERC additional compression method identifier: ${this.addCompression}`);
