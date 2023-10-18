@@ -4,7 +4,6 @@ import { expect } from 'chai';
 import http from 'http';
 import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
-import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
 
