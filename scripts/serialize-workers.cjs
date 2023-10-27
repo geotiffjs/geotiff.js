@@ -48,7 +48,7 @@ async function build(input, { minify = true } = {}) {
         import Worker from 'web-worker';
         export function create() {
           const source = ${JSON.stringify(code)};
-          return new Worker(typeof Blob === 'undefined'
+          return new Worker(typeof Buffer !== 'undefined' 
             ? 'data:application/javascript;base64,' + Buffer.from(source, 'binary').toString('base64')
             : URL.createObjectURL(new Blob([source], {type: 'application/javascript'})));
         }
