@@ -891,13 +891,15 @@ class GeoTIFFImage {
    * Returns the image bounding box as an array of 4 values: min-x, min-y,
    * max-x and max-y. When the image has no affine transformation, then an
    * exception is thrown.
+   * @param {boolean} [tilegrid=false] If true return extent for a tilegrid 
+   *                                   without adjustment for ModelTransformation.
    * @returns {Array<number>} The bounding box
    */
-  getBoundingBox() {
+  getBoundingBox(tilegrid = false) {
     const height = this.getHeight();
     const width = this.getWidth();
 
-    if (this.fileDirectory.ModelTransformation) {
+    if (this.fileDirectory.ModelTransformation && !tilegrid) {
       // eslint-disable-next-line no-unused-vars
       const [a, b, c, d, e, f, g, h] = this.fileDirectory.ModelTransformation;
 
@@ -929,8 +931,8 @@ class GeoTIFFImage {
       const x1 = origin[0];
       const y1 = origin[1];
 
-      const x2 = x1 + (resolution[0] * this.getWidth());
-      const y2 = y1 + (resolution[1] * this.getHeight());
+      const x2 = x1 + (resolution[0] * width);
+      const y2 = y1 + (resolution[1] * height);
 
       return [
         Math.min(x1, x2),
