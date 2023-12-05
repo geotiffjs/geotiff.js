@@ -860,11 +860,20 @@ class GeoTIFFImage {
       ];
     }
     if (modelTransformation) {
+      if (modelTransformation[1] === 0 && modelTransformation[4] === 0) {
+        return [
+          modelTransformation[0],
+          -modelTransformation[5],
+          modelTransformation[10],
+        ];
+      }
       return [
-        modelTransformation[0],
-        -modelTransformation[5],
-        modelTransformation[10],
-      ];
+        Math.sqrt((modelTransformation[0] * modelTransformation[0])
+          + (modelTransformation[4] * modelTransformation[4])),
+        -Math.sqrt((modelTransformation[1] * modelTransformation[1])
+          + (modelTransformation[5] * modelTransformation[5])),
+        modelTransformation[10]];
+      }
     }
 
     if (referenceImage) {
