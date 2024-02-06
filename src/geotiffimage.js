@@ -873,7 +873,6 @@ class GeoTIFFImage {
         -Math.sqrt((modelTransformation[1] * modelTransformation[1])
           + (modelTransformation[5] * modelTransformation[5])),
         modelTransformation[10]];
-      }
     }
 
     if (referenceImage) {
@@ -900,7 +899,7 @@ class GeoTIFFImage {
    * Returns the image bounding box as an array of 4 values: min-x, min-y,
    * max-x and max-y. When the image has no affine transformation, then an
    * exception is thrown.
-   * @param {boolean} [tilegrid=false] If true return extent for a tilegrid 
+   * @param {boolean} [tilegrid=false] If true return extent for a tilegrid
    *                                   without adjustment for ModelTransformation.
    * @returns {Array<number>} The bounding box
    */
