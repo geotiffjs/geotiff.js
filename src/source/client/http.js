@@ -55,7 +55,8 @@ export class HttpClient extends BaseClient {
 
             // concatenate all chunks and resolve the promise with the resulting buffer
             response.on('end', () => {
-              const data = Buffer.concat(chunks).buffer;
+              const concat = Buffer.concat(chunks);
+              const data = concat.buffer.slice (concat.byteOffset, concat.byteOffset + concat.byteLength)
               resolveData(data);
             });
             response.on('error', reject);
