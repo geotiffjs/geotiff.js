@@ -88,7 +88,7 @@
     "parse-headers": "^2.0.2",
     "quick-lru": "^6.1.1",
     "web-worker": "^1.2.0",
-    "xml-utils": "^1.0.2",
+    "xml-utils": "^1.7.1",
     "zstddec": "^0.1.0"
   },
   "devDependencies": {
