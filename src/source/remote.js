@@ -2,10 +2,6 @@ import { parseByteRanges, parseContentRange, parseContentType } from './httputil
 import { BaseSource } from './basesource.js';
 import { BlockedSource } from './blockedsource.js';
 
-import { FetchClient } from './client/fetch.js';
-import { XHRClient } from './client/xhr.js';
-import { HttpClient } from './client/http.js';
-
 class RemoteSource extends BaseSource {
   /**
    *
@@ -157,19 +153,22 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   return new BlockedSource(source, { blockSize, cacheSize });
 }
 
-export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+export async function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const { FetchClient } = await import('./client/fetch.js');
   const client = new FetchClient(url, credentials);
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
-export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+export async function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const { XHRClient } = await import('./client/xhr.js');
   const client = new XHRClient(url);
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
-export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+export async function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+  const { HttpClient } = await import('./client/http.js');
   const client = new HttpClient(url);
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
   return maybeWrapInBlockedSource(source, blockOptions);
@@ -185,12 +184,12 @@ export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFul
  * @param {string} url
  * @param {object} options
  */
-export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
+export async function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
   if (typeof fetch === 'function' && !forceXHR) {
-    return makeFetchSource(url, clientOptions);
+    return await makeFetchSource(url, clientOptions);
   }
   if (typeof XMLHttpRequest !== 'undefined') {
-    return makeXHRSource(url, clientOptions);
+    return await makeXHRSource(url, clientOptions);
   }
-  return makeHttpSource(url, clientOptions);
+  return await makeHttpSource(url, clientOptions);
 }
