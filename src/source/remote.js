@@ -153,7 +153,13 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   return new BlockedSource(source, { blockSize, cacheSize });
 }
 
-export async function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
+export async function makeFetchSource(url, {
+  headers = {},
+  credentials,
+  maxRanges = 0,
+  allowFullFile = false,
+  ...blockOptions
+} = {}) {
   const { FetchClient } = await import('./client/fetch.js');
   const client = new FetchClient(url, credentials);
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);

@@ -755,7 +755,7 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
   const mainSource = await makeRemoteSource(mainUrl, options);
   const mainFile = await GeoTIFF.fromSource(mainSource, signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => makeRemoteSource(url, options).then(src=>GeoTIFF.fromSource(src))
+    overviewUrls.map((url) => makeRemoteSource(url, options).then((src) => GeoTIFF.fromSource(src)),
     ),
   );
 
