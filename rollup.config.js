@@ -24,6 +24,9 @@ export default {
           {
             modules: false,
             targets: 'last 2 versions, not dead',
+            exclude: [
+              "@babel/plugin-transform-typeof-symbol"
+            ]
           },
         ],
       ],
