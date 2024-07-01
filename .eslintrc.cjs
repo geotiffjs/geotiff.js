@@ -50,5 +50,6 @@ module.exports = {
     curly: ['error', 'all'],
     'brace-style': ['error', '1tbs', { allowSingleLine: false }],
     'no-else-return': 0,
+    'no-return-await': 0,
   },
 };
