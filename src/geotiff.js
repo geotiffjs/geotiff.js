@@ -158,11 +158,11 @@ function getValues(dataSlice, fieldType, count, offset) {
       );
     }
   } else { // RATIONAL or SRATIONAL
-    for (let i = 0; i < count; i += 2) {
-      values[i] = readMethod.call(
+    for (let i = 0; i < count; i++) {
+      values[i * 2] = readMethod.call(
         dataSlice, offset + (i * fieldTypeLength),
       );
-      values[i + 1] = readMethod.call(
+      values[i * 2 + 1] = readMethod.call(
         dataSlice, offset + ((i * fieldTypeLength) + 4),
       );
     }
