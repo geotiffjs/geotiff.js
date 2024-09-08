@@ -7,7 +7,7 @@ import finalhandler from 'finalhandler';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
+import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool, globals } from '../dist-module/geotiff.js';
 import { makeFetchSource } from '../dist-module/source/remote.js';
 import { makeFileSource } from '../dist-module/source/file.js';
 import { BlockedSource } from '../dist-module/source/blockedsource.js';
@@ -279,6 +279,30 @@ describe('GeoTIFF', () => {
     const tiff = await GeoTIFF.fromSource(createSource('lzw_clear_eoi/lzw.tiff'));
     const image = await tiff.getImage();
     await image.readRasters();
+  });
+
+  it('should parse arrays of rationals correctly', async () => {
+    // For the purposes of this test, we need to parse an array of rationals.
+    // These two fields from EXIF GPSInfo are both arrays of 3 rationals that are suitable for this.
+    globals.fieldTagNames[0x8825] = "GPSInfo";
+    globals.fieldTagNames[0x0002] = "GPSLatitude";
+    globals.fieldTagNames[0x0004] = "GPSLongitude";
+
+    // Contains EXIF data from a JPG image which contains a
+    // GPSInfo IFD that contains the requried GPSLatitude and GPSLongitude fields.
+    const exifTiff = new Uint32Array([
+      2771273,8,16777229,65540,262144000,16842752,65540,196608000,17760256,524290,11141120,17825792,1114114,11665408,17956864,65539,393216,18481152,65541,12845056,18546688,65541,13369344,19398656,65539,131072,19988480,917506,13893632,20054016,1310722,14811136,34799616,65539,65536,2271805440,65540,16121856,2284126208,65540,49283072,58064896,1634926592,1853191021,1632043111,2037932396,858936096,1953256736,24946,72,1,72,1,942750035,1398298690,1180189494,808583235,809120818,909130297,976760864,842676274,1966137,361114,1,612,361117,1,620,231458,1,2,231463,1,125,495616,4,808596016,167939,20,628,167940,20,648,167952,7,668,167953,7,676,692737,1,684,365058,1,692,692739,1,700,692740,1,708,365061,1,716,233991,1,2,233993,1,0,365066,1,724,168592,4,3552308,168593,4,3552308,168594,4,3552308,499712,4,808464688,237569,1,65535,303106,1,4000,303107,1,3000,238594,1,0,238595,1,0,369668,1,732,238597,1,13,238598,1,0,173088,12,740,0,1,50,220,100,875704370,976826426,807417392,942815800,3748410,875704370,976826426,807417392,942815800,3748410,976760875,12336,976760875,12336,1,50,227,100,260,100,0,100,227,100,220,100,100,100,1479684427,809848915,5069105,65542,131074,5439488,131072,196613,54394880,196608,131074,4521984,262144,196613,55967744,327680,65539,0,393216,65541,57540608,0,2031616,65536,3342336,65536,2523332608,1111491281,7536655,65536,3211264,65536,1907294208,1111490841,15,65536,0
+    ]);
+    
+    const tiff = await fromArrayBuffer(exifTiff.buffer);
+    const ifd0 = await tiff.requestIFD(0);
+    expect(ifd0.fileDirectory.GPSInfo).to.equal(752);
+    const gpsIfd = await tiff.parseFileDirectoryAt(ifd0.fileDirectory.GPSInfo);
+    // These fields have 6 components that should be parsed to contain values
+    expect(gpsIfd.fileDirectory.GPSLatitude.length).to.equal(6);
+    expect(gpsIfd.fileDirectory.GPSLongitude.length).to.equal(6);
+    expect(gpsIfd.fileDirectory.GPSLatitude).to.eql(new Uint32Array([31, 1, 51, 1, 47289959, 1000000]));
+    expect(gpsIfd.fileDirectory.GPSLongitude).to.eql(new Uint32Array([115, 1, 49, 1, 18444719, 1000000]));
   });
 });
 
