@@ -422,11 +422,44 @@ class GeoTIFF extends GeoTIFFBase {
       offset + offsetSize + (entrySize * numDirEntries),
     );
 
+    // Parse RPC coefficients if available
+    if (fileDirectory.RPCCoefficient && fileDirectory.RPCCoefficient.length === 92) {
+      fileDirectory.RPCCoefficient = this.parseRPCCoefficients(fileDirectory.RPCCoefficient);
+    } else if (fileDirectory.RPCCoefficient) {
+      console.warn('Invalid RPCCoefficient length');
+    }
+
     return new ImageFileDirectory(
       fileDirectory,
       geoKeyDirectory,
       nextIFDByteOffset,
     );
+  }
+
+  parseRPCCoefficients(rpcArray) {
+    if (rpcArray.length !== 92) {
+      console.warn(`Invalid RPCCoefficient length. Expected 92, got ${rpcArray.length}`);
+      return null;
+    }
+
+    return {
+      ERR_BIAS: rpcArray[0],
+      ERR_RAND: rpcArray[1],
+      LINE_OFF: rpcArray[2],
+      SAMP_OFF: rpcArray[3],
+      LAT_OFF: rpcArray[4],
+      LONG_OFF: rpcArray[5],
+      HEIGHT_OFF: rpcArray[6],
+      LINE_SCALE: rpcArray[7],
+      SAMP_SCALE: rpcArray[8],
+      LAT_SCALE: rpcArray[9],
+      LONG_SCALE: rpcArray[10],
+      HEIGHT_SCALE: rpcArray[11],
+      LINE_NUM_COEFF: rpcArray.slice(12, 32),
+      LINE_DEN_COEFF: rpcArray.slice(32, 52),
+      SAMP_NUM_COEFF: rpcArray.slice(52, 72),
+      SAMP_DEN_COEFF: rpcArray.slice(72, 92),
+    };
   }
 
   async requestIFD(index) {
