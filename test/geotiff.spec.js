@@ -6,6 +6,7 @@ import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
 import { makeFetchSource } from '../dist-module/source/remote.js';
@@ -15,9 +16,9 @@ import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.
 import DataSlice from '../dist-module/dataslice.js';
 import DataView64 from '../dist-module/dataview64.js';
 
-const __dirname = dirname(new URL(import.meta.url).pathname);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Set up a node server to make tiffs available at localhost:3000/test/data, and a worker pool
+// Set up a node server to make tiffs available at localhost:3000/data, and a worker pool
 let server = null;
 let pool = null;
 before(async () => {
