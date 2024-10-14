@@ -39,10 +39,10 @@ gdaladdo overviews.tiff 2 4 8 16
 cp stripped.tiff overviews_external.tiff
 gdaladdo -ro overviews_external.tiff 2 4 8 16
 
-# bigtiff
-wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
-unzip -o BigTIFFSamples.zip -d .
-rm BigTIFFSamples.zip
+# bigtiff - seems now defunct, but don't seem to be used anyways
+# wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
+# unzip -o BigTIFFSamples.zip -d .
+# rm BigTIFFSamples.zip
 
 # color images
 rgb2pct.py rgb.tiff rgb_paletted.tiff
