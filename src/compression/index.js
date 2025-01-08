@@ -32,4 +32,11 @@ addDecoder(34887, () => import('./lerc.js')
   })
   .then((m) => m.default),
 );
+addDecoder(50000, () => import('./zstd.js')
+  .then(async (m) => {
+    await m.zstd.init();
+    return m;
+  })
+  .then((m) => m.default),
+);
 addDecoder(50001, () => import('./webimage.js').then((m) => m.default));
