@@ -26,10 +26,12 @@ gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff le
 gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff lerc_interleave.tiff
 gdal_translate -of GTiff -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff lerc_deflate.tiff
 gdal_translate -of GTiff -co COMPRESS=LERC_ZSTD -co MAX_Z_ERROR=1000 stripped.tiff lerc_zstd.tiff
+gdal_translate -of GTiff -co COMPRESS=ZSTD stripped.tiff zstd.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff float32lerc.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff float32lerc_interleave.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff float32lerc_deflate.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC_ZSTD -co MAX_Z_ERROR=1000 stripped.tiff float32lerc_zstd.tiff
+gdal_translate -of GTiff -ot Float32 -co COMPRESS=ZSTD stripped.tiff float32zstd.tiff
 
 gdal_translate -of COG initial.tiff cog.tiff
 
