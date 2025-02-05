@@ -143,7 +143,7 @@
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
     "pretest": "npm run lint",
-    "test": "mocha --full-trace test/geotiff.spec.js"
+    "test": "mocha --full-trace test/*.spec.js"
   },
   "author": "Fabian Schindler",
   "browser": {

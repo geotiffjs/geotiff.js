@@ -213,6 +213,25 @@ for (const key in fieldTypeNames) {
   }
 }
 
+/**
+ * Registers a new field tag
+ * @param {number} tag the numeric tiff tag
+ * @param {string} name the name of the tag that will be reported in the IFD
+ * @param {number} type the tags data type
+ * @param {Boolean} isArray whether the tag is an array
+ */
+export function registerTag(tag, name, type = undefined, isArray = false) {
+  fieldTags[name] = tag;
+  fieldTagNames[tag] = name;
+
+  if (type) {
+    fieldTypes[name] = type;
+  }
+  if (isArray) {
+    arrayFields.push(tag);
+  }
+}
+
 export const photometricInterpretations = {
   WhiteIsZero: 0,
   BlackIsZero: 1,

@@ -175,12 +175,20 @@ function getValues(dataSlice, fieldType, count, offset) {
 }
 
 /**
- * Data class to store the parsed file directory, geo key directory and
+ * Data class to store the parsed file directory (+ its raw form), geo key directory and
  * offset to the next IFD
  */
 class ImageFileDirectory {
-  constructor(fileDirectory, geoKeyDirectory, nextIFDByteOffset) {
+  /**
+   * Create an ImageFileDirectory.
+   * @param {object} fileDirectory the file directory, mapping tag names to values
+   * @param {Map} rawFileDirectory the raw file directory, mapping tag IDs to values
+   * @param {object} geoKeyDirectory the geo key directory, mapping geo key names to values
+   * @param {number} nextIFDByteOffset the byte offset to the next IFD
+   */
+  constructor(fileDirectory, rawFileDirectory, geoKeyDirectory, nextIFDByteOffset) {
     this.fileDirectory = fileDirectory;
+    this.rawFileDirectory = rawFileDirectory;
     this.geoKeyDirectory = geoKeyDirectory;
     this.nextIFDByteOffset = nextIFDByteOffset;
   }
@@ -372,6 +380,7 @@ class GeoTIFF extends GeoTIFFBase {
     }
 
     const fileDirectory = {};
+    const rawFileDirectory = new Map();
 
     // loop over the IFD and create a file directory object
     let i = offset + (this.bigTiff ? 8 : 2);
@@ -414,8 +423,12 @@ class GeoTIFF extends GeoTIFFBase {
         value = fieldValues;
       }
 
-      // write the tags value to the file directly
-      fileDirectory[fieldTagNames[fieldTag]] = value;
+      // write the tags value to the file directory
+      const tagName = fieldTagNames[fieldTag];
+      if (tagName) {
+        fileDirectory[tagName] = value;
+      }
+      rawFileDirectory.set(fieldTag, value);
     }
     const geoKeyDirectory = parseGeoKeyDirectory(fileDirectory);
     const nextIFDByteOffset = dataSlice.readOffset(
@@ -424,6 +437,7 @@ class GeoTIFF extends GeoTIFFBase {
 
     return new ImageFileDirectory(
       fileDirectory,
+      rawFileDirectory,
       geoKeyDirectory,
       nextIFDByteOffset,
     );
