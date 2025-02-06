@@ -96,6 +96,9 @@ export const fieldTagNames = {
   // IPTC
   0x83BB: 'IPTC',
 
+  // Laser Scanning Microscopy
+  0x866c: 'CZ_LSMINFO',
+
   // ICC
   0x8773: 'ICC Profile',
 
