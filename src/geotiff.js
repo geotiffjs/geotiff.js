@@ -7,7 +7,6 @@ import Pool from './pool.js';
 import { makeRemoteSource, makeCustomSource } from './source/remote.js';
 import { makeBufferSource } from './source/arraybuffer.js';
 import { makeFileReaderSource } from './source/filereader.js';
-import { makeFileSource } from './source/file.js';
 import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.js';
@@ -696,7 +695,7 @@ export { MultiGeoTIFF };
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
+  return GeoTIFF.fromSource(await makeRemoteSource(url, options), signal);
 }
 
 /**
@@ -737,6 +736,7 @@ export async function fromArrayBuffer(arrayBuffer, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path, signal) {
+  const makeFileSource = await import('./source/file.js');
   return GeoTIFF.fromSource(makeFileSource(path), signal);
 }
 
@@ -766,9 +766,11 @@ export async function fromBlob(blob, signal) {
  * @returns {Promise<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), signal);
+  const mainSource = await makeRemoteSource(mainUrl, options);
+  const mainFile = await GeoTIFF.fromSource(mainSource, signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map((url) => makeRemoteSource(url, options).then((src) => GeoTIFF.fromSource(src)),
+    ),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
