@@ -1,5 +1,5 @@
 import { inflate } from 'pako';
-import Lerc from 'lerc';
+import * as Lerc from 'lerc';
 import { ZSTDDecoder } from 'zstddec';
 import BaseDecoder from './basedecoder.js';
 import { LercParameters, LercAddCompression } from '../globals.js';

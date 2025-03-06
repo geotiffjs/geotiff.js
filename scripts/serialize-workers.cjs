@@ -6,7 +6,7 @@ const { babel } = require('@rollup/plugin-babel');
 const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
 const common = require('@rollup/plugin-commonjs');
 const rollup = require('rollup');
-const { terser } = require('rollup-plugin-terser');
+const terser = require('@rollup/plugin-terser');
 const fse = require('fs-extra');
 
 async function build(input, { minify = true } = {}) {
@@ -59,7 +59,7 @@ async function build(input, { minify = true } = {}) {
   const bundle = await rollup.rollup({
     input,
     plugins,
-    inlineDynamicImports: true,
+    output: { inlineDynamicImports: true },
   });
   const { output } = await bundle.generate({ format: 'es' });
 
