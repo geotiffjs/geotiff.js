@@ -1,10 +1,79 @@
-import { getDecoder } from './compression/index.js';
+import { getDecoder, preferWorker } from './compression/index.js';
+import create from './worker/create.js';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 2) : 2;
 
 /**
  * @module pool
  */
+
+/**
+ * Wrapper for a worker that can submit jobs to the worker and receive responses.
+ */
+class WorkerWrapper {
+  /**
+   * @param {Worker} worker the worker to wrap
+   */
+  constructor(worker) {
+    this.worker = worker;
+    this.worker.addEventListener('message', (e) => this._onWorkerMessage(e));
+    this.jobIdCounter = 0;
+    this.jobs = new Map();
+  }
+
+  /**
+   * Get a new job id
+   * @returns {Number} the new job id
+   */
+  newJobId() {
+    return this.jobIdCounter++;
+  }
+
+  /**
+   * Get the number of jobs currently running
+   * @returns {Number} the number of jobs currently running
+   */
+  getJobCount() {
+    return this.jobs.size;
+  }
+
+  _onWorkerMessage(e) {
+    const { jobId, error, ...result } = e.data;
+    const job = this.jobs.get(jobId);
+    this.jobs.delete(jobId);
+
+    if (error) {
+      job.reject(new Error(error));
+    } else {
+      job.resolve(result);
+    }
+  }
+
+  /**
+   * Submit a job to the worker
+   * @param {Object} message the message to send to the worker. A "jobId" property will be added to this object.
+   * @param {Object[]} [transferables] an optional array of transferable objects to transfer to the worker.
+   * @returns {Promise} a promise that gets resolved/rejected when a message with the same jobId is received from the worker.
+   */
+  submitJob(message, transferables = undefined) {
+    const jobId = this.newJobId();
+    let resolve;
+    let reject;
+
+    const promise = new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    });
+
+    this.jobs.set(jobId, { resolve, reject });
+    this.worker.postMessage({ ...message, jobId }, transferables);
+    return promise;
+  }
+
+  terminate() {
+    this.worker.terminate();
+  }
+}
 
 /**
  * Pool for workers to decode chunks of the images.
@@ -39,24 +108,16 @@ class Pool {
    * }
    * ```
    */
-  constructor(size = defaultPoolSize, createWorker) {
-    this.workers = null;
-    this._awaitingDecoder = null;
-    this.size = size;
-    this.messageId = 0;
+  constructor(size = defaultPoolSize, createWorker = create) {
+    this.workerWrappers = null;
     if (size) {
-      this._awaitingDecoder = createWorker ? Promise.resolve(createWorker) : new Promise((resolve) => {
-        import('./worker/decoder.js').then((module) => {
-          resolve(module.create);
-        });
-      });
-      this._awaitingDecoder.then((create) => {
-        this._awaitingDecoder = null;
-        this.workers = [];
+      this.workerWrappers = (async () => {
+        const workerWrappers = [];
         for (let i = 0; i < size; i++) {
-          this.workers.push({ worker: create(), idle: true });
+          workerWrappers.push(new WorkerWrapper(createWorker()));
         }
-      });
+        return workerWrappers;
+      })();
     }
   }
 
@@ -66,34 +127,24 @@ class Pool {
    * @returns {Promise<ArrayBuffer>} the decoded result as a `Promise`
    */
   async decode(fileDirectory, buffer) {
-    if (this._awaitingDecoder) {
-      await this._awaitingDecoder;
-    }
-    return this.size === 0
-      ? getDecoder(fileDirectory).then((decoder) => decoder.decode(fileDirectory, buffer))
-      : new Promise((resolve) => {
-        const worker = this.workers.find((candidate) => candidate.idle)
-          || this.workers[Math.floor(Math.random() * this.size)];
-        worker.idle = false;
-        const id = this.messageId++;
-        const onMessage = (e) => {
-          if (e.data.id === id) {
-            worker.idle = true;
-            resolve(e.data.decoded);
-            worker.worker.removeEventListener('message', onMessage);
-          }
-        };
-        worker.worker.addEventListener('message', onMessage);
-        worker.worker.postMessage({ fileDirectory, buffer, id }, [buffer]);
+    if (preferWorker(fileDirectory) && this.workerWrappers) {
+      // select the worker with the lowest jobCount
+      const workerWrapper = (await this.workerWrappers).reduce((a, b) => {
+        return a.getJobCount() < b.getJobCount() ? a : b;
       });
+      const { decoded } = await workerWrapper.submitJob({ fileDirectory, buffer }, [buffer]);
+      return decoded;
+    } else {
+      return getDecoder(fileDirectory).then((decoder) => decoder.decode(fileDirectory, buffer));
+    }
   }
 
-  destroy() {
-    if (this.workers) {
-      this.workers.forEach((worker) => {
-        worker.worker.terminate();
+  async destroy() {
+    if (this.workerWrappers) {
+      (await this.workerWrappers).forEach((worker) => {
+        worker.terminate();
       });
-      this.workers = null;
+      this.workerWrappers = null;
     }
   }
 }
