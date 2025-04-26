@@ -75,6 +75,10 @@ class WorkerWrapper {
   }
 }
 
+const finalizationRegistry = new FinalizationRegistry((worker) => {
+  worker.terminate();
+});
+
 /**
  * Pool for workers to decode chunks of the images.
  */
@@ -114,7 +118,10 @@ class Pool {
       this.workerWrappers = (async () => {
         const workerWrappers = [];
         for (let i = 0; i < size; i++) {
-          workerWrappers.push(new WorkerWrapper(createWorker()));
+          const worker = createWorker();
+          const wrapper = new WorkerWrapper(worker);
+          workerWrappers.push(wrapper);
+          finalizationRegistry.register(wrapper, worker, wrapper);
         }
         return workerWrappers;
       })();
