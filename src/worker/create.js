@@ -1,5 +1,4 @@
-// The contents of this file may be overridded for some build processes
-
+// The contents of this file may be overridden for some build processes
 import Worker from 'web-worker';
 
 export default function create() {
