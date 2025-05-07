@@ -55,7 +55,15 @@ class RemoteSource extends BaseSource {
       headers: {
         ...this.headers,
         Range: `bytes=${slices
-          .map(({ offset, length }) => `${offset}-${offset + length}`)
+          .map(({ offset, length }) => {
+            const end = (
+              (this._fileSize && (offset + length >= this._fileSize))
+                ? this._fileSize - 1
+                : offset + length
+            );
+
+            return `${offset}-${end}`;
+          })
           .join(',')
         }`,
       },
@@ -108,10 +116,15 @@ class RemoteSource extends BaseSource {
 
   async fetchSlice(slice, signal) {
     const { offset, length } = slice;
+    const end = (
+      (this._fileSize && (offset + length >= this._fileSize))
+        ? this._fileSize - 1
+        : offset + length
+    );
     const response = await this.client.request({
       headers: {
         ...this.headers,
-        Range: `bytes=${offset}-${offset + length}`,
+        Range: `bytes=${offset}-${end}`,
       },
       signal,
     });
