@@ -25,9 +25,11 @@ gdal_translate -of GTiff -co BIGTIFF=YES stripped.tiff bigtiff.tiff
 gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff lerc.tiff
 gdal_translate -of GTiff -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff lerc_interleave.tiff
 gdal_translate -of GTiff -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff lerc_deflate.tiff
+gdal_translate -of GTiff -co COMPRESS=LERC_ZSTD -co MAX_Z_ERROR=1000 stripped.tiff lerc_zstd.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 stripped.tiff float32lerc.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC -co MAX_Z_ERROR=1000 -co INTERLEAVE=BAND stripped.tiff float32lerc_interleave.tiff
 gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC_DEFLATE -co MAX_Z_ERROR=1000 stripped.tiff float32lerc_deflate.tiff
+gdal_translate -of GTiff -ot Float32 -co COMPRESS=LERC_ZSTD -co MAX_Z_ERROR=1000 stripped.tiff float32lerc_zstd.tiff
 
 gdal_translate -of COG initial.tiff cog.tiff
 
@@ -37,10 +39,10 @@ gdaladdo overviews.tiff 2 4 8 16
 cp stripped.tiff overviews_external.tiff
 gdaladdo -ro overviews_external.tiff 2 4 8 16
 
-# bigtiff
-wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
-unzip -o BigTIFFSamples.zip -d .
-rm BigTIFFSamples.zip
+# bigtiff - seems now defunct, but don't seem to be used anyways
+# wget http://www.awaresystems.be/imaging/tiff/bigtiff/BigTIFFSamples.zip
+# unzip -o BigTIFFSamples.zip -d .
+# rm BigTIFFSamples.zip
 
 # color images
 rgb2pct.py rgb.tiff rgb_paletted.tiff

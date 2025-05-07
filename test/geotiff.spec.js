@@ -4,9 +4,9 @@ import { expect } from 'chai';
 import http from 'http';
 import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
-import 'isomorphic-fetch';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
 import { makeFetchSource } from '../dist-module/source/remote.js';
@@ -16,9 +16,9 @@ import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.
 import DataSlice from '../dist-module/dataslice.js';
 import DataView64 from '../dist-module/dataview64.js';
 
-const __dirname = dirname(new URL(import.meta.url).pathname);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Set up a node server to make tiffs available at localhost:3000/test/data, and a worker pool
+// Set up a node server to make tiffs available at localhost:3000/data, and a worker pool
 let server = null;
 let pool = null;
 before(async () => {
@@ -293,6 +293,11 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on LERC Zstandard compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('lerc_zstd.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on Float32 and LERC compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float32lerc.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
@@ -305,6 +310,11 @@ describe('GeoTIFF', () => {
 
   it('should work on Float32 and LERC deflate compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float32lerc_deflate.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float32Array);
+  });
+
+  it('should work on Float32 and LERC Zstandard compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('float32lerc_zstd.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 

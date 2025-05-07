@@ -236,7 +236,7 @@ or a `Blob`/`File`:
 ```html
 <input type="file" id="file">
 <script>
-  const input = document.getElementById('file'):
+  const input = document.getElementById('file');
   input.onchange = async function() {
     const tiff = await fromBlob(input.files[0]);
   }

@@ -1,7 +1,7 @@
 /** @module geotiffimage */
 import { getFloat16 } from '@petamoriken/float16';
-import getAttribute from 'xml-utils/get-attribute.js';
-import findTagsByName from 'xml-utils/find-tags-by-name.js';
+import getAttribute from 'xml-utils/get-attribute'; // eslint-disable-line import/extensions
+import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line import/extensions
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
@@ -360,7 +360,7 @@ class GeoTIFFImage {
    * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
-   * @returns {Promise.<ArrayBuffer>}
+   * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBuffer}>} the decoded strip or tile
    */
   async getTileOrStrip(x, y, sample, poolOrDecoder, signal) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
@@ -470,13 +470,18 @@ class GeoTIFFImage {
 
     for (let yTile = minYTile; yTile < maxYTile; ++yTile) {
       for (let xTile = minXTile; xTile < maxXTile; ++xTile) {
+        let getPromise;
+        if (this.planarConfiguration === 1) {
+          getPromise = this.getTileOrStrip(xTile, yTile, 0, poolOrDecoder, signal);
+        }
         for (let sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
           const si = sampleIndex;
           const sample = samples[sampleIndex];
           if (this.planarConfiguration === 2) {
-            bytesPerPixel = this.getSampleByteSize(sampleIndex);
+            bytesPerPixel = this.getSampleByteSize(sample);
+            getPromise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           }
-          const promise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal).then((tile) => {
+          const promise = getPromise.then((tile) => {
             const buffer = tile.data;
             const dataView = new DataView(buffer);
             const blockHeight = this.getBlockHeight(tile.y);
@@ -855,11 +860,19 @@ class GeoTIFFImage {
       ];
     }
     if (modelTransformation) {
+      if (modelTransformation[1] === 0 && modelTransformation[4] === 0) {
+        return [
+          modelTransformation[0],
+          -modelTransformation[5],
+          modelTransformation[10],
+        ];
+      }
       return [
-        modelTransformation[0],
-        -modelTransformation[5],
-        modelTransformation[10],
-      ];
+        Math.sqrt((modelTransformation[0] * modelTransformation[0])
+          + (modelTransformation[4] * modelTransformation[4])),
+        -Math.sqrt((modelTransformation[1] * modelTransformation[1])
+          + (modelTransformation[5] * modelTransformation[5])),
+        modelTransformation[10]];
     }
 
     if (referenceImage) {
@@ -886,13 +899,15 @@ class GeoTIFFImage {
    * Returns the image bounding box as an array of 4 values: min-x, min-y,
    * max-x and max-y. When the image has no affine transformation, then an
    * exception is thrown.
+   * @param {boolean} [tilegrid=false] If true return extent for a tilegrid
+   *                                   without adjustment for ModelTransformation.
    * @returns {Array<number>} The bounding box
    */
-  getBoundingBox() {
+  getBoundingBox(tilegrid = false) {
     const height = this.getHeight();
     const width = this.getWidth();
 
-    if (this.fileDirectory.ModelTransformation) {
+    if (this.fileDirectory.ModelTransformation && !tilegrid) {
       // eslint-disable-next-line no-unused-vars
       const [a, b, c, d, e, f, g, h] = this.fileDirectory.ModelTransformation;
 
@@ -924,8 +939,8 @@ class GeoTIFFImage {
       const x1 = origin[0];
       const y1 = origin[1];
 
-      const x2 = x1 + (resolution[0] * this.getWidth());
-      const y2 = y1 + (resolution[1] * this.getHeight());
+      const x2 = x1 + (resolution[0] * width);
+      const y2 = y1 + (resolution[1] * height);
 
       return [
         Math.min(x1, x2),

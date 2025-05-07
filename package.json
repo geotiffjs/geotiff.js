@@ -1,6 +1,6 @@
 {
   "name": "geotiff",
-  "version": "2.0.7",
+  "version": "2.1.3",
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": "https://github.com/geotiffjs/geotiff.js",
   "keywords": [
@@ -87,8 +87,9 @@
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
     "quick-lru": "^6.1.1",
-    "web-worker": "^1.2.0",
-    "xml-utils": "^1.0.2"
+    "web-worker": "^1.5.0",
+    "xml-utils": "^1.10.2",
+    "zstddec": "^0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
@@ -99,6 +100,7 @@
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "chai": "^4.2.0",
+    "chai-as-promised": "^8.0.1",
     "chokidar-cli": "^3.0.0",
     "detect-node": "^2.0.4",
     "eslint": "^7.32.0",
@@ -107,7 +109,6 @@
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^7.0.1",
-    "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.6.4",
     "jsdoc-plugin-intersection": "^1.0.4",
     "jsdoc-plugin-typescript": "^2.0.6",
@@ -125,25 +126,25 @@
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "prebuild": "npm run build:clean && npm run build:module",
-    "build": "run-p build:browser build:node build:types",
-    "build:clean": "rimraf dist-node/ dist-browser/ dist-module/",
-    "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
+    "prebuild": "npm run build:clean",
+    "build": "npm run build:module && run-p build:browser build:node build:types",
+    "build:clean": "shx rm -rf dist-node/ dist-browser/ dist-module/",
+    "build:module": "shx mkdir -p dist-module && shx cp -rf src/* dist-module/ && rollup -c rollup.worker.config.js",
     "build:browser": "rollup -c rollup.config.js",
-    "build:module": "shx mkdir -p dist-module && shx cp -rf src/* dist-module/ && node scripts/serialize-workers.cjs",
+    "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
     "build:types": "tsc --outdir dist-module/",
-    "watch:browser": "chokidar \"dist-module/*.js\" -c \"npm run build:browser\"",
     "watch:module": "chokidar \"src/*.js\" -c \"npm run build:module\"",
+    "watch:browser": "chokidar \"dist-module/*.js\" -c \"npm run build:browser\"",
     "predev": "npm run build",
     "dev": "run-p watch:module watch:browser dev:serve",
     "dev:serve": "serve --listen 8090",
     "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
     "prelint": "npm run build:module",
-    "lint": "eslint src test scripts/*.cjs .eslintrc.cjs",
+    "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
     "pretest": "npm run lint",
-    "test": "mocha --full-trace test/geotiff.spec.js"
+    "test": "mocha --full-trace test/*.spec.js"
   },
   "author": "Fabian Schindler",
   "browser": {

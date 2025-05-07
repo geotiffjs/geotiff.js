@@ -32,9 +32,13 @@ export class FetchClient extends BaseClient {
     this.credentials = credentials;
   }
 
-  async request({ headers, credentials, signal } = {}) {
+  /**
+   * @param {{headers: HeadersInit, signal: AbortSignal}} [options={}]
+   * @returns {Promise<FetchResponse>}
+   */
+  async request({ headers, signal } = {}) {
     const response = await fetch(this.url, {
-      headers, credentials, signal,
+      headers, credentials: this.credentials, signal,
     });
     return new FetchResponse(response);
   }

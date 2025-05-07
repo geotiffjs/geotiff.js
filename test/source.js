@@ -1,6 +1,5 @@
 /* eslint-disable global-require, no-unused-expressions */
 import isNode from 'detect-node';
-import 'isomorphic-fetch';
 import { expect } from 'chai';
 
 import { makeFetchSource } from '../src/source/remote.js';

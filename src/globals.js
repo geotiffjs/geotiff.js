@@ -96,6 +96,9 @@ export const fieldTagNames = {
   // IPTC
   0x83BB: 'IPTC',
 
+  // Laser Scanning Microscopy
+  0x866c: 'CZ_LSMINFO',
+
   // ICC
   0x8773: 'ICC Profile',
 
@@ -134,6 +137,9 @@ export const fieldTagTypes = {
   258: 'SHORT',
   259: 'SHORT',
   262: 'SHORT',
+  270: 'ASCII',
+  271: 'ASCII',
+  272: 'ASCII',
   273: 'LONG',
   274: 'SHORT',
   277: 'SHORT',
@@ -148,6 +154,7 @@ export const fieldTagTypes = {
   297: 'SHORT',
   305: 'ASCII',
   306: 'ASCII',
+  315: 'ASCII',
   338: 'SHORT',
   339: 'SHORT',
   513: 'LONG',
@@ -158,11 +165,13 @@ export const fieldTagTypes = {
   2049: 'ASCII',
   3072: 'SHORT',
   3073: 'ASCII',
+  33432: 'ASCII',
   33550: 'DOUBLE',
   33922: 'DOUBLE',
   34264: 'DOUBLE',
   34665: 'LONG',
   34735: 'SHORT',
+  34736: 'DOUBLE',
   34737: 'ASCII',
   42113: 'ASCII',
 };
@@ -207,6 +216,25 @@ for (const key in fieldTypeNames) {
   }
 }
 
+/**
+ * Registers a new field tag
+ * @param {number} tag the numeric tiff tag
+ * @param {string} name the name of the tag that will be reported in the IFD
+ * @param {number} type the tags data type
+ * @param {Boolean} isArray whether the tag is an array
+ */
+export function registerTag(tag, name, type = undefined, isArray = false) {
+  fieldTags[name] = tag;
+  fieldTagNames[tag] = name;
+
+  if (type) {
+    fieldTypes[name] = type;
+  }
+  if (isArray) {
+    arrayFields.push(tag);
+  }
+}
+
 export const photometricInterpretations = {
   WhiteIsZero: 0,
   BlackIsZero: 1,
@@ -234,6 +262,7 @@ export const LercParameters = {
 export const LercAddCompression = {
   None: 0,
   Deflate: 1,
+  Zstandard: 2,
 };
 
 export const geoKeyNames = {

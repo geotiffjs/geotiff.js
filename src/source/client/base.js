@@ -37,9 +37,10 @@ export class BaseClient {
 
   /**
    * Send a request with the options
-   * @param {object} [options]
+   * @param {{headers: HeadersInit, signal: AbortSignal}} [options={}]
+   * @returns {Promise<BaseResponse>}
    */
-  async request({ headers, credentials, signal } = {}) { // eslint-disable-line no-unused-vars
+  async request({ headers, signal } = {}) { // eslint-disable-line no-unused-vars
     throw new Error('request is not implemented');
   }
 }
