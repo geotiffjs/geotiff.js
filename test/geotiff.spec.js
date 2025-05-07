@@ -1090,7 +1090,10 @@ describe('writeTests', () => {
       [0, 0, 0],
       [255, 255, 255],
     ];
-    const originalValues = [originalRed, originalGreen, originalBlue];
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+    const originalValues = new Uint8Array(interleaved);
     const metadata = {
       height: 3,
       width: 3,
