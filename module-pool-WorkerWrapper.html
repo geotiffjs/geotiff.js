@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: GeoTIFFBase</title>
+    <title>JSDoc: Class: WorkerWrapper</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: GeoTIFFBase</h1>
+    <h1 class="page-title">Class: WorkerWrapper</h1>
 
     
 
@@ -29,7 +29,9 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-geotiff.html">geotiff</a>~</span>GeoTIFFBase<span class="signature">()</span><span class="type-signature"></span></h2>
+            <span class="ancestors"><a href="module-pool.html">pool</a>~</span>WorkerWrapper<span class="signature">(worker)</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description"><p>Wrapper for a worker that can submit jobs to the worker and receive responses.</p></div>
         
     
 </header>
@@ -40,12 +42,14 @@
         
 
     
-
-    
-    <h4 class="name" id="GeoTIFFBase"><span class="type-signature"></span>new GeoTIFFBase<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h2>Constructor</h2>
     
 
     
+    <h4 class="name" id="WorkerWrapper"><span class="type-signature"></span>new WorkerWrapper<span class="signature">(worker)</span><span class="type-signature"></span></h4>
+    
+
+    
 
 
 
@@ -55,6 +59,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>worker</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Worker</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the worker to wrap</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -90,7 +143,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line208">line 208</a>
+        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line13">line 13</a>
     </li></ul></dd>
     
 
@@ -146,7 +199,7 @@
     
 
     
-    <h4 class="name" id="readRasters"><span class="type-signature">(async) </span>readRasters<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="module-geotiff.html#~ReadRasterResult">module:geotiff~ReadRasterResult</a>>}</span></h4>
+    <h4 class="name" id="getJobCount"><span class="type-signature"></span>getJobCount<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
     
 
     
@@ -154,13 +207,227 @@
 
 
 <div class="description">
-    <p>(experimental) Reads raster data from the best fitting image. This function uses
-the image with the lowest resolution that is still a higher resolution than the
-requested resolution.
-When specified, the <code>bbox</code> option is translated to the <code>window</code> option and the
-<code>resX</code> and <code>resY</code> to <code>width</code> and <code>height</code> respectively.
-Then, the readRasters method of the selected
-image is called and the result returned.</p>
+    <p>Get the number of jobs currently running</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the number of jobs currently running</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="newJobId"><span class="type-signature"></span>newJobId<span class="signature">()</span><span class="type-signature"> &rarr; {Number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get a new job id</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the new job id</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="submitJob"><span class="type-signature"></span>submitJob<span class="signature">(message, transferables<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Submit a job to the worker</p>
 </div>
 
 
@@ -188,8 +455,6 @@ image is called and the result returned.</p>
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -200,13 +465,44 @@ image is called and the result returned.</p>
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>message</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="module-geotiffimage.html#~ReadRasterOptions">module:geotiffimage~ReadRasterOptions</a></span>
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>the message to send to the worker. A &quot;jobId&quot; property will be added to this object.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>transferables</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
 
 
             
@@ -225,14 +521,8 @@ image is called and the result returned.</p>
             
 
             
-                <td class="default">
-                
-                    {}
-                
-                </td>
-            
 
-            <td class="description last"><p>optional parameters</p></td>
+            <td class="description last"><p>an optional array of transferable objects to transfer to the worker.</p></td>
         </tr>
 
     
@@ -273,19 +563,12 @@ image is called and the result returned.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="geotiff.js.html">geotiff.js</a>, <a href="geotiff.js.html#line221">line 221</a>
+        <a href="pool.js.html">pool.js</a>, <a href="pool.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>GeoTIFFImage.readRasters</li>
-        </ul>
-    </dd>
     
 
     
@@ -309,7 +592,7 @@ image is called and the result returned.</p>
 
         
 <div class="param-desc">
-    <p>the decoded array(s), with <code>height</code> and <code>width</code>, as a promise</p>
+    <p>a promise that gets resolved/rejected when a message with the same jobId is received from the worker.</p>
 </div>
 
 
@@ -320,7 +603,7 @@ image is called and the result returned.</p>
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;<a href="module-geotiff.html#~ReadRasterResult">module:geotiff~ReadRasterResult</a>></span>
+<span class="param-type">Promise</span>
 
 
     </dd>
