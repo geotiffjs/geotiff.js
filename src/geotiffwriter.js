@@ -257,7 +257,8 @@ const encodeImage = (values, width, height, metadata) => {
   const dataType = values.constructor.name;
   const TypedArray = typeMap[dataType];
 
-  let elementSize = 4;
+  // default for Float64
+  let elementSize = 8;
   if (TypedArray) {
     elementSize = TypedArray.BYTES_PER_ELEMENT;
   }
@@ -277,7 +278,9 @@ const encodeImage = (values, width, height, metadata) => {
     const buffer = new ArrayBuffer(elementSize);
     const view = new DataView(buffer);
 
-    if (dataType === 'Float32Array') {
+    if (dataType === 'Float64Array') {
+      view.setFloat64(0, value, false);
+    } else if (dataType === 'Float32Array') {
       view.setFloat32(0, value, false);
     } else if (dataType === 'Uint32Array') {
       view.setUint32(0, value, false);
@@ -388,8 +391,8 @@ export function writeGeotiff(data, metadata) {
   if (!metadata.StripByteCounts) {
     // we are only writing one strip
 
-    // default for Uint8
-    let elementSize = 1;
+    // default for Float64
+    let elementSize = 8;
 
     if (ArrayBuffer.isView(flattenedValues)) {
       elementSize = flattenedValues.BYTES_PER_ELEMENT;

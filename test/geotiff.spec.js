@@ -126,6 +126,7 @@ describe('writeTypedArrays', () => {
     new Uint16Array(generateTestDataArray(0, 65535, dataLength, true)),
     new Uint32Array(generateTestDataArray(0, 4294967295, dataLength, true)),
     new Float32Array(generateTestDataArray(-3.4e+38, 3.4e+38, dataLength, false)),
+    new Float64Array(generateTestDataArray(Number.MIN_VALUE, Number.MAX_VALUE, dataLength, false)),
   ];
 
   const height = Math.sqrt(dataLength);
@@ -141,7 +142,7 @@ describe('writeTypedArrays', () => {
         width,
       };
 
-      const newGeoTiffAsBinaryData = await writeArrayBuffer((originalValues), metadata);
+      const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
       const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
       const image = await newGeoTiff.getImage();
       const newValues = await image.readRasters();

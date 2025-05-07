@@ -188,6 +188,7 @@ export function isTypedUintArray(input) {
 }
 
 export const typeMap = {
+  Float64Array,
   Float32Array,
   Uint32Array,
   Uint16Array,
