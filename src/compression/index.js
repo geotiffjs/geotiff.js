@@ -2,8 +2,13 @@ const registry = new Map();
 const preferWorkerMap = new Map();
 
 /**
+ * Either a number or undefined.
+ * @typedef {(number|undefined)} NumberOrUndefined
+ */
+
+/**
  * Register a decoder for a specific compression method or a range of compressions
- * @param {(number|undefined|(number|undefined)[]))} cases ids of the compression methods to register for
+ * @param {(NumberOrUndefined|(NumberOrUndefined[]))} cases ids of the compression methods to register for
  * @param {function():Promise} importFn the function to import the decoder
  * @param {boolean} preferWorker_ Whether to prefer running the decoder in a worker
  */
