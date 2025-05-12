@@ -630,8 +630,7 @@ class GeoTIFFImage {
   }
 
   /**
-   * Reads raster data from the image as RGB. The result is always an
-   * interleaved typed array.
+   * Reads raster data from the image as RGB.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
    * When no other method is applicable, the first sample is used to produce a
    * grayscale image.
