@@ -446,6 +446,78 @@ describe('ifdRequestTests', () => {
   });
 });
 
+describe('Empty tile tests', () => {
+  it('should be able to read tiffs with empty tiles', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('empty_tiles.tiff'));
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(541);
+    expect(image.getHeight()).to.equal(449);
+    expect(image.getSamplesPerPixel()).to.equal(3);
+  });
+
+  it('should be able to read tiffs with empty uint16 tiles', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('empty_tiles_16.tiff'));
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(541);
+    expect(image.getHeight()).to.equal(449);
+    expect(image.getSamplesPerPixel()).to.equal(3);
+  });
+
+  const options = { width: 541, height: 449, interleave: true, samples: [0, 1, 2] };
+  const readImage = async (fname) => {
+    const tiff = await GeoTIFF.fromSource(createSource(fname));
+    const image = await tiff.getImage();
+    return image.readRasters(options);
+  };
+
+  it('should interpret empty tiles', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty tiles with nodata', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_nodata.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty uint16 tiles', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_16.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty uint16 tiles and nodata==256', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_16_nodata256.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      const compSample = comp[i] === 0 ? 256 : comp[i];
+      maxDiff = Math.max(maxDiff, Math.abs(compSample - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+});
+
 describe('RGB-tests', () => {
   const options = { window: [250, 250, 300, 300], interleave: true };
   const comparisonRaster = (async () => {
