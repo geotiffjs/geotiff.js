@@ -4,7 +4,7 @@
   You can view that here:
   https://github.com/photopea/UTIF.js/blob/master/LICENSE
 */
-import { fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals.js';
+import { fieldTags, fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals.js';
 import { assign, endsWith, forEach, invert, times, typeMap,
   isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
@@ -252,7 +252,7 @@ const encodeImage = (values, width, height, metadata) => {
   }
 
   const prfx = new Uint8Array(encodeIfds([ifd]));
-  const samplesPerPixel = ifd[277];
+  const samplesPerPixel = ifd[fieldTags.SamplesPerPixel];
 
   const dataType = values.constructor.name;
   const TypedArray = typeMap[dataType];
