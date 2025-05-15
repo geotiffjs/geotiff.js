@@ -78,6 +78,20 @@ function normalize(input) {
   return JSON.stringify(toArrayRecursively(input));
 }
 
+function generateTestDataArray(min, max, length, onlyWholeNumbers) {
+  const data = [];
+
+  for (let i = 0; i < length; i++) {
+    let randomValue = (Math.random() * (max - min + 1)) + min;
+    if (onlyWholeNumbers) {
+      randomValue = Math.floor(randomValue);
+    }
+    data.push(randomValue);
+  }
+
+  return data;
+}
+
 function getMockMetaData(height, width) {
   return {
     ImageWidth: width, // only necessary if values aren't multi-dimensional
@@ -102,6 +116,42 @@ function getMockMetaData(height, width) {
     GDAL_NODATA: '0',
   };
 }
+
+describe('writeTypedArrays', () => {
+  const dataLength = 512 * 512 * 4;
+
+  const variousDataTypeExamples = [
+    generateTestDataArray(0, 255, dataLength, true),
+    new Uint8Array(generateTestDataArray(0, 255, dataLength, true)),
+    new Uint16Array(generateTestDataArray(0, 65535, dataLength, true)),
+    new Uint32Array(generateTestDataArray(0, 4294967295, dataLength, true)),
+    new Float32Array(generateTestDataArray(-3.4e+38, 3.4e+38, dataLength, false)),
+    new Float64Array(generateTestDataArray(Number.MIN_VALUE, Number.MAX_VALUE, dataLength, false)),
+  ];
+
+  const height = Math.sqrt(dataLength);
+  const width = Math.sqrt(dataLength);
+
+  for (let s = 0; s < variousDataTypeExamples.length; ++s) {
+    const originalValues = variousDataTypeExamples[s];
+    const dataType = originalValues.constructor.name;
+
+    it(`should write ${dataType}`, async () => {
+      const metadata = {
+        height,
+        width,
+      };
+
+      const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+      const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+      const image = await newGeoTiff.getImage();
+      const newValues = await image.readRasters();
+      const valueArray = toArrayRecursively(newValues)[0];
+      const originalValueArray = Array.from(originalValues);
+      expect(valueArray).to.be.deep.equal(originalValueArray);
+    });
+  }
+});
 
 describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
@@ -1112,7 +1162,10 @@ describe('writeTests', () => {
       [0, 0, 0],
       [255, 255, 255],
     ];
-    const originalValues = [originalRed, originalGreen, originalBlue];
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+    const originalValues = new Uint8Array(interleaved);
     const metadata = {
       height: 3,
       width: 3,
