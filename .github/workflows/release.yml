@@ -13,6 +13,8 @@ jobs:
     permissions:
       # required for softprops/action-gh-release
       contents: write
+      # required for mikepenz/release-changelog-builder-action
+      pull-requests: read
 
     steps:
       - name: Checkout code
@@ -24,7 +26,6 @@ jobs:
       - uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
-      # see https://github.com/softprops/action-gh-release/pull/372#issuecomment-1642643937
       - name: Create release notes
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v5
