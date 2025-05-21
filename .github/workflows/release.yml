@@ -7,25 +7,31 @@ on:
 
 jobs:
   release:
-    name: Create Release
+    name: Create release
     runs-on: ubuntu-latest
+
+    permissions:
+      # required for softprops/action-gh-release
+      contents: write
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - run: npm install
+        uses: actions/checkout@v4
+      - run: npm ci --ignore-scripts
+        # npm run prepare runs the build step for publish and pack
+      - run: npm rebuild && npm run prepare
       - run: npm run docs
-      - uses: JS-DevTools/npm-publish@v1
+      - uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
-      - name: Create Release
+      - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
           body: ""
+          generate_release_notes: true
           draft: true
           prerelease: false
       - name: action-slack
