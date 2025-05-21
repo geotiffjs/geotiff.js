@@ -1,0 +1,61 @@
+name: Push version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'npm version semver level'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+          - prepatch
+          - preminor
+          - premajor
+      preId:
+        description: 'Prerelease identifier (required with pre-*)'
+        required: false
+        type: string
+
+jobs:
+  validate:
+    name: Validate workflow inputs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Invalid prerelease identifier
+      if: ${{ startsWith(github.event.inputs.version, 'pre') && !github.event.inputs.preId }}
+      run: |
+        echo "Error: 'preId' input is required with 'pre-*' version."
+        exit 1
+
+  version:
+    name: Push ${{ inputs.version }} tag
+    runs-on: ubuntu-latest
+
+    needs: [validate]
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+      with:
+        # see https://github.com/orgs/community/discussions/25617#discussioncomment-3248494
+        token: ${{ secrets.RELEASE_TOKEN }}
+        # requires contents: write permission for this repo
+        # used by `git push` at the end
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+    - name: Configure git user
+      # this step is necessary for `npm version` to succeed
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+    - name: NPM version
+      run: echo "version=$(npm version ${{ inputs.version }}${{ inputs.preId && format(' --preid {0}', inputs.preId) || '' }})" >> $GITHUB_ENV
+    - name: Git push
+      run: git push && git push origin ${{ env.version }}
