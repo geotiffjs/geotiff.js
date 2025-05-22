@@ -268,26 +268,28 @@ export class BlockedSource extends BaseSource {
 
       for (let blockId = blockIdLow; blockId <= blockIdHigh; ++blockId) {
         const block = blocks.get(blockId);
-        const delta = block.offset - slice.offset;
-        const topDelta = block.top - top;
-        let blockInnerOffset = 0;
-        let rangeInnerOffset = 0;
-        let usedBlockLength;
+        if (block) {
+          const delta = block.offset - slice.offset;
+          const topDelta = block.top - top;
+          let blockInnerOffset = 0;
+          let rangeInnerOffset = 0;
+          let usedBlockLength;
 
-        if (delta < 0) {
-          blockInnerOffset = -delta;
-        } else if (delta > 0) {
-          rangeInnerOffset = delta;
+          if (delta < 0) {
+            blockInnerOffset = -delta;
+          } else if (delta > 0) {
+            rangeInnerOffset = delta;
+          }
+
+          if (topDelta < 0) {
+            usedBlockLength = block.length - blockInnerOffset;
+          } else {
+            usedBlockLength = top - block.offset - blockInnerOffset;
+          }
+
+          const blockView = new Uint8Array(block.data, blockInnerOffset, usedBlockLength);
+          sliceView.set(blockView, rangeInnerOffset);
         }
-
-        if (topDelta < 0) {
-          usedBlockLength = block.length - blockInnerOffset;
-        } else {
-          usedBlockLength = top - block.offset - blockInnerOffset;
-        }
-
-        const blockView = new Uint8Array(block.data, blockInnerOffset, usedBlockLength);
-        sliceView.set(blockView, rangeInnerOffset);
       }
 
       return sliceData;
