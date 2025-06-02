@@ -1,27 +1,27 @@
 {
   "categories": [
     {
-      "title": "## ⚙️ Breaking",
+      "title": "## Breaking",
       "labels": ["breaking"]
     },
     {
-      "title": "## 🚀 Features",
+      "title": "## Features",
       "labels": ["feature", "enhancement"]
     },
     {
-      "title": "## 🐛 Fixes",
+      "title": "## Fixes",
       "labels": ["fix", "bugfix"]
     },
     {
-      "title": "## 📜 Documentation",
+      "title": "## Documentation",
       "labels": ["documentation", "docs"]
     },
     {
-      "title": "## 🛠️ Infrastructure",
+      "title": "## Infrastructure",
       "labels": ["dependencies", "maintenance", "ci"]
     },
     {
-      "title": "## 💬 Uncategorized",
+      "title": "## Uncategorized",
       "labels": []
     }
   ],
