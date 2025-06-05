@@ -9,35 +9,47 @@ on:
         default: 'patch'
         type: choice
         options:
-          - patch
-          - minor
-          - major
-          - prerelease
-          - prepatch
-          - preminor
-          - premajor
-      preId:
-        description: 'Prerelease identifier (required with pre*)'
-        required: false
-        type: string
+        - patch
+        - minor
+        - major
+        - prerelease
+        - prepatch
+        - preminor
+        - premajor
+      # Uncomment the following for text input preId
+      # preId:
+      #   description: 'Prerelease identifier (required with pre*)'
+      #   required: false
+      #   type: string
+      # Uncomment the following for selection preId
+      # preId:
+      #   description: 'Prerelease identifier (used with pre*)'
+      #   required: true
+      #   default: 'beta'
+      #   type: choice
+      #   options:
+      #   - alpha
+      #   - beta
 
 jobs:
-  validate:
-    name: Validate workflow inputs
-    runs-on: ubuntu-latest
+  # Uncomment the following step if using text input preId
+  # validate:
+    # name: Validate workflow inputs
+    # runs-on: ubuntu-latest
 
-    steps:
-    - name: Invalid prerelease identifier
-      if: ${{ startsWith(github.event.inputs.version, 'pre') && !github.event.inputs.preId }}
-      run: |
-        echo "Error: 'preId' input is required with 'pre-*' version."
-        exit 1
+    # steps:
+    # - name: Invalid prerelease identifier
+      # if: ${{ startsWith(github.event.inputs.version, 'pre') && !github.event.inputs.preId }}
+      # run: |
+        # echo "Error: 'preId' input is required with 'pre-*' version."
+        # exit 1
 
   version:
     name: Push ${{ inputs.version }} tag
     runs-on: ubuntu-latest
 
-    needs: [validate]
+    # Uncomment the following line if using the validate step above
+    # needs: [validate]
 
     steps:
     - name: Checkout branch
@@ -56,6 +68,9 @@ jobs:
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor }}@users.noreply.github.com"
     - name: NPM version
-      run: echo "version=$(npm version ${{ inputs.version }}${{ inputs.preId && format(' --preid {0}', inputs.preId) || '' }})" >> $GITHUB_ENV
+      # Uncomment the following line if using preId input
+      # run: echo "version=$(npm version ${{ inputs.version }}${{ startsWith(inputs.version, 'pre') && format(' --preid {0}', inputs.preId) || '' }})" >> "$GITHUB_ENV"
+      # Uncomment the following line for hardcoded 'beta' preId
+      run: echo "version=$(npm version ${{ inputs.version }})${{ startsWith(inputs.version, 'pre') && '--preid beta' || ''}}" >> "$GITHUB_ENV"
     - name: Git push
       run: git push && git push origin ${{ env.version }}
