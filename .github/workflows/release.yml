@@ -24,6 +24,7 @@ jobs:
       - run: npm rebuild && npm run prepare
       - run: npm run docs
       - uses: JS-DevTools/npm-publish@v3
+        id: publish
         with:
           token: ${{ secrets.NPM_TOKEN }}
       - name: Create release notes
