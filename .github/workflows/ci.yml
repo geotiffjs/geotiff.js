@@ -10,15 +10,16 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: |
         docker pull ghcr.io/osgeo/gdal:ubuntu-small-latest ;
         docker run -i --rm -v `pwd`/test/data:/data ghcr.io/osgeo/gdal:ubuntu-small-latest bash -c "apt-get update && apt-get -y install imagemagick libtiff-tools wget && cd /data && ./setup_data.sh"
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
-        node-version: 20.x
-    - run: npm ci
+        node-version: 22.x
+    - run: npm ci --ignore-scripts
+    - run: npm rebuild
     - run: npm run build
     - run: npm test
     - name: action-slack

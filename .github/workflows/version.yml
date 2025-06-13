@@ -1,0 +1,56 @@
+# Create and push the commit and tag created from npm version <version>
+# 
+# From the Actions page on GitHub, users (with write permissions) can select
+# the desired release <version> and this action will handle running npm version
+# and pushing the tag to the repository.
+#
+# Due to the VERSION_TOKEN, the tag push will trigger release.yml, which handles
+# releasing to npm and GitHub releases.
+#
+# With pre* versions (prerelease, prepatch, etc.), the tag will be created with
+# --preid beta. Currently, they are released normally, to --tag latest on npm.
+
+name: Push new version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'npm version semver level'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+        - prerelease
+        - prepatch
+        - preminor
+        - premajor
+
+jobs:
+  version:
+    name: Push ${{ inputs.version }} tag
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+      with:
+        # see https://github.com/orgs/community/discussions/25617#discussioncomment-3248494
+        token: ${{ secrets.VERSION_TOKEN }}
+        # requires contents: write permission for this repo
+        # used by `git push` at the end
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+    - name: Configure git user
+      # this step is necessary for `npm version` to succeed
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+    - name: npm version ${{ inputs.version }}
+      run: echo "version=$(npm version ${{ inputs.version }}${{ startsWith(inputs.version, 'pre') && '--preid beta' || '' }})" >> "$GITHUB_ENV"
+    - name: git push
+      run: git push && git push origin ${{ env.version }}
