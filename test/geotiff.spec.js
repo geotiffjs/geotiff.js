@@ -298,6 +298,11 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should work on Zstandard compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('zstd.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Uint16Array);
+  });
+
   it('should work on Float32 and LERC compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float32lerc.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
@@ -315,6 +320,11 @@ describe('GeoTIFF', () => {
 
   it('should work on Float32 and LERC Zstandard compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float32lerc_zstd.tiff'));
+    await performTiffTests(tiff, 539, 448, 15, Float32Array);
+  });
+
+  it('should work on Float32 and Zstandard compressed tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('float32zstd.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);
   });
 

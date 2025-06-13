@@ -89,7 +89,7 @@
     "quick-lru": "^6.1.1",
     "web-worker": "^1.5.0",
     "xml-utils": "^1.10.2",
-    "zstddec": "^0.1.0"
+    "zstddec": "^0.2.0-alpha.3"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
