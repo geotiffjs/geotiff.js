@@ -57,6 +57,14 @@ convert rgb.tiff -colorspace Lab cielab.tif
 gdal_translate -of GTiff -co COMPRESS=JPEG rgb.tiff jpeg.tiff
 gdal_translate -of GTiff -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR rgb.tiff jpeg_ycbcr.tiff
 
+# with empty tiles/strips
+gdal_translate -of GTiff -co COMPRESS=DEFLATE -co SPARSE_OK=TRUE -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 rgb.tiff empty_tiles.tiff
+gdal_translate -of GTiff -a_nodata 0 -co COMPRESS=DEFLATE -co SPARSE_OK=TRUE -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 rgb.tiff empty_tiles_nodata.tiff
+gdal_translate -of GTiff -ot UInt16 -co COMPRESS=DEFLATE -co SPARSE_OK=TRUE -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 rgb.tiff empty_tiles_16.tiff
+gdalbuildvrt -srcnodata 0 -vrtnodata 256 empty_tiles_16_nodata256.vrt empty_tiles_16.tiff
+gdal_translate -of GTiff -a_nodata 256 -ot UInt16 -co COMPRESS=DEFLATE -co SPARSE_OK=TRUE -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 empty_tiles_16_nodata256.vrt empty_tiles_16_nodata256.tiff
+rm empty_tiles_16_nodata256.vrt
+
 # modeltransformation tag
 #wget https://s3.amazonaws.com/wdt-external/no_pixelscale_or_tiepoints.tiff
 

@@ -78,6 +78,20 @@ function normalize(input) {
   return JSON.stringify(toArrayRecursively(input));
 }
 
+function generateTestDataArray(min, max, length, onlyWholeNumbers) {
+  const data = [];
+
+  for (let i = 0; i < length; i++) {
+    let randomValue = (Math.random() * (max - min + 1)) + min;
+    if (onlyWholeNumbers) {
+      randomValue = Math.floor(randomValue);
+    }
+    data.push(randomValue);
+  }
+
+  return data;
+}
+
 function getMockMetaData(height, width) {
   return {
     ImageWidth: width, // only necessary if values aren't multi-dimensional
@@ -102,6 +116,42 @@ function getMockMetaData(height, width) {
     GDAL_NODATA: '0',
   };
 }
+
+describe('writeTypedArrays', () => {
+  const dataLength = 512 * 512 * 4;
+
+  const variousDataTypeExamples = [
+    generateTestDataArray(0, 255, dataLength, true),
+    new Uint8Array(generateTestDataArray(0, 255, dataLength, true)),
+    new Uint16Array(generateTestDataArray(0, 65535, dataLength, true)),
+    new Uint32Array(generateTestDataArray(0, 4294967295, dataLength, true)),
+    new Float32Array(generateTestDataArray(-3.4e+38, 3.4e+38, dataLength, false)),
+    new Float64Array(generateTestDataArray(Number.MIN_VALUE, Number.MAX_VALUE, dataLength, false)),
+  ];
+
+  const height = Math.sqrt(dataLength);
+  const width = Math.sqrt(dataLength);
+
+  for (let s = 0; s < variousDataTypeExamples.length; ++s) {
+    const originalValues = variousDataTypeExamples[s];
+    const dataType = originalValues.constructor.name;
+
+    it(`should write ${dataType}`, async () => {
+      const metadata = {
+        height,
+        width,
+      };
+
+      const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+      const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+      const image = await newGeoTiff.getImage();
+      const newValues = await image.readRasters();
+      const valueArray = toArrayRecursively(newValues)[0];
+      const originalValueArray = Array.from(originalValues);
+      expect(valueArray).to.be.deep.equal(originalValueArray);
+    });
+  }
+});
 
 describe('GeoTIFF - external overviews', () => {
   it('Can load', async () => {
@@ -453,6 +503,78 @@ describe('ifdRequestTests', () => {
       const image = await tiff.getImage(i);
       image.readRasters();
     });
+  });
+});
+
+describe('Empty tile tests', () => {
+  it('should be able to read tiffs with empty tiles', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('empty_tiles.tiff'));
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(541);
+    expect(image.getHeight()).to.equal(449);
+    expect(image.getSamplesPerPixel()).to.equal(3);
+  });
+
+  it('should be able to read tiffs with empty uint16 tiles', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('empty_tiles_16.tiff'));
+    const image = await tiff.getImage();
+    expect(image).to.be.ok;
+    expect(image.getWidth()).to.equal(541);
+    expect(image.getHeight()).to.equal(449);
+    expect(image.getSamplesPerPixel()).to.equal(3);
+  });
+
+  const options = { width: 541, height: 449, interleave: true, samples: [0, 1, 2] };
+  const readImage = async (fname) => {
+    const tiff = await GeoTIFF.fromSource(createSource(fname));
+    const image = await tiff.getImage();
+    return image.readRasters(options);
+  };
+
+  it('should interpret empty tiles', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty tiles with nodata', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_nodata.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty uint16 tiles', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_16.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      maxDiff = Math.max(maxDiff, Math.abs(comp[i] - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
+  });
+
+  it('should interpret empty uint16 tiles and nodata==256', async () => {
+    const comp = await readImage('rgb.tiff');
+    const rgb = await readImage('empty_tiles_16_nodata256.tiff');
+    expect(rgb).to.have.lengthOf(comp.length);
+    let maxDiff = 0;
+    for (let i = 0; i < rgb.length; ++i) {
+      const compSample = comp[i] === 0 ? 256 : comp[i];
+      maxDiff = Math.max(maxDiff, Math.abs(compSample - rgb[i]));
+    }
+    expect(maxDiff).to.equal(0);
   });
 });
 
@@ -1050,7 +1172,10 @@ describe('writeTests', () => {
       [0, 0, 0],
       [255, 255, 255],
     ];
-    const originalValues = [originalRed, originalGreen, originalBlue];
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+    const originalValues = new Uint8Array(interleaved);
     const metadata = {
       height: 3,
       width: 3,

@@ -1,7 +1,7 @@
 /** @module geotiffimage */
 import { getFloat16 } from '@petamoriken/float16';
-import getAttribute from 'xml-utils/get-attribute.js';
-import findTagsByName from 'xml-utils/find-tags-by-name.js';
+import getAttribute from 'xml-utils/get-attribute'; // eslint-disable-line import/extensions
+import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line import/extensions
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
@@ -360,7 +360,7 @@ class GeoTIFFImage {
    * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
-   * @returns {Promise.<ArrayBuffer>}
+   * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBuffer}>} the decoded strip or tile
    */
   async getTileOrStrip(x, y, sample, poolOrDecoder, signal) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
@@ -382,6 +382,16 @@ class GeoTIFFImage {
       offset = this.fileDirectory.StripOffsets[index];
       byteCount = this.fileDirectory.StripByteCounts[index];
     }
+
+    if (byteCount === 0) {
+      const nPixels = this.getBlockHeight(y) * this.getTileWidth();
+      const bytesPerPixel = (this.planarConfiguration === 2) ? this.getSampleByteSize(sample) : this.getBytesPerPixel();
+      const data = new ArrayBuffer(nPixels * bytesPerPixel);
+      const view = this.getArrayForSample(sample, data);
+      view.fill(this.getGDALNoData() || 0);
+      return { x, y, sample, data };
+    }
+
     const slice = (await this.source.fetch([{ offset, length: byteCount }], signal))[0];
 
     let request;
@@ -620,8 +630,7 @@ class GeoTIFFImage {
   }
 
   /**
-   * Reads raster data from the image as RGB. The result is always an
-   * interleaved typed array.
+   * Reads raster data from the image as RGB.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
    * When no other method is applicable, the first sample is used to produce a
    * grayscale image.

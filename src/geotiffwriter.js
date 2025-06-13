@@ -4,8 +4,9 @@
   You can view that here:
   https://github.com/photopea/UTIF.js/blob/master/LICENSE
 */
-import { fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals.js';
-import { assign, endsWith, forEach, invert, times } from './utils.js';
+import { fieldTags, fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals.js';
+import { assign, endsWith, forEach, invert, times, typeMap,
+  isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
 const tagName2Code = invert(fieldTagNames);
 const geoKeyName2Code = invert(geoKeyNames);
@@ -251,17 +252,50 @@ const encodeImage = (values, width, height, metadata) => {
   }
 
   const prfx = new Uint8Array(encodeIfds([ifd]));
+  const samplesPerPixel = ifd[fieldTags.SamplesPerPixel];
 
-  const img = new Uint8Array(values);
+  const dataType = values.constructor.name;
+  const TypedArray = typeMap[dataType];
 
-  const samplesPerPixel = ifd[277];
+  // default for Float64
+  let elementSize = 8;
+  if (TypedArray) {
+    elementSize = TypedArray.BYTES_PER_ELEMENT;
+  }
 
-  const data = new Uint8Array(numBytesInIfd + (width * height * samplesPerPixel));
+  const data = new Uint8Array(numBytesInIfd + (values.length * elementSize * samplesPerPixel));
+
   times(prfx.length, (i) => {
     data[i] = prfx[i];
   });
-  forEach(img, (value, i) => {
-    data[numBytesInIfd + i] = value;
+
+  forEach(values, (value, i) => {
+    if (!TypedArray) {
+      data[numBytesInIfd + i] = value;
+      return;
+    }
+
+    const buffer = new ArrayBuffer(elementSize);
+    const view = new DataView(buffer);
+
+    if (dataType === 'Float64Array') {
+      view.setFloat64(0, value, false);
+    } else if (dataType === 'Float32Array') {
+      view.setFloat32(0, value, false);
+    } else if (dataType === 'Uint32Array') {
+      view.setUint32(0, value, false);
+    } else if (dataType === 'Uint16Array') {
+      view.setUint16(0, value, false);
+    } else if (dataType === 'Uint8Array') {
+      view.setUint8(0, value);
+    }
+
+    const typedArray = new Uint8Array(view.buffer);
+    const idx = numBytesInIfd + (i * elementSize);
+
+    for (let j = 0; j < elementSize; j++) {
+      data[idx + j] = typedArray[j];
+    }
   });
 
   return data.buffer;
@@ -328,7 +362,11 @@ export function writeGeotiff(data, metadata) {
   // consult https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 
   if (!metadata.BitsPerSample) {
-    metadata.BitsPerSample = times(numBands, () => 8);
+    let bitsPerSample = 8;
+    if (ArrayBuffer.isView(flattenedValues)) {
+      bitsPerSample = 8 * flattenedValues.BYTES_PER_ELEMENT;
+    }
+    metadata.BitsPerSample = times(numBands, () => bitsPerSample);
   }
 
   metadataDefaults.forEach((tag) => {
@@ -352,7 +390,15 @@ export function writeGeotiff(data, metadata) {
 
   if (!metadata.StripByteCounts) {
     // we are only writing one strip
-    metadata.StripByteCounts = [numBands * height * width];
+
+    // default for Float64
+    let elementSize = 8;
+
+    if (ArrayBuffer.isView(flattenedValues)) {
+      elementSize = flattenedValues.BYTES_PER_ELEMENT;
+    }
+
+    metadata.StripByteCounts = [numBands * elementSize * height * width];
   }
 
   if (!metadata.ModelPixelScale) {
@@ -361,7 +407,17 @@ export function writeGeotiff(data, metadata) {
   }
 
   if (!metadata.SampleFormat) {
-    metadata.SampleFormat = times(numBands, () => 1);
+    let sampleFormat = 1;
+    if (isTypedFloatArray(flattenedValues)) {
+      sampleFormat = 3;
+    }
+    if (isTypedIntArray(flattenedValues)) {
+      sampleFormat = 2;
+    }
+    if (isTypedUintArray(flattenedValues)) {
+      sampleFormat = 1;
+    }
+    metadata.SampleFormat = times(numBands, () => sampleFormat);
   }
 
   // if didn't pass in projection information, assume the popular 4326 "geographic projection"

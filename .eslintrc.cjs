@@ -13,6 +13,9 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
+  globals: {
+    FinalizationRegistry: true,
+  },
   rules: {
     'no-underscore-dangle': 0,
     'class-methods-use-this': 0,

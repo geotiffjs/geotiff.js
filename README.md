@@ -360,7 +360,7 @@ YCbCr, and CIE L*a*b.
 
 geotiff.js provides a method to automatically convert these images to RGB:
 `readRGB()`. This method is very similar to the `readRasters` method with
-distinction that the `interleave` option is now always `true` and the
+the distinction that the `interleave` option now defaults to `true` and the
 `samples` are automatically chosen.
 
 ```javascript
