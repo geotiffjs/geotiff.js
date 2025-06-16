@@ -53,8 +53,8 @@ jobs:
     - name: npm version ${{ inputs.version }}
       run: echo "version=$(npm version ${{ inputs.version }}${{ startsWith(inputs.version, 'pre') && ' --preid beta' || '' }})" >> "$GITHUB_ENV"
     - name: Validate npm version
-      run: : |
-        # the above step silently fails, so validate the output was set
+      # the above step silently fails, so validate the output was set
+      run: |
         if [[ -z ${{ env.version }} ]]; then
           exit 1;
         else
