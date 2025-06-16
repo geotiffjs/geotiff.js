@@ -7,27 +7,49 @@ on:
 
 jobs:
   release:
-    name: Create Release
+    name: Create release
     runs-on: ubuntu-latest
+
+    permissions:
+      # required for softprops/action-gh-release
+      contents: write
+      # required for mikepenz/release-changelog-builder-action
+      pull-requests: read
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - run: npm install
+        uses: actions/checkout@v4
+      - run: npm ci --ignore-scripts
+        # npm run prepare runs the build step for publish and pack
+      - run: npm rebuild && npm run prepare
       - run: npm run docs
-      - uses: JS-DevTools/npm-publish@v1
+      - uses: JS-DevTools/npm-publish@v3
+        id: publish
         with:
           token: ${{ secrets.NPM_TOKEN }}
-      - name: Create Release
+      - name: Create release notes
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          configuration: '.github/changelog.json'
+          ignorePreReleases: ${{ ! contains(github.ref_name, '-') }}
+      - name: Create tarball
+        run: npm pack --ignore-scripts
+      - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: ""
+          name: Release ${{ github.ref_name }}
+          body: |
+            ${{ steps.build_changelog.outputs.changelog }}
+
+            **${{ contains(github.ref_name, '-') && 'Prerelease' || 'Full' }} changelog:** ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.build_changelog.outputs.fromTag }}...${{ steps.build_changelog.outputs.toTag }}
+            **NPM release:** https://npmjs.com/package/${{ steps.publish.outputs.name }}/v/${{ steps.publish.outputs.version }}
           draft: true
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            *.tgz
       - name: action-slack
         uses: 8398a7/action-slack@v3.8.0
         with:
