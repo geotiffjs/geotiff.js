@@ -51,6 +51,14 @@ jobs:
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor }}@users.noreply.github.com"
     - name: npm version ${{ inputs.version }}
-      run: echo "version=$(npm version ${{ inputs.version }}${{ startsWith(inputs.version, 'pre') && '--preid beta' || '' }})" >> "$GITHUB_ENV"
+      run: echo "version=$(npm version ${{ inputs.version }}${{ startsWith(inputs.version, 'pre') && ' --preid beta' || '' }})" >> "$GITHUB_ENV"
+    - name: Validate npm version
+      # the above step silently fails, so validate the output was set
+      run: |
+        if [[ -z ${{ env.version }} ]]; then
+          exit 1;
+        else
+          echo ${{ env.version }}
+        fi
     - name: git push
       run: git push && git push origin ${{ env.version }}
