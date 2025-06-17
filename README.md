@@ -30,6 +30,8 @@ Currently available functionality:
     * Deflate (with floating point or horizontal predictor support)
     * JPEG
     * LERC (with additional Deflate compression support)
+    * Zstandard
+    * image formats supported via the browser (such as WebP)
   * Automatic selection of overview level to read from
   * Subsetting via an image window or bounding box and selected bands
   * Reading of samples into separate arrays or a single pixel-interleaved array
