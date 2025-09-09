@@ -432,101 +432,75 @@ export function writeGeotiff(data, metadata) {
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
-  // Build ASCII and DOUBLE tags, GeoAsciiParamsTag and GeoDoubleParamsTag
+  // If not provided, build GeoKeyDirectory as well as GeoAsciiParamsTag and GeoDoubleParamsTag
+  // if GeoAsciiParams/GeoDoubleParams were passed in, we assume offsets are already correct
   // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
+  if (!metadata.GeoKeyDirectory) {
+    // Only build ASCII / DOUBLE params if not provided
+    let geoAsciiParams = metadata.GeoAsciiParams || '';
+    let currentAsciiOffset = geoAsciiParams.length;
+    let geoDoubleParams = metadata.GeoDoubleParams || [];
+    let currentDoubleIndex = geoDoubleParams.length;
 
-  // GeoAsciiParams and geoAsciiOffsets
-  const geoAsciiOffsets = {};
-  if (!metadata.GeoAsciiParams) {
-    let geoAsciiParams = '';
-    let currentAsciiOffset = 0;
-    geoKeys.forEach((name) => {
-      const code = Number(name2code[name]);
-      const tagType = fieldTagTypes[code];
-      const val = metadata[name];
-      if (tagType === 'ASCII' && val !== undefined) {
-        const s = `${val.toString()}\u0000`;
-        geoAsciiOffsets[name] = currentAsciiOffset;
-        geoAsciiParams += s;
-        currentAsciiOffset += s.length; // count in bytes (chars)
+    // Since geoKeys already sorted and filtered, do a single pass to append to corresponding directory for SHORT/ASCII/DOUBLE
+    const GeoKeyDirectory = [1, 1, 0, 0];
+    let validKeys = 0;
+    geoKeys.forEach((geoKey) => {
+      const KeyID = Number(name2code[geoKey]);
+      const tagType = fieldTagTypes[KeyID];
+      const val = metadata[geoKey];
+      if (val === undefined) return;
+
+      let Count, TIFFTagLocation, valueOffset;
+      if (tagType === 'SHORT') {
+        Count = 1;
+        TIFFTagLocation = 0;
+        valueOffset = val;
+      } else if (tagType === 'ASCII') {
+        if (!metadata.GeoAsciiParams) {
+          const valStr = `${val.toString()}\u0000`;
+          TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
+          valueOffset = currentAsciiOffset;
+          Count = valStr.length;
+          geoAsciiParams += valStr;
+          currentAsciiOffset += valStr.length;
+        } else {
+          return;
+        }
+      } else if (tagType === 'DOUBLE') {
+        if (!metadata.GeoDoubleParams) {
+          const arr = toArray(val);
+          TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
+          valueOffset = currentDoubleIndex;
+          Count = arr.length;
+          arr.forEach((v) => {
+            geoDoubleParams.push(Number(v));
+            currentDoubleIndex++;
+          });
+        } else {
+          return;
+        }
+      } else {
+        console.warn(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
+        return;
       }
+
+      GeoKeyDirectory.push(KeyID, TIFFTagLocation, Count, valueOffset);
+      validKeys++;
     });
-    if (geoAsciiParams.length > 0) {
+
+    // Write GeoKeyDirectory, GeoAsciiParams, GeoDoubleParams
+    GeoKeyDirectory[3] = validKeys;
+    metadata.GeoKeyDirectory = GeoKeyDirectory;
+    if (!metadata.GeoAsciiParams && geoAsciiParams.length > 0) {
       metadata.GeoAsciiParams = geoAsciiParams;
     }
-  }
-
-  // GeoDoubleParamsTag and geoDoubleOffsets
-  // Helper to handle the same way simple moni-values and arrays
-  const geoDoubleOffsets = {};
-  if (!metadata.GeoDoubleParams) {
-    const geoDoubleParams = [];
-    let currentDoubleIndex = 0;
-    geoKeys.forEach((name) => {
-      const code = Number(name2code[name]);
-      const tagType = fieldTagTypes[code];
-      const val = metadata[name];
-      if (tagType === 'DOUBLE' && val !== undefined) {
-        geoDoubleOffsets[name] = currentDoubleIndex;
-        toArray(val).forEach((v) => {
-          geoDoubleParams.push(Number(v));
-          currentDoubleIndex++;
-        });
-      }
-    });
-    if (geoDoubleParams.length > 0) {
+    if (!metadata.GeoDoubleParams && geoDoubleParams.length > 0) {
       metadata.GeoDoubleParams = geoDoubleParams;
     }
   }
 
-  // Build GeoKeyDirectory for resolved records, handling SHORT as well as ASCII and DOUBLE
-  if (!metadata.GeoKeyDirectory) {
-    // Number of keys will be populated on finish
-    const GeoKeyDirectory = [1, 1, 0, 0];
-    let validKeys = 0;
-
-    geoKeys.forEach((geoKey) => {
-      const KeyID = Number(name2code[geoKey]);
-      const tagType = fieldTagTypes[KeyID];
-      let Count; let TIFFTagLocation; let
-        valueOffset;
-
-      if (tagType === 'SHORT') {
-        Count = 1;
-        TIFFTagLocation = 0;
-        valueOffset = metadata[geoKey];
-      } else if (tagType === 'ASCII') {
-        if (geoAsciiOffsets?.[geoKey] === undefined) {
-          return;
-        }
-        TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
-        valueOffset = geoAsciiOffsets[geoKey];
-        Count = (`${metadata[geoKey].toString()}\u0000`).length;
-      } else if (tagType === 'DOUBLE') {
-        if (geoDoubleOffsets?.[geoKey] === undefined) {
-          return;
-        }
-        TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
-        valueOffset = geoDoubleOffsets[geoKey];
-        const val = metadata[geoKey];
-        Count = Array.isArray(val) ? val.length : 1;
-      } else {
-        console.log(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
-        return;
-      }
-      // Push to GeoKeyDirectory
-      GeoKeyDirectory.push(KeyID);
-      GeoKeyDirectory.push(TIFFTagLocation);
-      GeoKeyDirectory.push(Count);
-      GeoKeyDirectory.push(valueOffset);
-      validKeys++;
-    });
-
-    GeoKeyDirectory[3] = validKeys;
-    metadata.GeoKeyDirectory = GeoKeyDirectory;
-  }
-
-  // delete GeoKeys from metadata, because stored in GeoKeyDirectory tag
+  // cleanup original GeoKeys metadata, because stored in GeoKeyDirectory tag
   for (const geoKey of geoKeys) {
     if (metadata.hasOwnProperty(geoKey)) {
       delete metadata[geoKey];
