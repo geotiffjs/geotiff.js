@@ -446,6 +446,28 @@ export function writeGeotiff(data, metadata) {
     }
   }
 
+  // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
+  // Build GeoDoubleParams the same way as GeoAsciiParams (collect DOUBLE values)
+  if (!metadata.GeoDoubleParams) {
+    const geoDoubleParams = [];
+    geoKeys.forEach((name) => {
+      const code = Number(name2code[name]);
+      const tagType = fieldTagTypes[code];
+      const key = metadata[name]
+      if (tagType === 'DOUBLE' && key !== undefined) {
+        // Accept either a single numeric value or an array of numbers
+        if (Array.isArray(key)) {
+          key.forEach((v) => geoDoubleParams.push(Number(v)));
+        } else {
+          geoDoubleParams.push(Number(key));
+        }
+      }
+    });
+    if (geoDoubleParams.length > 0) {
+      metadata.GeoDoubleParams = geoDoubleParams;
+    }
+  }
+
   if (!metadata.GeoKeyDirectory) {
     const NumberOfKeys = geoKeys.length;
 
@@ -461,10 +483,20 @@ export function writeGeotiff(data, metadata) {
         Count = 1;
         TIFFTagLocation = 0;
         valueOffset = metadata[geoKey];
-      } else if (geoKey === 'GeogCitationGeoKey') {
-        Count = metadata.GeoAsciiParams.length;
-        TIFFTagLocation = Number(name2code.GeoAsciiParams);
-        valueOffset = 0;
+      } else if (fieldTagTypes[KeyID] === 'ASCII') {
+        const asciiValue = `${metadata[geoKey].toString()}\u0000`;
+        Count = asciiValue.length;
+        TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
+        valueOffset = metadata.GeoAsciiParams.indexOf(asciiValue);
+      } else if (fieldTagTypes[KeyID] === 'DOUBLE') {
+        TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
+        if (Array.isArray(metadata[geoKey])) {
+          Count = metadata[geoKey].length;
+          valueOffset = metadata.GeoDoubleParams.indexOf(metadata[geoKey][0]);
+        } else {
+          Count = 1;
+          valueOffset = metadata.GeoDoubleParams.indexOf(Number(metadata[geoKey]));
+        }
       } else {
         console.log(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
       }
