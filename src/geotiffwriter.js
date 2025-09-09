@@ -436,14 +436,14 @@ export function writeGeotiff(data, metadata) {
   // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
 
   // GeoAsciiParams and geoAsciiOffsets
-  const geoAsciiOffsets = {}
+  const geoAsciiOffsets = {};
   if (!metadata.GeoAsciiParams) {
     let geoAsciiParams = '';
     let currentAsciiOffset = 0;
     geoKeys.forEach((name) => {
       const code = Number(name2code[name]);
       const tagType = fieldTagTypes[code];
-      const val = metadata[name]
+      const val = metadata[name];
       if (tagType === 'ASCII' && val !== undefined) {
         const s = `${val.toString()}\u0000`;
         geoAsciiOffsets[name] = currentAsciiOffset;
@@ -458,8 +458,7 @@ export function writeGeotiff(data, metadata) {
 
   // GeoDoubleParamsTag and geoDoubleOffsets
   // Helper to handle the same way simple moni-values and arrays
-  const toArray = (input) => Array.isArray(input) ? input : [input];
-  const geoDoubleOffsets = {}; 
+  const geoDoubleOffsets = {};
   if (!metadata.GeoDoubleParams) {
     const geoDoubleParams = [];
     let currentDoubleIndex = 0;
@@ -483,25 +482,30 @@ export function writeGeotiff(data, metadata) {
   // Build GeoKeyDirectory for resolved records, handling SHORT as well as ASCII and DOUBLE
   if (!metadata.GeoKeyDirectory) {
     // Number of keys will be populated on finish
-    const GeoKeyDirectory = [1, 1, 0, 0]; 
+    const GeoKeyDirectory = [1, 1, 0, 0];
     let validKeys = 0;
 
     geoKeys.forEach((geoKey) => {
       const KeyID = Number(name2code[geoKey]);
       const tagType = fieldTagTypes[KeyID];
-      let Count, TIFFTagLocation, valueOffset;
+      let Count; let TIFFTagLocation; let
+        valueOffset;
 
       if (tagType === 'SHORT') {
         Count = 1;
         TIFFTagLocation = 0;
         valueOffset = metadata[geoKey];
       } else if (tagType === 'ASCII') {
-        if (geoAsciiOffsets?.[geoKey] === undefined) return;
+        if (geoAsciiOffsets?.[geoKey] === undefined) {
+          return;
+        }
         TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
         valueOffset = geoAsciiOffsets[geoKey];
         Count = (`${metadata[geoKey].toString()}\u0000`).length;
       } else if (tagType === 'DOUBLE') {
-        if (geoDoubleOffsets?.[geoKey] === undefined) return;
+        if (geoDoubleOffsets?.[geoKey] === undefined) {
+          return;
+        }
         TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
         valueOffset = geoDoubleOffsets[geoKey];
         const val = metadata[geoKey];
