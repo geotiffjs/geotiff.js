@@ -457,6 +457,8 @@ export function writeGeotiff(data, metadata) {
   }
 
   // GeoDoubleParamsTag and geoDoubleOffsets
+  // Helper to handle the same way simple moni-values and arrays
+  const toArray = (input) => Array.isArray(input) ? input : [input];
   const geoDoubleOffsets = {}; 
   if (!metadata.GeoDoubleParams) {
     const geoDoubleParams = [];
@@ -467,15 +469,10 @@ export function writeGeotiff(data, metadata) {
       const val = metadata[name];
       if (tagType === 'DOUBLE' && val !== undefined) {
         geoDoubleOffsets[name] = currentDoubleIndex;
-        if (Array.isArray(val)) {
-          val.forEach((v) => {
-            geoDoubleParams.push(Number(v));
-            currentDoubleIndex++;
-          });
-        } else {
-          geoDoubleParams.push(Number(val));
+        toArray(val).forEach((v) => {
+          geoDoubleParams.push(Number(v));
           currentDoubleIndex++;
-        }
+        });
       }
     });
     if (geoDoubleParams.length > 0) {
@@ -504,7 +501,7 @@ export function writeGeotiff(data, metadata) {
         valueOffset = geoAsciiOffsets[geoKey];
         Count = (`${metadata[geoKey].toString()}\u0000`).length;
       } else if (tagType === 'DOUBLE') {
-        if (geoAsciiOffsets?.[geoKey] === undefined) return;
+        if (geoDoubleOffsets?.[geoKey] === undefined) return;
         TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
         valueOffset = geoDoubleOffsets[geoKey];
         const val = metadata[geoKey];
@@ -522,49 +519,6 @@ export function writeGeotiff(data, metadata) {
     });
 
     GeoKeyDirectory[3] = validKeys;
-    metadata.GeoKeyDirectory = GeoKeyDirectory;
-  }
-
-
-
-// END
-
-  if (!metadata.GeoKeyDirectory) {
-    const NumberOfKeys = geoKeys.length;
-
-    const GeoKeyDirectory = [1, 1, 0, NumberOfKeys];
-    geoKeys.forEach((geoKey) => {
-      const KeyID = Number(name2code[geoKey]);
-      GeoKeyDirectory.push(KeyID);
-
-      let Count;
-      let TIFFTagLocation;
-      let valueOffset;
-      if (fieldTagTypes[KeyID] === 'SHORT') {
-        Count = 1;
-        TIFFTagLocation = 0;
-        valueOffset = metadata[geoKey];
-      } else if (fieldTagTypes[KeyID] === 'ASCII') {
-        const asciiValue = `${metadata[geoKey].toString()}\u0000`;
-        Count = asciiValue.length;
-        TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
-        valueOffset = metadata.GeoAsciiParams.indexOf(asciiValue);
-      } else if (fieldTagTypes[KeyID] === 'DOUBLE') {
-        TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
-        if (Array.isArray(metadata[geoKey])) {
-          Count = metadata[geoKey].length;
-          valueOffset = metadata.GeoDoubleParams.indexOf(metadata[geoKey][0]);
-        } else {
-          Count = 1;
-          valueOffset = metadata.GeoDoubleParams.indexOf(Number(metadata[geoKey]));
-        }
-      } else {
-        console.log(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
-      }
-      GeoKeyDirectory.push(TIFFTagLocation);
-      GeoKeyDirectory.push(Count);
-      GeoKeyDirectory.push(valueOffset);
-    });
     metadata.GeoKeyDirectory = GeoKeyDirectory;
   }
 
