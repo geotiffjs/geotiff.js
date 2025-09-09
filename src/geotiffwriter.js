@@ -432,13 +432,23 @@ export function writeGeotiff(data, metadata) {
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
+  // Build ASCII and DOUBLE tags, GeoAsciiParamsTag and GeoDoubleParamsTag
+  // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
+
+  // GeoAsciiParams and geoAsciiOffsets
+  const geoAsciiOffsets = {}
   if (!metadata.GeoAsciiParams) {
     let geoAsciiParams = '';
+    let currentAsciiOffset = 0;
     geoKeys.forEach((name) => {
       const code = Number(name2code[name]);
       const tagType = fieldTagTypes[code];
-      if (tagType === 'ASCII') {
-        geoAsciiParams += `${metadata[name].toString()}\u0000`;
+      const val = metadata[name]
+      if (tagType === 'ASCII' && val !== undefined) {
+        const s = `${val.toString()}\u0000`;
+        geoAsciiOffsets[name] = currentAsciiOffset;
+        geoAsciiParams += s;
+        currentAsciiOffset += s.length; // count in bytes (chars)
       }
     });
     if (geoAsciiParams.length > 0) {
@@ -446,20 +456,25 @@ export function writeGeotiff(data, metadata) {
     }
   }
 
-  // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
-  // Build GeoDoubleParams the same way as GeoAsciiParams (collect DOUBLE values)
+  // GeoDoubleParamsTag and geoDoubleOffsets
+  const geoDoubleOffsets = {}; 
   if (!metadata.GeoDoubleParams) {
     const geoDoubleParams = [];
+    let currentDoubleIndex = 0;
     geoKeys.forEach((name) => {
       const code = Number(name2code[name]);
       const tagType = fieldTagTypes[code];
-      const key = metadata[name]
-      if (tagType === 'DOUBLE' && key !== undefined) {
-        // Accept either a single numeric value or an array of numbers
-        if (Array.isArray(key)) {
-          key.forEach((v) => geoDoubleParams.push(Number(v)));
+      const val = metadata[name];
+      if (tagType === 'DOUBLE' && val !== undefined) {
+        geoDoubleOffsets[name] = currentDoubleIndex;
+        if (Array.isArray(val)) {
+          val.forEach((v) => {
+            geoDoubleParams.push(Number(v));
+            currentDoubleIndex++;
+          });
         } else {
-          geoDoubleParams.push(Number(key));
+          geoDoubleParams.push(Number(val));
+          currentDoubleIndex++;
         }
       }
     });
@@ -467,6 +482,52 @@ export function writeGeotiff(data, metadata) {
       metadata.GeoDoubleParams = geoDoubleParams;
     }
   }
+
+  // Build GeoKeyDirectory for resolved records, handling SHORT as well as ASCII and DOUBLE
+  if (!metadata.GeoKeyDirectory) {
+    // Number of keys will be populated on finish
+    const GeoKeyDirectory = [1, 1, 0, 0]; 
+    let validKeys = 0;
+
+    geoKeys.forEach((geoKey) => {
+      const KeyID = Number(name2code[geoKey]);
+      const tagType = fieldTagTypes[KeyID];
+      let Count, TIFFTagLocation, valueOffset;
+
+      if (tagType === 'SHORT') {
+        Count = 1;
+        TIFFTagLocation = 0;
+        valueOffset = metadata[geoKey];
+      } else if (tagType === 'ASCII') {
+        if (geoAsciiOffsets?.[geoKey] === undefined) return;
+        TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
+        valueOffset = geoAsciiOffsets[geoKey];
+        Count = (`${metadata[geoKey].toString()}\u0000`).length;
+      } else if (tagType === 'DOUBLE') {
+        if (geoAsciiOffsets?.[geoKey] === undefined) return;
+        TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
+        valueOffset = geoDoubleOffsets[geoKey];
+        const val = metadata[geoKey];
+        Count = Array.isArray(val) ? val.length : 1;
+      } else {
+        console.log(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
+        return;
+      }
+      // Push to GeoKeyDirectory
+      GeoKeyDirectory.push(KeyID);
+      GeoKeyDirectory.push(TIFFTagLocation);
+      GeoKeyDirectory.push(Count);
+      GeoKeyDirectory.push(valueOffset);
+      validKeys++;
+    });
+
+    GeoKeyDirectory[3] = validKeys;
+    metadata.GeoKeyDirectory = GeoKeyDirectory;
+  }
+
+
+
+// END
 
   if (!metadata.GeoKeyDirectory) {
     const NumberOfKeys = geoKeys.length;
