@@ -439,7 +439,7 @@ export function writeGeotiff(data, metadata) {
     // Only build ASCII / DOUBLE params if not provided
     let geoAsciiParams = metadata.GeoAsciiParams || '';
     let currentAsciiOffset = geoAsciiParams.length;
-    let geoDoubleParams = metadata.GeoDoubleParams || [];
+    const geoDoubleParams = metadata.GeoDoubleParams || [];
     let currentDoubleIndex = geoDoubleParams.length;
 
     // Since geoKeys already sorted and filtered, do a single pass to append to corresponding directory for SHORT/ASCII/DOUBLE
@@ -449,9 +449,13 @@ export function writeGeotiff(data, metadata) {
       const KeyID = Number(name2code[geoKey]);
       const tagType = fieldTagTypes[KeyID];
       const val = metadata[geoKey];
-      if (val === undefined) return;
+      if (val === undefined) {
+        return;
+      }
 
-      let Count, TIFFTagLocation, valueOffset;
+      let Count;
+      let TIFFTagLocation;
+      let valueOffset;
       if (tagType === 'SHORT') {
         Count = 1;
         TIFFTagLocation = 0;
