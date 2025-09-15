@@ -11,6 +11,7 @@ gdal_translate -of GTiff initial.tiff stripped.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 stripped.tiff tiled.tiff
 gdal_translate -of GTiff -ot Int32 stripped.tiff int32.tiff
 gdal_translate -of GTiff -ot UInt32 stripped.tiff uint32.tiff
+gdal_translate -of GTiff -ot Float32 -co NBITS=16 stripped.tiff float16.tiff
 gdal_translate -of GTiff -ot Float32 stripped.tiff float32.tiff
 gdal_translate -of GTiff -ot Float64 stripped.tiff float64.tiff
 gdal_translate -of GTiff -co COMPRESS=LZW stripped.tiff lzw.tiff
