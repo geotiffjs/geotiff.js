@@ -140,7 +140,7 @@ class Pool {
         return a.getJobCount() < b.getJobCount() ? a : b;
       });
       const { decoded } = await workerWrapper.submitJob(
-        { fileDirectory: { ...fileDirectory, TileOffsets: undefined }, buffer },
+        { fileDirectory: { ...fileDirectory, TileOffsets: undefined, TileByteCounts: undefined }, buffer },
         [buffer],
       );
       return decoded;
