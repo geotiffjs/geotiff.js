@@ -139,7 +139,10 @@ class Pool {
       const workerWrapper = (await this.workerWrappers).reduce((a, b) => {
         return a.getJobCount() < b.getJobCount() ? a : b;
       });
-      const { decoded } = await workerWrapper.submitJob({ fileDirectory, buffer }, [buffer]);
+      const { decoded } = await workerWrapper.submitJob(
+        { fileDirectory: { ...fileDirectory, TileOffsets: undefined }, buffer },
+        [buffer],
+      );
       return decoded;
     } else {
       return getDecoder(fileDirectory).then((decoder) => decoder.decode(fileDirectory, buffer));
