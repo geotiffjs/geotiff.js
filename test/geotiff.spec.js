@@ -1309,8 +1309,8 @@ describe('writeTests', () => {
     const image = await tiff.getImage();
 
     const geoKeys = image.getGeoKeys();
-    expect(geoKeys.GeogSemiMajorAxisGeoKey).to.be.closeTo(6378137.0, 0.000001);
-    expect(geoKeys.GeogInvFlatteningGeoKey).to.be.closeTo(298.257223563, 0.000001);
+    expect(geoKeys.GeogSemiMajorAxisGeoKey).to.equal(6378137.0);
+    expect(geoKeys.GeogInvFlatteningGeoKey).to.equal(298.257223563);
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
     expect(geoKeys.PCSCitationGeoKey).to.equal('test-ascii');
   });
