@@ -3,6 +3,11 @@ wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f
 wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/mosaic_MER_FRS_1P_RGB_reduced/mosaic_ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_RGB_reduced.tif -O rgb.tiff
 wget https://raw.githubusercontent.com/hubmapconsortium/portal-containers/master/containers/ome-tiff-offsets/test-input/multi-channel.ome.tif -O multi-channel.ome.tif
 
+wget https://github.com/geotiffjs/geotiff.js/files/12025797/ce24e6fd-d4aa-4922-a91b-06c327a5c99b.tiff.zip -O issue_374.zip
+unzip -o issue_374.zip -d .
+rm issue_374.zip
+mv ce24e6fd-d4aa-4922-a91b-06c327a5c99b.tiff issue_374.tiff
+
 gdal_translate -of GTiff initial.tiff stripped.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 stripped.tiff tiled.tiff
 gdal_translate -of GTiff -ot Int32 stripped.tiff int32.tiff

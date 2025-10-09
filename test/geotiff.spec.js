@@ -1,20 +1,20 @@
 /* eslint-disable no-unused-expressions */
-import isNode from 'detect-node';
 import { expect } from 'chai';
-import http from 'http';
-import serveStatic from 'serve-static';
+import isNode from 'detect-node';
 import finalhandler from 'finalhandler';
+import http from 'http';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
+import serveStatic from 'serve-static';
 import { fileURLToPath } from 'url';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
-import { makeFetchSource } from '../dist-module/source/remote.js';
-import { makeFileSource } from '../dist-module/source/file.js';
-import { BlockedSource } from '../dist-module/source/blockedsource.js';
-import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.js';
 import DataSlice from '../dist-module/dataslice.js';
 import DataView64 from '../dist-module/dataview64.js';
+import { fromArrayBuffer, fromUrls, GeoTIFF, Pool, writeArrayBuffer } from '../dist-module/geotiff.js';
+import { BlockedSource } from '../dist-module/source/blockedsource.js';
+import { makeFileSource } from '../dist-module/source/file.js';
+import { makeFetchSource } from '../dist-module/source/remote.js';
+import { chunk, range, toArray, toArrayRecursively } from '../dist-module/utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1313,5 +1313,10 @@ describe('BlockedSource Test', () => {
     expect(group2.offset).to.equal(14);
     expect(group2.length).to.equal(4);
     expect(group2.blockIds).to.deep.equal([7, 8]);
+  });
+
+  it('Should fix issue 374', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('issue_374.tiff'));
+    performTiffTests(tiff, 768, 1280, 3, Uint8Array);
   });
 });
