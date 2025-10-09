@@ -1420,5 +1420,8 @@ describe('BlockedSource Test', () => {
     expect(brData).to.have.length(sampleCount);
     expect(brData[0]).to.be.an.instanceof(type);
     expect(data[0]).to.deep.equal(allData[2]);
+
+    // test the actual problem from issue #374
+    expect(tiff.requestIFD(0)).to.be.ok;
   });
 });

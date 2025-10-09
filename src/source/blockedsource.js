@@ -256,6 +256,7 @@ export class BlockedSource extends BaseSource {
    * @param {Map} blocks
    */
   readSliceData(slices, blocks) {
+    // console.log('[DEBUG] readSliceData', slices, [...blocks]);
     return slices.map((slice) => {
       let top = slice.offset + slice.length;
       if (this.fileSize !== null) {

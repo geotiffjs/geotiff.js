@@ -55,12 +55,16 @@ class RemoteSource extends BaseSource {
       headers: {
         ...this.headers,
         Range: `bytes=${slices
-          .map(({ offset, length }) => `${offset}-${offset + length}`)
+          .map(({ offset, length }) => `${offset}-${offset + length - 1}`)
           .join(',')
         }`,
       },
       signal,
     });
+    // console.log(`[DEBUG] fetchSlices ${slices
+    // .map(({ offset, length }) => `${offset}-${offset + length - 1}`)
+    // .join(',')}`, response,
+    // );
 
     if (!response.ok) {
       throw new Error('Error fetching data.');
@@ -111,10 +115,11 @@ class RemoteSource extends BaseSource {
     const response = await this.client.request({
       headers: {
         ...this.headers,
-        Range: `bytes=${offset}-${offset + length}`,
+        Range: `bytes=${offset}-${offset + length - 1}`,
       },
       signal,
     });
+    // console.log(`[DEBUG] fetchSlice ${offset}-${offset + length}`, response);
 
     // check the response was okay and if the server actually understands range requests
     if (!response.ok) {
