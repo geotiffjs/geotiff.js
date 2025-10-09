@@ -1,6 +1,6 @@
 import QuickLRU from 'quick-lru';
-import { BaseSource } from './basesource.js';
 import { AbortError, AggregateError, wait, zip } from '../utils.js';
+import { BaseSource } from './basesource.js';
 
 class Block {
   /**
@@ -262,7 +262,7 @@ export class BlockedSource extends BaseSource {
         top = Math.min(this.fileSize, top);
       }
       const blockIdLow = Math.floor(slice.offset / this.blockSize);
-      const blockIdHigh = Math.floor(top / this.blockSize);
+      const blockIdHigh = Math.floor((top - 1) / this.blockSize);
       const sliceData = new ArrayBuffer(slice.length);
       const sliceView = new Uint8Array(sliceData);
 
