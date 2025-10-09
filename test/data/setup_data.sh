@@ -104,3 +104,7 @@ rm geotiff-test-data.zip
 
 # add top-level metadata to a tiff for testing purposes
 gdal_edit.py -mo DATUM=WGS84 wind_direction.tif
+
+gdal_create -of GTiff -ot Byte -a_srs "EPSG:4326" -a_ullr 0 1 1 0 -a_nodata 0 -outsize 32 32 -burn 128 small_block.tif
+gdal_translate small_block.tif small_block.cog.tif -of COG -co BLOCKSIZE=16
+# gdal_create -of COG -co BLOCKSIZE=16 -ot Byte -a_srs "EPSG:4326" -a_nodata 0 -outsize 32 32 -burn 128 small_block.cog.tif
