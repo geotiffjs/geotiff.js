@@ -247,6 +247,14 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint32Array);
   });
 
+  it('should work on Float16 tiffs', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('float16.tiff'));
+    // Float16Array is supported since eslint 9.29.0, see https://eslint.org/blog/2025/06/eslint-v9.29.0-released/
+    // but eslint can't be updated to 9.x.x, because eslint-config-airbnb-base supports up to eslint 8.x.x only
+    // eslint-disable-next-line no-undef
+    await performTiffTests(tiff, 539, 448, 15, Float16Array);
+  });
+
   it('should work on Float32 tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('float32.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Float32Array);

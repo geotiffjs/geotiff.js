@@ -1,5 +1,4 @@
 /** @module geotiffimage */
-import { getFloat16 } from '@petamoriken/float16';
 import getAttribute from 'xml-utils/get-attribute'; // eslint-disable-line import/extensions
 import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line import/extensions
 
@@ -65,6 +64,10 @@ function arrayForType(format, bitsPerSample, size) {
     case 3: // floating point data
       switch (bitsPerSample) {
         case 16:
+          // Float16Array is supported since eslint 9.29.0, see https://eslint.org/blog/2025/06/eslint-v9.29.0-released/
+          // but eslint can't be updated to 9.x.x, because eslint-config-airbnb-base supports up to eslint 8.x.x only
+          // eslint-disable-next-line no-undef
+          return new Float16Array(size);
         case 32:
           return new Float32Array(size);
         case 64:
@@ -155,16 +158,6 @@ function normalizeArray(inBuffer, format, planarConfiguration, samplesPerPixel, 
         // bitOffset = bitOffset + pixelBitSkip - bitsPerSample;
       }
     }
-  } else if (format === 3) { // floating point
-    // Float16 is handled elsewhere
-    // normalize 16/24 bit floats to 32 bit floats in the array
-    // console.time();
-    // if (bitsPerSample === 16) {
-    //   for (let byte = 0, outIndex = 0; byte < inBuffer.byteLength; byte += 2, ++outIndex) {
-    //     outArray[outIndex] = getFloat16(view, byte);
-    //   }
-    // }
-    // console.timeEnd()
   }
 
   return outArray.buffer;
@@ -320,9 +313,7 @@ class GeoTIFFImage {
       case 3:
         switch (bitsPerSample) {
           case 16:
-            return function (offset, littleEndian) {
-              return getFloat16(this, offset, littleEndian);
-            };
+            return DataView.prototype.getFloat16;
           case 32:
             return DataView.prototype.getFloat32;
           case 64:
