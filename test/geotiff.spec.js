@@ -1,20 +1,20 @@
 /* eslint-disable no-unused-expressions */
-import isNode from 'detect-node';
 import { expect } from 'chai';
-import http from 'http';
-import serveStatic from 'serve-static';
+import isNode from 'detect-node';
 import finalhandler from 'finalhandler';
+import http from 'http';
 import AbortController from 'node-abort-controller';
 import { dirname } from 'path';
+import serveStatic from 'serve-static';
 import { fileURLToPath } from 'url';
 
-import { GeoTIFF, fromArrayBuffer, writeArrayBuffer, fromUrls, Pool } from '../dist-module/geotiff.js';
-import { makeFetchSource } from '../dist-module/source/remote.js';
-import { makeFileSource } from '../dist-module/source/file.js';
-import { BlockedSource } from '../dist-module/source/blockedsource.js';
-import { chunk, toArray, toArrayRecursively, range } from '../dist-module/utils.js';
 import DataSlice from '../dist-module/dataslice.js';
 import DataView64 from '../dist-module/dataview64.js';
+import { fromArrayBuffer, fromUrls, GeoTIFF, Pool, writeArrayBuffer } from '../dist-module/geotiff.js';
+import { BlockedSource } from '../dist-module/source/blockedsource.js';
+import { makeFileSource } from '../dist-module/source/file.js';
+import { makeFetchSource } from '../dist-module/source/remote.js';
+import { chunk, range, toArray, toArrayRecursively } from '../dist-module/utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1290,9 +1290,8 @@ describe('writeTests', () => {
 });
 
 describe('BlockedSource Test', () => {
-  const blockedSource = new BlockedSource(null, { blockSize: 2 });
-
   it('Groups only contiguous blocks as one group', () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
     const groups = blockedSource.groupBlocks([2, 0, 1, 3]);
     expect(groups.length).to.equal(1);
     const [group] = groups;
@@ -1302,6 +1301,7 @@ describe('BlockedSource Test', () => {
   });
 
   it('Groups two non-contiguous blocks as two groups', () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
     const groups = blockedSource.groupBlocks([0, 1, 7, 2, 8, 3]);
     expect(groups.length).to.equal(2);
     const [group1, group2] = groups;
@@ -1313,5 +1313,85 @@ describe('BlockedSource Test', () => {
     expect(group2.offset).to.equal(14);
     expect(group2.length).to.equal(4);
     expect(group2.blockIds).to.deep.equal([7, 8]);
+  });
+
+  it('Fetches all data in a single block', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    blockedSource.source = { fileSize: null, fetch: async () => [{ data: new Uint8Array(2).buffer, offset: 0 }] };
+    const data = await blockedSource.fetch([{ offset: 0, length: 2 }]);
+    expect(data[0].byteLength).to.equal(2);
+  });
+
+  it('Fetches complete first block', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 0, length: 2 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1, 2]);
+  });
+
+  it('Fetches complete last block', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 2, length: 2 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([3, 4]);
+  });
+
+  it('Fetches partial data from the beginning', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 0, length: 1 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1]);
+  });
+
+  it('Fetches partial data from the end', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 3, length: 1 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([4]);
+  });
+
+  it('Fetches data from between the blocks', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 1, length: 2 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
+  });
+
+  it('Fetches multiple slices from between blocks', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4, 5, 6]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetch: async () => [
+        { data, offset: 0 },
+      ] };
+    const result = await blockedSource.fetch([{ offset: 1, length: 2 }, { offset: 3, length: 2 }]);
+    expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
+    expect(Array.from(new Uint8Array(result[1]))).to.deep.equal([4, 5]);
   });
 });
