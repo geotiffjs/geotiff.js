@@ -166,6 +166,8 @@ export const fieldTagTypes = {
   2049: 'ASCII',
   2052: 'SHORT',
   2054: 'SHORT',
+  2057: 'DOUBLE',
+  2059: 'DOUBLE',
   2060: 'SHORT',
   3072: 'SHORT',
   3073: 'ASCII',
