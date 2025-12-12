@@ -10,7 +10,9 @@ import { makeFileReaderSource } from './source/filereader.js';
 import { makeFileSource } from './source/file.js';
 import { BaseClient, BaseResponse } from './source/client/base.js';
 
-import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.js';
+import { ImageFileDirectoryParser } from './imagefiledirectory.js';
+
+import { fieldTypes, geoKeyNames } from './globals.js';
 import { writeGeotiff } from './geotiffwriter.js';
 import * as globals from './globals.js';
 import * as rgb from './rgb.js';
@@ -67,41 +69,6 @@ function getFieldTypeLength(fieldType) {
     default:
       throw new RangeError(`Invalid field type: ${fieldType}`);
   }
-}
-
-function parseGeoKeyDirectory(fileDirectory) {
-  const rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
-  if (!rawGeoKeyDirectory) {
-    return null;
-  }
-
-  const geoKeyDirectory = {};
-  for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
-    const key = geoKeyNames[rawGeoKeyDirectory[i]];
-    const location = (rawGeoKeyDirectory[i + 1])
-      ? (fieldTagNames[rawGeoKeyDirectory[i + 1]]) : null;
-    const count = rawGeoKeyDirectory[i + 2];
-    const offset = rawGeoKeyDirectory[i + 3];
-
-    let value = null;
-    if (!location) {
-      value = offset;
-    } else {
-      value = fileDirectory[location];
-      if (typeof value === 'undefined' || value === null) {
-        throw new Error(`Could not get value of geoKey '${key}'.`);
-      } else if (typeof value === 'string') {
-        value = value.substring(offset, offset + count - 1);
-      } else if (value.subarray) {
-        value = value.subarray(offset, offset + count);
-        if (count === 1) {
-          value = value[0];
-        }
-      }
-    }
-    geoKeyDirectory[key] = value;
-  }
-  return geoKeyDirectory;
 }
 
 function getValues(dataSlice, fieldType, count, offset) {
@@ -334,6 +301,7 @@ class GeoTIFF extends GeoTIFFBase {
   constructor(source, littleEndian, bigTiff, firstIFDOffset, options = {}) {
     super();
     this.source = source;
+    this.parser = new ImageFileDirectoryParser(source, littleEndian, bigTiff, false);
     this.littleEndian = littleEndian;
     this.bigTiff = bigTiff;
     this.firstIFDOffset = firstIFDOffset;
@@ -355,94 +323,6 @@ class GeoTIFF extends GeoTIFFBase {
     );
   }
 
-  /**
-   * Instructs to parse an image file directory at the given file offset.
-   * As there is no way to ensure that a location is indeed the start of an IFD,
-   * this function must be called with caution (e.g only using the IFD offsets from
-   * the headers or other IFDs).
-   * @param {number} offset the offset to parse the IFD at
-   * @returns {Promise<ImageFileDirectory>} the parsed IFD
-   */
-  async parseFileDirectoryAt(offset) {
-    const entrySize = this.bigTiff ? 20 : 12;
-    const offsetSize = this.bigTiff ? 8 : 2;
-
-    let dataSlice = await this.getSlice(offset);
-    const numDirEntries = this.bigTiff
-      ? dataSlice.readUint64(offset)
-      : dataSlice.readUint16(offset);
-
-    // if the slice does not cover the whole IFD, request a bigger slice, where the
-    // whole IFD fits: num of entries + n x tag length + offset to next IFD
-    const byteSize = (numDirEntries * entrySize) + (this.bigTiff ? 16 : 6);
-    if (!dataSlice.covers(offset, byteSize)) {
-      dataSlice = await this.getSlice(offset, byteSize);
-    }
-
-    const fileDirectory = {};
-    const rawFileDirectory = new Map();
-
-    // loop over the IFD and create a file directory object
-    let i = offset + (this.bigTiff ? 8 : 2);
-    for (let entryCount = 0; entryCount < numDirEntries; i += entrySize, ++entryCount) {
-      const fieldTag = dataSlice.readUint16(i);
-      const fieldType = dataSlice.readUint16(i + 2);
-      const typeCount = this.bigTiff
-        ? dataSlice.readUint64(i + 4)
-        : dataSlice.readUint32(i + 4);
-
-      let fieldValues;
-      let value;
-      const fieldTypeLength = getFieldTypeLength(fieldType);
-      const valueOffset = i + (this.bigTiff ? 12 : 8);
-
-      // check whether the value is directly encoded in the tag or refers to a
-      // different external byte range
-      if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
-        fieldValues = getValues(dataSlice, fieldType, typeCount, valueOffset);
-      } else {
-        // resolve the reference to the actual byte range
-        const actualOffset = dataSlice.readOffset(valueOffset);
-        const length = getFieldTypeLength(fieldType) * typeCount;
-
-        // check, whether we actually cover the referenced byte range; if not,
-        // request a new slice of bytes to read from it
-        if (dataSlice.covers(actualOffset, length)) {
-          fieldValues = getValues(dataSlice, fieldType, typeCount, actualOffset);
-        } else {
-          const fieldDataSlice = await this.getSlice(actualOffset, length);
-          fieldValues = getValues(fieldDataSlice, fieldType, typeCount, actualOffset);
-        }
-      }
-
-      // unpack single values from the array
-      if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1
-        && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
-        value = fieldValues[0];
-      } else {
-        value = fieldValues;
-      }
-
-      // write the tags value to the file directory
-      const tagName = fieldTagNames[fieldTag];
-      if (tagName) {
-        fileDirectory[tagName] = value;
-      }
-      rawFileDirectory.set(fieldTag, value);
-    }
-    const geoKeyDirectory = parseGeoKeyDirectory(fileDirectory);
-    const nextIFDByteOffset = dataSlice.readOffset(
-      offset + offsetSize + (entrySize * numDirEntries),
-    );
-
-    return new ImageFileDirectory(
-      fileDirectory,
-      rawFileDirectory,
-      geoKeyDirectory,
-      nextIFDByteOffset,
-    );
-  }
-
   async requestIFD(index) {
     // see if we already have that IFD index requested.
     if (this.ifdRequests[index]) {
@@ -450,7 +330,7 @@ class GeoTIFF extends GeoTIFFBase {
       return this.ifdRequests[index];
     } else if (index === 0) {
       // special case for index 0
-      this.ifdRequests[index] = this.parseFileDirectoryAt(this.firstIFDOffset);
+      this.ifdRequests[index] = this.parser.parseFileDirectoryAt(this.firstIFDOffset);
       return this.ifdRequests[index];
     } else if (!this.ifdRequests[index - 1]) {
       // if the previous IFD was not yet loaded, load that one first
@@ -474,7 +354,7 @@ class GeoTIFF extends GeoTIFFBase {
       if (previousIfd.nextIFDByteOffset === 0) {
         throw new GeoTIFFImageIndexError(index);
       }
-      return this.parseFileDirectoryAt(previousIfd.nextIFDByteOffset);
+      return this.parser.parseFileDirectoryAt(previousIfd.nextIFDByteOffset)
     })();
     return this.ifdRequests[index];
   }
@@ -486,9 +366,8 @@ class GeoTIFF extends GeoTIFFBase {
    * @returns {Promise<GeoTIFFImage>} the image at the given index
    */
   async getImage(index = 0) {
-    const ifd = await this.requestIFD(index);
     return new GeoTIFFImage(
-      ifd.fileDirectory, ifd.geoKeyDirectory,
+      await this.requestIFD(index),
       this.dataView, this.littleEndian, this.cache, this.source,
     );
   }

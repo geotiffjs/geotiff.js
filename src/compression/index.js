@@ -28,7 +28,7 @@ export function addDecoder(cases, importFn, preferWorker_ = true) {
  * @returns {Promise<Decoder>}
  */
 export async function getDecoder(fileDirectory) {
-  const importFn = registry.get(fileDirectory.Compression);
+  const importFn = registry.get(fileDirectory.getValue('Compression'));
   if (!importFn) {
     throw new Error(`Unknown compression method identifier: ${fileDirectory.Compression}`);
   }
