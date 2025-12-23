@@ -374,17 +374,15 @@ class GeoTIFFImage {
       index = (sample * numTilesPerRow * numTilesPerCol) + (y * numTilesPerRow) + x;
     }
 
-    let offsets;
-    let byteCounts;
+    let offset;
+    let byteCount;
     if (this.isTiled) {
-      offsets = await this.fileDirectory.loadValue('TileOffsets');
-      byteCounts = await this.fileDirectory.loadValue('TileByteCounts');
+      offset = await this.fileDirectory.loadValueIndexed('TileOffsets', index);
+      byteCount = await this.fileDirectory.loadValueIndexed('TileByteCounts', index);
     } else {
-      offsets = await this.fileDirectory.loadValue('StripOffsets');
-      byteCounts = await this.fileDirectory.loadValue('StripByteCounts');
+      offset = await this.fileDirectory.loadValueIndexed('StripOffsets', index);
+      byteCount = await this.fileDirectory.loadValueIndexed('StripByteCounts', index);
     }
-    const offset = offsets[index];
-    const byteCount = byteCounts[index];
 
     if (byteCount === 0) {
       const nPixels = this.getBlockHeight(y) * this.getTileWidth();

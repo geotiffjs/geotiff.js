@@ -1,5 +1,5 @@
-import DataView64 from "./dataview64.js";
-import DataSlice from "./dataslice.js";
+import DataView64 from './dataview64.js';
+import DataSlice from './dataslice.js';
 
 import {
   fieldTypes,
@@ -8,78 +8,175 @@ import {
   tagDefinitions,
   resolveTag,
   fieldTypeSizes,
-} from "./globals.js";
+} from './globals.js';
 
 function getFieldTypeLength(fieldType) {
   return fieldTypeSizes[fieldType];
 }
 
-function getValues(dataSlice, fieldType, count, offset, isArray) {
-  let values = null;
-  let readMethod = null;
-  const fieldTypeLength = getFieldTypeLength(fieldType);
-
+function getArrayForSamples(fieldType, count) {
   switch (fieldType) {
     case fieldTypes.BYTE:
     case fieldTypes.ASCII:
     case fieldTypes.UNDEFINED:
-      values = new Uint8Array(count);
-      readMethod = dataSlice.readUint8;
-      break;
+      return new Uint8Array(count);
     case fieldTypes.SBYTE:
-      values = new Int8Array(count);
-      readMethod = dataSlice.readInt8;
-      break;
+      return new Int8Array(count);
     case fieldTypes.SHORT:
-      values = new Uint16Array(count);
-      readMethod = dataSlice.readUint16;
-      break;
+      return new Uint16Array(count);
     case fieldTypes.SSHORT:
-      values = new Int16Array(count);
-      readMethod = dataSlice.readInt16;
-      break;
+      return new Int16Array(count);
     case fieldTypes.LONG:
     case fieldTypes.IFD:
-      values = new Uint32Array(count);
-      readMethod = dataSlice.readUint32;
-      break;
+      return new Uint32Array(count);
     case fieldTypes.SLONG:
-      values = new Int32Array(count);
-      readMethod = dataSlice.readInt32;
-      break;
+      return new Int32Array(count);
     case fieldTypes.LONG8:
     case fieldTypes.IFD8:
-      values = new Array(count);
-      readMethod = dataSlice.readUint64;
-      break;
+      return new Array(count);
     case fieldTypes.SLONG8:
-      values = new Array(count);
-      readMethod = dataSlice.readInt64;
-      break;
+      return new Array(count);
     case fieldTypes.RATIONAL:
-      values = new Uint32Array(count * 2);
-      readMethod = dataSlice.readUint32;
-      break;
+      return new Uint32Array(count * 2);
     case fieldTypes.SRATIONAL:
-      values = new Int32Array(count * 2);
-      readMethod = dataSlice.readInt32;
-      break;
+      return new Int32Array(count * 2);
     case fieldTypes.FLOAT:
-      values = new Float32Array(count);
-      readMethod = dataSlice.readFloat32;
-      break;
+      return new Float32Array(count);
     case fieldTypes.DOUBLE:
-      values = new Float64Array(count);
-      readMethod = dataSlice.readFloat64;
-      break;
+      return new Float64Array(count);
     default:
       throw new RangeError(`Invalid field type: ${fieldType}`);
   }
+}
+
+function getDataSliceReader(dataSlice, fieldType) {
+  switch (fieldType) {
+    case fieldTypes.BYTE:
+    case fieldTypes.ASCII:
+    case fieldTypes.UNDEFINED:
+      return dataSlice.readUint8;
+    case fieldTypes.SBYTE:
+      return dataSlice.readInt8;
+    case fieldTypes.SHORT:
+      return dataSlice.readUint16;
+    case fieldTypes.SSHORT:
+      return dataSlice.readInt16;
+    case fieldTypes.LONG:
+    case fieldTypes.IFD:
+      return dataSlice.readUint32;
+    case fieldTypes.SLONG:
+      return dataSlice.readInt32;
+    case fieldTypes.LONG8:
+    case fieldTypes.IFD8:
+      return dataSlice.readUint64;
+    case fieldTypes.SLONG8:
+      return dataSlice.readInt64;
+    case fieldTypes.RATIONAL:
+      return dataSlice.readUint32;
+    case fieldTypes.SRATIONAL:
+      return dataSlice.readInt32;
+    case fieldTypes.FLOAT:
+      return dataSlice.readFloat32;
+    case fieldTypes.DOUBLE:
+      return dataSlice.readFloat64;
+    default:
+      throw new RangeError(`Invalid field type: ${fieldType}`);
+  }
+}
+
+function getFieldTypeSize(fieldType) {
+  switch (fieldType) {
+    case fieldTypes.BYTE:
+    case fieldTypes.ASCII:
+    case fieldTypes.UNDEFINED:
+    case fieldTypes.SBYTE:
+      return 1;
+    case fieldTypes.SHORT:
+    case fieldTypes.SSHORT:
+      return 2;
+    case fieldTypes.LONG:
+    case fieldTypes.IFD:
+    case fieldTypes.SLONG:
+    case fieldTypes.FLOAT:
+      return 4;
+    case fieldTypes.LONG8:
+    case fieldTypes.IFD8:
+    case fieldTypes.SLONG8:
+    case fieldTypes.DOUBLE:
+    case fieldTypes.RATIONAL:
+    case fieldTypes.SRATIONAL:
+      return 8;
+    default:
+      throw new RangeError(`Invalid field type: ${fieldType}`);
+  }
+}
+
+class DeferredArray {
+  constructor(source, arrayOffset, littleEndian, fieldType, length) {
+    this.source = source;
+    this.arrayOffset = arrayOffset;
+    this.littleEndian = littleEndian;
+    this.fieldType = fieldType;
+    this.data = getArrayForSamples(fieldType, length);
+    this.itemSize = getFieldTypeSize(fieldType);
+    this.maskBitap = new Uint8Array(Math.ceil(length / 8));
+    this.fetchIndexPromises = new Map();
+  }
+
+  async get(index) {
+    if (index < 0 || index >= this.data.length) {
+      throw new RangeError(
+        `Index ${index} out of bounds for length ${this.data.length}`,
+      );
+    }
+
+    const byteIndex = Math.floor(index / 8);
+    const bitMask = 1 << index % 8;
+    const offset = this.arrayOffset + index * this.itemSize;
+
+    if ((this.maskBitap[byteIndex] & bitMask) === 0) {
+      if (!this.fetchIndexPromises.has(index)) {
+        const fetchPromise = this.source.fetch([{
+          offset,
+          length: this.itemSize,
+        }]).then((data) => {
+          const dataSlice = new DataSlice(
+            data[0],
+            this.arrayOffset + index * this.itemSize,
+            true,
+            false, // we can ignore bigTiff here
+          );
+          const readMethod = getDataSliceReader(dataSlice, this.fieldType);
+          const value = readMethod.call(dataSlice, offset);
+
+          this.data[index] = value;
+          this.maskBitap[byteIndex] |= bitMask;
+          this.fetchIndexPromises.delete(index);
+          return value;
+        });
+        this.fetchIndexPromises.set(index, fetchPromise);
+      }
+      return this.fetchIndexPromises.get(index);
+    }
+    return this.data[index];
+  }
+
+  async load() {
+
+  }
+}
+
+function getValues(dataSlice, fieldType, count, offset, isArray) {
+  const fieldTypeLength = getFieldTypeLength(fieldType);
+
+  const values = getArrayForSamples(fieldType, count);
+  const readMethod = getDataSliceReader(dataSlice, fieldType);
+  const isRational = (
+    fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL
+  );
 
   // normal fields
-  if (
-    !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)
-  ) {
+  if (!isRational) {
     for (let i = 0; i < count; ++i) {
       values[i] = readMethod.call(dataSlice, offset + i * fieldTypeLength);
     }
@@ -89,20 +186,16 @@ function getValues(dataSlice, fieldType, count, offset, isArray) {
       values[i] = readMethod.call(dataSlice, offset + i * fieldTypeLength);
       values[i + 1] = readMethod.call(
         dataSlice,
-        offset + (i * fieldTypeLength + 4)
+        offset + (i * fieldTypeLength + 4),
       );
     }
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return new TextDecoder("utf-8").decode(values);
+    return new TextDecoder('utf-8').decode(values);
   }
 
-  if (
-    count === 1 &&
-    !isArray &&
-    !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)
-  ) {
+  if (count === 1 && !isArray && !isRational) {
     return values[0];
   }
   return values;
@@ -123,13 +216,13 @@ export class ImageFileDirectoryParser {
         await this.source.fetch([
           {
             offset,
-            length: typeof size !== "undefined" ? size : fallbackSize,
+            length: typeof size !== 'undefined' ? size : fallbackSize,
           },
         ])
       )[0],
       offset,
       this.littleEndian,
-      this.bigTiff
+      this.bigTiff,
     );
   }
 
@@ -159,6 +252,7 @@ export class ImageFileDirectoryParser {
 
     const actualizedFields = new Map();
     const deferredFields = new Map();
+    const deferredArrays = new Map();
 
     // loop over the IFD and create a file directory object
     let i = offset + (this.bigTiff ? 8 : 2);
@@ -175,6 +269,7 @@ export class ImageFileDirectoryParser {
 
       let fieldValues = null;
       let deferredFieldValues = null;
+      let deferredArray = null;
       const fieldTypeLength = getFieldTypeLength(fieldType);
       const valueOffset = i + (this.bigTiff ? 12 : 8);
       const isArray = tagDefinitions[fieldTag]?.isArray;
@@ -183,7 +278,13 @@ export class ImageFileDirectoryParser {
       // check whether the value is directly encoded in the tag or refers to a
       // different external byte range
       if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
-        fieldValues = getValues(dataSlice, fieldType, typeCount, valueOffset, isArray);
+        fieldValues = getValues(
+          dataSlice,
+          fieldType,
+          typeCount,
+          valueOffset,
+          isArray,
+        );
       } else {
         // resolve the reference to the actual byte range
         const actualOffset = dataSlice.readOffset(valueOffset);
@@ -196,11 +297,11 @@ export class ImageFileDirectoryParser {
             fieldType,
             typeCount,
             actualOffset,
-            isArray
+            isArray,
           );
         } else if (eager) {
           // eager evaluation: fetch the data right now
-          // TODO: instead of fetching the slice right here, collect all slices and fetch them together 
+          // TODO: instead of fetching the slice right here, collect all slices and fetch them together
           // to allow conjoined requests
           const fieldDataSlice = await this.getSlice(actualOffset, length);
           fieldValues = getValues(
@@ -208,10 +309,17 @@ export class ImageFileDirectoryParser {
             fieldType,
             typeCount,
             actualOffset,
-            isArray
+            isArray,
+          );
+        } else if (isArray) {
+          deferredArray = new DeferredArray(
+            this.source,
+            actualOffset,
+            this.littleEndian,
+            fieldType,
+            typeCount,
           );
         } else {
-          // lazy evaluation: store the field information for later retrieval
           deferredFieldValues = async () => {
             const fieldDataSlice = await this.getSlice(actualOffset, length);
             return getValues(
@@ -219,7 +327,7 @@ export class ImageFileDirectoryParser {
               fieldType,
               typeCount,
               actualOffset,
-              isArray
+              isArray,
             );
           };
         }
@@ -229,16 +337,19 @@ export class ImageFileDirectoryParser {
         actualizedFields.set(fieldTag, fieldValues);
       } else if (deferredFieldValues !== null) {
         deferredFields.set(fieldTag, deferredFieldValues);
+      } else if (deferredArray !== null) {
+        deferredArrays.set(fieldTag, deferredArray);
       }
     }
     const nextIFDByteOffset = dataSlice.readOffset(
-      offset + offsetSize + (entrySize * numDirEntries),
+      offset + offsetSize + entrySize * numDirEntries,
     );
 
     return new ImageFileDirectory(
       actualizedFields,
       deferredFields,
-      nextIFDByteOffset
+      deferredArrays,
+      nextIFDByteOffset,
     );
   }
 }
@@ -248,12 +359,14 @@ class ImageFileDirectory {
    * Create an ImageFileDirectory.
    * @param {Map} actualizedFields the file directory, mapping tag names to values
    * @param {Map} deferredFields the deferred fields, mapping tag names to async functions
+   * @param {Map} deferredArrays the deferred arrays, mapping tag names to DeferredArray objects
    * @param {number} nextIFDByteOffset the byte offset to the next IFD
    */
-  constructor(actualizedFields, deferredFields, nextIFDByteOffset) {
+  constructor(actualizedFields, deferredFields, deferredArrays, nextIFDByteOffset) {
     this.actualizedFields = actualizedFields;
     this.deferredFields = deferredFields;
     this.deferredFieldsBeingResolved = new Map();
+    this.deferredArrays = deferredArrays;
     this.nextIFDByteOffset = nextIFDByteOffset;
   }
 
@@ -299,6 +412,20 @@ class ImageFileDirectory {
       this.deferredFieldsBeingResolved.delete(tag);
       this.actualizedFields.set(tag, value);
       return value;
+    }
+    return undefined;
+  }
+
+  async loadValueIndexed(tagIdentifier, index) {
+    const tag = resolveTag(tagIdentifier);
+    if (this.actualizedFields.has(tag)) {
+      const value = this.actualizedFields.get(tag);
+      return value[index];
+    } else if (this.deferredArrays.has(tag)) {
+      const deferredArray = this.deferredArrays.get(tag);
+      return deferredArray.get(index);
+    } else if (this.hasTag(tag)) {
+      return (await this.loadValue(tag))[index];
     }
     return undefined;
   }
