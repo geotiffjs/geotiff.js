@@ -884,8 +884,8 @@ export default class JpegDecoder extends BaseDecoder {
   constructor(fileDirectory) {
     super();
     this.reader = new JpegStreamReader();
-    if (fileDirectory.JPEGTables) {
-      this.reader.parse(fileDirectory.JPEGTables);
+    if (fileDirectory.hasTag('JPEGTables')) {
+      this.reader.parse(fileDirectory.getValue('JPEGTables'));
     }
   }
 
