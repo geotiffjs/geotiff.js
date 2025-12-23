@@ -354,7 +354,7 @@ class GeoTIFF extends GeoTIFFBase {
       if (previousIfd.nextIFDByteOffset === 0) {
         throw new GeoTIFFImageIndexError(index);
       }
-      return this.parser.parseFileDirectoryAt(previousIfd.nextIFDByteOffset)
+      return this.parser.parseFileDirectoryAt(previousIfd.nextIFDByteOffset);
     })();
     return this.ifdRequests[index];
   }

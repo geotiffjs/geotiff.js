@@ -764,10 +764,10 @@ class GeoTIFFImage {
    * @returns {Object[]}
    */
   async getTiePoints() {
-    if (!this.fileDirectory.hasTag("ModelTiepoint")) {
+    if (!this.fileDirectory.hasTag('ModelTiepoint')) {
       return [];
     }
-    const modelTiePoint = await this.fileDirectory.getValue("ModelTiepoint");
+    const modelTiePoint = await this.fileDirectory.getValue('ModelTiepoint');
 
     const tiePoints = [];
     for (let i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
@@ -794,10 +794,10 @@ class GeoTIFFImage {
    */
   async getGDALMetadata(sample = null) {
     const metadata = {};
-    if (!this.fileDirectory.hasTag("GDAL_METADATA")) {
+    if (!this.fileDirectory.hasTag('GDAL_METADATA')) {
       return null;
     }
-    const string = await this.fileDirectory.loadValue("GDAL_METADATA");
+    const string = await this.fileDirectory.loadValue('GDAL_METADATA');
 
     let items = findTagsByName(string, 'Item');
 
@@ -832,8 +832,8 @@ class GeoTIFFImage {
    * @returns {Array<number>} The origin as a vector
    */
   getOrigin() {
-    const tiePoints = this.fileDirectory.getValue("ModelTiepoint");
-    const modelTransformation = this.fileDirectory.getValue("ModelTransformation");
+    const tiePoints = this.fileDirectory.getValue('ModelTiepoint');
+    const modelTransformation = this.fileDirectory.getValue('ModelTransformation');
     if (tiePoints && tiePoints.length === 6) {
       return [
         tiePoints[3],
@@ -860,8 +860,8 @@ class GeoTIFFImage {
    * @returns {Array<number>} The resolution as a vector
    */
   getResolution(referenceImage = null) {
-    const modelPixelScale = this.fileDirectory.getValue("ModelPixelScale");
-    const modelTransformation = this.fileDirectory.getValue("ModelTransformation");
+    const modelPixelScale = this.fileDirectory.getValue('ModelPixelScale');
+    const modelTransformation = this.fileDirectory.getValue('ModelTransformation');
 
     if (modelPixelScale) {
       return [
@@ -918,9 +918,9 @@ class GeoTIFFImage {
     const height = this.getHeight();
     const width = this.getWidth();
 
-    if (this.fileDirectory.hasTag("ModelTransformation") && !tilegrid) {
+    if (this.fileDirectory.hasTag('ModelTransformation') && !tilegrid) {
       // eslint-disable-next-line no-unused-vars
-      const [a, b, c, d, e, f, g, h] = this.fileDirectory.getValue("ModelTransformation");
+      const [a, b, c, d, e, f, g, h] = this.fileDirectory.getValue('ModelTransformation');
 
       const corners = [
         [0, 0],
