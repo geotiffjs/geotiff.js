@@ -16,6 +16,10 @@
     "downlevelIteration": true
   },
   "include": [
-    "./src/**/*.js"
+    "./src/**/*.js",
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "./dist-module/**/*.ts"
   ]
 }
