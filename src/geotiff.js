@@ -12,7 +12,7 @@ import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { ImageFileDirectoryParser } from './imagefiledirectory.js';
 
-import { fieldTypes, geoKeyNames } from './globals.js';
+import { fieldTypes } from './globals.js';
 import { writeGeotiff } from './geotiffwriter.js';
 import * as globals from './globals.js';
 import * as rgb from './rgb.js';
@@ -139,26 +139,6 @@ function getValues(dataSlice, fieldType, count, offset) {
     return new TextDecoder('utf-8').decode(values);
   }
   return values;
-}
-
-/**
- * Data class to store the parsed file directory (+ its raw form), geo key directory and
- * offset to the next IFD
- */
-class ImageFileDirectory {
-  /**
-   * Create an ImageFileDirectory.
-   * @param {object} fileDirectory the file directory, mapping tag names to values
-   * @param {Map} rawFileDirectory the raw file directory, mapping tag IDs to values
-   * @param {object} geoKeyDirectory the geo key directory, mapping geo key names to values
-   * @param {number} nextIFDByteOffset the byte offset to the next IFD
-   */
-  constructor(fileDirectory, rawFileDirectory, geoKeyDirectory, nextIFDByteOffset) {
-    this.fileDirectory = fileDirectory;
-    this.rawFileDirectory = rawFileDirectory;
-    this.geoKeyDirectory = geoKeyDirectory;
-    this.nextIFDByteOffset = nextIFDByteOffset;
-  }
 }
 
 /**
@@ -509,8 +489,8 @@ class MultiGeoTIFF extends GeoTIFFBase {
   }
 
   async parseFileDirectoriesPerFile() {
-    const requests = [this.mainFile.parseFileDirectoryAt(this.mainFile.firstIFDOffset)]
-      .concat(this.overviewFiles.map((file) => file.parseFileDirectoryAt(file.firstIFDOffset)));
+    const requests = [this.mainFile.parser.parseFileDirectoryAt(this.mainFile.firstIFDOffset)]
+      .concat(this.overviewFiles.map((file) => file.parser.parseFileDirectoryAt(file.firstIFDOffset)));
 
     this.fileDirectoriesPerFile = await Promise.all(requests);
     return this.fileDirectoriesPerFile;
@@ -531,9 +511,8 @@ class MultiGeoTIFF extends GeoTIFFBase {
       const imageFile = this.imageFiles[i];
       for (let ii = 0; ii < this.imageCounts[i]; ii++) {
         if (index === visited) {
-          const ifd = await imageFile.requestIFD(relativeIndex);
           return new GeoTIFFImage(
-            ifd.fileDirectory, ifd.geoKeyDirectory,
+            await imageFile.requestIFD(relativeIndex),
             imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
           );
         }
