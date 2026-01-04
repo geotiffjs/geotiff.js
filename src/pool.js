@@ -128,21 +128,30 @@ class Pool {
     }
   }
 
+  bindParameters(compression, decoderParameters) {
+    return {
+      decode: async (buffer) => {
+        return this._decode(compression, decoderParameters, buffer);
+      },
+    };
+  }
+
   /**
    * Decode the given block of bytes with the set compression method.
    * @param {ArrayBuffer} buffer the array buffer of bytes to decode.
    * @returns {Promise<ArrayBuffer>} the decoded result as a `Promise`
    */
-  async decode(fileDirectory, buffer) {
-    if (preferWorker(fileDirectory) && this.workerWrappers) {
+  async _decode(compression, decoderParameters, buffer) {
+    if (preferWorker(compression) && this.workerWrappers) {
       // select the worker with the lowest jobCount
       const workerWrapper = (await this.workerWrappers).reduce((a, b) => {
         return a.getJobCount() < b.getJobCount() ? a : b;
       });
-      const { decoded } = await workerWrapper.submitJob({ fileDirectory, buffer }, [buffer]);
+      const { decoded } = await workerWrapper.submitJob({ compression, decoderParameters, buffer }, [buffer]);
       return decoded;
     } else {
-      return getDecoder(fileDirectory).then((decoder) => decoder.decode(fileDirectory, buffer));
+      const decoder = await getDecoder(compression, decoderParameters);
+      return decoder.decode(buffer);
     }
   }
 

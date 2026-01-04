@@ -330,10 +330,13 @@ describe('GeoTIFF', () => {
 
   it('should work with worker pool', async () => {
     const testPool = new Pool();
-    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-    const image = await tiff.getImage();
-    await image.readRasters({ pool: testPool });
-    testPool.destroy();
+    try {
+      const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+      const image = await tiff.getImage();
+      await image.readRasters({ pool: testPool });
+    } finally {
+      testPool.destroy();
+    }
   });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {

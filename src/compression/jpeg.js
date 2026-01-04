@@ -881,11 +881,11 @@ class JpegStreamReader {
 }
 
 export default class JpegDecoder extends BaseDecoder {
-  constructor(fileDirectory) {
-    super();
+  constructor(parameters) {
+    super(parameters);
     this.reader = new JpegStreamReader();
-    if (fileDirectory.hasTag('JPEGTables')) {
-      this.reader.parse(fileDirectory.getValue('JPEGTables'));
+    if (parameters.JPEGTables) {
+      this.reader.parse(parameters.JPEGTables);
     }
   }
 

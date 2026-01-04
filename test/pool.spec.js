@@ -10,16 +10,33 @@ chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
+class MockIFD {
+  constructor(values) {
+    this.values = values;
+  }
+
+  hasTag(tag) {
+    return Object.prototype.hasOwnProperty.call(this.values, tag);
+  }
+
+  getValue(tag) {
+    return this.values[tag];
+  }
+}
+
 describe('Pool', () => {
   it('shall decode a buffer with a worker', async () => {
     const pool = new Pool(1, create);
     const buffer = new ArrayBuffer(1);
     (new Uint8Array(buffer)).set([0]);
-    const fileDirectory = { Compression: 1 };
-    const decoded = await pool.decode(fileDirectory, buffer);
-    const decodedArray = new Uint8Array(decoded);
-    expect(decodedArray).to.eql(new Uint8Array([0]));
-    pool.destroy();
+    const fileDirectory = new MockIFD({ Compression: 1 });
+    try {
+      const decoded = await pool.decode(fileDirectory, buffer);
+      const decodedArray = new Uint8Array(decoded);
+      expect(decodedArray).to.eql(new Uint8Array([0]));
+    } finally {
+      pool.destroy();
+    }
   });
 
   it('shall properly propagate an exception', async () => {
@@ -30,9 +47,11 @@ describe('Pool', () => {
     });
     const buffer = new ArrayBuffer(1);
     (new Uint8Array(buffer)).set([0]);
-    const fileDirectory = { Compression: -1 };
-
-    await expect(pool.decode(fileDirectory, buffer)).to.eventually.be.rejected;
-    pool.destroy();
+    const fileDirectory = new MockIFD({ Compression: -1 });
+    try {
+      await expect(pool.decode(fileDirectory, buffer)).to.eventually.be.rejected;
+    } finally {
+      pool.destroy();
+    }
   });
 });

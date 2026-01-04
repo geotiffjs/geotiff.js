@@ -5,7 +5,7 @@ import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
 import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fromCIELab } from './rgb.js';
-import { getDecoder } from './compression/index.js';
+import { getDecoder, getDecoderParameters } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
 
 /**
@@ -399,7 +399,7 @@ class GeoTIFFImage {
     if (tiles === null || !tiles[index]) {
     // resolve each request by potentially applying array normalization
       request = (async () => {
-        let data = await poolOrDecoder.decode(this.fileDirectory, slice);
+        let data = await poolOrDecoder.decode(slice);
         const sampleFormat = this.getSampleFormat();
         const bitsPerSample = this.getBitsPerSample();
         if (needsNormalization(sampleFormat, bitsPerSample)) {
@@ -622,7 +622,11 @@ class GeoTIFFImage {
       }
     }
 
-    const poolOrDecoder = pool || await getDecoder(this.fileDirectory);
+    const compression = this.fileDirectory.getValue('Compression') || 1;
+    const decoderParameters = await getDecoderParameters(compression, this.fileDirectory);
+    const poolOrDecoder = pool
+      ? pool.bindParameters(compression, decoderParameters)
+      : await getDecoder(compression, decoderParameters);
 
     const result = await this._readRaster(
       imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal,
