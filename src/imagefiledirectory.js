@@ -1,10 +1,8 @@
-import DataView64 from './dataview64.js';
 import DataSlice from './dataslice.js';
 
 import {
   fieldTypes,
   geoKeyNames,
-  tags,
   tagDefinitions,
   resolveTag,
   fieldTypeSizes,
@@ -111,66 +109,11 @@ function getFieldTypeSize(fieldType) {
   }
 }
 
-class DeferredArray {
-  constructor(source, arrayOffset, littleEndian, fieldType, length) {
-    this.source = source;
-    this.arrayOffset = arrayOffset;
-    this.littleEndian = littleEndian;
-    this.fieldType = fieldType;
-    this.data = getArrayForSamples(fieldType, length);
-    this.itemSize = getFieldTypeSize(fieldType);
-    this.maskBitap = new Uint8Array(Math.ceil(length / 8));
-    this.fetchIndexPromises = new Map();
-  }
-
-  async get(index) {
-    if (index < 0 || index >= this.data.length) {
-      throw new RangeError(
-        `Index ${index} out of bounds for length ${this.data.length}`,
-      );
-    }
-
-    const byteIndex = Math.floor(index / 8);
-    const bitMask = 1 << index % 8;
-    const offset = this.arrayOffset + index * this.itemSize;
-
-    if ((this.maskBitap[byteIndex] & bitMask) === 0) {
-      if (!this.fetchIndexPromises.has(index)) {
-        const fetchPromise = this.source.fetch([{
-          offset,
-          length: this.itemSize,
-        }]).then((data) => {
-          const dataSlice = new DataSlice(
-            data[0],
-            this.arrayOffset + index * this.itemSize,
-            true,
-            false, // we can ignore bigTiff here
-          );
-          const readMethod = getDataSliceReader(dataSlice, this.fieldType);
-          const value = readMethod.call(dataSlice, offset);
-
-          this.data[index] = value;
-          this.maskBitap[byteIndex] |= bitMask;
-          this.fetchIndexPromises.delete(index);
-          return value;
-        });
-        this.fetchIndexPromises.set(index, fetchPromise);
-      }
-      return this.fetchIndexPromises.get(index);
-    }
-    return this.data[index];
-  }
-
-  async load() {
-
-  }
-}
-
-function getValues(dataSlice, fieldType, count, offset, isArray) {
+function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray) {
   const fieldTypeLength = getFieldTypeLength(fieldType);
 
-  const values = getArrayForSamples(fieldType, count);
-  const readMethod = getDataSliceReader(dataSlice, fieldType);
+  const values = outValues || getArrayForSamples(fieldType, count);
+  // const readMethod = getDataSliceReader(dataSlice, fieldType);
   const isRational = (
     fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL
   );
@@ -178,15 +121,15 @@ function getValues(dataSlice, fieldType, count, offset, isArray) {
   // normal fields
   if (!isRational) {
     for (let i = 0; i < count; ++i) {
-      values[i] = readMethod.call(dataSlice, offset + i * fieldTypeLength);
+      values[i] = readMethod.call(dataSlice, offset + (i * fieldTypeLength));
     }
   } else {
     // RATIONAL or SRATIONAL
     for (let i = 0; i < count; i += 2) {
-      values[i] = readMethod.call(dataSlice, offset + i * fieldTypeLength);
+      values[i] = readMethod.call(dataSlice, offset + (i * fieldTypeLength));
       values[i + 1] = readMethod.call(
         dataSlice,
-        offset + (i * fieldTypeLength + 4),
+        offset + ((i * fieldTypeLength) + 4),
       );
     }
   }
@@ -201,7 +144,231 @@ function getValues(dataSlice, fieldType, count, offset, isArray) {
   return values;
 }
 
+class DeferredArray {
+  constructor(source, arrayOffset, littleEndian, fieldType, length) {
+    this.source = source;
+    this.arrayOffset = arrayOffset;
+    this.littleEndian = littleEndian;
+    this.fieldType = fieldType;
+    this.length = length;
+    this.data = getArrayForSamples(fieldType, length);
+    this.itemSize = getFieldTypeSize(fieldType);
+    this.maskBitmap = new Uint8Array(Math.ceil(length / 8));
+    this.fetchIndexPromises = new Map();
+    this.fullFetchPromise = null;
+  }
+
+  async loadAll() {
+    if (!this.fullFetchPromise) {
+      this.fullFetchPromise = this.source.fetch([{
+        offset: this.arrayOffset,
+        length: this.itemSize * this.length,
+      }]).then((data) => {
+        const dataSlice = new DataSlice(
+          data[0],
+          this.arrayOffset,
+          true,
+          false, // we can ignore bigTiff here
+        );
+        return getValues(
+          this.data,
+          getDataSliceReader(dataSlice, this.fieldType),
+          dataSlice,
+          this.fieldType,
+          this.length,
+          this.arrayOffset,
+          true,
+        );
+      });
+    }
+    return this.fullFetchPromise;
+  }
+
+  async get(index) {
+    if (index < 0 || index >= this.data.length) {
+      throw new RangeError(
+        `Index ${index} out of bounds for length ${this.data.length}`,
+      );
+    }
+
+    const byteIndex = Math.floor(index / 8);
+    const bitMask = 1 << index % 8;
+    const offset = this.arrayOffset + (index * this.itemSize);
+
+    if ((this.maskBitmap[byteIndex] & bitMask) === 0) {
+      if (!this.fetchIndexPromises.has(index)) {
+        const fetchPromise = this.source.fetch([{
+          offset,
+          length: this.itemSize,
+        }]).then((data) => {
+          const dataSlice = new DataSlice(
+            data[0],
+            this.arrayOffset + (index * this.itemSize),
+            true,
+            false, // we can ignore bigTiff here
+          );
+          const readMethod = getDataSliceReader(dataSlice, this.fieldType);
+          const value = readMethod.call(dataSlice, offset);
+
+          this.data[index] = value;
+          this.maskBitmap[byteIndex] |= bitMask;
+          this.fetchIndexPromises.delete(index);
+          return value;
+        });
+        this.fetchIndexPromises.set(index, fetchPromise);
+      }
+      return this.fetchIndexPromises.get(index);
+    }
+    return this.data[index];
+  }
+}
+
+export class ImageFileDirectory {
+  /**
+   * Create an ImageFileDirectory.
+   * @param {Map} actualizedFields the file directory, mapping tag names to values
+   * @param {Map} deferredFields the deferred fields, mapping tag names to async functions
+   * @param {Map} deferredArrays the deferred arrays, mapping tag names to DeferredArray objects
+   * @param {number} nextIFDByteOffset the byte offset to the next IFD
+   */
+  constructor(actualizedFields, deferredFields, deferredArrays, nextIFDByteOffset) {
+    this.actualizedFields = actualizedFields;
+    this.deferredFields = deferredFields;
+    this.deferredFieldsBeingResolved = new Map();
+    this.deferredArrays = deferredArrays;
+    this.nextIFDByteOffset = nextIFDByteOffset;
+  }
+
+  /**
+   * @param {number|string} tagIdentifier The field tag ID or name
+   * @returns {boolean} whether the field exists (actualized or deferred)
+   */
+  hasTag(tagIdentifier) {
+    const tag = resolveTag(tagIdentifier);
+    return this.actualizedFields.has(tag) || this.deferredFields.has(tag);
+  }
+
+  /**
+   * Synchronously retrieves the value for a given tag. If it is deferred, an error is thrown.
+   * @param {number|string} tagIdentifier The field tag ID or name
+   * @returns the field value, or undefined if it is deferred or does not exist
+   */
+  getValue(tagIdentifier) {
+    const tag = resolveTag(tagIdentifier);
+    if (!this.actualizedFields.has(tag)) {
+      if (this.deferredFields.has(tag) || this.deferredArrays.has(tag)) {
+        throw new Error(`Field ${tag} is deferred, use loadValue() to load it asynchronously`);
+      }
+      return undefined;
+    }
+    return this.actualizedFields.get(tag);
+  }
+
+  /**
+   * Retrieves the value for a given tag. If it is deferred, it will be loaded first.
+   * @param {number|string} tagIdentifier The field tag ID or name
+   * @returns the field value, or undefined if it does not exist
+   */
+  async loadValue(tagIdentifier) {
+    const tag = resolveTag(tagIdentifier);
+    if (this.actualizedFields.has(tag)) {
+      return this.actualizedFields.get(tag);
+    }
+    if (this.deferredFieldsBeingResolved.has(tag)) {
+      return this.deferredFieldsBeingResolved.get(tag);
+    }
+    if (this.deferredFields.has(tag)) {
+      const valuePromise = this.deferredFields.get(tag)();
+      this.deferredFields.delete(tag);
+      this.deferredFieldsBeingResolved.set(tag, valuePromise);
+      const value = await valuePromise;
+      this.deferredFieldsBeingResolved.delete(tag);
+      this.actualizedFields.set(tag, value);
+      return value;
+    }
+    if (this.deferredArrays.has(tag)) {
+      const deferredArray = this.deferredArrays.get(tag);
+      return deferredArray.loadAll();
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Retrieves the value at a given index for a tag that is an array. If it is deferred, it will be loaded first.
+   * @param {number|string} tagIdentifier The field tag ID or name
+   * @param {number} index The index within the array
+   * @returns the field value at the given index, or undefined if it does not exist
+   */
+  async loadValueIndexed(tagIdentifier, index) {
+    const tag = resolveTag(tagIdentifier);
+    if (this.actualizedFields.has(tag)) {
+      const value = this.actualizedFields.get(tag);
+      return value[index];
+    } else if (this.deferredArrays.has(tag)) {
+      const deferredArray = this.deferredArrays.get(tag);
+      return deferredArray.get(index);
+    } else if (this.hasTag(tag)) {
+      return (await this.loadValue(tag))[index];
+    }
+    return undefined;
+  }
+
+  parseGeoKeyDirectory() {
+    const rawGeoKeyDirectory = this.getValue('GeoKeyDirectory');
+    if (!rawGeoKeyDirectory) {
+      return null;
+    }
+
+    const geoKeyDirectory = {};
+    for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
+      const key = geoKeyNames[rawGeoKeyDirectory[i]];
+      const location = rawGeoKeyDirectory[i + 1] || null;
+      const count = rawGeoKeyDirectory[i + 2];
+      const offset = rawGeoKeyDirectory[i + 3];
+
+      let value = null;
+      if (!location) {
+        value = offset;
+      } else {
+        value = this.getValue(location);
+        if (typeof value === 'undefined' || value === null) {
+          throw new Error(`Could not get value of geoKey '${key}'.`);
+        } else if (typeof value === 'string') {
+          value = value.substring(offset, offset + count - 1);
+        } else if (value.subarray) {
+          value = value.subarray(offset, offset + count);
+          if (count === 1) {
+            value = value[0];
+          }
+        }
+      }
+      geoKeyDirectory[key] = value;
+    }
+    return geoKeyDirectory;
+  }
+
+  toObject() {
+    const obj = {};
+    for (const [tag, value] of this.actualizedFields.entries()) {
+      const tagDefinition = tagDefinitions[tag];
+      const tagName = tagDefinition ? tagDefinition.name : `Tag${tag}`;
+      obj[tagName] = value;
+    }
+    return obj;
+  }
+}
+
+/**
+ * Parser for Image File Directories (IFDs).
+ */
 export class ImageFileDirectoryParser {
+  /**
+   * @param {import("./source/basesource.js").BaseSource} source the data source to fetch from
+   * @param {boolean} littleEndian the endianness of the file
+   * @param {boolean} bigTiff whether the file is a BigTIFF
+   * @param {boolean} [eager=true] whether to eagerly fetch deferred fields
+   */
   constructor(source, littleEndian, bigTiff, eager = true) {
     this.source = source;
     this.littleEndian = littleEndian;
@@ -209,14 +376,20 @@ export class ImageFileDirectoryParser {
     this.eager = eager;
   }
 
-  async getSlice(offset, size) {
-    const fallbackSize = this.bigTiff ? 4048 : 1024;
+  /**
+   * Helper function to retrieve a DataSlice from the source.
+   * @param {number} offset Byte offset of the slice
+   * @param {number} [length] Length of the slice
+   * @returns {Promise<DataSlice>}
+   */
+  async getSlice(offset, length) {
+    const fallbackLength = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
       (
         await this.source.fetch([
           {
             offset,
-            length: typeof size !== 'undefined' ? size : fallbackSize,
+            length: typeof length !== 'undefined' ? length : fallbackLength,
           },
         ])
       )[0],
@@ -279,6 +452,8 @@ export class ImageFileDirectoryParser {
       // different external byte range
       if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
         fieldValues = getValues(
+          getArrayForSamples(fieldType, typeCount),
+          getDataSliceReader(dataSlice, fieldType),
           dataSlice,
           fieldType,
           typeCount,
@@ -293,6 +468,8 @@ export class ImageFileDirectoryParser {
         // check, whether we actually cover the referenced byte range
         if (dataSlice.covers(actualOffset, length)) {
           fieldValues = getValues(
+            getArrayForSamples(fieldType, typeCount),
+            getDataSliceReader(dataSlice, fieldType),
             dataSlice,
             fieldType,
             typeCount,
@@ -305,6 +482,8 @@ export class ImageFileDirectoryParser {
           // to allow conjoined requests
           const fieldDataSlice = await this.getSlice(actualOffset, length);
           fieldValues = getValues(
+            getArrayForSamples(fieldType, typeCount),
+            getDataSliceReader(fieldDataSlice, fieldType),
             fieldDataSlice,
             fieldType,
             typeCount,
@@ -323,6 +502,8 @@ export class ImageFileDirectoryParser {
           deferredFieldValues = async () => {
             const fieldDataSlice = await this.getSlice(actualOffset, length);
             return getValues(
+              getArrayForSamples(fieldType, typeCount),
+              getDataSliceReader(fieldDataSlice, fieldType),
               fieldDataSlice,
               fieldType,
               typeCount,
@@ -342,7 +523,7 @@ export class ImageFileDirectoryParser {
       }
     }
     const nextIFDByteOffset = dataSlice.readOffset(
-      offset + offsetSize + entrySize * numDirEntries,
+      offset + offsetSize + (entrySize * numDirEntries),
     );
 
     return new ImageFileDirectory(
@@ -351,126 +532,5 @@ export class ImageFileDirectoryParser {
       deferredArrays,
       nextIFDByteOffset,
     );
-  }
-}
-
-class ImageFileDirectory {
-  /**
-   * Create an ImageFileDirectory.
-   * @param {Map} actualizedFields the file directory, mapping tag names to values
-   * @param {Map} deferredFields the deferred fields, mapping tag names to async functions
-   * @param {Map} deferredArrays the deferred arrays, mapping tag names to DeferredArray objects
-   * @param {number} nextIFDByteOffset the byte offset to the next IFD
-   */
-  constructor(actualizedFields, deferredFields, deferredArrays, nextIFDByteOffset) {
-    this.actualizedFields = actualizedFields;
-    this.deferredFields = deferredFields;
-    this.deferredFieldsBeingResolved = new Map();
-    this.deferredArrays = deferredArrays;
-    this.nextIFDByteOffset = nextIFDByteOffset;
-  }
-
-  /**
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns {boolean} whether the field exists (actualized or deferred)
-   */
-  hasTag(tagIdentifier) {
-    const tag = resolveTag(tagIdentifier);
-    return this.actualizedFields.has(tag) || this.deferredFields.has(tag);
-  }
-
-  /**
-   *
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns the field value, or undefined if it is deferred or does not exist
-   */
-  getValue(tagIdentifier) {
-    const tag = resolveTag(tagIdentifier);
-
-    // TODO: throw if the value is deferred
-    return this.actualizedFields.get(tag);
-  }
-
-  /**
-   * Retrieves the value for a given tag. If it is deferred, it will be loaded first.
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns the field value, or undefined if it does not exist
-   */
-  async loadValue(tagIdentifier) {
-    const tag = resolveTag(tagIdentifier);
-    if (this.actualizedFields.has(tag)) {
-      return this.actualizedFields.get(tag);
-    }
-    if (this.deferredFieldsBeingResolved.has(tag)) {
-      return this.deferredFieldsBeingResolved.get(tag);
-    }
-    if (this.deferredFields.has(tag)) {
-      const valuePromise = this.deferredFields.get(tag)();
-      this.deferredFields.delete(tag);
-      this.deferredFieldsBeingResolved.set(tag, valuePromise);
-      const value = await valuePromise;
-      this.deferredFieldsBeingResolved.delete(tag);
-      this.actualizedFields.set(tag, value);
-      return value;
-    }
-    return undefined;
-  }
-
-  async loadValueIndexed(tagIdentifier, index) {
-    const tag = resolveTag(tagIdentifier);
-    if (this.actualizedFields.has(tag)) {
-      const value = this.actualizedFields.get(tag);
-      return value[index];
-    } else if (this.deferredArrays.has(tag)) {
-      const deferredArray = this.deferredArrays.get(tag);
-      return deferredArray.get(index);
-    } else if (this.hasTag(tag)) {
-      return (await this.loadValue(tag))[index];
-    }
-    return undefined;
-  }
-
-  parseGeoKeyDirectory() {
-    const rawGeoKeyDirectory = this.getValue('GeoKeyDirectory');
-    if (!rawGeoKeyDirectory) {
-      return null;
-    }
-
-    const geoKeyDirectory = {};
-    for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
-      const key = geoKeyNames[rawGeoKeyDirectory[i]];
-      const location = rawGeoKeyDirectory[i + 1] || null;
-      const count = rawGeoKeyDirectory[i + 2];
-      const offset = rawGeoKeyDirectory[i + 3];
-
-      let value = null;
-      if (!location) {
-        value = offset;
-      } else {
-        value = this.getValue(location);
-        if (typeof value === 'undefined' || value === null) {
-          throw new Error(`Could not get value of geoKey '${key}'.`);
-        } else if (typeof value === 'string') {
-          value = value.substring(offset, offset + count - 1);
-        } else if (value.subarray) {
-          value = value.subarray(offset, offset + count);
-          if (count === 1) {
-            value = value[0];
-          }
-        }
-      }
-      geoKeyDirectory[key] = value;
-    }
-    return geoKeyDirectory;
-  }
-
-  toObject() {
-    const obj = {};
-    for (const [tag, value] of this.actualizedFields.entries()) {
-      const tagDefinition = tagDefinitions[tag];
-      const tagName = tagDefinition ? tagDefinition.name : `Tag${tag}`;
-      obj[tagName] = value;
-    }
-    return obj;
   }
 }
