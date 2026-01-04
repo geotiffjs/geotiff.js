@@ -164,7 +164,7 @@ const tagSource = [
   { tag: 433, name: 'Decode' },
   { tag: 434, name: 'DefaultImageColor' },
   { tag: 346, name: 'Indexed' },
-  { tag: 347, name: 'JPEGTables' },
+  { tag: 347, name: 'JPEGTables', isArray: true, eager: true },
   { tag: 559, name: 'StripRowCounts', isArray: true },
   { tag: 330, name: 'SubIFDs', isArray: true },
   { tag: 344, name: 'XClipPathUnits' },
@@ -243,10 +243,10 @@ const tagSource = [
     isArray: true,
     eager: true,
   },
-  { tag: 34737, name: 'GeoAsciiParams', type: fieldTypes.ASCII },
+  { tag: 34737, name: 'GeoAsciiParams', type: fieldTypes.ASCII, eager: true },
 
   // LERC
-  { tag: 50674, name: 'LercParameters' },
+  { tag: 50674, name: 'LercParameters', eager: true },
 ];
 
 /**
@@ -263,7 +263,7 @@ export const tagDefinitions = {};
  * Registers a new field tag
  * @param {number} tag the numeric tiff tag
  * @param {string} name the name of the tag that will be reported in the IFD
- * @param {number} type the tags data type
+ * @param {string|number} type the tags data type
  * @param {Boolean} isArray whether the tag is an array
  */
 export function registerTag(
@@ -274,7 +274,7 @@ export function registerTag(
   eager = false,
 ) {
   tags[name] = tag;
-  tagDefinitions[tag] = { tag, name, type, isArray, eager };
+  tagDefinitions[tag] = { tag, name, type: typeof type === 'string' ? fieldTypes[type] : type, isArray, eager };
 }
 
 for (const entry of tagSource) {
@@ -290,6 +290,10 @@ export function resolveTag(tagIdentifier) {
     return tagIdentifier;
   }
   return tags[tagIdentifier];
+}
+
+export function getTag(tagIdentifier) {
+  return tagDefinitions[resolveTag(tagIdentifier)];
 }
 
 export const fieldTagTypes = {
