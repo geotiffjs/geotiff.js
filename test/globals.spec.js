@@ -1,35 +1,52 @@
 /* eslint-disable global-require, no-unused-expressions */
 import { expect } from 'chai';
 
-import { registerTag, fieldTags, fieldTagNames, fieldTypes, arrayFields } from '../src/globals.js';
+import { registerTag, getTag, fieldTypes } from '../src/globals.js';
 
 describe('registerTag()', () => {
   it('shall register simple tags', () => {
     registerTag(0xBEA1, 'TestTag');
-    expect(fieldTags).to.have.property('TestTag');
-    expect(fieldTagNames).to.have.property(String(0xBEA1));
-    expect(fieldTypes).to.not.have.property('TestTag');
-    expect(arrayFields).to.not.include(0xBEA1);
+    const tag = getTag(0xBEA1);
+    expect(tag.tag).to.equal(0xBEA1);
+    expect(tag.name).to.equal('TestTag');
+    expect(tag.type).to.be.undefined;
+    expect(tag.isArray).to.be.false;
+    expect(tag.eager).to.be.false;
   });
   it('shall register tags with type', () => {
     registerTag(0xBEA2, 'TestTagRational', 'RATIONAL');
-    expect(fieldTags).to.have.property('TestTagRational');
-    expect(fieldTagNames).to.have.property(String(0xBEA2));
-    expect(fieldTypes).to.have.property('TestTagRational');
-    expect(arrayFields).to.not.include(0xBEA1);
+    const tag = getTag(0xBEA2);
+    expect(tag.tag).to.equal(0xBEA2);
+    expect(tag.name).to.equal('TestTagRational');
+    expect(tag.type).to.equal(fieldTypes.RATIONAL);
+    expect(tag.isArray).to.be.false;
+    expect(tag.eager).to.be.false;
+  });
+  it('shall register tags with type name', () => {
+    registerTag(0xBEA3, 'TestTagRational', fieldTypes.RATIONAL);
+    const tag = getTag(0xBEA3);
+    expect(tag.tag).to.equal(0xBEA3);
+    expect(tag.name).to.equal('TestTagRational');
+    expect(tag.type).to.equal(fieldTypes.RATIONAL);
+    expect(tag.isArray).to.be.false;
+    expect(tag.eager).to.be.false;
   });
   it('shall register array tags', () => {
-    registerTag(0xBEA3, 'TestTagArray', undefined, true);
-    expect(fieldTags).to.have.property('TestTagArray');
-    expect(fieldTagNames).to.have.property(String(0xBEA3));
-    expect(fieldTypes).to.not.have.property('TestTagArray');
-    expect(arrayFields).to.include(0xBEA3);
+    registerTag(0xBEA4, 'TestTagArray', undefined, true);
+    const tag = getTag(0xBEA4);
+    expect(tag.tag).to.equal(0xBEA4);
+    expect(tag.name).to.equal('TestTagArray');
+    expect(tag.type).to.undefined;
+    expect(tag.isArray).to.be.true;
+    expect(tag.eager).to.be.false;
   });
   it('shall register typed array tags', () => {
-    registerTag(0xBEA4, 'TestTagArrayTyped', 'LONG', true);
-    expect(fieldTags).to.have.property('TestTagArrayTyped');
-    expect(fieldTagNames).to.have.property(String(0xBEA4));
-    expect(fieldTypes).to.have.property('TestTagArrayTyped');
-    expect(arrayFields).to.include(0xBEA4);
+    registerTag(0xBEA5, 'TestTagArrayTyped', 'LONG', true);
+    const tag = getTag(0xBEA5);
+    expect(tag.tag).to.equal(0xBEA5);
+    expect(tag.name).to.equal('TestTagArrayTyped');
+    expect(tag.type).to.equal(fieldTypes.LONG);
+    expect(tag.isArray).to.be.true;
+    expect(tag.eager).to.be.false;
   });
 });
