@@ -13,7 +13,7 @@ export default class LercDecoder extends BaseDecoder {
     this.planarConfiguration = fileDirectory.hasTag('PlanarConfiguration') ? fileDirectory.getValue('PlanarConfiguration') : 1;
     this.samplesPerPixel = fileDirectory.hasTag('SamplesPerPixel') ? fileDirectory.getValue('SamplesPerPixel') : 1;
 
-    this.addCompression = fileDirectory.LercParameters[LercParameters.AddCompression];
+    this.addCompression = fileDirectory.getValue('LercParameters')[LercParameters.AddCompression];
   }
 
   decodeBlock(buffer) {

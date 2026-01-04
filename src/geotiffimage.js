@@ -210,7 +210,7 @@ class GeoTIFFImage {
    * @returns {Object} the parsed geo keys
    */
   getGeoKeys() {
-    return this.geoKeys;
+    return this.fileDirectory.parseGeoKeyDirectory();
   }
 
   /**
@@ -725,7 +725,7 @@ class GeoTIFFImage {
         data = fromBlackIsZero(raster, max);
         break;
       case photometricInterpretations.Palette:
-        data = fromPalette(raster, fileDirectory.ColorMap);
+        data = fromPalette(raster, await fileDirectory.loadValue('ColorMap'));
         break;
       case photometricInterpretations.CMYK:
         data = fromCMYK(raster);
