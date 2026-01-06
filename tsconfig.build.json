@@ -19,8 +19,5 @@
   },
   "include": [
     "./dist-module/**/*.js"
-  ],
-  "exclude": [
-    "./dist-module/**/*.ts"
   ]
 }
