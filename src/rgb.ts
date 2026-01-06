@@ -1,4 +1,4 @@
-import { TypedArrayWithDimensions } from "./geotiff";
+import { TypedArrayWithDimensions } from './geotiff';
 
 export function fromWhiteIsZero(
   raster: TypedArrayWithDimensions,
