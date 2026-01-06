@@ -12,6 +12,11 @@
     "skipLibCheck": true,
     "allowJs": true,
 
+    "declaration": true,
+    "declarationMap": true,
+    // we didn't have this before, but maybe we want it
+    // "sourceMap": true,
+
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
