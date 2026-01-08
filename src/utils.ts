@@ -76,7 +76,7 @@ export function toArray<T>(iterable: { length: number; [index: number]: T }): T[
   return results;
 }
 
-export function toArrayRecursively(input) {
+export function toArrayRecursively(input: any): any[] {
   if (input.length) {
     return toArray(input).map(toArrayRecursively);
   }
@@ -149,9 +149,7 @@ export class AbortError extends Error {
     super(params);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    // @ts-expect-error - captureStackTrace is V8-specific
     if (Error.captureStackTrace) {
-      // @ts-expect-error - captureStackTrace is V8-specific
       Error.captureStackTrace(this, AbortError);
     }
 
