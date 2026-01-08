@@ -401,7 +401,7 @@ export function writeGeotiff(data, metadata) {
     metadata.StripByteCounts = [numBands * elementSize * height * width];
   }
 
-  if (!metadata.ModelPixelScale) {
+  if (!metadata.ModelPixelScale && !metadata.ModelTransformation) {
     // assumes raster takes up exactly the whole globe
     metadata.ModelPixelScale = [360 / width, 180 / height, 0];
   }
@@ -423,7 +423,9 @@ export function writeGeotiff(data, metadata) {
   // if didn't pass in projection information, assume the popular 4326 "geographic projection"
   if (!metadata.hasOwnProperty('GeographicTypeGeoKey') && !metadata.hasOwnProperty('ProjectedCSTypeGeoKey')) {
     metadata.GeographicTypeGeoKey = 4326;
-    metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+    if (!metadata.ModelTransformation) {
+      metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+    }
     metadata.GeogCitationGeoKey = 'WGS 84';
     metadata.GTModelTypeGeoKey = 2;
   }
