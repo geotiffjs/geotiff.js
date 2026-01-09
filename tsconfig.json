@@ -16,7 +16,6 @@
     "downlevelIteration": true
   },
   "include": [
-    "./src/**/*.js",
-    "./src/**/*.ts"
+    "./src/**/*.js"
   ]
 }
