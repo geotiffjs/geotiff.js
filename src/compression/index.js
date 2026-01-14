@@ -18,13 +18,13 @@ const registry = new Map();
 async function defaultDecoderParameterFn(fileDirectory) {
   const isTiled = !fileDirectory.hasTag('StripOffsets');
   return {
-    tileWidth: isTiled ? fileDirectory.getValue('TileWidth') : fileDirectory.getValue('ImageWidth'),
-    tileHeight: isTiled ? fileDirectory.getValue('TileLength') : (
-      fileDirectory.getValue('RowsPerStrip') || fileDirectory.getValue('ImageLength')
+    tileWidth: isTiled ? await fileDirectory.loadValue('TileWidth') : await fileDirectory.loadValue('ImageWidth'),
+    tileHeight: isTiled ? await fileDirectory.loadValue('TileLength') : (
+      await fileDirectory.loadValue('RowsPerStrip') || await fileDirectory.loadValue('ImageLength')
     ),
-    planarConfiguration: fileDirectory.getValue('PlanarConfiguration'),
-    bitsPerSample: fileDirectory.getValue('BitsPerSample'),
-    predictor: fileDirectory.getValue('Predictor') || 1,
+    planarConfiguration: await fileDirectory.loadValue('PlanarConfiguration'),
+    bitsPerSample: await fileDirectory.loadValue('BitsPerSample'),
+    predictor: await fileDirectory.loadValue('Predictor') || 1,
   };
 }
 

@@ -245,7 +245,7 @@ export class ImageFileDirectory {
    */
   hasTag(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);
-    return this.actualizedFields.has(tag) || this.deferredFields.has(tag);
+    return this.actualizedFields.has(tag) || this.deferredFields.has(tag) || this.deferredArrays.has(tag);
   }
 
   /**
