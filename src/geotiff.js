@@ -12,7 +12,7 @@ import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { ImageFileDirectoryParser } from './imagefiledirectory.js';
 
-import { fieldTypes } from './globals.js';
+import { fieldTypes, getFieldTypeSize } from './globals.js';
 import { writeGeotiff } from './geotiffwriter.js';
 import * as globals from './globals.js';
 import * as rgb from './rgb.js';
@@ -55,26 +55,10 @@ export { setLogger };
  * @typedef {TypedArrayWithDimensions | TypedArrayArrayWithDimensions} ReadRasterResult
  */
 
-function getFieldTypeLength(fieldType) {
-  switch (fieldType) {
-    case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.SBYTE: case fieldTypes.UNDEFINED:
-      return 1;
-    case fieldTypes.SHORT: case fieldTypes.SSHORT:
-      return 2;
-    case fieldTypes.LONG: case fieldTypes.SLONG: case fieldTypes.FLOAT: case fieldTypes.IFD:
-      return 4;
-    case fieldTypes.RATIONAL: case fieldTypes.SRATIONAL: case fieldTypes.DOUBLE:
-    case fieldTypes.LONG8: case fieldTypes.SLONG8: case fieldTypes.IFD8:
-      return 8;
-    default:
-      throw new RangeError(`Invalid field type: ${fieldType}`);
-  }
-}
-
 function getValues(dataSlice, fieldType, count, offset) {
   let values = null;
   let readMethod = null;
-  const fieldTypeLength = getFieldTypeLength(fieldType);
+  const fieldTypeLength = getFieldTypeSize(fieldType);
 
   switch (fieldType) {
     case fieldTypes.BYTE: case fieldTypes.ASCII: case fieldTypes.UNDEFINED:

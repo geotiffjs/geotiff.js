@@ -5,12 +5,8 @@ import {
   geoKeyNames,
   tagDefinitions,
   resolveTag,
-  fieldTypeSizes,
+  getFieldTypeSize,
 } from './globals.js';
-
-function getFieldTypeLength(fieldType) {
-  return fieldTypeSizes[fieldType];
-}
 
 function getArrayForSamples(fieldType, count) {
   switch (fieldType) {
@@ -82,35 +78,8 @@ function getDataSliceReader(dataSlice, fieldType) {
   }
 }
 
-function getFieldTypeSize(fieldType) {
-  switch (fieldType) {
-    case fieldTypes.BYTE:
-    case fieldTypes.ASCII:
-    case fieldTypes.UNDEFINED:
-    case fieldTypes.SBYTE:
-      return 1;
-    case fieldTypes.SHORT:
-    case fieldTypes.SSHORT:
-      return 2;
-    case fieldTypes.LONG:
-    case fieldTypes.IFD:
-    case fieldTypes.SLONG:
-    case fieldTypes.FLOAT:
-      return 4;
-    case fieldTypes.LONG8:
-    case fieldTypes.IFD8:
-    case fieldTypes.SLONG8:
-    case fieldTypes.DOUBLE:
-    case fieldTypes.RATIONAL:
-    case fieldTypes.SRATIONAL:
-      return 8;
-    default:
-      throw new RangeError(`Invalid field type: ${fieldType}`);
-  }
-}
-
 function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray) {
-  const fieldTypeLength = getFieldTypeLength(fieldType);
+  const fieldTypeLength = getFieldTypeSize(fieldType);
 
   const values = outValues || getArrayForSamples(fieldType, count);
   // const readMethod = getDataSliceReader(dataSlice, fieldType);
@@ -443,7 +412,7 @@ export class ImageFileDirectoryParser {
       let fieldValues = null;
       let deferredFieldValues = null;
       let deferredArray = null;
-      const fieldTypeLength = getFieldTypeLength(fieldType);
+      const fieldTypeLength = getFieldTypeSize(fieldType);
       const valueOffset = i + (this.bigTiff ? 12 : 8);
       const isArray = tagDefinitions[fieldTag]?.isArray;
       const eager = tagDefinitions[fieldTag]?.eager || this.eager;
@@ -463,7 +432,7 @@ export class ImageFileDirectoryParser {
       } else {
         // resolve the reference to the actual byte range
         const actualOffset = dataSlice.readOffset(valueOffset);
-        const length = getFieldTypeLength(fieldType) * typeCount;
+        const length = getFieldTypeSize(fieldType) * typeCount;
 
         // check, whether we actually cover the referenced byte range
         if (dataSlice.covers(actualOffset, length)) {

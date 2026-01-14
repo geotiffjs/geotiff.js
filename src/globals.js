@@ -38,6 +38,20 @@ export const fieldTypeSizes = {
   [fieldTypes.IFD8]: 8,
 };
 
+/**
+ * Get the byte size for a given field type.
+ * @param {number} fieldType The TIFF field type constant
+ * @returns {number} The size in bytes
+ * @throws {RangeError} If the field type is invalid
+ */
+export function getFieldTypeSize(fieldType) {
+  const size = fieldTypeSizes[fieldType];
+  if (size === undefined) {
+    throw new RangeError(`Invalid field type: ${fieldType}`);
+  }
+  return size;
+}
+
 const tagSource = [
   { tag: 254, name: 'NewSubfileType', fieldTypes: fieldTypes.LONG },
   { tag: 255, name: 'SubfileType', type: fieldTypes.SHORT },
