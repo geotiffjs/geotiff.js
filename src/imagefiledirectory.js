@@ -255,13 +255,22 @@ export class ImageFileDirectory {
       return this.deferredFieldsBeingResolved.get(tag);
     }
     if (this.deferredFields.has(tag)) {
-      const valuePromise = this.deferredFields.get(tag)();
+      const loaderFn = this.deferredFields.get(tag);
       this.deferredFields.delete(tag);
+
+      // Set promise BEFORE starting async work to prevent race conditions
+      const valuePromise = (async () => {
+        try {
+          const value = await loaderFn();
+          this.actualizedFields.set(tag, value);
+          return value;
+        } finally {
+          this.deferredFieldsBeingResolved.delete(tag);
+        }
+      })();
+
       this.deferredFieldsBeingResolved.set(tag, valuePromise);
-      const value = await valuePromise;
-      this.deferredFieldsBeingResolved.delete(tag);
-      this.actualizedFields.set(tag, value);
-      return value;
+      return valuePromise;
     }
     if (this.deferredArrays.has(tag)) {
       const deferredArray = this.deferredArrays.get(tag);
