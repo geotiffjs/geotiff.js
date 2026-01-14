@@ -201,7 +201,8 @@ class GeoTIFFBase {
       const allImages = [];
       for (let i = 0; i < imageCount; ++i) {
         const image = await this.getImage(i);
-        const { SubfileType: subfileType, NewSubfileType: newSubfileType } = image.fileDirectory;
+        const subfileType = image.fileDirectory.getValue('SubfileType');
+        const newSubfileType = image.fileDirectory.getValue('NewSubfileType');
         if (i === 0 || subfileType === 2 || newSubfileType & 1) {
           allImages.push(image);
         }

@@ -159,6 +159,12 @@ const defaultDecoderDefinitions = [
   {
     cases: 50001,
     importFn: () => import('./webimage.js').then((m) => m.default),
+    decoderParameterFn: async (fileDirectory) => {
+      return {
+        ...await defaultDecoderParameterFn(fileDirectory),
+        samplesPerPixel: await fileDirectory.loadValue('SamplesPerPixel') || 4,
+      };
+    },
     preferWorker: false,
   },
 ];

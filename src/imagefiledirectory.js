@@ -344,9 +344,11 @@ export class ImageFileDirectoryParser {
    * @param {import("./source/basesource.js").BaseSource} source the data source to fetch from
    * @param {boolean} littleEndian the endianness of the file
    * @param {boolean} bigTiff whether the file is a BigTIFF
-   * @param {boolean} [eager=true] whether to eagerly fetch deferred fields
+   * @param {boolean} [eager=false] whether to eagerly fetch deferred fields.
+   *                                 When false (default), tags are loaded lazily on-demand.
+   *                                 When true, all tags are loaded immediately during parsing.
    */
-  constructor(source, littleEndian, bigTiff, eager = true) {
+  constructor(source, littleEndian, bigTiff, eager = false) {
     this.source = source;
     this.littleEndian = littleEndian;
     this.bigTiff = bigTiff;
