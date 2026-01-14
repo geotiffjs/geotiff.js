@@ -54,6 +54,11 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   const allData = await image.readRasters({ window: [200, 200, 210, 210] });
   const brData = await image.readRasters({ window: [width - 10, height - 10, width, height] });
   const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
+
+  // Zero check: make sure that we actually read data
+  const zeros = data[0].slice().fill(0);
+  expect(data[0]).to.not.deep.equal(zeros);
+
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
   expect(brData).to.have.length(sampleCount);
