@@ -220,16 +220,24 @@ export class ImageFileDirectory {
   /**
    * Synchronously retrieves the value for a given tag. If it is deferred, an error is thrown.
    * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns the field value, or undefined if it is deferred or does not exist
+   * @returns the field value, or undefined if it does not exist
+   * @throws {Error} If the tag is deferred and requires asynchronous loading
    */
   getValue(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);
+
+    if (this.deferredFields.has(tag) || this.deferredArrays.has(tag)) {
+      const tagDef = tagDefinitions[tag];
+      const tagName = tagDef?.name || `Tag${tag}`;
+      throw new Error(
+        `Field '${tagName}' (${tag}) is deferred. Use loadValue() to load it asynchronously.`,
+      );
+    }
+
     if (!this.actualizedFields.has(tag)) {
-      if (this.deferredFields.has(tag) || this.deferredArrays.has(tag)) {
-        throw new Error(`Field ${tag} is deferred, use loadValue() to load it asynchronously`);
-      }
       return undefined;
     }
+
     return this.actualizedFields.get(tag);
   }
 
