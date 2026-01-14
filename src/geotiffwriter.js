@@ -401,7 +401,7 @@ export function writeGeotiff(data, metadata) {
     metadata.StripByteCounts = [numBands * elementSize * height * width];
   }
 
-  if (!metadata.ModelPixelScale) {
+  if (!metadata.ModelPixelScale && !metadata.ModelTransformation) {
     // assumes raster takes up exactly the whole globe
     metadata.ModelPixelScale = [360 / width, 180 / height, 0];
   }
@@ -423,7 +423,9 @@ export function writeGeotiff(data, metadata) {
   // if didn't pass in projection information, assume the popular 4326 "geographic projection"
   if (!metadata.hasOwnProperty('GeographicTypeGeoKey') && !metadata.hasOwnProperty('ProjectedCSTypeGeoKey')) {
     metadata.GeographicTypeGeoKey = 4326;
-    metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+    if (!metadata.ModelTransformation) {
+      metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+    }
     metadata.GeogCitationGeoKey = 'WGS 84';
     metadata.GTModelTypeGeoKey = 2;
   }
@@ -432,50 +434,79 @@ export function writeGeotiff(data, metadata) {
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
-  if (!metadata.GeoAsciiParams) {
-    let geoAsciiParams = '';
-    geoKeys.forEach((name) => {
-      const code = Number(name2code[name]);
-      const tagType = fieldTagTypes[code];
-      if (tagType === 'ASCII') {
-        geoAsciiParams += `${metadata[name].toString()}\u0000`;
-      }
-    });
-    if (geoAsciiParams.length > 0) {
-      metadata.GeoAsciiParams = geoAsciiParams;
-    }
-  }
-
+  // If not provided, build GeoKeyDirectory as well as GeoAsciiParamsTag and GeoDoubleParamsTag
+  // if GeoAsciiParams/GeoDoubleParams were passed in, we assume offsets are already correct
+  // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
   if (!metadata.GeoKeyDirectory) {
-    const NumberOfKeys = geoKeys.length;
+    // Only build ASCII / DOUBLE params if not provided
+    let geoAsciiParams = metadata.GeoAsciiParams || '';
+    let currentAsciiOffset = geoAsciiParams.length;
+    const geoDoubleParams = metadata.GeoDoubleParams || [];
+    let currentDoubleIndex = geoDoubleParams.length;
 
-    const GeoKeyDirectory = [1, 1, 0, NumberOfKeys];
+    // Since geoKeys already sorted and filtered, do a single pass to append to corresponding directory for SHORT/ASCII/DOUBLE
+    const GeoKeyDirectory = [1, 1, 0, 0];
+    let validKeys = 0;
     geoKeys.forEach((geoKey) => {
       const KeyID = Number(name2code[geoKey]);
-      GeoKeyDirectory.push(KeyID);
+      const tagType = fieldTagTypes[KeyID];
+      const val = metadata[geoKey];
+      if (val === undefined) {
+        return;
+      }
 
       let Count;
       let TIFFTagLocation;
       let valueOffset;
-      if (fieldTagTypes[KeyID] === 'SHORT') {
+      if (tagType === 'SHORT') {
         Count = 1;
         TIFFTagLocation = 0;
-        valueOffset = metadata[geoKey];
-      } else if (geoKey === 'GeogCitationGeoKey') {
-        Count = metadata.GeoAsciiParams.length;
-        TIFFTagLocation = Number(name2code.GeoAsciiParams);
-        valueOffset = 0;
+        valueOffset = val;
+      } else if (tagType === 'ASCII') {
+        if (!metadata.GeoAsciiParams) {
+          const valStr = `${val.toString()}\u0000`;
+          TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
+          valueOffset = currentAsciiOffset;
+          Count = valStr.length;
+          geoAsciiParams += valStr;
+          currentAsciiOffset += valStr.length;
+        } else {
+          return;
+        }
+      } else if (tagType === 'DOUBLE') {
+        if (!metadata.GeoDoubleParams) {
+          const arr = toArray(val);
+          TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
+          valueOffset = currentDoubleIndex;
+          Count = arr.length;
+          arr.forEach((v) => {
+            geoDoubleParams.push(Number(v));
+            currentDoubleIndex++;
+          });
+        } else {
+          return;
+        }
       } else {
-        console.log(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
+        console.warn(`[geotiff.js] couldn't get TIFFTagLocation for ${geoKey}`);
+        return;
       }
-      GeoKeyDirectory.push(TIFFTagLocation);
-      GeoKeyDirectory.push(Count);
-      GeoKeyDirectory.push(valueOffset);
+
+      GeoKeyDirectory.push(KeyID, TIFFTagLocation, Count, valueOffset);
+      validKeys++;
     });
+
+    // Write GeoKeyDirectory, GeoAsciiParams, GeoDoubleParams
+    GeoKeyDirectory[3] = validKeys;
     metadata.GeoKeyDirectory = GeoKeyDirectory;
+    if (!metadata.GeoAsciiParams && geoAsciiParams.length > 0) {
+      metadata.GeoAsciiParams = geoAsciiParams;
+    }
+    if (!metadata.GeoDoubleParams && geoDoubleParams.length > 0) {
+      metadata.GeoDoubleParams = geoDoubleParams;
+    }
   }
 
-  // delete GeoKeys from metadata, because stored in GeoKeyDirectory tag
+  // cleanup original GeoKeys metadata, because stored in GeoKeyDirectory tag
   for (const geoKey of geoKeys) {
     if (metadata.hasOwnProperty(geoKey)) {
       delete metadata[geoKey];

@@ -4,7 +4,7 @@ import baseConfig from './rollup.config.js';
 
 export default {
   ...baseConfig,
-  input: 'dist-module/worker/decoder.js',
+  input: 'src/worker/decoder.js',
   output: {
     file: 'dist-module/worker/create.js',
     format: 'module',
