@@ -5,6 +5,7 @@ import chaiAsPromised from 'chai-as-promised';
 import Worker from 'web-worker';
 import Pool from '../src/pool.js';
 import create from '../src/worker/create.js';
+import { getDecoderParameters } from '../src/compression/index.js';
 
 chai.use(chaiAsPromised);
 
@@ -22,6 +23,10 @@ class MockIFD {
   getValue(tag) {
     return this.values[tag];
   }
+
+  async loadValue(tag) {
+    return this.values[tag];
+  }
 }
 
 describe('Pool', () => {
@@ -29,9 +34,19 @@ describe('Pool', () => {
     const pool = new Pool(1, create);
     const buffer = new ArrayBuffer(1);
     (new Uint8Array(buffer)).set([0]);
-    const fileDirectory = new MockIFD({ Compression: 1 });
+    const fileDirectory = new MockIFD({
+      Compression: 1,
+      ImageWidth: 1,
+      ImageLength: 1,
+      RowsPerStrip: 1,
+      PlanarConfiguration: 1,
+      BitsPerSample: 8,
+    });
     try {
-      const decoded = await pool.decode(fileDirectory, buffer);
+      const compression = fileDirectory.getValue('Compression');
+      const decoderParameters = await getDecoderParameters(compression, fileDirectory);
+      const decoder = pool.bindParameters(compression, decoderParameters);
+      const decoded = await decoder.decode(buffer);
       const decodedArray = new Uint8Array(decoded);
       expect(decodedArray).to.eql(new Uint8Array([0]));
     } finally {
@@ -47,9 +62,17 @@ describe('Pool', () => {
     });
     const buffer = new ArrayBuffer(1);
     (new Uint8Array(buffer)).set([0]);
-    const fileDirectory = new MockIFD({ Compression: -1 });
+    const fileDirectory = new MockIFD({
+      Compression: -1,
+      ImageWidth: 1,
+      ImageLength: 1,
+      RowsPerStrip: 1,
+      PlanarConfiguration: 1,
+      BitsPerSample: 8,
+    });
     try {
-      await expect(pool.decode(fileDirectory, buffer)).to.eventually.be.rejected;
+      const compression = fileDirectory.getValue('Compression');
+      await expect(getDecoderParameters(compression, fileDirectory)).to.eventually.be.rejected;
     } finally {
       pool.destroy();
     }
