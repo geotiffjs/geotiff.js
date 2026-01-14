@@ -771,10 +771,10 @@ class GeoTIFFImage {
     if (!this.fileDirectory.hasTag('ModelTiepoint')) {
       return [];
     }
-    const modelTiePoint = await this.fileDirectory.getValue('ModelTiepoint');
+    const modelTiePoint = await this.fileDirectory.loadValue('ModelTiepoint');
 
     const tiePoints = [];
-    for (let i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
+    for (let i = 0; i < modelTiePoint.length; i += 6) {
       tiePoints.push({
         i: modelTiePoint[i],
         j: modelTiePoint[i + 1],
@@ -823,10 +823,10 @@ class GeoTIFFImage {
    * @returns {number|null}
    */
   getGDALNoData() {
-    if (!this.fileDirectory.GDAL_NODATA) {
+    if (!this.fileDirectory.hasTag('GDAL_NODATA')) {
       return null;
     }
-    const string = this.fileDirectory.GDAL_NODATA;
+    const string = this.fileDirectory.getValue('GDAL_NODATA');
     return Number(string.substring(0, string.length - 1));
   }
 
