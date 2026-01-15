@@ -1,6 +1,236 @@
 /* eslint-disable no-unused-expressions */
 import { expect } from 'chai';
 import { ImageFileDirectory } from '../src/imagefiledirectory.js';
+import { fieldTypes } from '../src/globals.js';
+
+// Counter for unique test tags
+let testTagCounter = 60000;
+
+/**
+ * Helper to create an IFD with a DeferredArray for testing.
+ * Returns both the IFD and the tag number.
+ */
+async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian, fieldType, length) {
+  // Register a custom tag that will be treated as an array
+  const { registerTag } = await import('../src/globals.js');
+  const testTag = testTagCounter++;
+  registerTag(testTag, `TestArrayTag${testTag}`, undefined, true);
+
+  // Create a minimal IFD with a deferred array
+  const { ImageFileDirectoryParser } = await import('../src/imagefiledirectory.js');
+
+  // Write the IFD structure directly into the dataBuffer at offset 0
+  const view = new DataView(dataBuffer);
+
+  // Write minimal IFD header for non-BigTIFF
+  view.setUint16(0, 1, true); // 1 entry
+
+  // Write a field entry that references external data (> 4 bytes)
+  view.setUint16(2, testTag, true); // tag
+  view.setUint16(4, fieldType, true); // field type
+  view.setUint32(6, length, true); // count
+  view.setUint32(10, arrayOffset, true); // offset to data (must be external)
+
+  view.setUint32(14, 0, true); // next IFD offset
+
+  const mockSource = {
+    fetch: async (ranges) => {
+      const results = [];
+      for (const range of ranges) {
+        // Return the actual data from the provided buffer
+        const slice = dataBuffer.slice(range.offset, range.offset + range.length);
+        results.push(slice);
+      }
+      return results;
+    },
+  };
+
+  const parser = new ImageFileDirectoryParser(mockSource, littleEndian, false, false);
+  const ifd = await parser.parseFileDirectoryAt(0);
+
+  return { ifd, tag: testTag };
+}
+
+describe('DeferredArray (tested through IFD)', () => {
+  it('should lazily load indexed values from deferred arrays', async () => {
+    // Create a buffer with LONG values
+    // Note: for LONG (4 bytes), need at least 2 values to exceed inline storage (4 bytes)
+    // Also need offset beyond initial 1024-byte fetch window
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+
+    // Write some test values
+    for (let i = 0; i < 10; i++) {
+      view.setUint32(offset + (i * 4), (i + 1) * 100, true);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.LONG, 10);
+
+    // Verify it's a deferred array
+    expect(ifd.deferredArrays.has(tag)).to.be.true;
+
+    // Load individual values
+    const value1 = await ifd.loadValueIndexed(tag, 0);
+    const value2 = await ifd.loadValueIndexed(tag, 5);
+    const value3 = await ifd.loadValueIndexed(tag, 9);
+
+    expect(value1).to.equal(100);
+    expect(value2).to.equal(600);
+    expect(value3).to.equal(1000);
+  });
+
+  it('should load all values at once', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+
+    // Write test values (need >4 bytes total, so 5 LONGs = 20 bytes)
+    for (let i = 0; i < 5; i++) {
+      view.setUint32(offset + (i * 4), i * 10, true);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.LONG, 5);
+
+    // Load all values
+    const values = await ifd.loadValue(tag);
+
+    expect(values).to.be.an.instanceof(Uint32Array);
+    expect(values).to.have.lengthOf(5);
+    expect(Array.from(values)).to.deep.equal([0, 10, 20, 30, 40]);
+  });
+
+  it('should handle concurrent indexed access correctly', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+
+    // SHORT is 2 bytes, need >4 bytes, so 10 SHORTs = 20 bytes
+    for (let i = 0; i < 10; i++) {
+      view.setUint16(offset + (i * 2), i * 5, true);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.SHORT, 10);
+
+    // Access multiple indices concurrently
+    const [v1, v2, v3, v4] = await Promise.all([
+      ifd.loadValueIndexed(tag, 0),
+      ifd.loadValueIndexed(tag, 3),
+      ifd.loadValueIndexed(tag, 7),
+      ifd.loadValueIndexed(tag, 9),
+    ]);
+
+    expect(v1).to.equal(0);
+    expect(v2).to.equal(15);
+    expect(v3).to.equal(35);
+    expect(v4).to.equal(45);
+  });
+
+  it('should work with different field types', async () => {
+    // Test BYTE (1 byte each, need >4 bytes, so 10 bytes)
+    const byteBuffer = new ArrayBuffer(3000);
+    const byteView = new DataView(byteBuffer);
+    const byteOffset = 1000;
+    for (let i = 0; i < 10; i++) {
+      byteView.setUint8(byteOffset + i, i + 1);
+    }
+    const { ifd: ifdByte, tag: tagByte } = await createIFDWithDeferredArray(
+      byteBuffer,
+      byteOffset,
+      true,
+      fieldTypes.BYTE,
+      10,
+    );
+    const byteValues = await ifdByte.loadValue(tagByte);
+    expect(byteValues).to.be.an.instanceof(Uint8Array);
+    expect(byteValues[0]).to.equal(1);
+    expect(byteValues[9]).to.equal(10);
+
+    // Test FLOAT (4 bytes each, need >4 bytes, so 5 floats = 20 bytes)
+    const floatBuffer = new ArrayBuffer(3000);
+    const floatView = new DataView(floatBuffer);
+    const floatOffset = 1000;
+    for (let i = 0; i < 5; i++) {
+      floatView.setFloat32(floatOffset + (i * 4), i * 1.5, true);
+    }
+    const { ifd: ifdFloat, tag: tagFloat } = await createIFDWithDeferredArray(
+      floatBuffer,
+      floatOffset,
+      true,
+      fieldTypes.FLOAT,
+      5,
+    );
+    const floatValues = await ifdFloat.loadValue(tagFloat);
+    expect(floatValues).to.be.an.instanceof(Float32Array);
+    expect(floatValues[2]).to.be.closeTo(3.0, 0.001);
+  });
+
+  it('should cache values after loading', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+    view.setUint32(offset, 42, true);
+    view.setUint32(offset + 4, 84, true);
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.LONG, 10);
+
+    // Access the same index multiple times
+    const v1 = await ifd.loadValueIndexed(tag, 0);
+    const v2 = await ifd.loadValueIndexed(tag, 0);
+    const v3 = await ifd.loadValueIndexed(tag, 0);
+
+    expect(v1).to.equal(42);
+    expect(v2).to.equal(42);
+    expect(v3).to.equal(42);
+
+    // Access another index
+    const v4 = await ifd.loadValueIndexed(tag, 1);
+    expect(v4).to.equal(84);
+  });
+
+  it('should allow loadValue after individual indexed access', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+    for (let i = 0; i < 8; i++) {
+      view.setUint32(offset + (i * 4), i * 7, true);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.LONG, 8);
+
+    // Access individual values first
+    const v1 = await ifd.loadValueIndexed(tag, 2);
+    expect(v1).to.equal(14);
+
+    // Then load all
+    const allValues = await ifd.loadValue(tag);
+    expect(allValues).to.be.an.instanceof(Uint32Array);
+    expect(allValues[2]).to.equal(14);
+    expect(allValues[0]).to.equal(0);
+    expect(allValues[7]).to.equal(49);
+  });
+
+  it('should use loadValue data for subsequent indexed access', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+    for (let i = 0; i < 6; i++) {
+      view.setUint32(offset + (i * 4), i * 11, true);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, true, fieldTypes.LONG, 6);
+
+    // Load all first
+    await ifd.loadValue(tag);
+
+    // Then access indexed - should use cached data
+    const v1 = await ifd.loadValueIndexed(tag, 3);
+    const v2 = await ifd.loadValueIndexed(tag, 5);
+
+    expect(v1).to.equal(33);
+    expect(v2).to.equal(55);
+  });
+});
 
 describe('ImageFileDirectory', () => {
   describe('getValue()', () => {
