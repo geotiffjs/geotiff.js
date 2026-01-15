@@ -139,7 +139,7 @@ class DeferredArray {
           true,
           false, // we can ignore bigTiff here
         );
-        return getValues(
+        const result = getValues(
           this.data,
           getDataSliceReader(dataSlice, this.fieldType),
           dataSlice,
@@ -148,6 +148,14 @@ class DeferredArray {
           this.arrayOffset,
           true,
         );
+
+        // Mark all items as loaded in the bitmap
+        this.maskBitmap.fill(0xFF);
+
+        // Clean up any pending individual fetch promises since all data is now loaded
+        this.fetchIndexPromises.clear();
+
+        return result;
       });
     }
     return this.fullFetchPromise;
