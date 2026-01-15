@@ -8,6 +8,13 @@ import {
   getFieldTypeSize,
 } from './globals.js';
 
+/**
+ * Allocates an appropriate TypedArray based on the TIFF field type.
+ * @param {number} fieldType - TIFF field type constant from fieldTypes
+ * @param {number} count - Number of elements to allocate
+ * @returns {TypedArray} The allocated typed array for the given field type
+ * @throws {RangeError} If the field type is invalid
+ */
 function getArrayForSamples(fieldType, count) {
   switch (fieldType) {
     case fieldTypes.BYTE:
@@ -43,6 +50,13 @@ function getArrayForSamples(fieldType, count) {
   }
 }
 
+/**
+ * Returns the appropriate DataSlice read method for a given field type.
+ * @param {DataSlice} dataSlice - The DataSlice instance to get the reader from
+ * @param {number} fieldType - TIFF field type constant from fieldTypes
+ * @returns {Function} The bound read method (e.g., readUint16, readFloat32)
+ * @throws {RangeError} If the field type is invalid
+ */
 function getDataSliceReader(dataSlice, fieldType) {
   switch (fieldType) {
     case fieldTypes.BYTE:
@@ -78,6 +92,17 @@ function getDataSliceReader(dataSlice, fieldType) {
   }
 }
 
+/**
+ * Reads field values from a DataSlice.
+ * @param {TypedArray|null} outValues - Optional pre-allocated output array
+ * @param {Function} readMethod - DataView read method (e.g., getUint16)
+ * @param {DataSlice} dataSlice - Source data slice
+ * @param {number} fieldType - TIFF field type constant
+ * @param {number} count - Number of values to read
+ * @param {number} offset - Byte offset to start reading
+ * @param {boolean} isArray - Whether to always return an array (vs single value)
+ * @returns {TypedArray|string|number} The decoded value(s)
+ */
 function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray) {
   const fieldTypeLength = getFieldTypeSize(fieldType);
 
@@ -113,7 +138,20 @@ function getValues(outValues = null, readMethod, dataSlice, fieldType, count, of
   return values;
 }
 
+/**
+ * Lazily-loaded array for large TIFF field values that are fetched on-demand.
+ * Supports loading individual indices or the entire array. Uses a bitmap to track
+ * which values have been loaded to avoid redundant fetches.
+ */
 class DeferredArray {
+  /**
+   * Creates a DeferredArray for lazy-loading of large TIFF field arrays.
+   * @param {import("./source/basesource.js").BaseSource} source - Data source for fetching
+   * @param {number} arrayOffset - Byte offset where the array data starts
+   * @param {boolean} littleEndian - Endianness of the data
+   * @param {number} fieldType - TIFF field type constant
+   * @param {number} length - Number of elements in the array
+   */
   constructor(source, arrayOffset, littleEndian, fieldType, length) {
     this.source = source;
     this.arrayOffset = arrayOffset;
@@ -127,6 +165,11 @@ class DeferredArray {
     this.fullFetchPromise = null;
   }
 
+  /**
+   * Loads all values in the deferred array at once.
+   * Subsequent calls return the same promise to avoid redundant fetches.
+   * @returns {Promise<TypedArray>} Promise resolving to the fully loaded array
+   */
   async loadAll() {
     if (!this.fullFetchPromise) {
       this.fullFetchPromise = this.source.fetch([{
@@ -161,6 +204,14 @@ class DeferredArray {
     return this.fullFetchPromise;
   }
 
+  /**
+   * Loads and returns a single value at the specified index.
+   * If the value is already loaded, returns it immediately. Otherwise, fetches it
+   * from the source. Multiple calls for the same index reuse the same promise.
+   * @param {number} index - Zero-based index of the value to load
+   * @returns {Promise<number|bigint>} Promise resolving to the value at the given index
+   * @throws {RangeError} If index is out of bounds
+   */
   async get(index) {
     if (index < 0 || index >= this.data.length) {
       throw new RangeError(
@@ -308,6 +359,13 @@ export class ImageFileDirectory {
     return undefined;
   }
 
+  /**
+   * Parses the GeoTIFF GeoKeyDirectory tag into a structured object.
+   * The GeoKeyDirectory is a special TIFF tag that contains geographic metadata
+   * in a key-value format as defined by the GeoTIFF specification.
+   * @returns {Object|null} Parsed geo key directory mapping key names to values, or null if not present
+   * @throws {Error} If a referenced geo key value cannot be retrieved
+   */
   parseGeoKeyDirectory() {
     const rawGeoKeyDirectory = this.getValue('GeoKeyDirectory');
     if (!rawGeoKeyDirectory) {
