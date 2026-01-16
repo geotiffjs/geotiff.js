@@ -295,8 +295,7 @@ class GeoTIFFImage {
   }
 
   getReaderForSample(sampleIndex) {
-    const format = this.fileDirectory.SampleFormat
-      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    const format = this.getSampleFormat(sampleIndex);
     const bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
@@ -339,7 +338,8 @@ class GeoTIFFImage {
 
   getSampleFormat(sampleIndex = 0) {
     return this.fileDirectory.SampleFormat
-      ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
+      ? (this.fileDirectory.SampleFormat[sampleIndex] ?? Math.max.apply(null, this.fileDirectory.SampleFormat))
+      : 1;
   }
 
   getBitsPerSample(sampleIndex = 0) {
