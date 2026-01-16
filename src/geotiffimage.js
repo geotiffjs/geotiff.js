@@ -346,10 +346,50 @@ class GeoTIFFImage {
     return this.fileDirectory.BitsPerSample[sampleIndex];
   }
 
-  getArrayForSample(sampleIndex, size) {
+  getArrayForSample(sampleIndex, sizeOrBuffer) {
     const format = this.getSampleFormat(sampleIndex);
     const bitsPerSample = this.getBitsPerSample(sampleIndex);
-    return arrayForType(format, bitsPerSample, size);
+    return arrayForType(format, bitsPerSample, sizeOrBuffer);
+  }
+
+  /**
+   * Check for possible bulk-read optimization
+   * @private
+   * @param {Array} imageWindow The image window in pixel coordinates
+   * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
+   * @param {Boolean} interleave Whether or not to write in an interleaved manner
+   * @param {number} width the width of window to be read into
+   * @param {number} height the height of window to be read into
+   * @returns {Promise<boolean>}
+   */
+  _bulkReadable(imageWindow, valueArrays, interleave, width, height) {
+    const imageWidth = this.getWidth();
+    const imageHeight = this.getHeight();
+    const tileWidth = this.getTileWidth();
+    const tileHeight = this.getTileHeight();
+    // The requested tile aligns with stored IFD
+    const aligned = 0 === Math.max.apply(null, [
+      imageWindow[0] % tileWidth,
+      imageWindow[1] % tileHeight,
+      Math.min(imageWindow[2], imageWidth) % tileWidth,
+      Math.min(imageWindow[3], imageHeight) % tileHeight
+    ]);
+    const osLittleEndian = () => {
+      const buffer = new ArrayBuffer(2);
+      const uint8 = new Uint8Array(buffer);
+      const uint16 = new Uint16Array(buffer);
+      uint8[0] = 0x00;
+      uint8[1] = 0xFF;
+      return (uint16[0] === 0xFF00);
+    }
+    const oneValue = valueArrays.length === 1;
+    const serialPixel = this.planarConfiguration === 1;
+    const sameEndian = this.littleEndian === osLittleEndian();
+    // The requested tile exactly matches the stored IFD
+    if (aligned && oneValue && serialPixel && sameEndian) {
+      return width === tileWidth && height === tileHeight;
+    }
+    return false;
   }
 
   /**
@@ -622,6 +662,17 @@ class GeoTIFFImage {
     }
 
     const poolOrDecoder = pool || await getDecoder(this.fileDirectory);
+    if (this._bulkReadable(imageWindow, valueArrays, interleave, width, height)) {
+      const tileWidth = this.getTileWidth();
+      const tileHeight = this.getTileHeight();
+      const xTile = Math.max(Math.floor(imageWindow[0] / tileWidth), 0);
+      const yTile = Math.max(Math.floor(imageWindow[1] / tileHeight), 0);
+      const tile = await this.getTileOrStrip(xTile, yTile, samples[0], poolOrDecoder, signal);
+      valueArrays[0] = this.getArrayForSample(samples[0], tile.data);
+      valueArrays.height = tileHeight;
+      valueArrays.width = tileWidth;
+      return valueArrays;
+    }
 
     const result = await this._readRaster(
       imageWindow, samples, valueArrays, interleave, poolOrDecoder, width, height, resampleMethod, signal,
