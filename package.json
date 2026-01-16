@@ -79,7 +79,7 @@
     "dist-browser"
   ],
   "engines": {
-    "node": ">=10.19"
+    "node": ">=14.0.0"
   },
   "dependencies": {
     "@petamoriken/float16": "^3.4.7",
