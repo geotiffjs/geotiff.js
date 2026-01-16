@@ -1,5 +1,3 @@
-import { getFloat16 } from '@petamoriken/float16';
-
 export default class DataView64 {
   constructor(arrayBuffer) {
     this._dataView = new DataView(arrayBuffer);
@@ -84,7 +82,7 @@ export default class DataView64 {
   }
 
   getFloat16(offset, littleEndian) {
-    return getFloat16(this._dataView, offset, littleEndian);
+    return this._dataView.getFloat16(offset, littleEndian);
   }
 
   getFloat32(offset, littleEndian) {

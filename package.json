@@ -82,7 +82,6 @@
     "node": ">=10.19"
   },
   "dependencies": {
-    "@petamoriken/float16": "^3.4.7",
     "lerc": "^3.0.0",
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
