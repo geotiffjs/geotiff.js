@@ -54,6 +54,11 @@ async function performTiffTests(tiff, width, height, sampleCount, type) {
   const allData = await image.readRasters({ window: [200, 200, 210, 210] });
   const brData = await image.readRasters({ window: [width - 10, height - 10, width, height] });
   const data = await image.readRasters({ window: [200, 200, 210, 210], samples: [5] });
+
+  // Zero check: make sure that we actually read data
+  const zeros = data[0].slice().fill(0);
+  expect(data[0]).to.not.deep.equal(zeros);
+
   expect(allData).to.have.length(sampleCount);
   expect(allData[0]).to.be.an.instanceof(type);
   expect(brData).to.have.length(sampleCount);
@@ -163,15 +168,15 @@ describe('GeoTIFF - external overviews', () => {
     expect(count).to.equal(5);
 
     const image1 = await tiff.getImage(0);
-    expect(image1.fileDirectory.ImageWidth).to.equal(539);
+    expect(image1.getWidth()).to.equal(539);
     const image2 = await tiff.getImage(1);
-    expect(image2.fileDirectory.ImageWidth).to.equal(270);
+    expect(image2.getWidth()).to.equal(270);
     const image3 = await tiff.getImage(2);
-    expect(image3.fileDirectory.ImageWidth).to.equal(135);
+    expect(image3.getWidth()).to.equal(135);
     const image4 = await tiff.getImage(3);
-    expect(image4.fileDirectory.ImageWidth).to.equal(68);
+    expect(image4.getWidth()).to.equal(68);
     const image5 = await tiff.getImage(4);
-    expect(image5.fileDirectory.ImageWidth).to.equal(34);
+    expect(image5.getWidth()).to.equal(34);
   });
 });
 
@@ -330,10 +335,13 @@ describe('GeoTIFF', () => {
 
   it('should work with worker pool', async () => {
     const testPool = new Pool();
-    const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
-    const image = await tiff.getImage();
-    await image.readRasters({ pool: testPool });
-    testPool.destroy();
+    try {
+      const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
+      const image = await tiff.getImage();
+      await image.readRasters({ pool: testPool });
+    } finally {
+      testPool.destroy();
+    }
   });
 
   it('should work with LZW compressed tiffs that have an EOI Code after a CLEAR code', async () => {
@@ -488,7 +496,7 @@ describe('ifdRequestTests', () => {
   it('requesting third image after manually parsing second yiels 2 ifdRequests', async () => {
     const tiff = await GeoTIFF.fromSource(createSource(source));
     const index = 1;
-    tiff.ifdRequests[index] = tiff.parseFileDirectoryAt(offsets[index]);
+    tiff.ifdRequests[index] = tiff.parser.parseFileDirectoryAt(offsets[index]);
     await tiff.getImage(index + 1);
     // first image slot is empty so we filter out the Promises, of which there are two
     expect(
@@ -498,7 +506,7 @@ describe('ifdRequestTests', () => {
 
   it('should be able to manually set ifdRequests and readRasters', async () => {
     const tiff = await GeoTIFF.fromSource(createSource(source));
-    tiff.ifdRequests = offsets.map((offset) => tiff.parseFileDirectoryAt(offset));
+    tiff.ifdRequests = offsets.map((offset) => tiff.parser.parseFileDirectoryAt(offset));
     tiff.ifdRequests.forEach(async (_, i) => {
       const image = await tiff.getImage(i);
       image.readRasters();
@@ -1140,20 +1148,20 @@ describe('writeTests', () => {
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
     const { fileDirectory } = image;
-    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
-    expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
-    expect(fileDirectory.ImageLength).to.equal(3);
-    expect(fileDirectory.ImageWidth).to.equal(3);
-    expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
-    expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
-    expect(fileDirectory.PhotometricInterpretation).to.equal(1);
-    expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
-    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1]));
-    expect(fileDirectory.SamplesPerPixel).to.equal(1);
-    expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
-    expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(1);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(3));
+    expect(normalize(fileDirectory.getValue('StripByteCounts'))).to.equal(normalize(metadata.StripByteCounts));
   });
 
   it('should write rgb data with sensible defaults', async () => {
@@ -1199,20 +1207,20 @@ describe('writeTests', () => {
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
 
     const { fileDirectory } = image;
-    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8, 8, 8]));
-    expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
-    expect(fileDirectory.ImageLength).to.equal(3);
-    expect(fileDirectory.ImageWidth).to.equal(3);
-    expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
-    expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
-    expect(fileDirectory.PhotometricInterpretation).to.equal(2);
-    expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
-    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1, 1, 1]));
-    expect(fileDirectory.SamplesPerPixel).to.equal(3);
-    expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(3));
-    expect(toArray(fileDirectory.StripByteCounts).toString()).to.equal('27');
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(3));
+    expect(toArray(fileDirectory.getValue('StripByteCounts')).toString()).to.equal('27');
   });
 
   it('should write flattened pixel values', async () => {
@@ -1271,21 +1279,21 @@ describe('writeTests', () => {
     ).to.equal(JSON.stringify(originalValues.slice(0, -1)));
 
     const { fileDirectory } = image;
-    expect(normalize(fileDirectory.BitsPerSample)).to.equal(normalize([8]));
-    expect(fileDirectory.Compression).to.equal(1);
-    expect(fileDirectory.GeoAsciiParams).to.equal('WGS 84\u0000');
-    expect(fileDirectory.ImageLength).to.equal(height);
-    expect(fileDirectory.ImageWidth).to.equal(width);
-    expect(normalize(fileDirectory.ModelPixelScale)).to.equal(normalize(metadata.ModelPixelScale));
-    expect(normalize(fileDirectory.ModelTiepoint)).to.equal(normalize(metadata.ModelTiepoint));
-    expect(fileDirectory.PhotometricInterpretation).to.equal(2);
-    expect(fileDirectory.PlanarConfiguration).to.equal(1);
-    expect(normalize(fileDirectory.StripOffsets)).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
-    expect(normalize(fileDirectory.SampleFormat)).to.equal(normalize([1]));
-    expect(fileDirectory.SamplesPerPixel).to.equal(1);
-    expect(normalize(fileDirectory.RowsPerStrip)).to.equal(normalize(height));
-    expect(normalize(fileDirectory.StripByteCounts)).to.equal(normalize(metadata.StripByteCounts));
-    expect(fileDirectory.GDAL_NODATA).to.equal('0\u0000');
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(height);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(width);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(height));
+    expect(normalize(fileDirectory.getValue('StripByteCounts'))).to.equal(normalize(metadata.StripByteCounts));
+    expect(fileDirectory.getValue('GDAL_NODATA')).to.equal('0\u0000');
   });
 
   it('should write and read back GeoAsciiParams/GeoDoubleParams keys', async () => {
