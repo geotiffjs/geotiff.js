@@ -17,8 +17,12 @@ jobs:
       pull-requests: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
       - run: npm ci --ignore-scripts
         # npm run prepare runs the build step for publish and pack
       - run: npm rebuild && npm run prepare
