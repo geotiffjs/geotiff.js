@@ -2,7 +2,10 @@
   "name": "geotiff",
   "version": "3.0.0-beta.2",
   "description": "GeoTIFF image decoding in JavaScript",
-  "repository": "https://github.com/geotiffjs/geotiff.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geotiffjs/geotiff.js.git"
+  },
   "keywords": [
     "TIFF",
     "GeoTIFF",
