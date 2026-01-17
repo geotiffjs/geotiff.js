@@ -1,14 +1,13 @@
 const registry = new Map();
 
 /**
- * @typedef {{
- *  tileWidth: number,
- *  tileHeight: number,
- *  planarConfiguration: number,
- *  bitsPerSample: number,
- *  predictor: number,
- * }} DecoderParameters
-*/
+ * @typedef {Object} DecoderParameters
+ * @property {number} tileWidth
+ * @property {number} tileHeight
+ * @property {number} planarConfiguration
+ * @property {number} bitsPerSample
+ * @property {number} predictor
+ */
 
 /**
  * Default decoder parameter retrieval function
