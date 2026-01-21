@@ -119,6 +119,7 @@ export const fieldTagNames = {
   0x87AF: 'GeoKeyDirectory',
   0x87B0: 'GeoDoubleParams',
   0x87B1: 'GeoAsciiParams',
+  0xC69C: 'RPCCoefficient',
 
   // LERC
   0xC5F2: 'LercParameters',
@@ -184,6 +185,7 @@ export const fieldTagTypes = {
   34736: 'DOUBLE',
   34737: 'ASCII',
   42113: 'ASCII',
+  50844: 'DOUBLE',
 };
 
 export const arrayFields = [
@@ -196,6 +198,7 @@ export const arrayFields = [
   fieldTags.TileByteCounts,
   fieldTags.TileOffsets,
   fieldTags.SubIFDs,
+  fieldTags.RPCCoefficient,
 ];
 
 export const fieldTypeNames = {
