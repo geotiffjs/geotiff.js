@@ -27,6 +27,7 @@ jobs:
         id: publish
         with:
           token: ${{ secrets.NPM_TOKEN }}
+          tag: ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
       - name: Create release notes
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v5
