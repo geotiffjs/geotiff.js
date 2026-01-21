@@ -1,13 +1,9 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "files": [],
   "compilerOptions": {
-    "outDir": "dist-module",
     "target": "ES2020",
-    "lib": ["ES2020", "DOM"],
-    "module": "ES2020",
 
     "moduleResolution": "node",
-    "esModuleInterop": false,
     "downlevelIteration": true,
     "skipLibCheck": true,
     "allowJs": true,
@@ -24,5 +20,9 @@
     // these aren't available until TS 5.6+
     //"erasableSyntaxOnly": true,
     //"noUncheckedSideEffectImports": true
-  }
+  },
+  "references": [
+    { "path": "./tsconfig.module.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

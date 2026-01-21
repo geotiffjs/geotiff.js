@@ -7,3 +7,4 @@ dist-module
 docs
 .DS_Store
 *.tgz
+*.tsbuildinfo
