@@ -131,7 +131,7 @@
     "build:clean": "shx rm -rf dist-node/ dist-browser/ dist-module/",
     "build:module": "tsc && rollup -c rollup.worker.config.js",
     "build:browser": "rollup -c rollup.config.js",
-    "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
+    "build:node": "tsc --project tsconfig.node.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
     "watch:module": "chokidar \"src/*.js\" -c \"npm run build:module\"",
     "watch:browser": "chokidar \"dist-module/*.js\" -c \"npm run build:browser\"",
     "predev": "npm run build",
