@@ -395,7 +395,7 @@ export const LercAddCompression = {
   Zstandard: 2,
 };
 
-export const geoKeyNames = {
+export const geoKeyNames = Object.freeze({
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
   1026: 'GTCitationGeoKey',
@@ -443,8 +443,13 @@ export const geoKeyNames = {
   4097: 'VerticalCitationGeoKey',
   4098: 'VerticalDatumGeoKey',
   4099: 'VerticalUnitsGeoKey',
-};
+});
 
+/** @typedef {geoKeyNames[keyof typeof geoKeyNames]} GeoKeyName */
+
+/**
+ * @type {Record<GeoKeyName, number>}
+ */
 export const geoKeys = {};
 for (const key in geoKeyNames) {
   if (geoKeyNames.hasOwnProperty(key)) {

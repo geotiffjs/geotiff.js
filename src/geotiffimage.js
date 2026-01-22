@@ -207,7 +207,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the associated parsed geo keys.
-   * @returns {Object} the parsed geo keys
+   * @returns {Record<import('./globals.js').GeoKeyName, *>|null} the parsed geo keys
    */
   getGeoKeys() {
     return this.fileDirectory.parseGeoKeyDirectory();
