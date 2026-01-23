@@ -78,7 +78,7 @@ export function toArray<T>(iterable: { length: number; [index: number]: T }): T[
 
 export function toArrayRecursively(input: unknown): unknown {
   if (isArrayLike(input)) {
-    return toArray(input as ArrayLike<unknown>).map(toArrayRecursively);
+    return toArray(input).map(toArrayRecursively);
   }
   return input;
 }
