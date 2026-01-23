@@ -77,10 +77,17 @@ export function toArray<T>(iterable: { length: number; [index: number]: T }): T[
 }
 
 export function toArrayRecursively(input: unknown): unknown {
-  if (input && typeof input === 'object' && 'length' in input && typeof (input as { length: unknown }).length === 'number') {
+  if (isArrayLike(input)) {
     return toArray(input as ArrayLike<unknown>).map(toArrayRecursively);
   }
   return input;
+}
+
+
+function isArrayLike(v: unknown): v is ArrayLike<unknown> {
+  return Boolean(
+    v && typeof v === 'object' && 'length' in v && typeof (v as { length: unknown }).length === 'number',
+  )
 }
 
 // copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js
