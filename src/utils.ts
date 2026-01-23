@@ -1,10 +1,10 @@
-export function assign<T extends Record<string, any>, S extends Record<string, any>>(
+export function assign<T extends Record<string, unknown>, S extends Record<string, unknown>>(
   target: T,
   source: S
 ): T & S {
   for (const key in source) {
     if (source.hasOwnProperty(key)) {
-      (target as any)[key] = source[key];
+      (target as Record<string, unknown>)[key] = source[key];
     }
   }
   return target as T & S;
@@ -177,7 +177,7 @@ export class CustomAggregateError extends Error {
 
 export const AggregateError = CustomAggregateError;
 
-export function isTypedFloatArray(input: any): input is Float32Array | Float64Array {
+export function isTypedFloatArray(input: unknown): input is Float32Array | Float64Array {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
     if (ctr === Float32Array || ctr === Float64Array) {
@@ -187,7 +187,7 @@ export function isTypedFloatArray(input: any): input is Float32Array | Float64Ar
   return false;
 }
 
-export function isTypedIntArray(input: any): input is Int8Array | Int16Array | Int32Array {
+export function isTypedIntArray(input: unknown): input is Int8Array | Int16Array | Int32Array {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
     if (ctr === Int8Array || ctr === Int16Array || ctr === Int32Array) {
@@ -197,7 +197,7 @@ export function isTypedIntArray(input: any): input is Int8Array | Int16Array | I
   return false;
 }
 
-export function isTypedUintArray(input: any): input is Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray {
+export function isTypedUintArray(input: unknown): input is Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
     if (ctr === Uint8Array || ctr === Uint16Array || ctr === Uint32Array || ctr === Uint8ClampedArray) {
