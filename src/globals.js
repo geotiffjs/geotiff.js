@@ -279,6 +279,9 @@ export const tagDefinitions = {};
  * @param {string} name the name of the tag that will be reported in the IFD
  * @param {string|number} type the tags data type
  * @param {Boolean} isArray whether the tag is an array
+ * @param {boolean} [eager=false] whether to eagerly fetch deferred fields.
+ *                                 When false (default), tags are loaded lazily on-demand.
+ *                                 When true, all tags are loaded immediately during parsing.
  */
 export function registerTag(
   tag,
