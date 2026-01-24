@@ -7,8 +7,8 @@ import BaseDecoder from './basedecoder.js';
  * formats like WebP when supported.
  */
 export default class WebImageDecoder extends BaseDecoder {
-  constructor() {
-    super();
+  constructor(parameters) {
+    super(parameters);
     if (typeof createImageBitmap === 'undefined') {
       throw new Error('Cannot decode WebImage as `createImageBitmap` is not available');
     } else if (typeof document === 'undefined' && typeof OffscreenCanvas === 'undefined') {
@@ -16,7 +16,7 @@ export default class WebImageDecoder extends BaseDecoder {
     }
   }
 
-  async decode(fileDirectory, buffer) {
+  async decodeBlock(buffer) {
     const blob = new Blob([buffer]);
     const imageBitmap = await createImageBitmap(blob);
 
@@ -29,18 +29,18 @@ export default class WebImageDecoder extends BaseDecoder {
       canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height);
     }
 
-    // Draw the image onto the canvas to extract the pixel data. Note this
-    // always returns RGBA, even if the original image was RGB.
+    // Draw the image onto the canvas to extract the pixel data.
+    // Note: createImageBitmap always returns RGBA data.
     const ctx = canvas.getContext('2d');
     ctx.drawImage(imageBitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, imageBitmap.width, imageBitmap.height).data;
 
     // Return the correct channels to the caller
-    const spp = fileDirectory.SamplesPerPixel || 4;
-    if (spp === 4) {
+    const samplesPerPixel = this.parameters.samplesPerPixel || 4;
+    if (samplesPerPixel === 4) {
       // RGBA, return as is
       return imageData.buffer;
-    } else if (spp === 3) {
+    } else if (samplesPerPixel === 3) {
       // RGB, remove alpha channel before returning
       const rgb = new Uint8ClampedArray(imageBitmap.width * imageBitmap.height * 3);
       for (let i = 0, j = 0; i < rgb.length; i += 3, j += 4) {
@@ -50,7 +50,7 @@ export default class WebImageDecoder extends BaseDecoder {
       }
       return rgb.buffer;
     } else {
-      throw new Error(`Unsupported SamplesPerPixel value: ${spp}`);
+      throw new Error(`Unsupported SamplesPerPixel value: ${samplesPerPixel}`);
     }
   }
 }

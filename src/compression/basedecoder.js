@@ -1,18 +1,20 @@
 import { applyPredictor } from '../predictor.js';
 
 export default class BaseDecoder {
-  async decode(fileDirectory, buffer) {
+  constructor(parameters) {
+    this.parameters = parameters;
+  }
+
+  async decode(buffer) {
     const decoded = await this.decodeBlock(buffer);
-    const predictor = fileDirectory.Predictor || 1;
+
+    const {
+      tileWidth, tileHeight, predictor, bitsPerSample, planarConfiguration,
+    } = this.parameters;
     if (predictor !== 1) {
-      const isTiled = !fileDirectory.StripOffsets;
-      const tileWidth = isTiled ? fileDirectory.TileWidth : fileDirectory.ImageWidth;
-      const tileHeight = isTiled ? fileDirectory.TileLength : (
-        fileDirectory.RowsPerStrip || fileDirectory.ImageLength
-      );
       return applyPredictor(
-        decoded, predictor, tileWidth, tileHeight, fileDirectory.BitsPerSample,
-        fileDirectory.PlanarConfiguration,
+        decoded, predictor, tileWidth, tileHeight, bitsPerSample,
+        planarConfiguration,
       );
     }
     return decoded;
