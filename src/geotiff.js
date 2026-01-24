@@ -12,7 +12,7 @@ import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { ImageFileDirectoryParser } from './imagefiledirectory.js';
 
-import { fieldTypes, getFieldTypeSize } from './globals.js';
+import { fieldTypes, getFieldTypeSize, registerTag } from './globals.js';
 import { writeGeotiff } from './geotiffwriter.js';
 import * as globals from './globals.js';
 import * as rgb from './rgb.js';
@@ -20,6 +20,7 @@ import { getDecoder, addDecoder } from './compression/index.js';
 import { setLogger } from './logging.js';
 
 export { globals };
+export { registerTag };
 export { rgb };
 export { default as BaseDecoder } from './compression/basedecoder.js';
 export { getDecoder, addDecoder };
