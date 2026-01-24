@@ -794,7 +794,7 @@ class GeoTIFFImage {
    * Otherwise only metadata specific to the provided sample will be returned.
    *
    * @param {number} [sample=null] The sample index.
-   * @returns {Object}
+   * @returns {Promise<Object>}
    */
   async getGDALMetadata(sample = null) {
     const metadata = {};
