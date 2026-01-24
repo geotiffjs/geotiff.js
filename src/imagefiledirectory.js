@@ -363,7 +363,8 @@ export class ImageFileDirectory {
    * Parses the GeoTIFF GeoKeyDirectory tag into a structured object.
    * The GeoKeyDirectory is a special TIFF tag that contains geographic metadata
    * in a key-value format as defined by the GeoTIFF specification.
-   * @returns {Object|null} Parsed geo key directory mapping key names to values, or null if not present
+   * @returns {Record<import('./globals.js').GeoKeyName, *>|null} Parsed geo key directory
+   *     mapping key names to values, or null if not present
    * @throws {Error} If a referenced geo key value cannot be retrieved
    */
   parseGeoKeyDirectory() {
@@ -372,6 +373,7 @@ export class ImageFileDirectory {
       return null;
     }
 
+    /** @type {Record<import('./globals.js').GeoKeyName, *>} */
     const geoKeyDirectory = {};
     for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
       const key = geoKeyNames[rawGeoKeyDirectory[i]];
