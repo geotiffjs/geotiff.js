@@ -765,7 +765,7 @@ class GeoTIFFImage {
 
   /**
    * Returns an array of tiepoints.
-   * @returns {Object[]}
+   * @returns {Promise<Object[]>}
    */
   async getTiePoints() {
     if (!this.fileDirectory.hasTag('ModelTiepoint')) {
