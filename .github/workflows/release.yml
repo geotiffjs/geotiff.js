@@ -27,10 +27,11 @@ jobs:
         # npm run prepare runs the build step for publish and pack
       - run: npm rebuild && npm run prepare
       - run: npm run docs
-      - uses: JS-DevTools/npm-publish@v3
+      - uses: JS-DevTools/npm-publish@v4
         id: publish
         with:
           token: ${{ secrets.NPM_TOKEN }}
+          tag: ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
       - name: Create release notes
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v5
