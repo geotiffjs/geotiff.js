@@ -1,53 +1,359 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>geotiff.js</title><meta name="description" content="Documentation for geotiff.js"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script><style type="text/css">
+/* typedoc-theme-fresh */
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
+/* @view-transition {
+  navigation: auto;
+} */
 
-<body>
+:root {
+  --light-color-background: #fafafe;
+  --light-color-background-active: #eaeced;
+  --light-color-text: #222222;
+  --light-color-text-aside: #5e5e5e;
 
-<div id="main">
+  --dark-color-background: #1a1a1c;
+  --dark-color-background-active: #2f2f2b;
+  --dark-color-text: #dfdfd6;
+  --dark-color-text-aside: #b0b0b0;
 
-    <h1 class="page-title">Home</h1>
+  --dim-header-height: 2.5rem;
+  --dim-footer-height: 0px;
 
+  --light-code-background: #ffffff18;
+  --dark-code-background: #00000018;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  & > .container.container-main {
+    margin: 0 auto;
+    margin-top: var(--dim-header-height);
+    --dim-container-main-margin-y: 0px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+:root[data-theme="light"] {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+:root[data-theme="dark"] {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+}
+
+.tsd-page-toolbar {
+  position: fixed;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-background) 80%, transparent) 60%,
+    transparent
+  );
+  backdrop-filter: blur(2px);
+  border-bottom: none;
+
+  .title {
+    font-weight: 500;
+    font-size: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 0;
+    margin-right: auto;
+
+    &:hover {
+      color: var(--color-contrast-text);
+      text-decoration: none;
+    }
+  }
+
+  .tsd-theme-toggle {
+    display: flex;
+    position: relative;
+    margin-right: 12px;
+    color: var(--color-text-aside);
     
+    select {
+      cursor: pointer;
+      border: 1px solid var(--color-background-active);
+      border-radius: 4px;
+      padding: 6px 8px;
+      padding-left: 32px;  /* Space for the icon */
+      font-size: 14px;
+      background: transparent;
+      transition: background-color 200ms;
+      color: var(--color-text-aside);
+      
+      /* for Firefox and Chrome: these are inconsistent */
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      
+      &:hover {
+        background-color: var(--color-background-active);
+      }
+    }
+  }
+}
 
+.tsd-widget {
+  display: flex;
+  align-items: center;
+  height: auto;
+  width: auto;
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 200ms;
+  color: var(--color-text-aside);
+  opacity: 100%;
 
+  &:hover {
+    background-color: var(--color-background-active);
+  }
+}
 
+#tsd-search-results {
+  & > li {
+    padding-inline: 6px;
+    transition: background-color 200ms;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+.col-content {
+  overflow: hidden;
+  padding-block: 24px;
+
+  & > .tsd-typography {
+    padding-bottom: 24px;
+  }
+}
+
+.col-sidebar {
+  top: var(--dim-header-height);  /* Relevant for tablet layout. */
+}
+
+.site-menu {
+  top: var(--dim-header-height);
+  padding-block: 24px;
+  box-sizing: border-box;
+}
+
+.page-menu {
+  top: var(--dim-header-height);
+  padding-block: 48px 24px;
+  box-sizing: border-box;
+}
+
+.tsd-navigation,
+.tsd-page-navigation {
+  > details {
+    margin-bottom: 8px;
+  }
+
+  a {
+    border-radius: 4px;
+    padding-inline: 6px;
+    margin-bottom: 2px;
+  }
+  a:hover {
+    text-decoration: none;
+    background-color: var(--color-background-active);
+  }
+  a.current {
+    background-color: var(--color-background-active);
+    span {
+      color: var(--color-contrast-text);
+    }
+  }
+}
+
+.tsd-navigation {
+  & > a {
+    /* Top-level navigation anchor. */
+    margin-block: 16px;
+    font-size: 18px;
+    background: transparent !important;
+    padding: 0;
     
+    &:hover {
+      color: var(--color-contrast-text);
+    }
+  }
+}
 
+.tsd-page-navigation {
+  border-left: 1px solid var(--color-background-active);
+  padding-left: 4px;
+  padding-block: 4px;
+}
 
-    <h3> </h3>
+.tsd-page-navigation-section {
+  & > summary > svg {
+    margin-right: 0;
+  }
+  & > div {
+    margin-left: 24px;
+  }
+}
 
+.tsd-page-title {
+  color: var(--color-contrast-text);
+}
 
+h1 > code.tsd-tag {
+  margin-left: 12px;
+}
 
+code.tsd-tag {
+  display: inline-block;
+  transform: translateY(-0.1em);
+  background: var(--color-background-secondary);
+  border: 0;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
 
+.tsd-breadcrumb {
+  margin-bottom: 12px;
+  li:after {
+    content: " › ";
+    opacity: 0.4;
+  }
+  li:last-of-type::after {
+    content: "";
+  }
+}
 
+.tsd-signature,
+.tsd-signatures .tsd-signature {
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-weight: 500;
+  padding: 10px 8px;
+  line-height: 1.3;
+}
 
+.tsd-anchor-icon {
+  color: var(--color-text-aside);
+  padding-bottom: 1px;
+}
 
+.tsd-kind-icon {
+  filter: grayscale(0.5) opacity(0.8);
+}
 
+/* Accordion icon */
+.tsd-accordion-summary > svg {
+  color: var(--color-text-aside);
+  opacity: 50%;
+  stroke-width: 1px;
+  transition: transform 200ms ease-in-out;
+}
 
+.tsd-accordion-summary > svg:has(+ h2) {
+  height: 24px;
+  width: 24px;
+}
 
-    
+/* Desktop sizing */
+@media (min-width: 1200px) {
+  .container-main {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 2.5fr) minmax(0, 17rem);
+  }
 
+  .site-menu {
+    padding-right: 8px;
+  }
+  .page-menu {
+    padding-left: 24px;
+  }
 
+  .tsd-widget.menu {
+    display: none;
+  }
+}
 
+/* Tablet sizing */
+@media (min-width: 770px) and (max-width: 1199px) {
+  .page-menu {
+    padding-block: 24px 24px;
+  }
+  .site-menu {
+    padding-block: 0 24px;
+    margin-top: 0;
+  }
 
-    <section>
-        <article><h1>geotiff.js</h1>
+  .tsd-widget.menu {
+    display: none;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+}
+
+/* Mobile sizing */
+@media (max-width: 769px) {
+  .page-menu {
+    display: none;
+  }
+  .site-menu {
+    padding: 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .has-menu .col-sidebar {
+    padding: 0 1rem;
+    max-height: 100dvh;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+  .md-show {
+    display: none !important;
+  }
+}
+</style></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">geotiff.js</a><div id="tsd-toolbar-links"><a href="https://github.com/geotiffjs/geotiff.js">GitHub</a></div><div class="tsd-theme-toggle md-show" style="position: relative"><div style="position: absolute; left: 8px; top: 4px; pointer-events: none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-moon-icon lucide-sun-moon"><path d="M12 2v2"></path><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715"></path><path d="M16 12a4 4 0 0 0-4-4"></path><path d="m19 5-1.256 1.256"></path><path d="M20 12h2"></path></svg></div><select id="tsd-theme"><option value="os">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 8px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search" style="margin-bottom: 1px; margin-left: 4px; margin-right: 4px;"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><span class="lg-show" style="margin-left: 4px; margin-right: 12ch;">Search…</span></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 4px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu" style="margin-left: 4px; margin-right: 4px;"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>geotiff.js</h1></div><div class="tsd-panel tsd-typography"><h1 id="geotiffjs" class="tsd-anchor-link">geotiff.js<a href="#geotiffjs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
 <p><a href="https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml"><img src="https://github.com/geotiffjs/geotiff.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Node.js CI"></a> <a href="https://badge.fury.io/js/geotiff"><img src="https://badge.fury.io/js/geotiff.svg" alt="npm version"></a> <a href="https://gitter.im/geotiffjs/Lobby"><img src="https://badges.gitter.im/geotiffjs/geotiff.js.png" alt="Gitter chat"></a></p>
 <p>Read (geospatial) metadata and raw array data from a wide variety of different
 (Geo)TIFF files types.</p>
-<h2>Features</h2>
+<h2 id="features" class="tsd-anchor-link">Features<a href="#features" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>Currently available functionality:</p>
 <ul>
 <li>Parsing TIFFs from various sources:
@@ -96,58 +402,13 @@
 <li>Automated testing via PhantomJS</li>
 </ul>
 <p>Further documentation can be found <a href="https://geotiffjs.github.io/geotiff.js/">here</a>.</p>
-<h2>Example Usage</h2>
+<h2 id="example-usage" class="tsd-anchor-link">Example Usage<a href="#example-usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>Geotiff gives you access to all GeoTIFF metadata, but does not offer any one specific higher level API (such as GDAL) for things like transforms or data extraction. However, you can write your own higher level API using this library, given your specific dataset needs.</p>
 <p>As an example, here is how you would resolve GPS coordinates to elevation in a GeoTIFF that encodes WGS-84 compliant geo data:</p>
-<pre class="prettyprint source lang-js"><code>import { fromUrl, fromArrayBuffer, fromBlob  } from &quot;geotiff&quot;;
+<pre><code class="js"><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">fromUrl</span><span class="hl-1">, </span><span class="hl-2">fromArrayBuffer</span><span class="hl-1">, </span><span class="hl-2">fromBlob</span><span class="hl-1">  } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;geotiff&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">lerp</span><span class="hl-1"> = (</span><span class="hl-2">a</span><span class="hl-1">, </span><span class="hl-2">b</span><span class="hl-1">, </span><span class="hl-2">t</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> (</span><span class="hl-6">1</span><span class="hl-1"> - </span><span class="hl-2">t</span><span class="hl-1">) * </span><span class="hl-2">a</span><span class="hl-1"> + </span><span class="hl-2">t</span><span class="hl-1"> * </span><span class="hl-2">b</span><span class="hl-1">;</span><br/><br/><span class="hl-4">function</span><span class="hl-1"> </span><span class="hl-5">transform</span><span class="hl-1">(</span><span class="hl-2">a</span><span class="hl-1">, </span><span class="hl-2">b</span><span class="hl-1">, </span><span class="hl-2">M</span><span class="hl-1">, </span><span class="hl-2">roundToInt</span><span class="hl-1"> = </span><span class="hl-4">false</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">round</span><span class="hl-1"> = (</span><span class="hl-2">v</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> (</span><span class="hl-2">roundToInt</span><span class="hl-1"> ? </span><span class="hl-2">v</span><span class="hl-1"> | </span><span class="hl-6">0</span><span class="hl-1"> : </span><span class="hl-2">v</span><span class="hl-1">);</span><br/><span class="hl-1">  </span><span class="hl-0">return</span><span class="hl-1"> [</span><br/><span class="hl-1">    </span><span class="hl-5">round</span><span class="hl-1">(</span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">0</span><span class="hl-1">] + </span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">1</span><span class="hl-1">] * </span><span class="hl-2">a</span><span class="hl-1"> + </span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">2</span><span class="hl-1">] * </span><span class="hl-2">b</span><span class="hl-1">),</span><br/><span class="hl-1">    </span><span class="hl-5">round</span><span class="hl-1">(</span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">3</span><span class="hl-1">] + </span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">4</span><span class="hl-1">] * </span><span class="hl-2">a</span><span class="hl-1"> + </span><span class="hl-7">M</span><span class="hl-1">[</span><span class="hl-6">5</span><span class="hl-1">] * </span><span class="hl-2">b</span><span class="hl-1">),</span><br/><span class="hl-1">  ];</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-8">// Load our data tile from url, arraybuffer, or blob, so we can work with it:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromArrayBuffer</span><span class="hl-1">(...);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">(); </span><span class="hl-8">// by default, the first image is read.</span><br/><br/><span class="hl-8">// Construct the WGS-84 forward and inverse affine matrices:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">s</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelPixelScale&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">t</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelTiepoint&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">let</span><span class="hl-1"> [</span><span class="hl-2">sx</span><span class="hl-1">, </span><span class="hl-2">sy</span><span class="hl-1">, </span><span class="hl-2">sz</span><span class="hl-1">] = </span><span class="hl-2">s</span><span class="hl-1">;</span><br/><span class="hl-4">let</span><span class="hl-1"> [</span><span class="hl-2">px</span><span class="hl-1">, </span><span class="hl-2">py</span><span class="hl-1">, </span><span class="hl-2">k</span><span class="hl-1">, </span><span class="hl-2">gx</span><span class="hl-1">, </span><span class="hl-2">gy</span><span class="hl-1">, </span><span class="hl-2">gz</span><span class="hl-1">] = </span><span class="hl-2">t</span><span class="hl-1">;</span><br/><span class="hl-2">sy</span><span class="hl-1"> = -</span><span class="hl-2">sy</span><span class="hl-1">; </span><span class="hl-8">// WGS-84 tiles have a &quot;flipped&quot; y component</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pixelToGPS</span><span class="hl-1"> = [</span><span class="hl-2">gx</span><span class="hl-1">, </span><span class="hl-2">sx</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-2">gy</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-2">sy</span><span class="hl-1">];</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`pixel to GPS transform matrix:`</span><span class="hl-1">, </span><span class="hl-2">pixelToGPS</span><span class="hl-1">);</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">gpsToPixel</span><span class="hl-1"> = [-</span><span class="hl-2">gx</span><span class="hl-1"> / </span><span class="hl-2">sx</span><span class="hl-1">, </span><span class="hl-6">1</span><span class="hl-1"> / </span><span class="hl-2">sx</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, -</span><span class="hl-2">gy</span><span class="hl-1"> / </span><span class="hl-2">sy</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-6">1</span><span class="hl-1"> / </span><span class="hl-2">sy</span><span class="hl-1">];</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`GPS to pixel transform matrix:`</span><span class="hl-1">, </span><span class="hl-2">gpsToPixel</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// Convert a GPS coordinate to a pixel coordinate in our tile:</span><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">gx1</span><span class="hl-1">, </span><span class="hl-7">gy1</span><span class="hl-1">, </span><span class="hl-7">gx2</span><span class="hl-1">, </span><span class="hl-7">gy2</span><span class="hl-1">] = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getBoundingBox</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">lat</span><span class="hl-1"> = </span><span class="hl-5">lerp</span><span class="hl-1">(</span><span class="hl-2">gy1</span><span class="hl-1">, </span><span class="hl-2">gy2</span><span class="hl-1">, </span><span class="hl-2">Math</span><span class="hl-1">.</span><span class="hl-5">random</span><span class="hl-1">());</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">long</span><span class="hl-1"> = </span><span class="hl-5">lerp</span><span class="hl-1">(</span><span class="hl-2">gx1</span><span class="hl-1">, </span><span class="hl-2">gx2</span><span class="hl-1">, </span><span class="hl-2">Math</span><span class="hl-1">.</span><span class="hl-5">random</span><span class="hl-1">());</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`Looking up GPS coordinate (</span><span class="hl-4">${</span><span class="hl-2">lat</span><span class="hl-9">.</span><span class="hl-5">toFixed</span><span class="hl-9">(</span><span class="hl-6">6</span><span class="hl-9">)</span><span class="hl-4">}</span><span class="hl-3">,</span><span class="hl-4">${</span><span class="hl-2">long</span><span class="hl-9">.</span><span class="hl-5">toFixed</span><span class="hl-9">(</span><span class="hl-6">6</span><span class="hl-9">)</span><span class="hl-4">}</span><span class="hl-3">)`</span><span class="hl-1">);</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">x</span><span class="hl-1">, </span><span class="hl-7">y</span><span class="hl-1">] = </span><span class="hl-5">transform</span><span class="hl-1">(</span><span class="hl-2">long</span><span class="hl-1">, </span><span class="hl-2">lat</span><span class="hl-1">, </span><span class="hl-2">gpsToPixel</span><span class="hl-1">, </span><span class="hl-4">true</span><span class="hl-1">);</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`Corresponding tile pixel coordinate: [</span><span class="hl-4">${</span><span class="hl-2">x</span><span class="hl-4">}</span><span class="hl-3">][</span><span class="hl-4">${</span><span class="hl-2">y</span><span class="hl-4">}</span><span class="hl-3">]`</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// And as each pixel in the tile covers a geographic area, not a single</span><br/><span class="hl-8">// GPS coordinate, get the area that this pixel covers:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">gpsBBox</span><span class="hl-1"> = [</span><span class="hl-5">transform</span><span class="hl-1">(</span><span class="hl-2">x</span><span class="hl-1">, </span><span class="hl-2">y</span><span class="hl-1">, </span><span class="hl-2">pixelToGPS</span><span class="hl-1">), </span><span class="hl-5">transform</span><span class="hl-1">(</span><span class="hl-2">x</span><span class="hl-1"> + </span><span class="hl-6">1</span><span class="hl-1">, </span><span class="hl-2">y</span><span class="hl-1"> + </span><span class="hl-6">1</span><span class="hl-1">, </span><span class="hl-2">pixelToGPS</span><span class="hl-1">)];</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`Pixel covers the following GPS area:`</span><span class="hl-1">, </span><span class="hl-2">gpsBBox</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// Finally, retrieve the elevation associated with this pixel&#39;s geographic area:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">rasters</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">width</span><span class="hl-1">, [</span><span class="hl-6">0</span><span class="hl-1">]: </span><span class="hl-7">raster</span><span class="hl-1"> } = </span><span class="hl-2">rasters</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">elevation</span><span class="hl-1"> = </span><span class="hl-2">raster</span><span class="hl-1">[</span><span class="hl-2">x</span><span class="hl-1"> + </span><span class="hl-2">y</span><span class="hl-1"> * </span><span class="hl-2">width</span><span class="hl-1">];</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-5">log</span><span class="hl-1">(</span><span class="hl-3">`The elevation at (</span><span class="hl-4">${</span><span class="hl-2">lat</span><span class="hl-9">.</span><span class="hl-5">toFixed</span><span class="hl-9">(</span><span class="hl-6">6</span><span class="hl-9">)</span><span class="hl-4">}</span><span class="hl-3">,</span><span class="hl-4">${</span><span class="hl-2">long</span><span class="hl-9">.</span><span class="hl-5">toFixed</span><span class="hl-9">(</span><span class="hl-6">6</span><span class="hl-9">)</span><span class="hl-4">}</span><span class="hl-3">) is </span><span class="hl-4">${</span><span class="hl-2">elevation</span><span class="hl-4">}</span><span class="hl-3">m`</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
 
-const lerp = (a, b, t) => (1 - t) * a + t * b;
-
-function transform(a, b, M, roundToInt = false) {
-  const round = (v) => (roundToInt ? v | 0 : v);
-  return [
-    round(M[0] + M[1] * a + M[2] * b),
-    round(M[3] + M[4] * a + M[5] * b),
-  ];
-}
-
-// Load our data tile from url, arraybuffer, or blob, so we can work with it:
-const tiff = await fromArrayBuffer(...);
-const image = await tiff.getImage(); // by default, the first image is read.
-
-// Construct the WGS-84 forward and inverse affine matrices:
-const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
-let [sx, sy, sz] = s;
-let [px, py, k, gx, gy, gz] = t;
-sy = -sy; // WGS-84 tiles have a &quot;flipped&quot; y component
-
-const pixelToGPS = [gx, sx, 0, gy, 0, sy];
-console.log(`pixel to GPS transform matrix:`, pixelToGPS);
-
-const gpsToPixel = [-gx / sx, 1 / sx, 0, -gy / sy, 0, 1 / sy];
-console.log(`GPS to pixel transform matrix:`, gpsToPixel);
-
-// Convert a GPS coordinate to a pixel coordinate in our tile:
-const [gx1, gy1, gx2, gy2] = image.getBoundingBox();
-const lat = lerp(gy1, gy2, Math.random());
-const long = lerp(gx1, gx2, Math.random());
-console.log(`Looking up GPS coordinate (${lat.toFixed(6)},${long.toFixed(6)})`);
-
-const [x, y] = transform(long, lat, gpsToPixel, true);
-console.log(`Corresponding tile pixel coordinate: [${x}][${y}]`);
-
-// And as each pixel in the tile covers a geographic area, not a single
-// GPS coordinate, get the area that this pixel covers:
-const gpsBBox = [transform(x, y, pixelToGPS), transform(x + 1, y + 1, pixelToGPS)];
-console.log(`Pixel covers the following GPS area:`, gpsBBox);
-
-// Finally, retrieve the elevation associated with this pixel's geographic area:
-const rasters = await image.readRasters();
-const { width, [0]: raster } = rasters;
-const elevation = raster[x + y * width];
-console.log(`The elevation at (${lat.toFixed(6)},${long.toFixed(6)}) is ${elevation}m`);
-</code></pre>
-<h2>Advanced Example Usage</h2>
+<h2 id="advanced-example-usage" class="tsd-anchor-link">Advanced Example Usage<a href="#advanced-example-usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>For more advanced examples of <code>geotiff</code> in larger codebases, please have a look at the following projects:</p>
 <ul>
 <li><a href="http://www.youtube.com/watch?v=E6kFLtKgeJ8">Slice view using Cesium.js (TAMP project)</a></li>
@@ -157,170 +418,268 @@ console.log(`The elevation at (${lat.toFixed(6)},${long.toFixed(6)}) is ${elevat
 <li><a href="https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51">Contour generation using d3-contour</a></li>
 </ul>
 <p><a href="https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51"><img src="https://user-images.githubusercontent.com/482265/112866402-0b219880-90ba-11eb-9dda-5f1d9ed9bafc.jpg" alt="contour"></a></p>
-<h2>Setup</h2>
-<p>To setup the repository do the following steps:</p>
-<pre class="prettyprint source lang-bash"><code># clone repo
-git clone https://github.com/constantinius/geotiff.js.git
-cd geotiff.js/
+<h2 id="migration-guide-v2-to-v3" class="tsd-anchor-link">Migration Guide (v2 to v3)<a href="#migration-guide-v2-to-v3" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Version 3.0 introduces significant performance improvements through deferred tag reading, but includes breaking changes to some APIs. This guide will help you migrate your code.</p>
+<h3 id="summary-of-changes" class="tsd-anchor-link">Summary of Changes<a href="#summary-of-changes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><strong>For most users</strong>: Minimal changes required. The high-level APIs (<code>getImage()</code>, <code>readRasters()</code>, etc.) remain compatible. You'll mainly need to:</p>
+<ul>
+<li>Add <code>await</code> to <code>getTiePoints()</code> and <code>getGDALMetadata()</code></li>
+<li>Change <code>image.geoKeys</code> to <code>image.getGeoKeys()</code></li>
+</ul>
+<p><strong>For advanced users</strong>: If you directly access <code>fileDirectory</code> properties, you'll need to migrate to the new <code>ImageFileDirectory</code> methods.</p>
+<h3 id="breaking-changes" class="tsd-anchor-link">Breaking Changes<a href="#breaking-changes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<h4 id="1-geokeys-access" class="tsd-anchor-link">1. GeoKeys Access<a href="#1-geokeys-access" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">geoKeys</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">geoKeys</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
 
-# install development dependencies
-npm install
-</code></pre>
-<h2>Testing and Building</h2>
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">geoKeys</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getGeoKeys</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="2-gettiepoints-and-getgdalmetadata-are-now-async" class="tsd-anchor-link">2. getTiePoints() and getGDALMetadata() are now async<a href="#2-gettiepoints-and-getgdalmetadata-are-now-async" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiePoints</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTiePoints</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">metadata</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getGDALMetadata</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiePoints</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTiePoints</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">metadata</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getGDALMetadata</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="3-accessing-filedirectory-properties" class="tsd-anchor-link">3. Accessing fileDirectory properties<a href="#3-accessing-filedirectory-properties" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p>The <code>fileDirectory</code> object has been replaced with an <code>ImageFileDirectory</code> class that supports deferred loading.</p>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-2">ModelPixelScale</span><span class="hl-1">: </span><span class="hl-7">s</span><span class="hl-1">, </span><span class="hl-2">ModelTiepoint</span><span class="hl-1">: </span><span class="hl-7">t</span><span class="hl-1"> } = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">width</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">ImageWidth</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">compression</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">Compression</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong> - Use <code>getValue()</code> for synchronous access:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">s</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelPixelScale&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">t</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelTiepoint&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">width</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ImageWidth&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">compression</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;Compression&#39;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>Note</strong>: <code>getValue()</code> throws an error if the tag is deferred. For tags that might be deferred (like large arrays), use <code>loadValue()</code>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">colorMap</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">loadValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ColorMap&#39;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="4-checking-if-tags-exist" class="tsd-anchor-link">4. Checking if tags exist<a href="#4-checking-if-tags-exist" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">ModelTiepoint</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">hasTag</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelTiepoint&#39;</span><span class="hl-1">)) {</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="5-accessing-array-elements" class="tsd-anchor-link">5. Accessing array elements<a href="#5-accessing-array-elements" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p>For large arrays (like <code>TileOffsets</code>, <code>StripOffsets</code>), individual elements can now be loaded on-demand:</p>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">offset</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">TileOffsets</span><span class="hl-1">[</span><span class="hl-6">5</span><span class="hl-1">];</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">offset</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">loadValueIndexed</span><span class="hl-1">(</span><span class="hl-3">&#39;TileOffsets&#39;</span><span class="hl-1">, </span><span class="hl-6">5</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="6-pool-api-changes" class="tsd-anchor-link">6. Pool API changes<a href="#6-pool-api-changes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p>If you're using the <code>Pool</code> class directly (most users don't):</p>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pool</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-2">GeoTIFF</span><span class="hl-1">.</span><span class="hl-5">Pool</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">decoded</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">pool</span><span class="hl-1">.</span><span class="hl-5">decode</span><span class="hl-1">(</span><span class="hl-2">fileDirectory</span><span class="hl-1">, </span><span class="hl-2">buffer</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pool</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-2">GeoTIFF</span><span class="hl-1">.</span><span class="hl-5">Pool</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">compression</span><span class="hl-1"> = </span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;Compression&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">params</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">getDecoderParameters</span><span class="hl-1">(</span><span class="hl-2">compression</span><span class="hl-1">, </span><span class="hl-2">fileDirectory</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">boundPool</span><span class="hl-1"> = </span><span class="hl-2">pool</span><span class="hl-1">.</span><span class="hl-5">bindParameters</span><span class="hl-1">(</span><span class="hl-2">compression</span><span class="hl-1">, </span><span class="hl-2">params</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">decoded</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">boundPool</span><span class="hl-1">.</span><span class="hl-5">decode</span><span class="hl-1">(</span><span class="hl-2">buffer</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>Note</strong>: When using <code>readRasters({ pool })</code>, this is handled automatically.</p>
+<h4 id="7-custom-decoders" class="tsd-anchor-link">7. Custom Decoders<a href="#7-custom-decoders" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p>If you've implemented custom decoders:</p>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">class</span><span class="hl-1"> </span><span class="hl-10">MyDecoder</span><span class="hl-1"> </span><span class="hl-4">extends</span><span class="hl-1"> </span><span class="hl-10">BaseDecoder</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">async</span><span class="hl-1"> </span><span class="hl-5">decode</span><span class="hl-1">(</span><span class="hl-2">fileDirectory</span><span class="hl-1">, </span><span class="hl-2">buffer</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-8">// decode using fileDirectory properties</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">class</span><span class="hl-1"> </span><span class="hl-10">MyDecoder</span><span class="hl-1"> </span><span class="hl-4">extends</span><span class="hl-1"> </span><span class="hl-10">BaseDecoder</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">constructor</span><span class="hl-1">(</span><span class="hl-2">parameters</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-4">super</span><span class="hl-1">(</span><span class="hl-2">parameters</span><span class="hl-1">);</span><br/><span class="hl-1">    </span><span class="hl-8">// parameters extracted once during construction</span><br/><span class="hl-1">  }</span><br/><br/><span class="hl-1">  </span><span class="hl-4">async</span><span class="hl-1"> </span><span class="hl-5">decode</span><span class="hl-1">(</span><span class="hl-2">buffer</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-8">// decode using this.parameters</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-8">// Register with parameter extraction function</span><br/><span class="hl-5">addDecoder</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-6">12345</span><span class="hl-1">, </span><span class="hl-8">// compression ID</span><br/><span class="hl-1">  () </span><span class="hl-4">=&gt;</span><span class="hl-1"> </span><span class="hl-4">import</span><span class="hl-1">(</span><span class="hl-3">&#39;./mydecoder.js&#39;</span><span class="hl-1">).</span><span class="hl-5">then</span><span class="hl-1">(</span><span class="hl-2">m</span><span class="hl-1"> </span><span class="hl-4">=&gt;</span><span class="hl-1"> </span><span class="hl-2">m</span><span class="hl-1">.</span><span class="hl-2">default</span><span class="hl-1">),</span><br/><span class="hl-1">  </span><span class="hl-4">async</span><span class="hl-1"> (</span><span class="hl-2">fileDirectory</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-0">return</span><span class="hl-1"> {</span><br/><span class="hl-1">      ...</span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">defaultDecoderParameterFn</span><span class="hl-1">(</span><span class="hl-2">fileDirectory</span><span class="hl-1">),</span><br/><span class="hl-1">      </span><span class="hl-2">myCustomParam:</span><span class="hl-1"> </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">loadValue</span><span class="hl-1">(</span><span class="hl-3">&#39;MyCustomTag&#39;</span><span class="hl-1">)</span><br/><span class="hl-1">    };</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="migration-examples" class="tsd-anchor-link">Migration Examples<a href="#migration-examples" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<h4 id="example-1-reading-with-modeltiepointmodelpixelscale" class="tsd-anchor-link">Example 1: Reading with ModelTiepoint/ModelPixelScale<a href="#example-1-reading-with-modeltiepointmodelpixelscale" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">url</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-2">ModelPixelScale</span><span class="hl-1">: </span><span class="hl-7">s</span><span class="hl-1">, </span><span class="hl-2">ModelTiepoint</span><span class="hl-1">: </span><span class="hl-7">t</span><span class="hl-1"> } = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">sx</span><span class="hl-1">, </span><span class="hl-7">sy</span><span class="hl-1">, </span><span class="hl-7">sz</span><span class="hl-1">] = </span><span class="hl-2">s</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">px</span><span class="hl-1">, </span><span class="hl-7">py</span><span class="hl-1">, </span><span class="hl-7">k</span><span class="hl-1">, </span><span class="hl-7">gx</span><span class="hl-1">, </span><span class="hl-7">gy</span><span class="hl-1">, </span><span class="hl-7">gz</span><span class="hl-1">] = </span><span class="hl-2">t</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">url</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">s</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelPixelScale&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">t</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ModelTiepoint&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">sx</span><span class="hl-1">, </span><span class="hl-7">sy</span><span class="hl-1">, </span><span class="hl-7">sz</span><span class="hl-1">] = </span><span class="hl-2">s</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">px</span><span class="hl-1">, </span><span class="hl-7">py</span><span class="hl-1">, </span><span class="hl-7">k</span><span class="hl-1">, </span><span class="hl-7">gx</span><span class="hl-1">, </span><span class="hl-7">gy</span><span class="hl-1">, </span><span class="hl-7">gz</span><span class="hl-1">] = </span><span class="hl-2">t</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="example-2-working-with-colormap-potentially-deferred" class="tsd-anchor-link">Example 2: Working with ColorMap (potentially deferred)<a href="#example-2-working-with-colormap-potentially-deferred" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">colorMap</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">ColorMap</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">colorMap</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">loadValue</span><span class="hl-1">(</span><span class="hl-3">&#39;ColorMap&#39;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h4 id="example-3-checking-photometricinterpretation" class="tsd-anchor-link">Example 3: Checking PhotometricInterpretation<a href="#example-3-checking-photometricinterpretation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h4>
+<p><strong>Before (v2)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pi</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-2">PhotometricInterpretation</span><span class="hl-1">;</span><br/><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-2">pi</span><span class="hl-1"> === </span><span class="hl-2">photometricInterpretations</span><span class="hl-1">.</span><span class="hl-7">RGB</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><strong>After (v3)</strong>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pi</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-2">fileDirectory</span><span class="hl-1">.</span><span class="hl-5">getValue</span><span class="hl-1">(</span><span class="hl-3">&#39;PhotometricInterpretation&#39;</span><span class="hl-1">);</span><br/><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-2">pi</span><span class="hl-1"> === </span><span class="hl-2">photometricInterpretations</span><span class="hl-1">.</span><span class="hl-7">RGB</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="what-hasnt-changed" class="tsd-anchor-link">What Hasn't Changed<a href="#what-hasnt-changed" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>These APIs remain fully backwards compatible:</p>
+<pre><code class="javascript"><span class="hl-8">// GeoTIFF class</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">url</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromArrayBuffer</span><span class="hl-1">(</span><span class="hl-2">buffer</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromBlob</span><span class="hl-1">(</span><span class="hl-2">blob</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">imageCount</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImageCount</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">(</span><span class="hl-2">index</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// GeoTIFFImage class</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">width</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getWidth</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">height</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getHeight</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">samplesPerPixel</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getSamplesPerPixel</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tileWidth</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTileWidth</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tileHeight</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTileHeight</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">origin</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getOrigin</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">resolution</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getResolution</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">bbox</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getBoundingBox</span><span class="hl-1">();</span><br/><br/><span class="hl-8">// Reading raster data</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">window</span><span class="hl-1">, </span><span class="hl-2">samples</span><span class="hl-1">, </span><span class="hl-2">interleave</span><span class="hl-1">, </span><span class="hl-2">pool</span><span class="hl-1"> });</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">rgb</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRGB</span><span class="hl-1">({ </span><span class="hl-2">window</span><span class="hl-1"> });</span><br/><br/><span class="hl-8">// Writing GeoTIFFs</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">arrayBuffer</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">writeArrayBuffer</span><span class="hl-1">(</span><span class="hl-2">values</span><span class="hl-1">, </span><span class="hl-2">metadata</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="performance-benefits" class="tsd-anchor-link">Performance Benefits<a href="#performance-benefits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>The new deferred loading system provides significant performance improvements:</p>
+<ul>
+<li><strong>Faster initial parsing</strong>: Large arrays (like tile offsets) are not loaded upfront</li>
+<li><strong>Reduced memory usage</strong>: Only load the data you actually need</li>
+<li><strong>On-demand array access</strong>: Access individual array elements without loading the entire array</li>
+<li><strong>Backward compatible caching</strong>: Frequently accessed tags are eagerly loaded by default</li>
+</ul>
+<h2 id="setup" class="tsd-anchor-link">Setup<a href="#setup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>To setup the repository do the following steps:</p>
+<pre><code class="bash"><span class="hl-8"># clone repo</span><br/><span class="hl-5">git</span><span class="hl-1"> </span><span class="hl-3">clone</span><span class="hl-1"> </span><span class="hl-3">https://github.com/constantinius/geotiff.js.git</span><br/><span class="hl-5">cd</span><span class="hl-1"> </span><span class="hl-3">geotiff.js/</span><br/><br/><span class="hl-8"># install development dependencies</span><br/><span class="hl-5">npm</span><span class="hl-1"> </span><span class="hl-3">install</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="testing-and-building" class="tsd-anchor-link">Testing and Building<a href="#testing-and-building" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>In order to run the tests you first have to set up the test data. This requires
 the <a href="http://gdal.org/">GDAL</a> and <a href="http://imagemagick.org/">ImageMagick</a> tools.
 Installation of these tools varies according to the operating system, the
 following listing shows the installation on Ubuntu (using the ubuntugis-unstable
 repository):</p>
-<pre class="prettyprint source lang-bash"><code>sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
-sudo apt-get update
-sudo apt-get install -y gdal-bin imagemagick
-</code></pre>
+<pre><code class="bash"><span class="hl-5">sudo</span><span class="hl-1"> </span><span class="hl-3">add-apt-repository</span><span class="hl-1"> </span><span class="hl-4">-y</span><span class="hl-1"> </span><span class="hl-3">ppa:ubuntugis/ubuntugis-unstable</span><br/><span class="hl-5">sudo</span><span class="hl-1"> </span><span class="hl-3">apt-get</span><span class="hl-1"> </span><span class="hl-3">update</span><br/><span class="hl-5">sudo</span><span class="hl-1"> </span><span class="hl-3">apt-get</span><span class="hl-1"> </span><span class="hl-3">install</span><span class="hl-1"> </span><span class="hl-4">-y</span><span class="hl-1"> </span><span class="hl-3">gdal-bin</span><span class="hl-1"> </span><span class="hl-3">imagemagick</span>
+</code><button type="button">Copy</button></pre>
+
 <p>To install GDAL and ImageMagick on MacOS X, please use <a href="https://brew.sh/">Homebrew</a>. The setup script also needs <code>wget</code> on MacOS X</p>
-<pre class="prettyprint source lang-bash"><code>brew install wget gdal imagemagick
-</code></pre>
+<pre><code class="bash"><span class="hl-5">brew</span><span class="hl-1"> </span><span class="hl-3">install</span><span class="hl-1"> </span><span class="hl-3">wget</span><span class="hl-1"> </span><span class="hl-3">gdal</span><span class="hl-1"> </span><span class="hl-3">imagemagick</span>
+</code><button type="button">Copy</button></pre>
+
 <p>When GDAL and ImageMagick is installed, the test data setup script can be run:</p>
-<pre class="prettyprint source lang-bash"><code>cd test/data
-sh setup_data.sh
-cd -
-</code></pre>
+<pre><code class="bash"><span class="hl-5">cd</span><span class="hl-1"> </span><span class="hl-3">test/data</span><br/><span class="hl-5">sh</span><span class="hl-1"> </span><span class="hl-3">setup_data.sh</span><br/><span class="hl-5">cd</span><span class="hl-1"> </span><span class="hl-3">-</span>
+</code><button type="button">Copy</button></pre>
+
 <p>To test the library (using PhantomJS, karma, mocha and chai) do the following:</p>
-<pre class="prettyprint source lang-bash"><code>npm test
-</code></pre>
+<pre><code class="bash"><span class="hl-5">npm</span><span class="hl-1"> </span><span class="hl-3">test</span>
+</code><button type="button">Copy</button></pre>
+
 <p>To do some in-browser testing do:</p>
-<pre class="prettyprint source lang-bash"><code>npm run dev
-</code></pre>
+<pre><code class="bash"><span class="hl-5">npm</span><span class="hl-1"> </span><span class="hl-3">run</span><span class="hl-1"> </span><span class="hl-3">dev</span>
+</code><button type="button">Copy</button></pre>
+
 <p>and navigate to <code>http://localhost:8090/test/</code></p>
 <p>To build the library do:</p>
-<pre class="prettyprint source lang-bash"><code>npm run build
-</code></pre>
-<p>The output is written to <code>dist-browser/main.js</code> and <code>dist-node/main.js</code>.</p>
-<h2>Install</h2>
-<p>You can install geotiff.js using npm:</p>
-<pre class="prettyprint source"><code>npm install geotiff
-</code></pre>
-<p>or you can use the prebuilt version with a CDN:</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/geotiff&quot;>&lt;/script>
-</code></pre>
-<h2>Usage</h2>
-<p>geotiff.js works with both <code>require</code>, <code>import</code> and the global variable <code>GeoTIFF</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>const GeoTIFF = require('geotiff');
-const { fromUrl, fromUrls, fromArrayBuffer, fromBlob } = GeoTIFF;
+<pre><code class="bash"><span class="hl-5">npm</span><span class="hl-1"> </span><span class="hl-3">run</span><span class="hl-1"> </span><span class="hl-3">build</span>
+</code><button type="button">Copy</button></pre>
 
-// or
-import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
-</code></pre>
+<p>The output is written to <code>dist-browser/main.js</code> and <code>dist-node/main.js</code>.</p>
+<h2 id="install" class="tsd-anchor-link">Install<a href="#install" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>You can install geotiff.js using npm:</p>
+<pre><code><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">geotiff</span>
+</code><button>Copy</button></pre>
+
+<p>or you can use the prebuilt version with a CDN:</p>
+<pre><code class="html"><span class="hl-11">&lt;</span><span class="hl-12">script</span><span class="hl-9"> </span><span class="hl-13">src</span><span class="hl-9">=</span><span class="hl-14">&quot;https://cdn.jsdelivr.net/npm/geotiff&quot;</span><span class="hl-11">&gt;&lt;/</span><span class="hl-12">script</span><span class="hl-11">&gt;</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>geotiff.js works with both <code>require</code>, <code>import</code> and the global variable <code>GeoTIFF</code>:</p>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">GeoTIFF</span><span class="hl-1"> = </span><span class="hl-5">require</span><span class="hl-1">(</span><span class="hl-3">&#39;geotiff&#39;</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">fromUrl</span><span class="hl-1">, </span><span class="hl-7">fromUrls</span><span class="hl-1">, </span><span class="hl-7">fromArrayBuffer</span><span class="hl-1">, </span><span class="hl-7">fromBlob</span><span class="hl-1"> } = </span><span class="hl-2">GeoTIFF</span><span class="hl-1">;</span><br/><br/><span class="hl-8">// or</span><br/><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">GeoTIFF</span><span class="hl-1">, { </span><span class="hl-2">fromUrl</span><span class="hl-1">, </span><span class="hl-2">fromUrls</span><span class="hl-1">, </span><span class="hl-2">fromArrayBuffer</span><span class="hl-1">, </span><span class="hl-2">fromBlob</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;geotiff&#39;</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
 <p>or:</p>
-<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/geotiff&quot;>&lt;/script>
-&lt;script>
-  console.log(GeoTIFF);
-&lt;/script>
-</code></pre>
+<pre><code class="html"><span class="hl-11">&lt;</span><span class="hl-12">script</span><span class="hl-9"> </span><span class="hl-13">src</span><span class="hl-9">=</span><span class="hl-14">&quot;https://cdn.jsdelivr.net/npm/geotiff&quot;</span><span class="hl-11">&gt;&lt;/</span><span class="hl-12">script</span><span class="hl-11">&gt;</span><br/><span class="hl-11">&lt;</span><span class="hl-12">script</span><span class="hl-11">&gt;</span><br/><span class="hl-9">  </span><span class="hl-2">console</span><span class="hl-9">.</span><span class="hl-5">log</span><span class="hl-9">(</span><span class="hl-2">GeoTIFF</span><span class="hl-9">);</span><br/><span class="hl-11">&lt;/</span><span class="hl-12">script</span><span class="hl-11">&gt;</span>
+</code><button type="button">Copy</button></pre>
+
 <p>To parse a GeoTIFF, first a data source is required. To help with the development,
 there are shortcuts available. The following creates a source that reads from a
 remote GeoTIFF referenced by a URL:</p>
-<pre class="prettyprint source lang-javascript"><code>fromUrl(someUrl)
-  .then(tiff => { /* ... */});
+<pre><code class="javascript"><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">someUrl</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-5">then</span><span class="hl-1">(</span><span class="hl-2">tiff</span><span class="hl-1"> </span><span class="hl-4">=&gt;</span><span class="hl-1"> { </span><span class="hl-8">/* ... */</span><span class="hl-1">});</span><br/><br/><span class="hl-8">// or when using async/await</span><br/><span class="hl-1">(</span><span class="hl-4">async</span><span class="hl-1"> </span><span class="hl-4">function</span><span class="hl-1">() {</span><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">someUrl</span><span class="hl-1">);</span><br/><span class="hl-1">  </span><span class="hl-8">// ...</span><br/><span class="hl-1">})()</span>
+</code><button type="button">Copy</button></pre>
 
-// or when using async/await
-(async function() {
-  const tiff = await fromUrl(someUrl);
-  // ...
-})()
-</code></pre>
 <p>Note: the interactions with geotiff.js objects are oftentimes asynchronous. For
 the sake of brevity we will only show the async/await syntax and not the
 <code>Promise</code> based one in the following examples.</p>
 <p>Accessing remote images is just one way to open TIFF images with geotiff.js. Other
 options are reading from a local <code>ArrayBuffer</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>// using local ArrayBuffer
-const response = await fetch(someUrl);
-const arrayBuffer = await response.arrayBuffer();
-const tiff = await fromArrayBuffer(arrayBuffer);
-</code></pre>
+<pre><code class="javascript"><span class="hl-8">// using local ArrayBuffer</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">response</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fetch</span><span class="hl-1">(</span><span class="hl-2">someUrl</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">arrayBuffer</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">response</span><span class="hl-1">.</span><span class="hl-5">arrayBuffer</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromArrayBuffer</span><span class="hl-1">(</span><span class="hl-2">arrayBuffer</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
 <p>or a <code>Blob</code>/<code>File</code>:</p>
-<pre class="prettyprint source lang-html"><code>&lt;input type=&quot;file&quot; id=&quot;file&quot;>
-&lt;script>
-  const input = document.getElementById('file');
-  input.onchange = async function() {
-    const tiff = await fromBlob(input.files[0]);
-  }
-&lt;/script>
-</code></pre>
+<pre><code class="html"><span class="hl-11">&lt;</span><span class="hl-12">input</span><span class="hl-1"> </span><span class="hl-13">type</span><span class="hl-1">=</span><span class="hl-14">&quot;file&quot;</span><span class="hl-1"> </span><span class="hl-13">id</span><span class="hl-1">=</span><span class="hl-14">&quot;file&quot;</span><span class="hl-11">&gt;</span><br/><span class="hl-11">&lt;</span><span class="hl-12">script</span><span class="hl-11">&gt;</span><br/><span class="hl-9">  </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">input</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-2">document</span><span class="hl-9">.</span><span class="hl-5">getElementById</span><span class="hl-9">(</span><span class="hl-3">&#39;file&#39;</span><span class="hl-9">);</span><br/><span class="hl-9">  </span><span class="hl-2">input</span><span class="hl-9">.</span><span class="hl-5">onchange</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-4">async</span><span class="hl-9"> </span><span class="hl-4">function</span><span class="hl-9">() {</span><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">tiff</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-0">await</span><span class="hl-9"> </span><span class="hl-5">fromBlob</span><span class="hl-9">(</span><span class="hl-2">input</span><span class="hl-9">.</span><span class="hl-2">files</span><span class="hl-9">[</span><span class="hl-6">0</span><span class="hl-9">]);</span><br/><span class="hl-9">  }</span><br/><span class="hl-11">&lt;/</span><span class="hl-12">script</span><span class="hl-11">&gt;</span>
+</code><button type="button">Copy</button></pre>
+
 <p>Now that we have opened the TIFF file, we can inspect it. The TIFF is structured
 in a small header and a list of one or more images (Image File Directory, IFD to
 use the TIFF nomenclature). To get one image by index the <code>getImage()</code> function
 must be used. This is again an asynchronous operation, as the IFDs are loaded
 lazily:</p>
-<pre class="prettyprint source lang-javascript"><code>const image = await tiff.getImage(); // by default, the first image is read.
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">image</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">getImage</span><span class="hl-1">(); </span><span class="hl-8">// by default, the first image is read.</span>
+</code><button type="button">Copy</button></pre>
+
 <p>Now that we have obtained a <code>GeoTIFFImage</code> object we can inspect its metadata
 (like size, tiling, number of samples, geographical information, etc.). All
 the metadata is parsed once the IFD is first parsed, thus the access to that
 is synchronous:</p>
-<pre class="prettyprint source lang-javascript"><code>const width = image.getWidth();
-const height = image.getHeight();
-const tileWidth = image.getTileWidth();
-const tileHeight = image.getTileHeight();
-const samplesPerPixel = image.getSamplesPerPixel();
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">width</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getWidth</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">height</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getHeight</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tileWidth</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTileWidth</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tileHeight</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getTileHeight</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">samplesPerPixel</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getSamplesPerPixel</span><span class="hl-1">();</span><br/><br/><span class="hl-8">// when we are actually dealing with geo-data the following methods return</span><br/><span class="hl-8">// meaningful results:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">origin</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getOrigin</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">resolution</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getResolution</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">bbox</span><span class="hl-1"> = </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">getBoundingBox</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
 
-// when we are actually dealing with geo-data the following methods return
-// meaningful results:
-const origin = image.getOrigin();
-const resolution = image.getResolution();
-const bbox = image.getBoundingBox();
-</code></pre>
 <p>The actual raster data is not fetched and parsed automatically. This is because
 it is usually much more spacious and the decoding of the pixels can be time
 consuming due to the necessity of decompression.</p>
 <p>To read a whole image into one big array of arrays the following method call can be used:</p>
-<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
 <p>For convenience the result always has a <code>width</code> and <code>height</code> attribute:</p>
-<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters();
-const { width, height } = data;
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">width</span><span class="hl-1">, </span><span class="hl-7">height</span><span class="hl-1"> } = </span><span class="hl-2">data</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
 <p>By default, the raster is split to a separate array for each component. For an RGB image
 for example, we'd get three arrays, one for red, green and blue.</p>
-<pre class="prettyprint source lang-javascript"><code>const [red, green, blue] = await image.readRasters();
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">red</span><span class="hl-1">, </span><span class="hl-7">green</span><span class="hl-1">, </span><span class="hl-7">blue</span><span class="hl-1">] = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
 <p>If we want instead all the bands interleaved in one big array, we have to pass the
 <code>interleave: true</code> option:</p>
-<pre class="prettyprint source lang-javascript"><code>const [r0, g0, b0, r1, g1, b1, ...] = await image.readRasters({ interleave: true });
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">r0</span><span class="hl-1">, </span><span class="hl-7">g0</span><span class="hl-1">, </span><span class="hl-7">b0</span><span class="hl-1">, </span><span class="hl-7">r1</span><span class="hl-1">, </span><span class="hl-7">g1</span><span class="hl-1">, </span><span class="hl-7">b1</span><span class="hl-1">, ...] = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">interleave:</span><span class="hl-1"> </span><span class="hl-4">true</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
 <p>If we are only interested in a specific region of the image, the <code>window</code> option can be
 used to limit reading in that bounding box. Note: the bounding box is in 'image coordinates'
 not geographical ones:</p>
-<pre class="prettyprint source lang-javascript"><code>const left = 50;
-const top = 10;
-const right = 150;
-const bottom = 60;
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">left</span><span class="hl-1"> = </span><span class="hl-6">50</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">top</span><span class="hl-1"> = </span><span class="hl-6">10</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">right</span><span class="hl-1"> = </span><span class="hl-6">150</span><span class="hl-1">;</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">bottom</span><span class="hl-1"> = </span><span class="hl-6">60</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">window:</span><span class="hl-1"> [</span><span class="hl-2">left</span><span class="hl-1">, </span><span class="hl-2">top</span><span class="hl-1">, </span><span class="hl-2">right</span><span class="hl-1">, </span><span class="hl-2">bottom</span><span class="hl-1">] });</span>
+</code><button type="button">Copy</button></pre>
 
-const data = await image.readRasters({ window: [left, top, right, bottom] });
-</code></pre>
 <p>This image window can go beyond the image bounds. In that case it might be usefull to supply
 a <code>fillValue: value</code> option (can also be an array, one value for each sample).</p>
 <p>It is also possible to just read specific samples for each pixel. For example, we can only
 read the red component from an RGB image:</p>
-<pre class="prettyprint source lang-javascript"><code>const [red] = await image.readRasters({ samples: [0] });
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> [</span><span class="hl-7">red</span><span class="hl-1">] = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">samples:</span><span class="hl-1"> [</span><span class="hl-6">0</span><span class="hl-1">] });</span>
+</code><button type="button">Copy</button></pre>
+
 <p>When you want your output in a specific size, you can use the <code>width</code> and <code>height</code> options.
 This defaults of course to the size of your supplied <code>window</code> or the image size if no
 <code>window</code> was supplied.</p>
 <p>As the data now needs to be resampled, a <code>resampleMethod</code> can be specified. This defaults to
 the nearest neighbour method, but also the <code>'bilinear'</code> method is supported:</p>
-<pre class="prettyprint source lang-javascript"><code>const data = await image.readRasters({ width: 40, height: 40, resampleMethod: 'bilinear' });
-</code></pre>
-<h3>Using decoder pools to improve parsing performance</h3>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">width:</span><span class="hl-1"> </span><span class="hl-6">40</span><span class="hl-1">, </span><span class="hl-2">height:</span><span class="hl-1"> </span><span class="hl-6">40</span><span class="hl-1">, </span><span class="hl-2">resampleMethod:</span><span class="hl-1"> </span><span class="hl-3">&#39;bilinear&#39;</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="using-decoder-pools-to-improve-parsing-performance" class="tsd-anchor-link">Using decoder pools to improve parsing performance<a href="#using-decoder-pools-to-improve-parsing-performance" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>Decoding compressed images can be a time consuming process. To minimize this
 geotiff.js provides the <code>Pool</code> mechanism which uses WebWorkers to split the amount
 of work on multiple 'threads'.</p>
-<pre class="prettyprint source lang-javascript"><code>const pool = new GeoTIFF.Pool();
-const data = await image.readRasters({ pool });
-</code></pre>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">pool</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-2">GeoTIFF</span><span class="hl-1">.</span><span class="hl-5">Pool</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">pool</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
 <p>It is possible to provide a pool size (i.e: number of workers), by default the number
 of available processors is used.</p>
-<h3>Dealing with visual data</h3>
+<h3 id="dealing-with-visual-data" class="tsd-anchor-link">Dealing with visual data<a href="#dealing-with-visual-data" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>The TIFF specification provides various ways to encode visual data. In the
 specification this is called photometric interpretation. The simplest case we
 already dealt with is the RGB one. Others are grayscale, paletted images, CMYK,
@@ -329,11 +688,10 @@ YCbCr, and CIE L<em>a</em>b.</p>
 <code>readRGB()</code>. This method is very similar to the <code>readRasters</code> method with
 the distinction that the <code>interleave</code> option now defaults to <code>true</code> and the
 <code>samples</code> are automatically chosen.</p>
-<pre class="prettyprint source lang-javascript"><code>const rgb = await image.readRGB({
-  // options...
-});
-</code></pre>
-<h3>Automatic image selection (experimental)</h3>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">rgb</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">image</span><span class="hl-1">.</span><span class="hl-5">readRGB</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-8">// options...</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="automatic-image-selection-experimental" class="tsd-anchor-link">Automatic image selection (experimental)<a href="#automatic-image-selection-experimental" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>When dealing with images that have internal (or even external, see the next section)
 overviews, <code>GeoTIFF</code> objects provide a separate <code>readRasters</code> method. This method
 works very similar to the method on the <code>GeoTIFFImage</code> objects with the same name.
@@ -342,13 +700,10 @@ By default, it uses the larges image available (highest resolution), but when ei
 be used for reading.</p>
 <p>Additionally, it allows the <code>bbox</code> instead of the <code>window</code> parameter. This works
 similarly, but uses geographic coordinates instead of pixel ones.</p>
-<pre class="prettyprint source lang-javascript"><code>const data = await tiff.readRasters({
-  bbox: [10.34, 57.28, 13.34, 60.23],
-  resX: 0.1,
-  resY: 0.1
-});
-</code></pre>
-<h3>External overviews</h3>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-2">bbox:</span><span class="hl-1"> [</span><span class="hl-6">10.34</span><span class="hl-1">, </span><span class="hl-6">57.28</span><span class="hl-1">, </span><span class="hl-6">13.34</span><span class="hl-1">, </span><span class="hl-6">60.23</span><span class="hl-1">],</span><br/><span class="hl-1">  </span><span class="hl-2">resX:</span><span class="hl-1"> </span><span class="hl-6">0.1</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">resY:</span><span class="hl-1"> </span><span class="hl-6">0.1</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="external-overviews" class="tsd-anchor-link">External overviews<a href="#external-overviews" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>Especially for certain kinds of high resolution images it is not uncommon to separate
 the highest resolution from the lower resolution overviews (usually using the <code>.ovr</code>
 extension). With geotiff.js it is possible to use files of this setup, just as you
@@ -356,79 +711,34 @@ would use single-file images by taking advantage of the <code>MultiGeoTIFF</code
 behave exactly the same as the before mentioned <code>GeoTIFF</code> objects: you can select
 images by index or read data using <code>readRasters</code>. Toget such a file use the <code>fromUrls</code>
 factory function:</p>
-<pre class="prettyprint source lang-javascript"><code>const multiTiff = await fromUrls(
-  'LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF',
-  ['LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr']
-);
-</code></pre>
-<h3>AbortController Support</h3>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">multiTiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrls</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  [</span><span class="hl-3">&#39;LC08_L1TP_189027_20170403_20170414_01_T1_B3.TIF.ovr&#39;</span><span class="hl-1">]</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="abortcontroller-support" class="tsd-anchor-link">AbortController Support<a href="#abortcontroller-support" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>Geotiff.js supports the use of <a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController"><code>AbortController</code>s</a>. Calls to <code>getRasters</code>, <code>readRGB</code> and <code>getTileOrStrip</code> will throw an <code>Error</code> with name <code>AbortSignal</code> similar to the browser's <code>fetch</code> behavior.</p>
-<pre class="prettyprint source lang-javascript"><code>const tiff = await fromUrl(source);
-const abortController = new AbortController();
-const { signal } = abortController;
-abortController.abort();
-try {
-  const data = await tiff.readRasters({ signal });
-} catch(e) {
-  if (err.name === 'AbortError') {
-    // do stuff
-  }
-}
-</code></pre>
-<h3>Writing GeoTIFFs (Beta Version)</h3>
+<pre><code class="javascript"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">tiff</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">fromUrl</span><span class="hl-1">(</span><span class="hl-2">source</span><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">abortController</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-5">AbortController</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> { </span><span class="hl-7">signal</span><span class="hl-1"> } = </span><span class="hl-2">abortController</span><span class="hl-1">;</span><br/><span class="hl-2">abortController</span><span class="hl-1">.</span><span class="hl-5">abort</span><span class="hl-1">();</span><br/><span class="hl-0">try</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">data</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">tiff</span><span class="hl-1">.</span><span class="hl-5">readRasters</span><span class="hl-1">({ </span><span class="hl-2">signal</span><span class="hl-1"> });</span><br/><span class="hl-1">} </span><span class="hl-0">catch</span><span class="hl-1">(</span><span class="hl-2">e</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-2">err</span><span class="hl-1">.</span><span class="hl-2">name</span><span class="hl-1"> === </span><span class="hl-3">&#39;AbortError&#39;</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-8">// do stuff</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="writing-geotiffs-beta-version" class="tsd-anchor-link">Writing GeoTIFFs (Beta Version)<a href="#writing-geotiffs-beta-version" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>You can create a binary representation of a GeoTIFF using <code>writeArrayBuffer</code>.
 This function returns an ArrayBuffer which you can then save as a .tif file.
 :warning: writeArrayBuffer currently writes the values uncompressed</p>
-<pre class="prettyprint source lang-javascript"><code>import GeoTIFF, { writeArrayBuffer } from 'geotiff';
+<pre><code class="javascript"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">GeoTIFF</span><span class="hl-1">, { </span><span class="hl-2">writeArrayBuffer</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;geotiff&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">values</span><span class="hl-1"> = [</span><span class="hl-6">1</span><span class="hl-1">, </span><span class="hl-6">2</span><span class="hl-1">, </span><span class="hl-6">3</span><span class="hl-1">, </span><span class="hl-6">4</span><span class="hl-1">, </span><span class="hl-6">5</span><span class="hl-1">, </span><span class="hl-6">6</span><span class="hl-1">, </span><span class="hl-6">7</span><span class="hl-1">, </span><span class="hl-6">8</span><span class="hl-1">, </span><span class="hl-6">9</span><span class="hl-1">];</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">metadata</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-2">height:</span><span class="hl-1"> </span><span class="hl-6">3</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">width:</span><span class="hl-1"> </span><span class="hl-6">3</span><br/><span class="hl-1">};</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">arrayBuffer</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">writeArrayBuffer</span><span class="hl-1">(</span><span class="hl-2">values</span><span class="hl-1">, </span><span class="hl-2">metadata</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
 
-const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const metadata = {
-  height: 3,
-  width: 3
-};
-const arrayBuffer = await writeArrayBuffer(values, metadata);
-</code></pre>
 <p>You can also customize the metadata using names found in the <a href="https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml">TIFF Spec</a> and <a href="https://cdn.earthdata.nasa.gov/conduit/upload/6852/geotiff-1.8.1-1995-10-31.pdf">GeoTIFF spec</a>.</p>
-<pre class="prettyprint source lang-javascript"><code>import { writeArrayBuffer } from 'geotiff';
+<pre><code class="javascript"><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">writeArrayBuffer</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;geotiff&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">values</span><span class="hl-1"> = [</span><span class="hl-6">1</span><span class="hl-1">, </span><span class="hl-6">2</span><span class="hl-1">, </span><span class="hl-6">3</span><span class="hl-1">, </span><span class="hl-6">4</span><span class="hl-1">, </span><span class="hl-6">5</span><span class="hl-1">, </span><span class="hl-6">6</span><span class="hl-1">, </span><span class="hl-6">7</span><span class="hl-1">, </span><span class="hl-6">8</span><span class="hl-1">, </span><span class="hl-6">9</span><span class="hl-1">];</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">metadata</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-2">GeographicTypeGeoKey:</span><span class="hl-1"> </span><span class="hl-6">4326</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">height:</span><span class="hl-1"> </span><span class="hl-6">3</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">ModelPixelScale:</span><span class="hl-1"> [</span><span class="hl-6">0.031355</span><span class="hl-1">, </span><span class="hl-6">0.031355</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">],</span><br/><span class="hl-1">  </span><span class="hl-2">ModelTiepoint:</span><span class="hl-1"> [</span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">, </span><span class="hl-6">11.331755000000001</span><span class="hl-1">, </span><span class="hl-6">46.268645</span><span class="hl-1">, </span><span class="hl-6">0</span><span class="hl-1">],</span><br/><span class="hl-1">  </span><span class="hl-2">width:</span><span class="hl-1"> </span><span class="hl-6">3</span><br/><span class="hl-1">};</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-7">arrayBuffer</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-5">writeArrayBuffer</span><span class="hl-1">(</span><span class="hl-2">values</span><span class="hl-1">, </span><span class="hl-2">metadata</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
 
-const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const metadata = {
-  GeographicTypeGeoKey: 4326,
-  height: 3,
-  ModelPixelScale: [0.031355, 0.031355, 0],
-  ModelTiepoint: [0, 0, 0, 11.331755000000001, 46.268645, 0],
-  width: 3
-};
-const arrayBuffer = await writeArrayBuffer(values, metadata);
-</code></pre>
-<h2>What to do with the data?</h2>
+<h2 id="what-to-do-with-the-data" class="tsd-anchor-link">What to do with the data?<a href="#what-to-do-with-the-data" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>There is a nice HTML 5/WebGL based rendering library called
 <a href="https://github.com/santilland/plotty">plotty</a>, that allows for some really nice
 on the fly rendering of the data contained in a GeoTIFF.</p>
-<pre class="prettyprint source lang-html"><code>&lt;canvas id=&quot;plot&quot;>&lt;/canvas>
-&lt;script>
-  // ...
+<pre><code class="html"><span class="hl-11">&lt;</span><span class="hl-12">canvas</span><span class="hl-1"> </span><span class="hl-13">id</span><span class="hl-1">=</span><span class="hl-14">&quot;plot&quot;</span><span class="hl-11">&gt;&lt;/</span><span class="hl-12">canvas</span><span class="hl-11">&gt;</span><br/><span class="hl-11">&lt;</span><span class="hl-12">script</span><span class="hl-11">&gt;</span><br/><span class="hl-9">  </span><span class="hl-8">// ...</span><br/><br/><span class="hl-9">  (</span><span class="hl-4">async</span><span class="hl-9"> </span><span class="hl-4">function</span><span class="hl-9">() {</span><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">tiff</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-0">await</span><span class="hl-9"> </span><span class="hl-5">fromUrl</span><span class="hl-9">(</span><span class="hl-2">url</span><span class="hl-9">);</span><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">image</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-0">await</span><span class="hl-9"> </span><span class="hl-2">tiff</span><span class="hl-9">.</span><span class="hl-5">getImage</span><span class="hl-9">();</span><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">data</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-0">await</span><span class="hl-9"> </span><span class="hl-2">image</span><span class="hl-9">.</span><span class="hl-5">readRasters</span><span class="hl-9">();</span><br/><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">canvas</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-2">document</span><span class="hl-9">.</span><span class="hl-5">getElementById</span><span class="hl-9">(</span><span class="hl-3">&quot;plot&quot;</span><span class="hl-9">);</span><br/><span class="hl-9">    </span><span class="hl-4">const</span><span class="hl-9"> </span><span class="hl-7">plot</span><span class="hl-9"> </span><span class="hl-1">=</span><span class="hl-9"> </span><span class="hl-4">new</span><span class="hl-9"> </span><span class="hl-2">plotty</span><span class="hl-9">.</span><span class="hl-5">plot</span><span class="hl-9">({</span><br/><span class="hl-9">      </span><span class="hl-2">canvas</span><span class="hl-9">,</span><br/><span class="hl-9">      </span><span class="hl-2">data:</span><span class="hl-9"> </span><span class="hl-2">data</span><span class="hl-9">[</span><span class="hl-6">0</span><span class="hl-9">],</span><br/><span class="hl-9">      </span><span class="hl-2">width:</span><span class="hl-9"> </span><span class="hl-2">image</span><span class="hl-9">.</span><span class="hl-5">getWidth</span><span class="hl-9">(),</span><br/><span class="hl-9">      </span><span class="hl-2">height:</span><span class="hl-9"> </span><span class="hl-2">image</span><span class="hl-9">.</span><span class="hl-5">getHeight</span><span class="hl-9">(),</span><br/><span class="hl-9">      </span><span class="hl-2">domain:</span><span class="hl-9"> [</span><span class="hl-6">0</span><span class="hl-9">, </span><span class="hl-6">256</span><span class="hl-9">],</span><br/><span class="hl-9">      </span><span class="hl-2">colorScale:</span><span class="hl-9"> </span><span class="hl-3">&quot;viridis&quot;</span><br/><span class="hl-9">    });</span><br/><span class="hl-9">    </span><span class="hl-2">plot</span><span class="hl-9">.</span><span class="hl-5">render</span><span class="hl-9">();</span><br/><span class="hl-9">  })();</span><br/><span class="hl-11">&lt;/</span><span class="hl-12">script</span><span class="hl-11">&gt;</span>
+</code><button type="button">Copy</button></pre>
 
-  (async function() {
-    const tiff = await fromUrl(url);
-    const image = await tiff.getImage();
-    const data = await image.readRasters();
-
-    const canvas = document.getElementById(&quot;plot&quot;);
-    const plot = new plotty.plot({
-      canvas,
-      data: data[0],
-      width: image.getWidth(),
-      height: image.getHeight(),
-      domain: [0, 256],
-      colorScale: &quot;viridis&quot;
-    });
-    plot.render();
-  })();
-&lt;/script>
-</code></pre>
 <p>There's also a library called <a href="https://github.com/matafokka/geotiff-geokeys-to-proj4">geotiff-geokeys-to-proj4</a>, that allows for reprojecting pixel coordinates and, therefore, consuming geospatial data contained in GeoTIFF.</p>
-<h2>BigTIFF support</h2>
+<h2 id="bigtiff-support" class="tsd-anchor-link">BigTIFF support<a href="#bigtiff-support" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>geotiff.js has a limited support for files in the BigTIFF format. The limitations
 originate in the capabilities of current JavaScript implementations regarding
 64 bit integer parsers and structures: there are no functions to read 64 bit
@@ -443,12 +753,12 @@ might be inaccuracies for <em>very</em> large values.</li>
 cause problems for some compression algorithms if those arrays are used for
 pixel values.</li>
 </ul>
-<h2>n-bit Support</h2>
+<h2 id="n-bit-support" class="tsd-anchor-link">n-bit Support<a href="#n-bit-support" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>geotiff.js has some n-bit support which means that it supports unsigned integer
 data reading with each element using a non-multiple of 8 bit depth. This only
 works with band interleaved images (see
 <a href="https://github.com/geotiffjs/geotiff.js/issues/202">this related issue</a>).</p>
-<h2>Planned stuff:</h2>
+<h2 id="planned-stuff" class="tsd-anchor-link">Planned stuff:<a href="#planned-stuff" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <ul>
 <li>Better support of geospatial parameters:
 <ul>
@@ -456,39 +766,17 @@ works with band interleaved images (see
 </ul>
 </li>
 </ul>
-<h2>Known Issues</h2>
+<h2 id="known-issues" class="tsd-anchor-link">Known Issues<a href="#known-issues" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>The open issues can be found on <a href="https://github.com/geotiffjs/geotiff.js/issues">GitHub</a>.</p>
-<h2>Contribution</h2>
+<h2 id="contribution" class="tsd-anchor-link">Contribution<a href="#contribution" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>If you have an idea, found a bug or have a remark, please open a ticket, we will
 look into it ASAP.</p>
 <p>Pull requests are welcome as well!</p>
-<h2>Community Packages</h2>
-<p>A list of community packages can be found in <a href="COMMUNITY.md">COMMUNITY.md</a></p>
-<h2>Acknowledgements</h2>
+<h2 id="community-packages" class="tsd-anchor-link">Community Packages<a href="#community-packages" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>A list of community packages can be found in <a href="media/COMMUNITY.md">COMMUNITY.md</a></p>
+<h2 id="acknowledgements" class="tsd-anchor-link">Acknowledgements<a href="#acknowledgements" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>This library was inspired by
 <a href="https://github.com/xlhomme/GeotiffParser.js">GeotiffParser</a>. It provided a
 great starting point, but lacked the capabilities to read the raw raster data
-which is the aim of geotiff.js.</p></article>
-    </section>
-
-
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-geotiff.html">geotiff</a></li><li><a href="module-geotiffimage.html">geotiffimage</a></li><li><a href="module-pool.html">pool</a></li><li><a href="module-resample.html">resample</a></li></ul><h3>Classes</h3><ul><li><a href="ArrayBufferSource.html">ArrayBufferSource</a></li><li><a href="BaseClient.html">BaseClient</a></li><li><a href="BaseResponse.html">BaseResponse</a></li><li><a href="BaseSource.html">BaseSource</a></li><li><a href="Block.html">Block</a></li><li><a href="BlockedSource.html">BlockedSource</a></li><li><a href="BlockedSource_BlockedSource.html">BlockedSource</a></li><li><a href="BlockGroup.html">BlockGroup</a></li><li><a href="CustomAggregateError.html">CustomAggregateError</a></li><li><a href="DummyLogger.html">DummyLogger</a></li><li><a href="FetchClient.html">FetchClient</a></li><li><a href="FetchResponse.html">FetchResponse</a></li><li><a href="FileReaderSource.html">FileReaderSource</a></li><li><a href="FileSource.html">FileSource</a></li><li><a href="HttpClient.html">HttpClient</a></li><li><a href="HttpResponse.html">HttpResponse</a></li><li><a href="JpegStreamReader.html">JpegStreamReader</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module-geotiffimage-GeoTIFFImage.html">GeoTIFFImage</a></li><li><a href="module-geotiff-GeoTIFF.html">GeoTIFF</a></li><li><a href="module-geotiff-GeoTIFFBase.html">GeoTIFFBase</a></li><li><a href="module-geotiff-GeoTIFFImageIndexError.html">GeoTIFFImageIndexError</a></li><li><a href="module-geotiff-ImageFileDirectory.html">ImageFileDirectory</a></li><li><a href="module-geotiff-MultiGeoTIFF.html">MultiGeoTIFF</a></li><li><a href="module-pool-Pool.html">Pool</a></li><li><a href="module-pool-WorkerWrapper.html">WorkerWrapper</a></li><li><a href="RemoteSource.html">RemoteSource</a></li><li><a href="XHRClient.html">XHRClient</a></li><li><a href="XHRResponse.html">XHRResponse</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addDecoder">addDecoder</a></li><li><a href="global.html#getDecoder">getDecoder</a></li><li><a href="global.html#makeFileReaderSource">makeFileReaderSource</a></li><li><a href="global.html#makeRemoteSource">makeRemoteSource</a></li><li><a href="global.html#parseByteRanges">parseByteRanges</a></li><li><a href="global.html#parseContentRange">parseContentRange</a></li><li><a href="global.html#parseContentType">parseContentType</a></li><li><a href="global.html#parseHeaders">parseHeaders</a></li><li><a href="global.html#preferWorker">preferWorker</a></li><li><a href="global.html#registerTag">registerTag</a></li><li><a href="global.html#setLogger">setLogger</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Wed Jan 14 2026 20:26:30 GMT+0000 (Coordinated Universal Time)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>
+which is the aim of geotiff.js.</p>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-page-navigation"><a href="#geotiffjs"><span>geotiff.js</span></a><ul><li><a href="#features"><span>Features</span></a></li><li><a href="#example-usage"><span>Example <wbr/>Usage</span></a></li><li><a href="#advanced-example-usage"><span>Advanced <wbr/>Example <wbr/>Usage</span></a></li><li><a href="#migration-guide-v2-to-v3"><span>Migration <wbr/>Guide (v2 to v3)</span></a></li><li><ul><li><a href="#summary-of-changes"><span>Summary of <wbr/>Changes</span></a></li><li><a href="#breaking-changes"><span>Breaking <wbr/>Changes</span></a></li><li><ul><li><a href="#1-geokeys-access"><span>1. <wbr/>Geo<wbr/>Keys <wbr/>Access</span></a></li><li><a href="#2-gettiepoints-and-getgdalmetadata-are-now-async"><span>2. get<wbr/>Tie<wbr/>Points() and get<wbr/>GDAL<wbr/>Metadata() are now async</span></a></li><li><a href="#3-accessing-filedirectory-properties"><span>3. <wbr/>Accessing file<wbr/>Directory properties</span></a></li><li><a href="#4-checking-if-tags-exist"><span>4. <wbr/>Checking if tags exist</span></a></li><li><a href="#5-accessing-array-elements"><span>5. <wbr/>Accessing array elements</span></a></li><li><a href="#6-pool-api-changes"><span>6. <wbr/>Pool <wbr/>API changes</span></a></li><li><a href="#7-custom-decoders"><span>7. <wbr/>Custom <wbr/>Decoders</span></a></li></ul></li><li><a href="#migration-examples"><span>Migration <wbr/>Examples</span></a></li><li><ul><li><a href="#example-1-reading-with-modeltiepointmodelpixelscale"><span>Example 1: <wbr/>Reading with <wbr/>Model<wbr/>Tiepoint/<wbr/>Model<wbr/>Pixel<wbr/>Scale</span></a></li><li><a href="#example-2-working-with-colormap-potentially-deferred"><span>Example 2: <wbr/>Working with <wbr/>Color<wbr/>Map (potentially deferred)</span></a></li><li><a href="#example-3-checking-photometricinterpretation"><span>Example 3: <wbr/>Checking <wbr/>Photometric<wbr/>Interpretation</span></a></li></ul></li><li><a href="#what-hasnt-changed"><span>What <wbr/>Hasn&#39;t <wbr/>Changed</span></a></li><li><a href="#performance-benefits"><span>Performance <wbr/>Benefits</span></a></li></ul></li><li><a href="#setup"><span>Setup</span></a></li><li><a href="#testing-and-building"><span>Testing and <wbr/>Building</span></a></li><li><a href="#install"><span>Install</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><ul><li><a href="#using-decoder-pools-to-improve-parsing-performance"><span>Using decoder pools to improve parsing performance</span></a></li><li><a href="#dealing-with-visual-data"><span>Dealing with visual data</span></a></li><li><a href="#automatic-image-selection-experimental"><span>Automatic image selection (experimental)</span></a></li><li><a href="#external-overviews"><span>External overviews</span></a></li><li><a href="#abortcontroller-support"><span>Abort<wbr/>Controller <wbr/>Support</span></a></li><li><a href="#writing-geotiffs-beta-version"><span>Writing <wbr/>Geo<wbr/>TIF<wbr/>Fs (<wbr/>Beta <wbr/>Version)</span></a></li></ul></li><li><a href="#what-to-do-with-the-data"><span>What to do with the data?</span></a></li><li><a href="#bigtiff-support"><span>Big<wbr/>TIFF support</span></a></li><li><a href="#n-bit-support"><span>n-<wbr/>bit <wbr/>Support</span></a></li><li><a href="#planned-stuff"><span>Planned stuff:</span></a></li><li><a href="#known-issues"><span>Known <wbr/>Issues</span></a></li><li><a href="#contribution"><span>Contribution</span></a></li><li><a href="#community-packages"><span>Community <wbr/>Packages</span></a></li><li><a href="#acknowledgements"><span>Acknowledgements</span></a></li></ul></div></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/geotiffjs/geotiff.js" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="modules.html">geotiff.js</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><div class="overlay"></div></body></html>

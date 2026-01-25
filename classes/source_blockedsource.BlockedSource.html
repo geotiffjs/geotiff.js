@@ -1,0 +1,354 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>BlockedSource | geotiff.js</title><meta name="description" content="Documentation for geotiff.js"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script><style type="text/css">
+/* typedoc-theme-fresh */
+
+/* @view-transition {
+  navigation: auto;
+} */
+
+:root {
+  --light-color-background: #fafafe;
+  --light-color-background-active: #eaeced;
+  --light-color-text: #222222;
+  --light-color-text-aside: #5e5e5e;
+
+  --dark-color-background: #1a1a1c;
+  --dark-color-background-active: #2f2f2b;
+  --dark-color-text: #dfdfd6;
+  --dark-color-text-aside: #b0b0b0;
+
+  --dim-header-height: 2.5rem;
+  --dim-footer-height: 0px;
+
+  --light-code-background: #ffffff18;
+  --dark-code-background: #00000018;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  & > .container.container-main {
+    margin: 0 auto;
+    margin-top: var(--dim-header-height);
+    --dim-container-main-margin-y: 0px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+:root[data-theme="light"] {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+:root[data-theme="dark"] {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+}
+
+.tsd-page-toolbar {
+  position: fixed;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-background) 80%, transparent) 60%,
+    transparent
+  );
+  backdrop-filter: blur(2px);
+  border-bottom: none;
+
+  .title {
+    font-weight: 500;
+    font-size: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 0;
+    margin-right: auto;
+
+    &:hover {
+      color: var(--color-contrast-text);
+      text-decoration: none;
+    }
+  }
+
+  .tsd-theme-toggle {
+    display: flex;
+    position: relative;
+    margin-right: 12px;
+    color: var(--color-text-aside);
+    
+    select {
+      cursor: pointer;
+      border: 1px solid var(--color-background-active);
+      border-radius: 4px;
+      padding: 6px 8px;
+      padding-left: 32px;  /* Space for the icon */
+      font-size: 14px;
+      background: transparent;
+      transition: background-color 200ms;
+      color: var(--color-text-aside);
+      
+      /* for Firefox and Chrome: these are inconsistent */
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      
+      &:hover {
+        background-color: var(--color-background-active);
+      }
+    }
+  }
+}
+
+.tsd-widget {
+  display: flex;
+  align-items: center;
+  height: auto;
+  width: auto;
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 200ms;
+  color: var(--color-text-aside);
+  opacity: 100%;
+
+  &:hover {
+    background-color: var(--color-background-active);
+  }
+}
+
+#tsd-search-results {
+  & > li {
+    padding-inline: 6px;
+    transition: background-color 200ms;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+.col-content {
+  overflow: hidden;
+  padding-block: 24px;
+
+  & > .tsd-typography {
+    padding-bottom: 24px;
+  }
+}
+
+.col-sidebar {
+  top: var(--dim-header-height);  /* Relevant for tablet layout. */
+}
+
+.site-menu {
+  top: var(--dim-header-height);
+  padding-block: 24px;
+  box-sizing: border-box;
+}
+
+.page-menu {
+  top: var(--dim-header-height);
+  padding-block: 48px 24px;
+  box-sizing: border-box;
+}
+
+.tsd-navigation,
+.tsd-page-navigation {
+  > details {
+    margin-bottom: 8px;
+  }
+
+  a {
+    border-radius: 4px;
+    padding-inline: 6px;
+    margin-bottom: 2px;
+  }
+  a:hover {
+    text-decoration: none;
+    background-color: var(--color-background-active);
+  }
+  a.current {
+    background-color: var(--color-background-active);
+    span {
+      color: var(--color-contrast-text);
+    }
+  }
+}
+
+.tsd-navigation {
+  & > a {
+    /* Top-level navigation anchor. */
+    margin-block: 16px;
+    font-size: 18px;
+    background: transparent !important;
+    padding: 0;
+    
+    &:hover {
+      color: var(--color-contrast-text);
+    }
+  }
+}
+
+.tsd-page-navigation {
+  border-left: 1px solid var(--color-background-active);
+  padding-left: 4px;
+  padding-block: 4px;
+}
+
+.tsd-page-navigation-section {
+  & > summary > svg {
+    margin-right: 0;
+  }
+  & > div {
+    margin-left: 24px;
+  }
+}
+
+.tsd-page-title {
+  color: var(--color-contrast-text);
+}
+
+h1 > code.tsd-tag {
+  margin-left: 12px;
+}
+
+code.tsd-tag {
+  display: inline-block;
+  transform: translateY(-0.1em);
+  background: var(--color-background-secondary);
+  border: 0;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.tsd-breadcrumb {
+  margin-bottom: 12px;
+  li:after {
+    content: " › ";
+    opacity: 0.4;
+  }
+  li:last-of-type::after {
+    content: "";
+  }
+}
+
+.tsd-signature,
+.tsd-signatures .tsd-signature {
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-weight: 500;
+  padding: 10px 8px;
+  line-height: 1.3;
+}
+
+.tsd-anchor-icon {
+  color: var(--color-text-aside);
+  padding-bottom: 1px;
+}
+
+.tsd-kind-icon {
+  filter: grayscale(0.5) opacity(0.8);
+}
+
+/* Accordion icon */
+.tsd-accordion-summary > svg {
+  color: var(--color-text-aside);
+  opacity: 50%;
+  stroke-width: 1px;
+  transition: transform 200ms ease-in-out;
+}
+
+.tsd-accordion-summary > svg:has(+ h2) {
+  height: 24px;
+  width: 24px;
+}
+
+/* Desktop sizing */
+@media (min-width: 1200px) {
+  .container-main {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 2.5fr) minmax(0, 17rem);
+  }
+
+  .site-menu {
+    padding-right: 8px;
+  }
+  .page-menu {
+    padding-left: 24px;
+  }
+
+  .tsd-widget.menu {
+    display: none;
+  }
+}
+
+/* Tablet sizing */
+@media (min-width: 770px) and (max-width: 1199px) {
+  .page-menu {
+    padding-block: 24px 24px;
+  }
+  .site-menu {
+    padding-block: 0 24px;
+    margin-top: 0;
+  }
+
+  .tsd-widget.menu {
+    display: none;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+}
+
+/* Mobile sizing */
+@media (max-width: 769px) {
+  .page-menu {
+    display: none;
+  }
+  .site-menu {
+    padding: 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .has-menu .col-sidebar {
+    padding: 0 1rem;
+    max-height: 100dvh;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+  .md-show {
+    display: none !important;
+  }
+}
+</style></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">geotiff.js</a><div id="tsd-toolbar-links"><a href="https://github.com/geotiffjs/geotiff.js">GitHub</a></div><div class="tsd-theme-toggle md-show" style="position: relative"><div style="position: absolute; left: 8px; top: 4px; pointer-events: none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-moon-icon lucide-sun-moon"><path d="M12 2v2"></path><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715"></path><path d="M16 12a4 4 0 0 0-4-4"></path><path d="m19 5-1.256 1.256"></path><path d="M20 12h2"></path></svg></div><select id="tsd-theme"><option value="os">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 8px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search" style="margin-bottom: 1px; margin-left: 4px; margin-right: 4px;"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><span class="lg-show" style="margin-left: 4px; margin-right: 12ch;">Search…</span></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 4px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu" style="margin-left: 4px; margin-right: 4px;"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="../modules/source_blockedsource.html">source/blockedsource</a></li><li><a href="" aria-current="page">BlockedSource</a></li></ul><h1>Class BlockedSource</h1></div><section class="tsd-panel tsd-hierarchy" data-refl="455"><h4>Hierarchy (<a href="../hierarchy.html#source/blockedsource.BlockedSource">View Summary</a>)</h4><ul class="tsd-hierarchy"><li class="tsd-hierarchy-item"><a href="source_basesource.BaseSource.html" class="tsd-signature-type tsd-kind-class">BaseSource</a><ul class="tsd-hierarchy"><li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">BlockedSource</span></li></ul></li></ul></section><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L40">source/blockedsource.js:40</a></li></ul></aside><div style="margin-top: 64px"></div><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Constructors</h2></summary><section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="constructor"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="constructorblockedsource"><span class="tsd-signature-keyword">new</span> <span class="tsd-kind-constructor-signature">BlockedSource</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">source</span><span class="tsd-signature-symbol">:</span> <a href="source_basesource.BaseSource.html" class="tsd-signature-type tsd-kind-class">BaseSource</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">blockSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">cacheSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type tsd-kind-class">BlockedSource</a><a href="#constructorblockedsource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">source</span>: <a href="source_basesource.BaseSource.html" class="tsd-signature-type tsd-kind-class">BaseSource</a></span><div class="tsd-comment tsd-typography"><p>The underlying source that shall be blocked and cached</p>
+</div></li><li><span><span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">blockSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">cacheSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol"> = {}</span></span></li></ul></div><h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">BlockedSource</a></h4><aside class="tsd-sources"><p>Overrides <a href="source_basesource.BaseSource.html">BaseSource</a>.<a href="source_basesource.BaseSource.html#constructor">constructor</a></p><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L48">source/blockedsource.js:48</a></li></ul></aside></div></li></ul></section></section></details><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Properties</h2></summary><section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="abortedblockids"><span>aborted<wbr/>Block<wbr/>Ids</span><a href="#abortedblockids" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">abortedBlockIds</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L69">source/blockedsource.js:69</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="blockcache"><span>block<wbr/>Cache</span><a href="#blockcache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">blockCache</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QuickLRU</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L53">source/blockedsource.js:53</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="blockidstofetch"><span>block<wbr/>Ids<wbr/>To<wbr/>Fetch</span><a href="#blockidstofetch" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">blockIdsToFetch</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L67">source/blockedsource.js:67</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="blockrequests"><span>block<wbr/>Requests</span><a href="#blockrequests" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">blockRequests</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L64">source/blockedsource.js:64</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="blocksize"><span>block<wbr/>Size</span><a href="#blocksize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">blockSize</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L51">source/blockedsource.js:51</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="evictedblocks"><span>evicted<wbr/>Blocks</span><a href="#evictedblocks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">evictedBlocks</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">Block</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L61">source/blockedsource.js:61</a></li></ul></aside></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="source"><span>source</span><a href="#source" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">source</span><span class="tsd-signature-symbol">:</span> <a href="source_basesource.BaseSource.html" class="tsd-signature-type tsd-kind-class">BaseSource</a></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L50">source/blockedsource.js:50</a></li></ul></aside></section></section></details><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Accessors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Accessors</h2></summary><section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="filesize"><span>file<wbr/>Size</span><a href="#filesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li><div class="tsd-signature" id="filesizefilesize"><span class="tsd-signature-keyword">get</span> <span class="tsd-kind-get-signature">fileSize</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Returns the filesize if already determined and null otherwise</p>
+</div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span></h4><aside class="tsd-sources"><p>Overrides BaseSource.fileSize</p><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L72">source/blockedsource.js:72</a></li></ul></aside></div></li></ul></section></section></details><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Methods</h2></summary><section><section class="tsd-panel tsd-member tsd-is-inherited"><h3 class="tsd-anchor-link" id="close"><span>close</span><a href="#close" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures tsd-is-inherited"><li class="tsd-is-inherited"><div class="tsd-signature tsd-anchor-link" id="close-1"><span class="tsd-kind-call-signature">close</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#close-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources"><p>Inherited from <a href="source_basesource.BaseSource.html">BaseSource</a>.<a href="source_basesource.BaseSource.html#close">close</a></p><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/basesource.js#L35">source/basesource.js:35</a></li></ul></aside></div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="fetch"><span>fetch</span><a href="#fetch" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="fetch-1"><span class="tsd-kind-call-signature">fetch</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">slices</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">signal</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBuffer</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><a href="#fetch-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">slices</span>: <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a><span class="tsd-signature-symbol">[]</span></span></li><li><span><span class="tsd-kind-parameter">signal</span>: <span class="tsd-signature-type">any</span></span></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBuffer</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources"><p>Overrides <a href="source_basesource.BaseSource.html">BaseSource</a>.<a href="source_basesource.BaseSource.html#fetch">fetch</a></p><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L80">source/blockedsource.js:80</a></li></ul></aside></div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="fetchblocks"><span>fetch<wbr/>Blocks</span><a href="#fetchblocks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="fetchblocks-1"><span class="tsd-kind-call-signature">fetchBlocks</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">signal</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AbortSignal</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#fetchblocks-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">signal</span>: <span class="tsd-signature-type">AbortSignal</span></span></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L167">source/blockedsource.js:167</a></li></ul></aside></div></li></ul></section><section class="tsd-panel tsd-member tsd-is-inherited"><h3 class="tsd-anchor-link" id="fetchslice"><span>fetch<wbr/>Slice</span><a href="#fetchslice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures tsd-is-inherited"><li class="tsd-is-inherited"><div class="tsd-signature tsd-anchor-link" id="fetchslice-1"><span class="tsd-kind-call-signature">fetchSlice</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">slice</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ArrayBuffer</span><a href="#fetchslice-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">slice</span>: <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a></span></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ArrayBuffer</span></h4><aside class="tsd-sources"><p>Inherited from <a href="source_basesource.BaseSource.html">BaseSource</a>.<a href="source_basesource.BaseSource.html#fetchslice">fetchSlice</a></p><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/basesource.js#L24">source/basesource.js:24</a></li></ul></aside></div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="groupblocks"><span>group<wbr/>Blocks</span><a href="#groupblocks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="groupblocks-1"><span class="tsd-kind-call-signature">groupBlocks</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">blockIds</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BlockGroup</span><span class="tsd-signature-symbol">[]</span><a href="#groupblocks-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">blockIds</span>: <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></span></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">BlockGroup</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L220">source/blockedsource.js:220</a></li></ul></aside></div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="readslicedata"><span>read<wbr/>Slice<wbr/>Data</span><a href="#readslicedata" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="readslicedata-1"><span class="tsd-kind-call-signature">readSliceData</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">slices</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">blocks</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ArrayBuffer</span><span class="tsd-signature-symbol">[]</span><a href="#readslicedata-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">slices</span>: <a href="../interfaces/source_basesource.Slice.html" class="tsd-signature-type tsd-kind-interface">Slice</a><span class="tsd-signature-symbol">[]</span></span></li><li><span><span class="tsd-kind-parameter">blocks</span>: <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></span></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ArrayBuffer</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/geotiffjs/geotiff.js/blob/f672e42be0e741a0e1c1275718ac638d438e3439/src/source/blockedsource.js#L258">source/blockedsource.js:258</a></li></ul></aside></div></li></ul></section></section></details></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-page-navigation"><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Constructors</summary><div><a href="#constructor"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a></div></details><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Properties</summary><div><a href="#abortedblockids"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>aborted<wbr/>Block<wbr/>Ids</span></a><a href="#blockcache"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>block<wbr/>Cache</span></a><a href="#blockidstofetch"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>block<wbr/>Ids<wbr/>To<wbr/>Fetch</span></a><a href="#blockrequests"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>block<wbr/>Requests</span></a><a href="#blocksize"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>block<wbr/>Size</span></a><a href="#evictedblocks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>evicted<wbr/>Blocks</span></a><a href="#source"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>source</span></a></div></details><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Accessors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Accessors</summary><div><a href="#filesize"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Accessor"><use href="../assets/icons.svg#icon-262144"></use></svg><span>file<wbr/>Size</span></a></div></details><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary><div><a href="#close" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>close</span></a><a href="#fetch"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>fetch</span></a><a href="#fetchblocks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>fetch<wbr/>Blocks</span></a><a href="#fetchslice" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>fetch<wbr/>Slice</span></a><a href="#groupblocks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>group<wbr/>Blocks</span></a><a href="#readslicedata"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>read<wbr/>Slice<wbr/>Data</span></a></div></details></div></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/geotiffjs/geotiff.js" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="../modules.html">geotiff.js</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><div class="overlay"></div></body></html>

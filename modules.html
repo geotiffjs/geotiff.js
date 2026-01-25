@@ -1,0 +1,352 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>geotiff.js</title><meta name="description" content="Documentation for geotiff.js"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script><style type="text/css">
+/* typedoc-theme-fresh */
+
+/* @view-transition {
+  navigation: auto;
+} */
+
+:root {
+  --light-color-background: #fafafe;
+  --light-color-background-active: #eaeced;
+  --light-color-text: #222222;
+  --light-color-text-aside: #5e5e5e;
+
+  --dark-color-background: #1a1a1c;
+  --dark-color-background-active: #2f2f2b;
+  --dark-color-text: #dfdfd6;
+  --dark-color-text-aside: #b0b0b0;
+
+  --dim-header-height: 2.5rem;
+  --dim-footer-height: 0px;
+
+  --light-code-background: #ffffff18;
+  --dark-code-background: #00000018;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  & > .container.container-main {
+    margin: 0 auto;
+    margin-top: var(--dim-header-height);
+    --dim-container-main-margin-y: 0px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+:root[data-theme="light"] {
+  ::selection {
+    background-color: #11111a20;
+  }
+}
+
+:root[data-theme="dark"] {
+  ::selection {
+    background-color: #bbbbff48;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+}
+
+.tsd-page-toolbar {
+  position: fixed;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-background) 80%, transparent) 60%,
+    transparent
+  );
+  backdrop-filter: blur(2px);
+  border-bottom: none;
+
+  .title {
+    font-weight: 500;
+    font-size: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 0;
+    margin-right: auto;
+
+    &:hover {
+      color: var(--color-contrast-text);
+      text-decoration: none;
+    }
+  }
+
+  .tsd-theme-toggle {
+    display: flex;
+    position: relative;
+    margin-right: 12px;
+    color: var(--color-text-aside);
+    
+    select {
+      cursor: pointer;
+      border: 1px solid var(--color-background-active);
+      border-radius: 4px;
+      padding: 6px 8px;
+      padding-left: 32px;  /* Space for the icon */
+      font-size: 14px;
+      background: transparent;
+      transition: background-color 200ms;
+      color: var(--color-text-aside);
+      
+      /* for Firefox and Chrome: these are inconsistent */
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      
+      &:hover {
+        background-color: var(--color-background-active);
+      }
+    }
+  }
+}
+
+.tsd-widget {
+  display: flex;
+  align-items: center;
+  height: auto;
+  width: auto;
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 200ms;
+  color: var(--color-text-aside);
+  opacity: 100%;
+
+  &:hover {
+    background-color: var(--color-background-active);
+  }
+}
+
+#tsd-search-results {
+  & > li {
+    padding-inline: 6px;
+    transition: background-color 200ms;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+.col-content {
+  overflow: hidden;
+  padding-block: 24px;
+
+  & > .tsd-typography {
+    padding-bottom: 24px;
+  }
+}
+
+.col-sidebar {
+  top: var(--dim-header-height);  /* Relevant for tablet layout. */
+}
+
+.site-menu {
+  top: var(--dim-header-height);
+  padding-block: 24px;
+  box-sizing: border-box;
+}
+
+.page-menu {
+  top: var(--dim-header-height);
+  padding-block: 48px 24px;
+  box-sizing: border-box;
+}
+
+.tsd-navigation,
+.tsd-page-navigation {
+  > details {
+    margin-bottom: 8px;
+  }
+
+  a {
+    border-radius: 4px;
+    padding-inline: 6px;
+    margin-bottom: 2px;
+  }
+  a:hover {
+    text-decoration: none;
+    background-color: var(--color-background-active);
+  }
+  a.current {
+    background-color: var(--color-background-active);
+    span {
+      color: var(--color-contrast-text);
+    }
+  }
+}
+
+.tsd-navigation {
+  & > a {
+    /* Top-level navigation anchor. */
+    margin-block: 16px;
+    font-size: 18px;
+    background: transparent !important;
+    padding: 0;
+    
+    &:hover {
+      color: var(--color-contrast-text);
+    }
+  }
+}
+
+.tsd-page-navigation {
+  border-left: 1px solid var(--color-background-active);
+  padding-left: 4px;
+  padding-block: 4px;
+}
+
+.tsd-page-navigation-section {
+  & > summary > svg {
+    margin-right: 0;
+  }
+  & > div {
+    margin-left: 24px;
+  }
+}
+
+.tsd-page-title {
+  color: var(--color-contrast-text);
+}
+
+h1 > code.tsd-tag {
+  margin-left: 12px;
+}
+
+code.tsd-tag {
+  display: inline-block;
+  transform: translateY(-0.1em);
+  background: var(--color-background-secondary);
+  border: 0;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.tsd-breadcrumb {
+  margin-bottom: 12px;
+  li:after {
+    content: " › ";
+    opacity: 0.4;
+  }
+  li:last-of-type::after {
+    content: "";
+  }
+}
+
+.tsd-signature,
+.tsd-signatures .tsd-signature {
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-weight: 500;
+  padding: 10px 8px;
+  line-height: 1.3;
+}
+
+.tsd-anchor-icon {
+  color: var(--color-text-aside);
+  padding-bottom: 1px;
+}
+
+.tsd-kind-icon {
+  filter: grayscale(0.5) opacity(0.8);
+}
+
+/* Accordion icon */
+.tsd-accordion-summary > svg {
+  color: var(--color-text-aside);
+  opacity: 50%;
+  stroke-width: 1px;
+  transition: transform 200ms ease-in-out;
+}
+
+.tsd-accordion-summary > svg:has(+ h2) {
+  height: 24px;
+  width: 24px;
+}
+
+/* Desktop sizing */
+@media (min-width: 1200px) {
+  .container-main {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 2.5fr) minmax(0, 17rem);
+  }
+
+  .site-menu {
+    padding-right: 8px;
+  }
+  .page-menu {
+    padding-left: 24px;
+  }
+
+  .tsd-widget.menu {
+    display: none;
+  }
+}
+
+/* Tablet sizing */
+@media (min-width: 770px) and (max-width: 1199px) {
+  .page-menu {
+    padding-block: 24px 24px;
+  }
+  .site-menu {
+    padding-block: 0 24px;
+    margin-top: 0;
+  }
+
+  .tsd-widget.menu {
+    display: none;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+}
+
+/* Mobile sizing */
+@media (max-width: 769px) {
+  .page-menu {
+    display: none;
+  }
+  .site-menu {
+    padding: 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .has-menu .col-sidebar {
+    padding: 0 1rem;
+    max-height: 100dvh;
+  }
+
+  .lg-show {
+    display: none !important;
+  }
+  .md-show {
+    display: none !important;
+  }
+}
+</style></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">geotiff.js</a><div id="tsd-toolbar-links"><a href="https://github.com/geotiffjs/geotiff.js">GitHub</a></div><div class="tsd-theme-toggle md-show" style="position: relative"><div style="position: absolute; left: 8px; top: 4px; pointer-events: none"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-moon-icon lucide-sun-moon"><path d="M12 2v2"></path><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715"></path><path d="M16 12a4 4 0 0 0-4-4"></path><path d="m19 5-1.256 1.256"></path><path d="M20 12h2"></path></svg></div><select id="tsd-theme"><option value="os">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 8px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search" style="margin-bottom: 1px; margin-left: 4px; margin-right: 4px;"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><span class="lg-show" style="margin-left: 4px; margin-right: 12ch;">Search…</span></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu" style="
+              border: 1px solid var(--color-background-active);
+              border-radius: 4px;
+              margin-left: 4px;
+            "><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu" style="margin-left: 4px; margin-right: 4px;"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"></ul><h1>geotiff.js</h1></div><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Modules"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h2>Modules</h2></summary><dl class="tsd-member-summaries"><dt class="tsd-member-summary" id="compression"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression.html">compression</a><a href="#compression" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionbasedecoder"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_basedecoder.html">compression/basedecoder</a><a href="#compressionbasedecoder" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressiondeflate"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_deflate.html">compression/deflate</a><a href="#compressiondeflate" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionjpeg"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_jpeg.html">compression/jpeg</a><a href="#compressionjpeg" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionlerc"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_lerc.html">compression/lerc</a><a href="#compressionlerc" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionlzw"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_lzw.html">compression/lzw</a><a href="#compressionlzw" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionpackbits"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_packbits.html">compression/packbits</a><a href="#compressionpackbits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionraw"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_raw.html">compression/raw</a><a href="#compressionraw" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionwebimage"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_webimage.html">compression/webimage</a><a href="#compressionwebimage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="compressionzstd"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/compression_zstd.html">compression/zstd</a><a href="#compressionzstd" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="dataslice"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/dataslice.html">dataslice</a><a href="#dataslice" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="dataview64"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/dataview64.html">dataview64</a><a href="#dataview64" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="geotiff"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/geotiff.html">geotiff</a><a href="#geotiff" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="geotiffimage"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/geotiffimage.html">geotiffimage</a><a href="#geotiffimage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="geotiffwriter"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/geotiffwriter.html">geotiffwriter</a><a href="#geotiffwriter" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="globals"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/globals.html">globals</a><a href="#globals" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="imagefiledirectory"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/imagefiledirectory.html">imagefiledirectory</a><a href="#imagefiledirectory" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="logging"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/logging.html">logging</a><a href="#logging" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="pool"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/pool.html">pool</a><a href="#pool" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="predictor"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/predictor.html">predictor</a><a href="#predictor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="resample"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/resample.html">resample</a><a href="#resample" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="rgb"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/rgb.html">rgb</a><a href="#rgb" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourcearraybuffer"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_arraybuffer.html">source/arraybuffer</a><a href="#sourcearraybuffer" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourcebasesource"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_basesource.html">source/basesource</a><a href="#sourcebasesource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceblockedsource"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_blockedsource.html">source/blockedsource</a><a href="#sourceblockedsource" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceclientbase"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_client_base.html">source/client/base</a><a href="#sourceclientbase" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceclientfetch"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_client_fetch.html">source/client/fetch</a><a href="#sourceclientfetch" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceclienthttp"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_client_http.html">source/client/http</a><a href="#sourceclienthttp" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceclientxhr"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_client_xhr.html">source/client/xhr</a><a href="#sourceclientxhr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourcefile"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_file.html">source/file</a><a href="#sourcefile" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourcefilereader"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_filereader.html">source/filereader</a><a href="#sourcefilereader" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourcehttputils"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_httputils.html">source/httputils</a><a href="#sourcehttputils" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="sourceremote"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/source_remote.html">source/remote</a><a href="#sourceremote" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="utils"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/utils.html">utils</a><a href="#utils" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="workercreate"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/worker_create.html">worker/create</a><a href="#workercreate" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="workerdecoder"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><a href="modules/worker_decoder.html">worker/decoder</a><a href="#workerdecoder" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd></dl></details></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-page-navigation"><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Modules"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>Modules</summary><div><a href="#compression"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression</span></a><a href="#compressionbasedecoder"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/basedecoder</span></a><a href="#compressiondeflate"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/deflate</span></a><a href="#compressionjpeg"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/jpeg</span></a><a href="#compressionlerc"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/lerc</span></a><a href="#compressionlzw"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/lzw</span></a><a href="#compressionpackbits"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/packbits</span></a><a href="#compressionraw"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/raw</span></a><a href="#compressionwebimage"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/webimage</span></a><a href="#compressionzstd"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>compression/zstd</span></a><a href="#dataslice"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>dataslice</span></a><a href="#dataview64"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>dataview64</span></a><a href="#geotiff"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>geotiff</span></a><a href="#geotiffimage"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>geotiffimage</span></a><a href="#geotiffwriter"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>geotiffwriter</span></a><a href="#globals"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>globals</span></a><a href="#imagefiledirectory"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>imagefiledirectory</span></a><a href="#logging"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>logging</span></a><a href="#pool"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>pool</span></a><a href="#predictor"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>predictor</span></a><a href="#resample"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>resample</span></a><a href="#rgb"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>rgb</span></a><a href="#sourcearraybuffer"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/arraybuffer</span></a><a href="#sourcebasesource"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/basesource</span></a><a href="#sourceblockedsource"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/blockedsource</span></a><a href="#sourceclientbase"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/client/base</span></a><a href="#sourceclientfetch"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/client/fetch</span></a><a href="#sourceclienthttp"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/client/http</span></a><a href="#sourceclientxhr"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/client/xhr</span></a><a href="#sourcefile"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/file</span></a><a href="#sourcefilereader"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/filereader</span></a><a href="#sourcehttputils"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/httputils</span></a><a href="#sourceremote"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>source/remote</span></a><a href="#utils"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>utils</span></a><a href="#workercreate"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>worker/create</span></a><a href="#workerdecoder"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Module"><use href="assets/icons.svg#icon-2"></use></svg><span>worker/decoder</span></a></div></details></div></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/geotiffjs/geotiff.js" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="modules.html" class="current">geotiff.js</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><div class="overlay"></div></body></html>
