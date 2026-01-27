@@ -56,7 +56,24 @@ export { setLogger };
  * @typedef {TypedArrayWithDimensions | TypedArrayArrayWithDimensions} ReadRasterResult
  */
 
+/**
+ * @overload
+ * @param {DataSlice} dataSlice
+ * @param {0x0002} fieldType
+ * @param {number} count
+ * @param {number} offset
+ * @returns {string}
+ */
+
+/**
+ * @param {DataSlice} dataSlice
+ * @param {import('./globals.js').FieldType} fieldType
+ * @param {number} count
+ * @param {number} offset
+ * @returns {TypedArray|string}
+ */
 function getValues(dataSlice, fieldType, count, offset) {
+  /** @type {TypedArray|null} */
   let values = null;
   let readMethod = null;
   const fieldTypeLength = getFieldTypeSize(fieldType);
@@ -81,10 +98,10 @@ function getValues(dataSlice, fieldType, count, offset) {
       values = new Int32Array(count); readMethod = dataSlice.readInt32;
       break;
     case fieldTypes.LONG8: case fieldTypes.IFD8:
-      values = new Array(count); readMethod = dataSlice.readUint64;
+      values = new Uint8Array(count); readMethod = dataSlice.readUint8;
       break;
     case fieldTypes.SLONG8:
-      values = new Array(count); readMethod = dataSlice.readInt64;
+      values = new Int8Array(count); readMethod = dataSlice.readInt8;
       break;
     case fieldTypes.RATIONAL:
       values = new Uint32Array(count * 2); readMethod = dataSlice.readUint32;
@@ -139,6 +156,21 @@ class GeoTIFFImageIndexError extends Error {
 
 class GeoTIFFBase {
   /**
+   * @param {number} [_index=0] the index of the image to return.
+   * @returns {Promise<GeoTIFFImage>} the image at the given index
+   */
+  async getImage(_index = 0) {
+    throw new Error('Not implemented');
+  }
+
+  /**
+   * @returns {Promise<number>} the number of internal subfile images
+   */
+  async getImageCount() {
+    throw new Error('Not implemented');
+  }
+
+  /**
    * (experimental) Reads raster data from the best fitting image. This function uses
    * the image with the lowest resolution that is still a higher resolution than the
    * requested resolution.
@@ -147,7 +179,7 @@ class GeoTIFFBase {
    * Then, the [readRasters]{@link GeoTIFFImage#readRasters} method of the selected
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
-   * @param {import('./geotiffimage').ReadRasterOptions} [options={}] optional parameters
+   * @param {import('./geotiffimage.js').ReadRasterOptions & {resX?: number, resY?: number}} options optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded array(s), with `height` and `width`, as a promise
    */
   async readRasters(options = {}) {
@@ -252,7 +284,6 @@ class GeoTIFFBase {
 
 /**
  * The abstraction for a whole GeoTIFF file.
- * @augments GeoTIFFBase
  */
 class GeoTIFF extends GeoTIFFBase {
   /**
@@ -334,7 +365,7 @@ class GeoTIFF extends GeoTIFFBase {
   async getImage(index = 0) {
     return new GeoTIFFImage(
       await this.requestIFD(index),
-      this.dataView, this.littleEndian, this.cache, this.source,
+      this.littleEndian, this.cache, this.source,
     );
   }
 
@@ -389,7 +420,7 @@ class GeoTIFF extends GeoTIFFBase {
         .filter((line) => line.length > 0)
         .map((line) => line.split('='))
         .forEach(([key, value]) => {
-          this.ghostValues[key] = value;
+          /** @type {*} */ (this.ghostValues)[key] = value;
         });
     }
     return this.ghostValues;
@@ -489,7 +520,11 @@ class MultiGeoTIFF extends GeoTIFFBase {
    * @returns {Promise<GeoTIFFImage>} the image at the given index
    */
   async getImage(index = 0) {
+    // Initialize this.imageCounts if not yet done
     await this.getImageCount();
+    if (!this.imageCounts) {
+      throw new Error('Image counts not available');
+    }
     await this.parseFileDirectoriesPerFile();
     let visited = 0;
     let relativeIndex = 0;
@@ -499,7 +534,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
         if (index === visited) {
           return new GeoTIFFImage(
             await imageFile.requestIFD(relativeIndex),
-            imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
+            imageFile.littleEndian, imageFile.cache, imageFile.source,
           );
         }
         visited++;
@@ -540,7 +575,7 @@ export { MultiGeoTIFF };
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
+  return GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal);
 }
 
 /**
@@ -553,7 +588,7 @@ export async function fromUrl(url, options = {}, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromCustomClient(client, options = {}, signal) {
-  return GeoTIFF.fromSource(makeCustomSource(client, options), signal);
+  return GeoTIFF.fromSource(makeCustomSource(client, options), undefined, signal);
 }
 
 /**
@@ -565,7 +600,7 @@ export async function fromCustomClient(client, options = {}, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromArrayBuffer(arrayBuffer, signal) {
-  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), signal);
+  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), undefined, signal);
 }
 
 /**
@@ -581,7 +616,7 @@ export async function fromArrayBuffer(arrayBuffer, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path, signal) {
-  return GeoTIFF.fromSource(makeFileSource(path), signal);
+  return GeoTIFF.fromSource(makeFileSource(path), undefined, signal);
 }
 
 /**
@@ -595,7 +630,7 @@ export async function fromFile(path, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromBlob(blob, signal) {
-  return GeoTIFF.fromSource(makeFileReaderSource(blob), signal);
+  return GeoTIFF.fromSource(makeFileReaderSource(blob), undefined, signal);
 }
 
 /**
@@ -610,9 +645,9 @@ export async function fromBlob(blob, signal) {
  * @returns {Promise<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), signal);
+  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), undefined, signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal)),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
@@ -620,8 +655,9 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
 
 /**
  * Main creating function for GeoTIFF files.
- * @param {(Array)} array of pixel values
- * @returns {metadata} metadata
+ * @param {Array} values of pixel values
+ * @param {*} metadata
+ * @returns {ArrayBuffer}
  */
 export function writeArrayBuffer(values, metadata) {
   return writeGeotiff(values, metadata);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { BaseSource } from './basesource.js';
 
 function closeAsync(fd) {
-  return new Promise((resolve, reject) => {
+  return /** @type{Promise<void>} */ (new Promise((resolve, reject) => {
     fs.close(fd, (err) => {
       if (err) {
         reject(err);
@@ -10,7 +10,7 @@ function closeAsync(fd) {
         resolve();
       }
     });
-  });
+  }));
 }
 
 function openAsync(path, flags, mode = undefined) {
@@ -25,9 +25,9 @@ function openAsync(path, flags, mode = undefined) {
   });
 }
 
-function readAsync(...args) {
+function readAsync(_fd, _buffer, _offset, _length, _position) {
   return new Promise((resolve, reject) => {
-    fs.read(...args, (err, bytesRead, buffer) => {
+    fs.read(_fd, _buffer, _offset, _length, _position, (err, bytesRead, buffer) => {
       if (err) {
         reject(err);
       } else {

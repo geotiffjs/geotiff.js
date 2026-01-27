@@ -33,10 +33,13 @@ function parseHeaders(text) {
 
 /**
  * Parse a 'Content-Type' header value to the content-type and parameters
- * @param {String} rawContentType the raw string to parse from
- * @returns {Object} the parsed content type with the fields: type and params
+ * @param {string|null} rawContentType the raw string to parse from
+ * @returns {{type: string|null, params: *}} the parsed content type with the fields: type and params
  */
 export function parseContentType(rawContentType) {
+  if (!rawContentType) {
+    return { type: null, params: {} };
+  }
   const [type, ...rawParams] = rawContentType.split(';').map((s) => s.trim());
   const paramsItems = rawParams.map((param) => param.split('='));
   return { type, params: itemsToObject(paramsItems) };
@@ -44,19 +47,16 @@ export function parseContentType(rawContentType) {
 
 /**
  * Parse a 'Content-Range' header value to its start, end, and total parts
- * @param {String} rawContentRange the raw string to parse from
- * @returns {Object} the parsed parts
+ * @param {string|null} rawContentRange the raw string to parse from
+ * @returns {{start: number, end: number, total: number}} the parsed parts
  */
 export function parseContentRange(rawContentRange) {
-  let start;
-  let end;
-  let total;
+  let start = NaN;
+  let end = NaN;
+  let total = NaN;
 
   if (rawContentRange) {
-    [, start, end, total] = rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/);
-    start = parseInt(start, 10);
-    end = parseInt(end, 10);
-    total = parseInt(total, 10);
+    [, start, end, total] = (rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/) || []).map(Number);
   }
 
   return { start, end, total };
@@ -129,7 +129,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
 
     // calculate the length of the slice and the next offset
     const startOfData = offset + startBoundary.length + endOfHeaders + CRLFCRLF.length;
-    const length = parseInt(end, 10) + 1 - parseInt(start, 10);
+    const length = end + 1 - start;
     out.push({
       headers,
       data: responseArrayBuffer.slice(startOfData, startOfData + length),

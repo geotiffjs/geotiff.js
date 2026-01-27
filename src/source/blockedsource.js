@@ -7,7 +7,7 @@ class Block {
    *
    * @param {number} offset
    * @param {number} length
-   * @param {ArrayBuffer} [data]
+   * @param {ArrayBuffer|null} [data=null]
    */
   constructor(offset, length, data = null) {
     this.offset = offset;
@@ -74,8 +74,8 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   *
    * @param {import("./basesource").Slice[]} slices
+   * @return {Promise<ArrayBuffer[]>}
    */
   async fetch(slices, signal) {
     const blockRequests = [];
@@ -161,8 +161,7 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   *
-   * @param {AbortSignal} signal
+   * @param {AbortSignal|null} signal
    */
   fetchBlocks(signal) {
     // check if we still need to
@@ -170,7 +169,7 @@ export class BlockedSource extends BaseSource {
       const groups = this.groupBlocks(this.blockIdsToFetch);
 
       // start requesting slices of data
-      const groupRequests = this.source.fetch(groups, signal);
+      const groupRequests = this.source.fetch(groups, signal || undefined);
 
       for (let groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
         const group = groups[groupIndex];
@@ -188,7 +187,6 @@ export class BlockedSource extends BaseSource {
                 blockOffset,
                 data.byteLength,
                 data,
-                blockId,
               );
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
@@ -253,7 +251,8 @@ export class BlockedSource extends BaseSource {
   /**
    *
    * @param {import("./basesource").Slice[]} slices
-   * @param {Map} blocks
+   * @param {Map<number, *>} blocks
+   * @returns {ArrayBuffer[]}
    */
   readSliceData(slices, blocks) {
     return slices.map((slice) => {
@@ -267,7 +266,7 @@ export class BlockedSource extends BaseSource {
       const sliceView = new Uint8Array(sliceData);
 
       for (let blockId = blockIdLow; blockId <= blockIdHigh; ++blockId) {
-        const block = blocks.get(blockId);
+        const block = /** @type {*} */ (blocks.get(blockId));
         const delta = block.offset - slice.offset;
         const topDelta = block.top - top;
         let blockInnerOffset = 0;

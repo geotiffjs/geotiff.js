@@ -12,7 +12,7 @@ import {
  * Allocates an appropriate TypedArray based on the TIFF field type.
  * @param {number} fieldType - TIFF field type constant from fieldTypes
  * @param {number} count - Number of elements to allocate
- * @returns {TypedArray} The allocated typed array for the given field type
+ * @returns {import('./geotiff.js').TypedArray} The allocated typed array for the given field type
  * @throws {RangeError} If the field type is invalid
  */
 function getArrayForSamples(fieldType, count) {
@@ -34,9 +34,9 @@ function getArrayForSamples(fieldType, count) {
       return new Int32Array(count);
     case fieldTypes.LONG8:
     case fieldTypes.IFD8:
-      return new Array(count);
+      return /** @type {*} */ (new Array(count));
     case fieldTypes.SLONG8:
-      return new Array(count);
+      return /** @type {*} */ (new Array(count));
     case fieldTypes.RATIONAL:
       return new Uint32Array(count * 2);
     case fieldTypes.SRATIONAL:
@@ -93,17 +93,29 @@ function getDataSliceReader(dataSlice, fieldType) {
 }
 
 /**
- * Reads field values from a DataSlice.
- * @param {TypedArray|null} outValues - Optional pre-allocated output array
+ * @overload
+ * @param {import('./geotiff.js').TypedArray|null} outValues - Optional pre-allocated output array
  * @param {Function} readMethod - DataView read method (e.g., getUint16)
  * @param {DataSlice} dataSlice - Source data slice
  * @param {number} fieldType - TIFF field type constant
  * @param {number} count - Number of values to read
  * @param {number} offset - Byte offset to start reading
- * @param {boolean} isArray - Whether to always return an array (vs single value)
- * @returns {TypedArray|string|number} The decoded value(s)
+ * @param {true} isArray - Whether to always return an array (vs single value)
+ * @returns {import('./geotiff.js').TypedArray} The decoded value(s)
  */
-function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray) {
+
+/**
+ * Reads field values from a DataSlice.
+ * @param {import('./geotiff.js').TypedArray|null} outValues - Optional pre-allocated output array
+ * @param {Function} readMethod - DataView read method (e.g., getUint16)
+ * @param {DataSlice} dataSlice - Source data slice
+ * @param {import('./globals.js').FieldType} fieldType - TIFF field type constant
+ * @param {number} count - Number of values to read
+ * @param {number} offset - Byte offset to start reading
+ * @param {boolean} [isArray] - Whether to always return an array (vs single value)
+ * @returns {import('./geotiff.js').TypedArray|string|number} The decoded value(s)
+ */
+function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray = false) {
   const fieldTypeLength = getFieldTypeSize(fieldType);
 
   const values = outValues || getArrayForSamples(fieldType, count);
@@ -149,7 +161,7 @@ class DeferredArray {
    * @param {import("./source/basesource.js").BaseSource} source - Data source for fetching
    * @param {number} arrayOffset - Byte offset where the array data starts
    * @param {boolean} littleEndian - Endianness of the data
-   * @param {number} fieldType - TIFF field type constant
+   * @param {import('./globals.js').FieldType} fieldType - TIFF field type constant
    * @param {number} length - Number of elements in the array
    */
   constructor(source, arrayOffset, littleEndian, fieldType, length) {
@@ -168,7 +180,7 @@ class DeferredArray {
   /**
    * Loads all values in the deferred array at once.
    * Subsequent calls return the same promise to avoid redundant fetches.
-   * @returns {Promise<TypedArray>} Promise resolving to the fully loaded array
+   * @returns {Promise<import('./geotiff.js').TypedArray>} Promise resolving to the fully loaded array
    */
   async loadAll() {
     if (!this.fullFetchPromise) {
@@ -363,7 +375,7 @@ export class ImageFileDirectory {
    * Parses the GeoTIFF GeoKeyDirectory tag into a structured object.
    * The GeoKeyDirectory is a special TIFF tag that contains geographic metadata
    * in a key-value format as defined by the GeoTIFF specification.
-   * @returns {Record<import('./globals.js').GeoKeyName, *>|null} Parsed geo key directory
+   * @returns {Partial<Record<import('./globals.js').GeoKeyName, *>>|null} Parsed geo key directory
    *     mapping key names to values, or null if not present
    * @throws {Error} If a referenced geo key value cannot be retrieved
    */
@@ -373,7 +385,7 @@ export class ImageFileDirectory {
       return null;
     }
 
-    /** @type {Record<import('./globals.js').GeoKeyName, *>} */
+    /** @type {Partial<Record<import('./globals.js').GeoKeyName, *>>} */
     const geoKeyDirectory = {};
     for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
       const key = geoKeyNames[rawGeoKeyDirectory[i]];
@@ -491,7 +503,7 @@ export class ImageFileDirectoryParser {
       i += entrySize, ++entryCount
     ) {
       const fieldTag = dataSlice.readUint16(i);
-      const fieldType = dataSlice.readUint16(i + 2);
+      const fieldType = /** @type {import('./globals.js').FieldType} */ (dataSlice.readUint16(i + 2));
       const typeCount = this.bigTiff
         ? dataSlice.readUint64(i + 4)
         : dataSlice.readUint32(i + 4);

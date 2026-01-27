@@ -59,12 +59,12 @@ export default class DataView64 {
     return value;
   }
 
-  getUint8(offset, littleEndian) {
-    return this._dataView.getUint8(offset, littleEndian);
+  getUint8(offset, _littleEndian) {
+    return this._dataView.getUint8(offset);
   }
 
-  getInt8(offset, littleEndian) {
-    return this._dataView.getInt8(offset, littleEndian);
+  getInt8(offset, _littleEndian) {
+    return this._dataView.getInt8(offset);
   }
 
   getUint16(offset, littleEndian) {

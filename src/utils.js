@@ -125,6 +125,11 @@ export async function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+/**
+ * @param {ArrayLike} a
+ * @param {ArrayLike} b
+ * @returns {Array<[*, *]>}
+ */
 export function zip(a, b) {
   const A = Array.isArray(a) ? a : Array.from(a);
   const B = Array.isArray(b) ? b : Array.from(b);

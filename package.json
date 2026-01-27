@@ -145,8 +145,9 @@
     "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
-    "pretest": "npm run lint",
-    "test": "mocha --full-trace test/*.spec.js"
+    "pretest": "npm run lint && npm run typecheck",
+    "test": "mocha --full-trace test/*.spec.js",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "author": "Fabian Schindler",
   "browser": {

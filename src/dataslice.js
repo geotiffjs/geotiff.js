@@ -31,15 +31,11 @@ export default class DataSlice {
   }
 
   readUint8(offset) {
-    return this._dataView.getUint8(
-      offset - this._sliceOffset, this._littleEndian,
-    );
+    return this._dataView.getUint8(offset - this._sliceOffset);
   }
 
   readInt8(offset) {
-    return this._dataView.getInt8(
-      offset - this._sliceOffset, this._littleEndian,
-    );
+    return this._dataView.getInt8(offset - this._sliceOffset);
   }
 
   readUint16(offset) {
