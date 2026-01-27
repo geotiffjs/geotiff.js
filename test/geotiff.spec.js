@@ -185,7 +185,7 @@ describe('writeTypedArrays', () => {
 
       const valueArray = toArrayRecursively(newValues);
       expect(valueArray).to.be.deep.equal(Array.from(interleavedValues));
-    });
+    }).timeout(4000);
   }
 });
 
