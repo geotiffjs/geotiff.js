@@ -82,7 +82,7 @@
     "dist-browser"
   ],
   "engines": {
-    "node": ">=10.19"
+    "node": ">=14.0.0"
   },
   "dependencies": {
     "@petamoriken/float16": "^3.4.7",
@@ -131,16 +131,16 @@
     "prebuild": "npm run build:clean",
     "build": "npm run build:module && run-p build:browser build:node",
     "build:clean": "shx rm -rf dist-node/ dist-browser/ dist-module/",
-    "build:module": "tsc --project tsconfig.dev.json && rollup -c rollup.worker.config.js",
+    "build:module": "tsc --project tsconfig.module.json && rollup -c rollup.worker.config.js",
     "build:browser": "rollup -c rollup.config.js",
-    "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
-    "build:types": "tsc --outdir dist-module/",
+    "build:node": "tsc --project tsconfig.node.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
+    "build:rebuild": "rm *.tsbuildinfo || true && npm run build",
     "watch:module": "chokidar \"src/*.js\" -c \"npm run build:module\"",
     "watch:browser": "chokidar \"dist-module/*.js\" -c \"npm run build:browser\"",
     "predev": "npm run build",
     "dev": "run-p watch:module watch:browser dev:serve",
     "dev:serve": "serve --listen 8090",
-    "docs": "rm -rf docs/; typedoc",
+    "docs": "rm -rf docs/ && typedoc",
     "prelint": "npm run build:module",
     "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",

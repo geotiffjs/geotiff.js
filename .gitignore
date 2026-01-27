@@ -6,3 +6,5 @@ dist-browser
 dist-module
 docs
 .DS_Store
+*.tgz
+*.tsbuildinfo
