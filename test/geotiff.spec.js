@@ -162,33 +162,27 @@ describe('writeTypedArrays', () => {
       const originalValueArray = Array.from(originalValues);
       expect(valueArray).to.be.deep.equal(originalValueArray);
     });
-  }
 
-  for (let s = 0; s < variousDataTypeExamples.length; ++s) {
-    const originalValues = variousDataTypeExamples[s];
-    const interleavedValues = new originalValues.constructor(originalValues.length * 3);
-    for (let i = 0; i < originalValues.length; ++i) {
-      interleavedValues[i * 3] = originalValues[i];
-      interleavedValues[(i * 3) + 1] = originalValues[i];
-      interleavedValues[(i * 3) + 2] = originalValues[i];
-    }
-    const dataType = originalValues.constructor.name;
-
-    it(`should write multiple ${dataType} samples`, async () => {
+    it(`should write ${dataType} with multiple samples`, async () => {
+      const interleavedValues = new originalValues.constructor(originalValues.length * 2);
+      for (let i = 0; i < originalValues.length; ++i) {
+        interleavedValues[i * 2] = originalValues[i];
+        interleavedValues[(i * 2) + 1] = originalValues[i];
+      }
       const metadata = {
         height,
         width,
-        SamplesPerPixel: 3,
+        SamplesPerPixel: 2,
       };
-
       const newGeoTiffAsBinaryData = await writeArrayBuffer(interleavedValues, metadata);
-      // geotiff binary size should match bitsPerSample * samplesPerPixel * numPixels + overhead
+
       const expectedSizeInBytes = ((interleavedValues.BYTES_PER_ELEMENT || 8) * interleavedValues.length) + numBytesInIfd;
       expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
 
       const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
       const image = await newGeoTiff.getImage();
       const newValues = await image.readRasters({ interleave: true });
+
       const valueArray = toArrayRecursively(newValues);
       expect(valueArray).to.be.deep.equal(Array.from(interleavedValues));
     });
