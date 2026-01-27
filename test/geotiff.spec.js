@@ -124,6 +124,9 @@ function getMockMetaData(height, width) {
 
 describe('writeTypedArrays', () => {
   const dataLength = 512 * 512 * 4;
+  // configured in src/geotiffwriter.js
+  // TODO: maybe export this from there? or make it configurable/accessible?
+  const numBytesInIfd = 1000;
 
   const variousDataTypeExamples = [
     generateTestDataArray(0, 255, dataLength, true),
@@ -148,6 +151,9 @@ describe('writeTypedArrays', () => {
       };
 
       const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+      // geotiff binary size should match bitsPerSample * samplesPerPixel * numPixels + overhead
+      const expectedSizeInBytes = ((originalValues.BYTES_PER_ELEMENT || 8) * dataLength) + numBytesInIfd;
+      expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
       const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
       const image = await newGeoTiff.getImage();
       const newValues = await image.readRasters();
@@ -156,6 +162,29 @@ describe('writeTypedArrays', () => {
       expect(valueArray).to.be.deep.equal(originalValueArray);
     });
   }
+
+  it('should write multiple samples', async () => {
+    const sample1 = generateTestDataArray(0, 255, dataLength, true);
+    const sample2 = generateTestDataArray(0, 255, dataLength, true);
+    const sample3 = generateTestDataArray(0, 255, dataLength, true);
+    const originalValues = new Uint8Array(sample1.flatMap((value, index) => {
+      return [value, sample2[index], sample3[index]];
+    }));
+
+    const metadata = {
+      height,
+      width,
+      SamplesPerPixel: 3,
+    };
+    const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+    const expectedSizeInBytes = (originalValues.BYTES_PER_ELEMENT * metadata.SamplesPerPixel * dataLength) + numBytesInIfd;
+    expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
+    const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+    const image = await newGeoTiff.getImage();
+    const newValues = await image.readRasters({ interleave: true });
+    const valueArrays = toArrayRecursively(newValues);
+    expect(valueArrays).to.be.deep.equal(originalValues);
+  });
 });
 
 describe('GeoTIFF - external overviews', () => {
