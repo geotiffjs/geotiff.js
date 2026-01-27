@@ -4,16 +4,16 @@
   You can view that here:
   https://github.com/photopea/UTIF.js/blob/master/LICENSE
 */
-import { fieldTags, fieldTagNames, fieldTagTypes, fieldTypeNames, geoKeyNames } from './globals.js';
+import { tags, fieldTagTypes, fieldTypes, geoKeyNames } from './globals.js';
 import { assign, endsWith, forEach, invert, times, typeMap,
   isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
-const tagName2Code = invert(fieldTagNames);
+const tagName2Code = tags;
 const geoKeyName2Code = invert(geoKeyNames);
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
-const typeName2byte = invert(fieldTypeNames);
+const typeName2byte = fieldTypes;
 
 // config variables
 const numBytesInIfd = 1000;
@@ -252,7 +252,7 @@ const encodeImage = (values, width, height, metadata) => {
   }
 
   const prfx = new Uint8Array(encodeIfds([ifd]));
-  const samplesPerPixel = ifd[fieldTags.SamplesPerPixel];
+  const samplesPerPixel = ifd[tags.SamplesPerPixel];
 
   const dataType = values.constructor.name;
   const TypedArray = typeMap[dataType];

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": [
+    "**/*.spec.js",
+    "**/*.test.js",
+    "**/test/**",
+    "**/node_modules/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "readme": "README.md",
+  "name": "geotiff.js",
+  "navigationLinks": {
+    "GitHub": "https://github.com/geotiffjs/geotiff.js"
+  },
+  "plugin": ["typedoc-theme-fresh"],
+  "theme": "fresh",
+  "compilerOptions": {
+    "skipLibCheck": true
+  }
+}
