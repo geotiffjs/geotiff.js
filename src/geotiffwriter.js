@@ -252,7 +252,6 @@ const encodeImage = (values, width, height, metadata) => {
   }
 
   const prfx = new Uint8Array(encodeIfds([ifd]));
-  const samplesPerPixel = ifd[tags.SamplesPerPixel];
 
   const dataType = values.constructor.name;
   const TypedArray = typeMap[dataType];
@@ -263,7 +262,7 @@ const encodeImage = (values, width, height, metadata) => {
     elementSize = TypedArray.BYTES_PER_ELEMENT;
   }
 
-  const data = new Uint8Array(numBytesInIfd + (values.length * elementSize * samplesPerPixel));
+  const data = new Uint8Array(numBytesInIfd + (values.length * elementSize));
 
   times(prfx.length, (i) => {
     data[i] = prfx[i];
