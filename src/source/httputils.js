@@ -34,7 +34,8 @@ function parseHeaders(text) {
 /**
  * Parse a 'Content-Type' header value to the content-type and parameters
  * @param {string|null} rawContentType the raw string to parse from
- * @returns {{type: string|null, params: *}} the parsed content type with the fields: type and params
+ * @returns {{type: string|null, params: Object}}}
+ *     the parsed content type with the fields: type and params
  */
 export function parseContentType(rawContentType) {
   if (!rawContentType) {

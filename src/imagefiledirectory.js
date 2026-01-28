@@ -12,7 +12,7 @@ import {
  * Allocates an appropriate TypedArray based on the TIFF field type.
  * @param {number} fieldType - TIFF field type constant from fieldTypes
  * @param {number} count - Number of elements to allocate
- * @returns {import('./geotiff.js').TypedArray} The allocated typed array for the given field type
+ * @returns {import('./geotiff.js').TypedArray|Array<number>} The allocated typed array for the given field type
  * @throws {RangeError} If the field type is invalid
  */
 function getArrayForSamples(fieldType, count) {
@@ -34,9 +34,9 @@ function getArrayForSamples(fieldType, count) {
       return new Int32Array(count);
     case fieldTypes.LONG8:
     case fieldTypes.IFD8:
-      return /** @type {*} */ (new Array(count));
+      return new Array(count);
     case fieldTypes.SLONG8:
-      return /** @type {*} */ (new Array(count));
+      return new Array(count);
     case fieldTypes.RATIONAL:
       return new Uint32Array(count * 2);
     case fieldTypes.SRATIONAL:
@@ -94,26 +94,26 @@ function getDataSliceReader(dataSlice, fieldType) {
 
 /**
  * @overload
- * @param {import('./geotiff.js').TypedArray|null} outValues - Optional pre-allocated output array
+ * @param {import('./geotiff.js').TypedArray|Array<number>|null} outValues - Optional pre-allocated output array
  * @param {Function} readMethod - DataView read method (e.g., getUint16)
  * @param {DataSlice} dataSlice - Source data slice
  * @param {number} fieldType - TIFF field type constant
  * @param {number} count - Number of values to read
  * @param {number} offset - Byte offset to start reading
  * @param {true} isArray - Whether to always return an array (vs single value)
- * @returns {import('./geotiff.js').TypedArray} The decoded value(s)
+ * @returns {import('./geotiff.js').TypedArray|Array<number>} The decoded value(s)
  */
 
 /**
  * Reads field values from a DataSlice.
- * @param {import('./geotiff.js').TypedArray|null} outValues - Optional pre-allocated output array
+ * @param {import('./geotiff.js').TypedArray|Array<number>|null} outValues - Optional pre-allocated output array
  * @param {Function} readMethod - DataView read method (e.g., getUint16)
  * @param {DataSlice} dataSlice - Source data slice
  * @param {import('./globals.js').FieldType} fieldType - TIFF field type constant
  * @param {number} count - Number of values to read
  * @param {number} offset - Byte offset to start reading
  * @param {boolean} [isArray] - Whether to always return an array (vs single value)
- * @returns {import('./geotiff.js').TypedArray|string|number} The decoded value(s)
+ * @returns {import('./geotiff.js').TypedArray|Array<number>|string|number} The decoded value(s)
  */
 function getValues(outValues = null, readMethod, dataSlice, fieldType, count, offset, isArray = false) {
   const fieldTypeLength = getFieldTypeSize(fieldType);
@@ -141,7 +141,7 @@ function getValues(outValues = null, readMethod, dataSlice, fieldType, count, of
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return new TextDecoder('utf-8').decode(values);
+    return new TextDecoder('utf-8').decode(/** @type {Uint8Array} */ (values));
   }
 
   if (count === 1 && !isArray && !isRational) {
@@ -180,7 +180,7 @@ class DeferredArray {
   /**
    * Loads all values in the deferred array at once.
    * Subsequent calls return the same promise to avoid redundant fetches.
-   * @returns {Promise<import('./geotiff.js').TypedArray>} Promise resolving to the fully loaded array
+   * @returns {Promise<import('./geotiff.js').TypedArray|Array<number>>} Promise resolving to the fully loaded array
    */
   async loadAll() {
     if (!this.fullFetchPromise) {

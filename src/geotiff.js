@@ -18,6 +18,7 @@ import * as globals from './globals.js';
 import * as rgb from './rgb.js';
 import { getDecoder, addDecoder } from './compression/index.js';
 import { setLogger } from './logging.js';
+/** @import { BaseSource } from './source/basesource.js' */
 
 export { globals };
 export { registerTag };
@@ -70,7 +71,7 @@ export { setLogger };
  * @param {import('./globals.js').FieldType} fieldType
  * @param {number} count
  * @param {number} offset
- * @returns {TypedArray|Array|string}
+ * @returns {TypedArray|Array<number>|string}
  */
 function getValues(dataSlice, fieldType, count, offset) {
   /** @type {TypedArray|Array|null} */
@@ -299,7 +300,7 @@ class GeoTIFFBase {
 class GeoTIFF extends GeoTIFFBase {
   /**
    * @constructor
-   * @param {*} source The datasource to read from.
+   * @param {BaseSource} source The datasource to read from.
    * @param {boolean} littleEndian Whether the image uses little endian.
    * @param {boolean} bigTiff Whether the image uses bigTIFF conventions.
    * @param {number} firstIFDOffset The numeric byte-offset from the start of the image
@@ -425,13 +426,14 @@ class GeoTIFF extends GeoTIFFBase {
         slice = await this.getSlice(offset, metadataSize);
       }
       const fullString = getValues(slice, fieldTypes.ASCII, metadataSize, offset);
+      /** @type {Object} */
       this.ghostValues = {};
       fullString
         .split('\n')
         .filter((line) => line.length > 0)
         .map((line) => line.split('='))
         .forEach(([key, value]) => {
-          /** @type {*} */ (this.ghostValues)[key] = value;
+          this.ghostValues[key] = value;
         });
     }
     return this.ghostValues;
@@ -440,7 +442,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Parse a (Geo)TIFF file from the given source.
    *
-   * @param {*} source The source of data to parse from.
+   * @param {BaseSource} source The source of data to parse from.
    * @param {GeoTIFFOptions} [options] Additional options.
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
@@ -667,7 +669,7 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
 /**
  * Main creating function for GeoTIFF files.
  * @param {Array} values of pixel values
- * @param {*} metadata
+ * @param {Object} metadata
  * @returns {ArrayBuffer}
  */
 export function writeArrayBuffer(values, metadata) {
