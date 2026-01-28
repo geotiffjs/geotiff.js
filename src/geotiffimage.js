@@ -30,6 +30,20 @@ import { resample, resampleInterleaved } from './resample.js';
  */
 
 /**
+ * @typedef {Object} ReadRGBOptionsWithoutInterleave
+ * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
+ * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
+ * @property {number} [width] The desired width of the output. When the width is no the
+ *                                 same as the images, resampling will be performed.
+ * @property {number} [height] The desired height of the output. When the width is no the
+ *                                  same as the images, resampling will be performed.
+ * @property {string} [resampleMethod='nearest'] The desired resampling method.
+ * @property {boolean} [enableAlpha=false] Enable reading alpha channel if present.
+ * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                                       to be aborted
+ */
+
+/**
  * @typedef {Object} InterleaveOptions
  * @property {boolean} [interleave] whether the data shall be read
  *     in one single array or separate arrays.
@@ -37,6 +51,10 @@ import { resample, resampleInterleaved } from './resample.js';
 
 /**
  * @typedef {ReadRastersOptionsWithoutInterleave | ReadRastersOptionsWithoutInterleave & InterleaveOptions} ReadRastersOptions
+ */
+
+/**
+ * @typedef {ReadRGBOptionsWithoutInterleave | ReadRGBOptionsWithoutInterleave & InterleaveOptions} ReadRGBOptions
  */
 
 function sum(array, start, end) {
@@ -679,30 +697,43 @@ class GeoTIFFImage {
   }
 
   /**
+   * @overload
+   * @param {ReadRGBOptionsWithoutInterleave & {interleave: true}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptionsWithoutInterleave & {interleave: false}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptionsWithoutInterleave & {interleave: boolean}} options optional parameters
+   * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptionsWithoutInterleave} [options={}] optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
    * Reads raster data from the image as RGB.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
    * When no other method is applicable, the first sample is used to produce a
    * grayscale image.
    * When provided, only a subset of the raster is read for each sample.
    *
-   * @param {Object} [options] optional parameters
-   * @param {Array<number>} [options.window] the subset to read data from in pixels.
-   * @param {boolean} [options.interleave=true] whether the data shall be read
-   *                                             in one single array or separate
-   *                                             arrays.
-   * @param {import("./geotiff").Pool|null} [options.pool=null] The optional decoder pool to use.
-   * @param {number} [options.width] The desired width of the output. When the width is no the
-   *                                 same as the images, resampling will be performed.
-   * @param {number} [options.height] The desired height of the output. When the width is no the
-   *                                  same as the images, resampling will be performed.
-   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
-   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
-   *                                       to be aborted
+   * @param {ReadRGBOptions} [options] optional parameters
    * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
    */
-  async readRGB({ window, interleave = true, pool = null, width, height,
-    resampleMethod, enableAlpha = false, signal } = {}) {
+  async readRGB(options = {}) {
+    const { window, pool = null, width, height,
+      resampleMethod, enableAlpha = false, signal } = options;
+    const interleave = ('interleave' in options && options.interleave) ?? false;
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
