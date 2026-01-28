@@ -8,11 +8,12 @@ import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fro
 import { getDecoder, getDecoderParameters } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
 
+/** @import {TypedArray} from "./geotiff" */
+/** @import {ReadRasterResult} from "./geotiff" */
+
 /**
- * @typedef {Object} ReadRasterOptionsWithoutInterleave
+ * @typedef {Object} ReadRastersOptionsWithoutInterleave
  * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
- * @property {Array<number>} [bbox] the subset to read data from in
- *     geographical coordinates. Whole image if not specified.
  * @property {Array<number>} [samples] the selection of samples to read from. Default is all samples.
  *     All samples if not specified.
  * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
@@ -24,24 +25,19 @@ import { resample, resampleInterleaved } from './resample.js';
  * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                                       to be aborted
  * @property {number|number[]} [fillValue] The value to use for parts of the image
- *                                              outside of the images extent. When multiple
- *                                              samples are requested, an array of fill values
- *                                              can be passed.
+ *     outside of the images extent. When multiple samples are requested and `interleave` is
+ *     `false`, an array of fill values can be passed.
  */
 
 /**
  * @typedef {Object} InterleaveOptions
- * @property {boolean} interleave whether the data shall be read
- *                                             in one single array or separate
- *                                             arrays.
+ * @property {boolean} [interleave] whether the data shall be read
+ *     in one single array or separate arrays.
  */
 
 /**
- * @typedef {ReadRasterOptionsWithoutInterleave | ReadRasterOptionsWithoutInterleave & InterleaveOptions} ReadRasterOptions
+ * @typedef {ReadRastersOptionsWithoutInterleave | ReadRastersOptionsWithoutInterleave & InterleaveOptions} ReadRastersOptions
  */
-
-/** @typedef {import("./geotiff").TypedArray} TypedArray */
-/** @typedef {import("./geotiff").ReadRasterResult} ReadRasterResult */
 
 function sum(array, start, end) {
   let s = 0;
@@ -584,25 +580,25 @@ class GeoTIFFImage {
 
   /**
    * @overload
-   * @param {ReadRasterOptionsWithoutInterleave & {interleave: true}} options optional parameters
+   * @param {ReadRastersOptionsWithoutInterleave & {interleave: true}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRasterOptionsWithoutInterleave & {interleave: false}} options optional parameters
+   * @param {ReadRastersOptionsWithoutInterleave & {interleave: false}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRasterOptionsWithoutInterleave & {interleave: boolean}} options optional parameters
+   * @param {ReadRastersOptionsWithoutInterleave & {interleave: boolean}} options optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRasterOptionsWithoutInterleave} [options={}] optional parameters
+   * @param {ReadRastersOptionsWithoutInterleave} [options={}] optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
@@ -612,7 +608,7 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {ReadRasterOptions} [options={}] optional parameters
+   * @param {ReadRastersOptions} [options={}] optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
   async readRasters(options = {}) {
@@ -652,7 +648,10 @@ class GeoTIFFImage {
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.getValue('BitsPerSample'));
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
-        valueArrays.fill(/** @type {number} */ (fillValue));
+        if (Array.isArray(fillValue)) {
+          throw new Error('When reading interleaved data, fillValue must be a single number.');
+        }
+        valueArrays.fill(fillValue);
       }
     } else {
       valueArrays = [];

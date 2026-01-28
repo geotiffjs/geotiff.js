@@ -50,9 +50,17 @@ const dctSin6 = 3784; // sin(6*pi/16)
 const dctSqrt2 = 5793; // sqrt(2)
 const dctSqrt1d2 = 2896;// sqrt(2) / 2
 
+/** @typedef {(number|HuffmanNode)[]} HuffmanNode */
+/** @typedef {{children: HuffmanNode, index: number}} Code */
+
+/**
+ * @param {Uint8Array<ArrayBuffer>} codeLengths
+ * @param {Uint8Array<ArrayBuffer>} values
+ * @returns {HuffmanNode}
+ */
 function buildHuffmanTable(codeLengths, values) {
   let k = 0;
-  /** @type {Array<{children: any[], index: number}>} */
+  /** @type {Array<Code>} */
   const code = [];
   let length = 16;
   while (length > 0 && !codeLengths[length - 1]) {
@@ -60,8 +68,9 @@ function buildHuffmanTable(codeLengths, values) {
   }
   code.push({ children: [], index: 0 });
 
-  /** @type {{children: any[], index: number}|undefined} */
+  /** @type {Code|undefined} */
   let p = code[0];
+  /** @type {Code|undefined} */
   let q;
   for (let i = 0; i < length; i++) {
     for (let j = 0; j < codeLengths[i]; j++) {

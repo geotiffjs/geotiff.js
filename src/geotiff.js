@@ -70,10 +70,10 @@ export { setLogger };
  * @param {import('./globals.js').FieldType} fieldType
  * @param {number} count
  * @param {number} offset
- * @returns {TypedArray|string}
+ * @returns {TypedArray|Array|string}
  */
 function getValues(dataSlice, fieldType, count, offset) {
-  /** @type {TypedArray|null} */
+  /** @type {TypedArray|Array|null} */
   let values = null;
   let readMethod = null;
   const fieldTypeLength = getFieldTypeSize(fieldType);
@@ -98,10 +98,10 @@ function getValues(dataSlice, fieldType, count, offset) {
       values = new Int32Array(count); readMethod = dataSlice.readInt32;
       break;
     case fieldTypes.LONG8: case fieldTypes.IFD8:
-      values = new Uint8Array(count); readMethod = dataSlice.readUint8;
+      values = new Array(count); readMethod = dataSlice.readUint64;
       break;
     case fieldTypes.SLONG8:
-      values = new Int8Array(count); readMethod = dataSlice.readInt8;
+      values = new Array(count); readMethod = dataSlice.readInt64;
       break;
     case fieldTypes.RATIONAL:
       values = new Uint32Array(count * 2); readMethod = dataSlice.readUint32;
@@ -116,7 +116,10 @@ function getValues(dataSlice, fieldType, count, offset) {
       values = new Float64Array(count); readMethod = dataSlice.readFloat64;
       break;
     default:
-      throw new RangeError(`Invalid field type: ${fieldType}`);
+      // will throw below
+  }
+  if (values === null || readMethod === null) {
+    throw new RangeError(`Invalid field type: ${fieldType}`);
   }
 
   // normal fields
@@ -138,7 +141,7 @@ function getValues(dataSlice, fieldType, count, offset) {
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return new TextDecoder('utf-8').decode(values);
+    return new TextDecoder('utf-8').decode(/** @type {Uint8Array} */ (values));
   }
   return values;
 }
@@ -171,6 +174,14 @@ class GeoTIFFBase {
   }
 
   /**
+   * @typedef {Object} ReadRastersOptions
+   * @property {number} [resX] desired Y resolution (world units per pixel)
+   * @property {number} [resY] desired X resolution (world units per pixel)
+   * @property {Array<number>} [bbox] the subset to read data from in
+   *     geographical coordinates. Whole image if not specified.
+   */
+
+  /**
    * (experimental) Reads raster data from the best fitting image. This function uses
    * the image with the lowest resolution that is still a higher resolution than the
    * requested resolution.
@@ -179,7 +190,7 @@ class GeoTIFFBase {
    * Then, the [readRasters]{@link GeoTIFFImage#readRasters} method of the selected
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
-   * @param {import('./geotiffimage.js').ReadRasterOptions & {resX?: number, resY?: number}} options optional parameters
+   * @param {import('./geotiffimage.js').ReadRastersOptions & ReadRastersOptions} options optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded array(s), with `height` and `width`, as a promise
    */
   async readRasters(options = {}) {
@@ -664,5 +675,4 @@ export function writeArrayBuffer(values, metadata) {
 }
 
 export { Pool };
-export { GeoTIFFImage };
 export { BaseClient, BaseResponse };

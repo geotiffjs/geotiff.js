@@ -78,7 +78,7 @@ export async function getDecoder(compression, decoderParameters) {
 
 /**
  * Whether to prefer running the decoder in a worker
- * @param {*} compression the file directory of the image
+ * @param {number|undefined} compression the compression method identifier
  * @returns {boolean}
  */
 export function preferWorker(compression) {

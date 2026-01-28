@@ -126,9 +126,10 @@ export async function wait(milliseconds) {
 }
 
 /**
- * @param {ArrayLike} a
- * @param {ArrayLike} b
- * @returns {Array<[*, *]>}
+ * @template T,U
+ * @param {Iterable<T>} a
+ * @param {Iterable<U>} b
+ * @returns {Array<[T, U]>}
  */
 export function zip(a, b) {
   const A = Array.isArray(a) ? a : Array.from(a);

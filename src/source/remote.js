@@ -14,7 +14,7 @@ import { HttpClient } from './client/http.js';
 
 /**
  * @typedef {Object} RemoteSourceOptions
- * @property {object} [headers={}] Additional headers to add to each request
+ * @property {Object} [headers={}] Additional headers to add to each request
  * @property {number} [maxRanges=0] Maximum number of ranges to request in a single HTTP request. 0 means no multi-range requests.
  * @property {boolean} [allowFullFile=false] Whether to allow full file responses when requesting ranges
  */
@@ -22,11 +22,9 @@ import { HttpClient } from './client/http.js';
 class RemoteSource extends BaseSource {
   /**
    * @param {import("../geotiff").BaseClient} client
-   * @param {object} headers
-   * @param {number} maxRanges
-   * @param {boolean} allowFullFile
+   * @param {RemoteSourceOptions} options
    */
-  constructor(client, headers, maxRanges, allowFullFile) {
+  constructor(client, { headers, maxRanges = 0, allowFullFile } = {}) {
     super();
     this.client = client;
     this.headers = headers;
@@ -181,7 +179,7 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
  */
 export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new FetchClient(url, credentials);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
@@ -192,7 +190,7 @@ export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0,
  */
 export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new XHRClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
@@ -203,7 +201,7 @@ export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile 
  */
 export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new HttpClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
@@ -213,7 +211,7 @@ export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile
  * @returns {BaseSource}
  */
 export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
