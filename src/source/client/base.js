@@ -8,6 +8,7 @@ export class BaseResponse {
 
   /**
    * Returns the status code of the response
+   * @returns {number} the status code
    */
   get status() {
     throw new Error('not implemented');
@@ -16,14 +17,14 @@ export class BaseResponse {
   /**
    * Returns the value of the specified header
    * @param {string} headerName the header name
-   * @returns {string} the header value
+   * @returns {string|null} the header value
    */
   getHeader(headerName) { // eslint-disable-line no-unused-vars
     throw new Error('not implemented');
   }
 
   /**
-   * @returns {ArrayBuffer} the response data of the request
+   * @returns {Promise<ArrayBuffer>} the response data of the request
    */
   async getData() {
     throw new Error('not implemented');
@@ -37,7 +38,7 @@ export class BaseClient {
 
   /**
    * Send a request with the options
-   * @param {{headers: HeadersInit, signal: AbortSignal}} [options={}]
+   * @param {RequestInit} [options={}]
    * @returns {Promise<BaseResponse>}
    */
   async request({ headers, signal } = {}) { // eslint-disable-line no-unused-vars

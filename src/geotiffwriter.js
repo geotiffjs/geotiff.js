@@ -364,7 +364,7 @@ export function writeGeotiff(data, metadata) {
   if (!metadata.BitsPerSample) {
     let bitsPerSample = 8;
     if (ArrayBuffer.isView(flattenedValues)) {
-      bitsPerSample = 8 * flattenedValues.BYTES_PER_ELEMENT;
+      bitsPerSample = 8 * Object.getPrototypeOf(flattenedValues).BYTES_PER_ELEMENT;
     }
     metadata.BitsPerSample = times(numBands, () => bitsPerSample);
   }
@@ -395,7 +395,7 @@ export function writeGeotiff(data, metadata) {
     let elementSize = 8;
 
     if (ArrayBuffer.isView(flattenedValues)) {
-      elementSize = flattenedValues.BYTES_PER_ELEMENT;
+      elementSize = Object.getPrototypeOf(flattenedValues).BYTES_PER_ELEMENT;
     }
 
     metadata.StripByteCounts = [numBands * elementSize * height * width];

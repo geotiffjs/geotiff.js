@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES5",
-    "lib": ["ES2020", "DOM"],
+    "lib": ["ES2020", "DOM", "ES2021.WeakRef"],
+    "module": "ES2020",
     "allowJs": true,
+    "checkJs": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -10,7 +12,8 @@
     "importHelpers": false,
     "strict": false,
     "strictNullChecks": true,
-    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
     "esModuleInterop": false,
     "inlineSources": false,
     "downlevelIteration": true
