@@ -6,18 +6,7 @@ import { FetchClient } from './client/fetch.js';
 import { XHRClient } from './client/xhr.js';
 import { HttpClient } from './client/http.js';
 
-/**
- * @typedef {Object} BlockedSourceOptions
- * @property {number|null} [blockSize=null] Block size for a BlockedSource.
- * @property {number} [cacheSize=100] The number of blocks to cache.
- */
-
-/**
- * @typedef {Object} RemoteSourceOptions
- * @property {Object} [headers={}] Additional headers to add to each request
- * @property {number} [maxRanges=0] Maximum number of ranges to request in a single HTTP request. 0 means no multi-range requests.
- * @property {boolean} [allowFullFile=false] Whether to allow full file responses when requesting ranges
- */
+/** @import { RemoteSourceOptions, BlockedSourceOptions } from '../geotiff.js' */
 
 class RemoteSource extends BaseSource {
   /**
@@ -218,7 +207,7 @@ export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFul
 /**
  *
  * @param {string} url
- * @param {RemoteSourceOptions & {forceXHR?: boolean}} options
+ * @param {RemoteSourceOptions} options
  */
 export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
   if (typeof fetch === 'function' && !forceXHR) {

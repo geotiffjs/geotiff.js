@@ -10,52 +10,8 @@ import { resample, resampleInterleaved } from './resample.js';
 
 /** @import {TypedArray} from "./geotiff" */
 /** @import {ReadRasterResult} from "./geotiff" */
-
-/**
- * @typedef {Object} ReadRastersOptionsWithoutInterleave
- * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
- * @property {Array<number>} [samples] the selection of samples to read from. Default is all samples.
- *     All samples if not specified.
- * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
- * @property {number} [width] The desired width of the output. When the width is not the
- *                                 same as the images, resampling will be performed.
- * @property {number} [height] The desired height of the output. When the width is not the
- *                                  same as the images, resampling will be performed.
- * @property {string} [resampleMethod='nearest'] The desired resampling method.
- * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
- *                                       to be aborted
- * @property {number|number[]} [fillValue] The value to use for parts of the image
- *     outside of the images extent. When multiple samples are requested and `interleave` is
- *     `false`, an array of fill values can be passed.
- */
-
-/**
- * @typedef {Object} ReadRGBOptionsWithoutInterleave
- * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
- * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
- * @property {number} [width] The desired width of the output. When the width is no the
- *                                 same as the images, resampling will be performed.
- * @property {number} [height] The desired height of the output. When the width is no the
- *                                  same as the images, resampling will be performed.
- * @property {string} [resampleMethod='nearest'] The desired resampling method.
- * @property {boolean} [enableAlpha=false] Enable reading alpha channel if present.
- * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
- *                                       to be aborted
- */
-
-/**
- * @typedef {Object} InterleaveOptions
- * @property {boolean} [interleave] whether the data shall be read
- *     in one single array or separate arrays.
- */
-
-/**
- * @typedef {ReadRastersOptionsWithoutInterleave | ReadRastersOptionsWithoutInterleave & InterleaveOptions} ReadRastersOptions
- */
-
-/**
- * @typedef {ReadRGBOptionsWithoutInterleave | ReadRGBOptionsWithoutInterleave & InterleaveOptions} ReadRGBOptions
- */
+/** @import {ReadRastersOptions} from "./geotiff" */
+/** @import {ReadRGBOptions} from "./geotiff" */
 
 function sum(array, start, end) {
   let s = 0;
@@ -598,25 +554,25 @@ class GeoTIFFImage {
 
   /**
    * @overload
-   * @param {ReadRastersOptionsWithoutInterleave & {interleave: true}} options optional parameters
+   * @param {ReadRastersOptions & {interleave: true}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRastersOptionsWithoutInterleave & {interleave: false}} options optional parameters
+   * @param {ReadRastersOptions & {interleave: false}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRastersOptionsWithoutInterleave & {interleave: boolean}} options optional parameters
+   * @param {ReadRastersOptions & {interleave: boolean}} options optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
 
   /**
    * @overload
-   * @param {ReadRastersOptionsWithoutInterleave} [options={}] optional parameters
+   * @param {ReadRastersOptions} [options={}] optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
@@ -698,25 +654,25 @@ class GeoTIFFImage {
 
   /**
    * @overload
-   * @param {ReadRGBOptionsWithoutInterleave & {interleave: true}} options optional parameters
+   * @param {ReadRGBOptions & {interleave: true}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the RGB array as a Promise
    */
 
   /**
    * @overload
-   * @param {ReadRGBOptionsWithoutInterleave & {interleave: false}} options optional parameters
+   * @param {ReadRGBOptions & {interleave: false}} options optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
    */
 
   /**
    * @overload
-   * @param {ReadRGBOptionsWithoutInterleave & {interleave: boolean}} options optional parameters
+   * @param {ReadRGBOptions & {interleave: boolean}} options optional parameters
    * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
    */
 
   /**
    * @overload
-   * @param {ReadRGBOptionsWithoutInterleave} [options={}] optional parameters
+   * @param {ReadRGBOptions} [options={}] optional parameters
    * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
    */
 
