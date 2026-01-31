@@ -238,10 +238,26 @@ const encodeImage = (values, width, height, metadata) => {
   const ifd = {
     256: [width], // ImageWidth
     257: [height], // ImageLength
-    273: [numBytesInIfd], // strips offset
-    278: [height], // RowsPerStrip
     305: 'geotiff.js', // no array for ASCII(Z)
   };
+
+  function countsToOffsets(counts) {
+    let total = 0;
+    return counts.map(count => {
+      const value = numBytesInIfd + total;
+      total += count;
+      return value;
+    });
+  }
+
+  const stripByteCounts = metadata[279];
+  const tileByteCounts = metadata[325];
+  if (tileByteCounts) {
+    ifd[324] = countsToOffsets(tileByteCounts); // TileOffsets
+  } else {
+    ifd[273] = countsToOffsets(stripByteCounts); // StripOffsets;
+    ifd[278] = [height]; // RowsPerStrip, gets overwritten later if set in metadata.
+  }
 
   if (metadata) {
     for (const i in metadata) {
@@ -329,6 +345,7 @@ const metadataDefaults = [
 
 export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
+  const isTiled = metadata.TileByteCounts !== undefined;
 
   let height;
   let numBands;
@@ -338,10 +355,10 @@ export function writeGeotiff(data, metadata) {
   if (isFlattened) {
     height = metadata.height || metadata.ImageLength;
     width = metadata.width || metadata.ImageWidth;
-    numBands = data.length / (height * width);
+    numBands = metadata.SamplesPerPixel ? metadata.SamplesPerPixel : data.length / (height * width);
     flattenedValues = data;
   } else {
-    numBands = data.length;
+    numBands = metadata.SamplesPerPixel? metadata.SamplesPerPixel : data.length;
     height = data[0].length;
     width = data[0][0].length;
     flattenedValues = [];
@@ -388,7 +405,7 @@ export function writeGeotiff(data, metadata) {
     metadata.SamplesPerPixel = [numBands];
   }
 
-  if (!metadata.StripByteCounts) {
+  if (!metadata.StripByteCounts && !isTiled) {
     // we are only writing one strip
 
     // default for Float64
@@ -514,27 +531,37 @@ export function writeGeotiff(data, metadata) {
   }
 
   [
-    'Compression',
-    'ExtraSamples',
-    'GeographicTypeGeoKey',
-    'GTModelTypeGeoKey',
-    'GTRasterTypeGeoKey',
-    'ImageLength', // synonym of ImageHeight
-    'ImageWidth',
-    'Orientation',
-    'PhotometricInterpretation',
-    'ProjectedCSTypeGeoKey',
-    'PlanarConfiguration',
-    'ResolutionUnit',
-    'SamplesPerPixel',
-    'XPosition',
-    'YPosition',
-    'RowsPerStrip',
+      'Compression',
+      'ExtraSamples',
+      'GeographicTypeGeoKey',
+      'GTModelTypeGeoKey',
+      'GTRasterTypeGeoKey',
+      'ImageLength', // synonym of ImageHeight
+      'ImageWidth',
+      'Orientation',
+      'PhotometricInterpretation',
+      'ProjectedCSTypeGeoKey',
+      'PlanarConfiguration',
+      'ResolutionUnit',
+      'SamplesPerPixel',
+      'XPosition',
+      'YPosition',
+      'TileWidth',
+      'TileLength'
   ].forEach((name) => {
-    if (metadata[name]) {
-      metadata[name] = toArray(metadata[name]);
-    }
+      if (metadata[name]) {
+          metadata[name] = toArray(metadata[name]);
+      }
   });
+
+  if (isTiled === true) {
+      metadata['TileByteCounts'] = toArray(metadata['TileByteCounts']);
+  } else {
+      const name = 'RowsPerStrip';
+      if (metadata[name]) {
+          metadata[name] = toArray(metadata[name]);
+      }
+  }
 
   const encodedMetadata = convertToTids(metadata);
 

@@ -1322,6 +1322,175 @@ describe('writeTests', () => {
     expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
     expect(geoKeys.PCSCitationGeoKey).to.equal('test-ascii');
   });
+
+  it('should write multi-strip rgb data', async () => {
+    const originalRed = [
+      [255, 255, 255],
+      [0, 0, 0],
+      [0, 0, 0],
+    ];
+    const originalGreen = [
+      [0, 0, 0],
+      [255, 255, 255],
+      [0, 0, 0],
+    ];
+    const originalBlue = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [255, 255, 255],
+    ];
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+    const originalValues = new Uint8Array(interleaved);
+    const metadata = {
+      height: 3,
+      width: 3,
+      RowsPerStrip: 1,
+      StripByteCounts: [9, 9, 9],
+    };
+
+    const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+    const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+    const image = await newGeoTiff.getImage();
+    const newValues = await image.readRasters();
+    const red = chunk(newValues[0], 3);
+    const green = chunk(newValues[1], 3);
+    const blue = chunk(newValues[2], 3);
+    expect(normalize(red)).to.equal(normalize(originalRed));
+    expect(normalize(green)).to.equal(normalize(originalGreen));
+    expect(normalize(blue)).to.equal(normalize(originalBlue));
+
+    const geoKeys = image.getGeoKeys();
+    expect(geoKeys).to.be.an('object');
+    expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
+    expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
+    expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
+
+    const { fileDirectory } = image;
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000,1009,1018]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(1));
+    expect(toArray(fileDirectory.getValue('StripByteCounts')).toString()).to.equal('9,9,9');
+  });
+
+
+  it('should write tiled rgb data', async () => {
+    const originalRed = [
+      [255, 255, 255],
+      [1, 1, 1],
+      [1, 1, 1],
+    ];
+    const originalGreen = [
+      [1, 1, 1],
+      [255, 255, 255],
+      [1, 1, 1],
+    ];
+    const originalBlue = [
+      [1, 1, 1],
+      [1, 1, 1],
+      [255, 255, 255],
+    ];
+
+
+    /**
+     * Arranged into chunky tiles 
+     */
+    function arrangeInterleavedData(original, width, height, tileWidth, tileHeight, samplesPerPixel) {
+      const tilesAcross = Math.ceil(width / tileWidth);
+      const tilesDown = Math.ceil(height / tileHeight);
+      const result = [];
+
+      for (let tileY = 0; tileY < tilesDown; tileY++) {
+        for (let tileX = 0; tileX < tilesAcross; tileX++) {
+          for (let y = 0; y < tileHeight; y++) {
+            for (let x = 0; x < tileWidth; x++) {
+              const pixelY = tileY * tileHeight + y;
+              const pixelX = tileX * tileWidth + x;
+
+              if (pixelX < width && pixelY < height) {
+                const pixelIndex = (pixelY * width + pixelX) * samplesPerPixel;
+                for (let s = 0; s < samplesPerPixel; s++) {
+                  result.push(original[pixelIndex + s]);
+                }
+              } else {
+                // pad out-of-bounds pixels
+                for (let s = 0; s < samplesPerPixel; s++) {
+                  result.push(0);
+                }
+              }
+            }
+          }
+        }
+      }
+      return new Uint8Array(result);
+    }
+
+    const tileHeight = 2;
+    const tileWidth = 2;
+    const height = 3;
+    const width = 3;
+
+    
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+    const tiled = arrangeInterleavedData(interleaved, width, height, tileWidth, tileHeight, 3); 
+    const metadata = {
+      height,
+      width,
+      TileByteCounts: [12, 12, 12, 12],
+      TileWidth: tileWidth,
+      TileLength: tileHeight,
+      SamplesPerPixel: 3
+    };
+
+    const newGeoTiffAsBinaryData = await writeArrayBuffer(tiled, metadata);
+    const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+    const image = await newGeoTiff.getImage();
+    const newValues = await image.readRasters();
+    const red = chunk(newValues[0], 3);
+    const green = chunk(newValues[1], 3);
+    const blue = chunk(newValues[2], 3);
+    expect(normalize(red)).to.equal(normalize(originalRed));
+    expect(normalize(green)).to.equal(normalize(originalGreen));
+    expect(normalize(blue)).to.equal(normalize(originalBlue));
+
+    const geoKeys = image.getGeoKeys();
+    expect(geoKeys).to.be.an('object');
+    expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
+    expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
+    expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
+
+    const { fileDirectory } = image;
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1012,1024,1036]'); // hardcoded at 1000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
+    expect(fileDirectory.getValue('RowsPerStrip')).to.equal(undefined); // Make sure we don't confuse file readers
+    expect(fileDirectory.getValue('StripByteCounts')).to.equal(undefined);
+    expect(toArray(fileDirectory.getValue('TileByteCounts')).toString()).to.equal('12,12,12,12');
+    // expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal();
+    // expect(toArray(fileDirectory.getValue('StripByteCounts')).toString()).to.equal('9,9,9');
+  });
 });
 
 describe('BlockedSource Test', () => {
