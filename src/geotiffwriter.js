@@ -243,7 +243,7 @@ const encodeImage = (values, width, height, metadata) => {
 
   function countsToOffsets(counts) {
     let total = 0;
-    return counts.map(count => {
+    return counts.map((count) => {
       const value = numBytesInIfd + total;
       total += count;
       return value;
@@ -358,7 +358,7 @@ export function writeGeotiff(data, metadata) {
     numBands = metadata.SamplesPerPixel ? metadata.SamplesPerPixel : data.length / (height * width);
     flattenedValues = data;
   } else {
-    numBands = metadata.SamplesPerPixel? metadata.SamplesPerPixel : data.length;
+    numBands = metadata.SamplesPerPixel ? metadata.SamplesPerPixel : data.length;
     height = data[0].length;
     width = data[0][0].length;
     flattenedValues = [];
@@ -531,36 +531,36 @@ export function writeGeotiff(data, metadata) {
   }
 
   [
-      'Compression',
-      'ExtraSamples',
-      'GeographicTypeGeoKey',
-      'GTModelTypeGeoKey',
-      'GTRasterTypeGeoKey',
-      'ImageLength', // synonym of ImageHeight
-      'ImageWidth',
-      'Orientation',
-      'PhotometricInterpretation',
-      'ProjectedCSTypeGeoKey',
-      'PlanarConfiguration',
-      'ResolutionUnit',
-      'SamplesPerPixel',
-      'XPosition',
-      'YPosition',
-      'TileWidth',
-      'TileLength'
+    'Compression',
+    'ExtraSamples',
+    'GeographicTypeGeoKey',
+    'GTModelTypeGeoKey',
+    'GTRasterTypeGeoKey',
+    'ImageLength', // synonym of ImageHeight
+    'ImageWidth',
+    'Orientation',
+    'PhotometricInterpretation',
+    'ProjectedCSTypeGeoKey',
+    'PlanarConfiguration',
+    'ResolutionUnit',
+    'SamplesPerPixel',
+    'XPosition',
+    'YPosition',
+    'TileWidth',
+    'TileLength',
   ].forEach((name) => {
-      if (metadata[name]) {
-          metadata[name] = toArray(metadata[name]);
-      }
+    if (metadata[name]) {
+      metadata[name] = toArray(metadata[name]);
+    }
   });
 
   if (isTiled === true) {
-      metadata['TileByteCounts'] = toArray(metadata['TileByteCounts']);
+    metadata.TileByteCounts = toArray(metadata.TileByteCounts);
   } else {
-      const name = 'RowsPerStrip';
-      if (metadata[name]) {
-          metadata[name] = toArray(metadata[name]);
-      }
+    const name = 'RowsPerStrip';
+    if (metadata[name]) {
+      metadata[name] = toArray(metadata[name]);
+    }
   }
 
   const encodedMetadata = convertToTids(metadata);

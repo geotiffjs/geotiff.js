@@ -1377,13 +1377,12 @@ describe('writeTests', () => {
     expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
     expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
-    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000,1009,1018]'); // hardcoded at 2000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('StripOffsets'))).to.equal('[1000,1009,1018]');
     expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
     expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
     expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(1));
     expect(toArray(fileDirectory.getValue('StripByteCounts')).toString()).to.equal('9,9,9');
   });
-
 
   it('should write tiled rgb data', async () => {
     const originalRed = [
@@ -1402,9 +1401,8 @@ describe('writeTests', () => {
       [255, 255, 255],
     ];
 
-
     /**
-     * Arranged into chunky tiles 
+     * Arranged into chunky tiles
      */
     function arrangeInterleavedData(original, width, height, tileWidth, tileHeight, samplesPerPixel) {
       const tilesAcross = Math.ceil(width / tileWidth);
@@ -1415,11 +1413,11 @@ describe('writeTests', () => {
         for (let tileX = 0; tileX < tilesAcross; tileX++) {
           for (let y = 0; y < tileHeight; y++) {
             for (let x = 0; x < tileWidth; x++) {
-              const pixelY = tileY * tileHeight + y;
-              const pixelX = tileX * tileWidth + x;
+              const pixelY = (tileY * tileHeight) + y;
+              const pixelX = (tileX * tileWidth) + x;
 
               if (pixelX < width && pixelY < height) {
-                const pixelIndex = (pixelY * width + pixelX) * samplesPerPixel;
+                const pixelIndex = ((pixelY * width) + pixelX) * samplesPerPixel;
                 for (let s = 0; s < samplesPerPixel; s++) {
                   result.push(original[pixelIndex + s]);
                 }
@@ -1441,18 +1439,17 @@ describe('writeTests', () => {
     const height = 3;
     const width = 3;
 
-    
     const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
       value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
     ]));
-    const tiled = arrangeInterleavedData(interleaved, width, height, tileWidth, tileHeight, 3); 
+    const tiled = arrangeInterleavedData(interleaved, width, height, tileWidth, tileHeight, 3);
     const metadata = {
       height,
       width,
       TileByteCounts: [12, 12, 12, 12],
       TileWidth: tileWidth,
       TileLength: tileHeight,
-      SamplesPerPixel: 3
+      SamplesPerPixel: 3,
     };
 
     const newGeoTiffAsBinaryData = await writeArrayBuffer(tiled, metadata);
@@ -1482,7 +1479,7 @@ describe('writeTests', () => {
     expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
     expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
-    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1012,1024,1036]'); // hardcoded at 1000 now rather than calculated
+    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1012,1024,1036]');
     expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
     expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
     expect(fileDirectory.getValue('RowsPerStrip')).to.equal(undefined); // Make sure we don't confuse file readers
