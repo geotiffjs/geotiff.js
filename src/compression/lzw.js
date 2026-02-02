@@ -126,6 +126,6 @@ function decompress(input) {
 
 export default class LZWDecoder extends BaseDecoder {
   decodeBlock(buffer) {
-    return decompress(buffer, false).buffer;
+    return decompress(buffer).buffer;
   }
 }

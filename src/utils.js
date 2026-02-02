@@ -125,6 +125,12 @@ export async function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+/**
+ * @template T,U
+ * @param {Iterable<T>} a
+ * @param {Iterable<U>} b
+ * @returns {Array<[T, U]>}
+ */
 export function zip(a, b) {
   const A = Array.isArray(a) ? a : Array.from(a);
   const B = Array.isArray(b) ? b : Array.from(b);

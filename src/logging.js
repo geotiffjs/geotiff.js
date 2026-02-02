@@ -2,19 +2,19 @@
  * A no-op logger
  */
 class DummyLogger {
-  log() {}
+  log(..._args) {}
 
-  debug() {}
+  debug(..._args) {}
 
-  info() {}
+  info(..._args) {}
 
-  warn() {}
+  warn(..._args) {}
 
-  error() {}
+  error(..._args) {}
 
-  time() {}
+  time(..._args) {}
 
-  timeEnd() {}
+  timeEnd(..._args) {}
 }
 
 let LOGGER = new DummyLogger();

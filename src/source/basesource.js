@@ -6,22 +6,22 @@
 
 export class BaseSource {
   /**
-   *
-   * @param {Slice[]} slices
-   * @returns {ArrayBuffer[]}
+   * @param {Array<Slice>} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<*[]>}
    */
-  async fetch(slices, signal = undefined) {
+  async fetch(slices, signal) {
     return Promise.all(
       slices.map((slice) => this.fetchSlice(slice, signal)),
     );
   }
 
   /**
-   *
    * @param {Slice} slice
-   * @returns {ArrayBuffer}
+   * @param {AbortSignal} [_signal]
+   * @returns {Promise<*>}
    */
-  async fetchSlice(slice) {
+  async fetchSlice(slice, _signal) {
     throw new Error(`fetching of slice ${slice} not possible, not implemented`);
   }
 

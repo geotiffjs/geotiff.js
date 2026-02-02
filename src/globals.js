@@ -1,4 +1,4 @@
-export const fieldTypes = {
+export const fieldTypes = Object.freeze({
   BYTE: 0x0001,
   ASCII: 0x0002,
   SHORT: 0x0003,
@@ -17,9 +17,14 @@ export const fieldTypes = {
   LONG8: 0x0010,
   SLONG8: 0x0011,
   IFD8: 0x0012,
-};
+});
 
-export const fieldTypeSizes = {
+/** @typedef {keyof fieldTypes} FieldTypeName */
+
+/** @typedef {fieldTypes[keyof typeof fieldTypes]} FieldType */
+
+/** @typedef {Record<FieldTypeName, number>} FieldTypeSizes */
+export const fieldTypeSizes = Object.freeze({
   [fieldTypes.BYTE]: 1,
   [fieldTypes.ASCII]: 1,
   [fieldTypes.SBYTE]: 1,
@@ -36,11 +41,13 @@ export const fieldTypeSizes = {
   [fieldTypes.LONG8]: 8,
   [fieldTypes.SLONG8]: 8,
   [fieldTypes.IFD8]: 8,
-};
+});
+
+/** @typedef {fieldTypeSizes[keyof typeof fieldTypeSizes]} FieldTypeSize */
 
 /**
  * Get the byte size for a given field type.
- * @param {number} fieldType The TIFF field type constant
+ * @param {FieldType} fieldType The TIFF field type constant
  * @returns {number} The size in bytes
  * @throws {RangeError} If the field type is invalid
  */
@@ -132,8 +139,8 @@ const tagSource = [
     isArray: true,
     eager: true,
   },
-  { tag: 340, name: 'SMinSampleValue', type: fieldTypes.Any, isArray: true },
-  { tag: 341, name: 'SMaxSampleValue', type: fieldTypes.Any, isArray: true },
+  { tag: 340, name: 'SMinSampleValue', isArray: true },
+  { tag: 341, name: 'SMaxSampleValue', isArray: true },
   { tag: 342, name: 'TransferRange', type: fieldTypes.SHORT, isArray: true },
   { tag: 512, name: 'JPEGProc', type: fieldTypes.SHORT },
   { tag: 513, name: 'JPEGInterchangeFormat', type: fieldTypes.LONG },
@@ -277,7 +284,7 @@ export const tagDefinitions = {};
  * Registers a new field tag
  * @param {number} tag the numeric tiff tag
  * @param {string} name the name of the tag that will be reported in the IFD
- * @param {string|number} type the tags data type
+ * @param {string|number|undefined} type the tags data type
  * @param {Boolean} isArray whether the tag is an array
  * @param {boolean} [eager=false] whether to eagerly fetch deferred fields.
  *                                 When false (default), tags are loaded lazily on-demand.
@@ -286,7 +293,7 @@ export const tagDefinitions = {};
 export function registerTag(
   tag,
   name,
-  type = undefined,
+  type,
   isArray = false,
   eager = false,
 ) {
@@ -453,7 +460,7 @@ export const geoKeyNames = Object.freeze({
 /**
  * @type {Record<GeoKeyName, number>}
  */
-export const geoKeys = {};
+export const geoKeys = /** @type {Record<GeoKeyName, number>} */ ({});
 for (const key in geoKeyNames) {
   if (geoKeyNames.hasOwnProperty(key)) {
     geoKeys[geoKeyNames[key]] = parseInt(key, 10);

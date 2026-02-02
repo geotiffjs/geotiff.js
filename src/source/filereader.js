@@ -10,7 +10,7 @@ class FileReaderSource extends BaseSource {
     return new Promise((resolve, reject) => {
       const blob = this.file.slice(slice.offset, slice.offset + slice.length);
       const reader = new FileReader();
-      reader.onload = (event) => resolve(event.target.result);
+      reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
       reader.onabort = reject;
       reader.readAsArrayBuffer(blob);

@@ -54,7 +54,7 @@ export class XHRClient extends BaseClient {
     });
   }
 
-  async request({ headers, signal } = {}) {
+  async request({ headers = undefined, signal = undefined } = {}) {
     const response = await this.constructRequest(headers, signal);
     return response;
   }
