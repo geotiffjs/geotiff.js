@@ -24,6 +24,7 @@ class RemoteSource extends BaseSource {
 
   /**
    * @param {import('./basesource.js').Slice[]} slices
+   * @param {AbortSignal} [signal]
    * @returns {Promise<*[]>}
    */
   async fetch(slices, signal) {

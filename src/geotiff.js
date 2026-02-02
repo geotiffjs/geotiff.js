@@ -62,7 +62,7 @@ export { setLogger };
  * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
  * @property {Array<number>} [samples] the selection of samples to read from. Default is all samples.
  *     All samples if not specified.
- * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
+ * @property {Pool|null} [pool=null] The optional decoder pool to use.
  * @property {number} [width] The desired width of the output. When the width is not the
  *                                 same as the images, resampling will be performed.
  * @property {number} [height] The desired height of the output. When the width is not the
@@ -80,7 +80,7 @@ export { setLogger };
 /**
  * @typedef {Object} ReadRGBOptions
  * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
- * @property {import("./geotiff").Pool|null} [pool=null] The optional decoder pool to use.
+ * @property {Pool|null} [pool=null] The optional decoder pool to use.
  * @property {number} [width] The desired width of the output. When the width is no the
  *                                 same as the images, resampling will be performed.
  * @property {number} [height] The desired height of the output. When the width is no the
