@@ -104,7 +104,7 @@ export { setLogger };
 
 /**
  * @typedef {Object} BlockedSourceOptions
- * @property {number|null} [blockSize=null] Block size for a BlockedSource.
+ * @property {number} [blockSize] Block size for a BlockedSource.
  * @property {number} [cacheSize=100] The number of blocks to cache.
  */
 
