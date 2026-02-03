@@ -1,3 +1,7 @@
+/**
+ * @param {Record<string, any>} target
+ * @param {Record<string, any>} source
+ */
 export function assign(target, source) {
   for (const key in source) {
     if (source.hasOwnProperty(key)) {
@@ -6,6 +10,12 @@ export function assign(target, source) {
   }
 }
 
+/**
+ * @template T
+ * @param {ArrayLike<T>} iterable
+ * @param {number} length
+ * @returns {Array<Array<T>>}
+ */
 export function chunk(iterable, length) {
   const results = [];
   const lengthOfIterable = iterable.length;
@@ -19,6 +29,11 @@ export function chunk(iterable, length) {
   return results;
 }
 
+/**
+ * @param {string} string
+ * @param {string} expectedEnding
+ * @returns {boolean}
+ */
 export function endsWith(string, expectedEnding) {
   if (string.length < expectedEnding.length) {
     return false;
@@ -27,6 +42,10 @@ export function endsWith(string, expectedEnding) {
   return actualEnding === expectedEnding;
 }
 
+/**
+ * @param {ArrayLike<any>} iterable
+ * @param {(value: any, index: number) => void} func
+ */
 export function forEach(iterable, func) {
   const { length } = iterable;
   for (let i = 0; i < length; i++) {
@@ -34,7 +53,12 @@ export function forEach(iterable, func) {
   }
 }
 
+/**
+ * @param {Record<string, string>} oldObj
+ * @returns {Record<string, string>}
+ */
 export function invert(oldObj) {
+  /** @type {Record<string, string>} */
   const newObj = {};
   for (const key in oldObj) {
     if (oldObj.hasOwnProperty(key)) {
@@ -45,6 +69,10 @@ export function invert(oldObj) {
   return newObj;
 }
 
+/**
+ * @param {number} n
+ * @returns {Array<number>}
+ */
 export function range(n) {
   const results = [];
   for (let i = 0; i < n; i++) {
@@ -53,6 +81,11 @@ export function range(n) {
   return results;
 }
 
+/**
+ * @param {number} numTimes
+ * @param {(index: number) => any} func
+ * @returns {Array<any>}
+ */
 export function times(numTimes, func) {
   const results = [];
   for (let i = 0; i < numTimes; i++) {
@@ -61,6 +94,11 @@ export function times(numTimes, func) {
   return results;
 }
 
+/**
+ * @template T
+ * @param {ArrayLike<T>} iterable
+ * @returns {Array<T>}
+ */
 export function toArray(iterable) {
   const results = [];
   const { length } = iterable;
@@ -70,6 +108,10 @@ export function toArray(iterable) {
   return results;
 }
 
+/**
+ * @param {any} input
+ * @returns {any}
+ */
 export function toArrayRecursively(input) {
   if (input.length) {
     return toArray(input).map(toArrayRecursively);
@@ -77,7 +119,11 @@ export function toArrayRecursively(input) {
   return input;
 }
 
-// copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js
+/**
+ * Copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js
+ * @param {string} headerValue
+ * @returns {{unit: string|null, first: number|null, last: number|null, length: number|null}|null}}
+ */
 export function parseContentRange(headerValue) {
   if (!headerValue) {
     return null;
@@ -87,6 +133,10 @@ export function parseContentRange(headerValue) {
     throw new Error('invalid argument');
   }
 
+  /**
+   * @param {string} number
+   * @returns {number}
+   */
   const parseInt = (number) => Number.parseInt(number, 10);
 
   // Check for presence of unit
@@ -118,10 +168,12 @@ export function parseContentRange(headerValue) {
   return null;
 }
 
-/*
+/**
  * Promisified wrapper around 'setTimeout' to allow 'await'
+ * @param {number} [milliseconds]
+ * @returns {Promise<void>}
  */
-export async function wait(milliseconds) {
+export async function wait(milliseconds = 0) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
@@ -139,9 +191,12 @@ export function zip(a, b) {
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 export class AbortError extends Error {
-  constructor(params) {
+  /**
+   * @param  {...any} args
+   */
+  constructor(...args) {
     // Pass remaining arguments (including vendor specific ones) to parent constructor
-    super(params);
+    super(...args);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
@@ -153,6 +208,10 @@ export class AbortError extends Error {
 }
 
 export class CustomAggregateError extends Error {
+  /**
+   * @param {Array<Error>} errors
+   * @param {string} message
+   */
   constructor(errors, message) {
     super(message);
     this.errors = errors;
@@ -163,6 +222,10 @@ export class CustomAggregateError extends Error {
 
 export const AggregateError = CustomAggregateError;
 
+/**
+ * @param {any} input
+ * @returns {boolean}
+ */
 export function isTypedFloatArray(input) {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
@@ -173,6 +236,10 @@ export function isTypedFloatArray(input) {
   return false;
 }
 
+/**
+ * @param {any} input
+ * @returns {boolean}
+ */
 export function isTypedIntArray(input) {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
@@ -183,6 +250,10 @@ export function isTypedIntArray(input) {
   return false;
 }
 
+/**
+ * @param {any} input
+ * @returns {boolean}
+ */
 export function isTypedUintArray(input) {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;

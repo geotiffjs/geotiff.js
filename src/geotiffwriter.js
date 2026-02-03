@@ -8,8 +8,11 @@ import { tags, fieldTagTypes, fieldTypes, geoKeyNames } from './globals.js';
 import { assign, endsWith, forEach, invert, times, typeMap,
   isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
+/** @typedef {(buff: Uint8Array, p: number) => number} Read */
+
 const tagName2Code = tags;
 const geoKeyName2Code = invert(geoKeyNames);
+/** @type {Record<number|string, keyof fieldTagTypes>} */
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
@@ -18,7 +21,9 @@ const typeName2byte = fieldTypes;
 // config variables
 const numBytesInIfd = 1000;
 
+/** @type {Record<string, any>} */
 const _binBE = {
+  /** @type {Read} */
   nextZero: (data, o) => {
     let oincr = o;
     while (data[oincr] !== 0) {
@@ -26,15 +31,18 @@ const _binBE = {
     }
     return oincr;
   },
+  /** @type {Read} */
   readUshort: (buff, p) => {
     return (buff[p] << 8) | buff[p + 1];
   },
+  /** @type {Read} */
   readShort: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 1];
     a[1] = buff[p + 0];
     return _binBE.i16[0];
   },
+  /** @type {Read} */
   readInt: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 3];
@@ -43,6 +51,7 @@ const _binBE = {
     a[3] = buff[p + 0];
     return _binBE.i32[0];
   },
+  /** @type {Read} */
   readUint: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 3];
@@ -51,9 +60,16 @@ const _binBE = {
     a[3] = buff[p + 0];
     return _binBE.ui32[0];
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {Array<number>} l
+   * @returns {string}
+   */
   readASCII: (buff, p, l) => {
     return l.map((i) => String.fromCharCode(buff[p + i])).join('');
   },
+  /** @type {Read} */
   readFloat: (buff, p) => {
     const a = _binBE.ui8;
     times(4, (i) => {
@@ -61,6 +77,7 @@ const _binBE = {
     });
     return _binBE.fl32[0];
   },
+  /** @type {Read} */
   readDouble: (buff, p) => {
     const a = _binBE.ui8;
     times(8, (i) => {
@@ -68,16 +85,31 @@ const _binBE = {
     });
     return _binBE.fl64[0];
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {number} n
+   */
   writeUshort: (buff, p, n) => {
     buff[p] = (n >> 8) & 255;
     buff[p + 1] = n & 255;
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {number} n
+   */
   writeUint: (buff, p, n) => {
     buff[p] = (n >> 24) & 255;
     buff[p + 1] = (n >> 16) & 255;
     buff[p + 2] = (n >> 8) & 255;
     buff[p + 3] = (n >> 0) & 255;
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {string} s
+   */
   writeASCII: (buff, p, s) => {
     times(s.length, (i) => {
       buff[p + i] = s.charCodeAt(i);
@@ -88,6 +120,11 @@ const _binBE = {
 
 _binBE.fl64 = new Float64Array(_binBE.ui8.buffer);
 
+/**
+ * @param {Uint8Array} buff
+ * @param {number} p
+ * @param {number} n
+ */
 _binBE.writeDouble = (buff, p, n) => {
   _binBE.fl64[0] = n;
   times(8, (i) => {
@@ -95,12 +132,19 @@ _binBE.writeDouble = (buff, p, n) => {
   });
 };
 
+/**
+ * @param {Record<string, any>} bin
+ * @param {Uint8Array} data
+ * @param {number} _offset
+ * @param {Record<keyof fieldTagTypes, any>} ifd
+ * @returns {[number, number]}
+ */
 const _writeIFD = (bin, data, _offset, ifd) => {
   let offset = _offset;
 
-  const keys = Object.keys(ifd).filter((key) => {
+  const keys = /** @type {Array<keyof fieldTagTypes>} */ (Object.keys(ifd).filter((key) => {
     return key !== undefined && key !== null && key !== 'undefined';
-  });
+  }).map(Number));
 
   bin.writeUshort(data, offset, keys.length);
   offset += 2;
@@ -108,18 +152,11 @@ const _writeIFD = (bin, data, _offset, ifd) => {
   let eoff = offset + (12 * keys.length) + 4;
 
   for (const key of keys) {
-    let tag = null;
-    if (typeof key === 'number') {
-      tag = key;
-    } else if (typeof key === 'string') {
-      tag = parseInt(key, 10);
-    }
-
-    const typeName = fieldTagTypes[tag];
+    const typeName = /** @type {keyof typeName2byte} */ (fieldTagTypes[key]);
     const typeNum = typeName2byte[typeName];
 
     if (typeName == null || typeName === undefined || typeof typeName === 'undefined') {
-      throw new Error(`unknown type of tag: ${tag}`);
+      throw new Error(`unknown type of tag: ${key}`);
     }
 
     let val = ifd[key];
@@ -137,7 +174,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
 
     const num = val.length;
 
-    bin.writeUshort(data, offset, tag);
+    bin.writeUshort(data, offset, key);
     offset += 2;
 
     bin.writeUshort(data, offset, typeNum);
@@ -186,6 +223,10 @@ const _writeIFD = (bin, data, _offset, ifd) => {
   return [offset, eoff];
 };
 
+/**
+ * @param {Array<Record<keyof fieldTagTypes, any>>} ifds
+ * @returns {ArrayBuffer}
+ */
 const encodeIfds = (ifds) => {
   const data = new Uint8Array(numBytesInIfd);
   let offset = 4;
@@ -226,6 +267,13 @@ const encodeIfds = (ifds) => {
   return result.buffer;
 };
 
+/**
+ * @param {Array<number>|Array<Array<Array<number>>>|import('./geotiff.js').TypedArray} values
+ * @param {number} width
+ * @param {number} height
+ * @param {Record<string, any>} metadata
+ * @returns {ArrayBuffer}
+ */
 const encodeImage = (values, width, height, metadata) => {
   if (height === undefined || height === null) {
     throw new Error(`you passed into encodeImage a width of type ${height}`);
@@ -235,6 +283,7 @@ const encodeImage = (values, width, height, metadata) => {
     throw new Error(`you passed into encodeImage a width of type ${width}`);
   }
 
+  /** @type {Record<number|string, any>} */
   const ifd = {
     256: [width], // ImageWidth
     257: [height], // ImageLength
@@ -254,7 +303,7 @@ const encodeImage = (values, width, height, metadata) => {
   const prfx = new Uint8Array(encodeIfds([ifd]));
   const samplesPerPixel = ifd[tags.SamplesPerPixel];
 
-  const dataType = values.constructor.name;
+  const dataType = /** @type {keyof typeMap} */ (values.constructor.name);
   const TypedArray = typeMap[dataType];
 
   // default for Float64
@@ -301,7 +350,12 @@ const encodeImage = (values, width, height, metadata) => {
   return data.buffer;
 };
 
+/**
+ * @param {Record<number|string, any>} input
+ * @returns {Record<number|string, any>}
+ */
 const convertToTids = (input) => {
+  /** @type {Record<number|string, any>} */
   const result = {};
   for (const key in input) {
     if (key !== 'StripOffsets') {
@@ -314,6 +368,11 @@ const convertToTids = (input) => {
   return result;
 };
 
+/**
+ * @template T
+ * @param {T} input
+ * @returns {Array<T>}
+ */
 const toArray = (input) => {
   if (Array.isArray(input)) {
     return input;
@@ -327,28 +386,39 @@ const metadataDefaults = [
   ['ExtraSamples', 0],
 ];
 
+/**
+ * @param {Array<number>|Array<Array<Array<number>>>|import('./geotiff.js').TypedArray} data
+ * @param {Record<string, any>} metadata
+ * @returns {ArrayBuffer}
+ */
 export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
 
+  /** @type {number} */
   let height;
+  /** @type {number} */
   let numBands;
+  /** @type {number} */
   let width;
+  /** @type {Array<number>} */
   let flattenedValues;
 
   if (isFlattened) {
+    const arrayFlat = /** @type {Array<number>} */ (data);
     height = metadata.height || metadata.ImageLength;
     width = metadata.width || metadata.ImageWidth;
-    numBands = data.length / (height * width);
-    flattenedValues = data;
+    numBands = arrayFlat.length / (height * width);
+    flattenedValues = arrayFlat;
   } else {
-    numBands = data.length;
-    height = data[0].length;
-    width = data[0][0].length;
+    const array3d = /** @type {Array<Array<Array<number>>>} */ (data);
+    numBands = array3d.length;
+    height = array3d[0].length;
+    width = array3d[0][0].length;
     flattenedValues = [];
     times(height, (rowIndex) => {
       times(width, (columnIndex) => {
         times(numBands, (bandIndex) => {
-          flattenedValues.push(data[bandIndex][rowIndex][columnIndex]);
+          flattenedValues.push(array3d[bandIndex][rowIndex][columnIndex]);
         });
       });
     });
@@ -448,7 +518,7 @@ export function writeGeotiff(data, metadata) {
     const GeoKeyDirectory = [1, 1, 0, 0];
     let validKeys = 0;
     geoKeys.forEach((geoKey) => {
-      const KeyID = Number(name2code[geoKey]);
+      const KeyID = name2code[geoKey];
       const tagType = fieldTagTypes[KeyID];
       const val = metadata[geoKey];
       if (val === undefined) {

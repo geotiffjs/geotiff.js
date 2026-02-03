@@ -17,8 +17,12 @@ class XHRResponse extends BaseResponse {
     return this.xhr.status;
   }
 
+  /**
+   * @param {string} name
+   * @returns {string|undefined}
+   */
   getHeader(name) {
-    return this.xhr.getResponseHeader(name);
+    return this.xhr.getResponseHeader(name) || undefined;
   }
 
   async getData() {
@@ -27,6 +31,11 @@ class XHRResponse extends BaseResponse {
 }
 
 export class XHRClient extends BaseClient {
+  /**
+   * @param {Object<string, string>} headers
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<XHRResponse>}
+   */
   constructRequest(headers, signal) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -54,7 +63,7 @@ export class XHRClient extends BaseClient {
     });
   }
 
-  async request({ headers = undefined, signal = undefined } = {}) {
+  async request({ headers = {}, signal = undefined } = {}) {
     const response = await this.constructRequest(headers, signal);
     return response;
   }

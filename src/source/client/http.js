@@ -9,6 +9,7 @@ class HttpResponse extends BaseResponse {
   /**
    * BaseResponse facade for node HTTP/HTTPS API Response
    * @param {import('http').IncomingMessage} response
+   * @param {Promise<ArrayBuffer>} dataPromise
    */
   constructor(response, dataPromise) {
     super();
@@ -20,8 +21,13 @@ class HttpResponse extends BaseResponse {
     return /** @type {number} */ (this.response.statusCode);
   }
 
+  /**
+   * @param {string} name
+   * @returns {string|undefined}
+   */
   getHeader(name) {
-    return /** @type {string|null} */ (this.response.headers[name]);
+    const value = this.response.headers[name];
+    return Array.isArray(value) ? value.join(', ') : value;
   }
 
   async getData() {
@@ -31,12 +37,18 @@ class HttpResponse extends BaseResponse {
 }
 
 export class HttpClient extends BaseClient {
+  /** @param {string} url */
   constructor(url) {
     super(url);
     this.parsedUrl = urlMod.parse(this.url);
     this.httpApi = (this.parsedUrl.protocol === 'http:' ? http : https);
   }
 
+  /**
+   * @param {Object<string, string>} headers
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<HttpResponse>}
+   */
   constructRequest(headers, signal) {
     return new Promise((resolve, reject) => {
       const request = this.httpApi.get(
@@ -46,6 +58,7 @@ export class HttpClient extends BaseClient {
         },
         (response) => {
           const dataPromise = new Promise((resolveData) => {
+            /** @type {Uint8Array[]} */
             const chunks = [];
 
             // collect chunks
@@ -74,7 +87,7 @@ export class HttpClient extends BaseClient {
     });
   }
 
-  async request({ headers = undefined, signal = undefined } = {}) {
+  async request({ headers = {}, signal = undefined } = {}) {
     const response = await this.constructRequest(headers, signal);
     return response;
   }

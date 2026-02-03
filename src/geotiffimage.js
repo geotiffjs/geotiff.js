@@ -1,6 +1,8 @@
 /** @module geotiffimage */
 import { getFloat16 } from '@petamoriken/float16';
+// @ts-ignore
 import getAttribute from 'xml-utils/get-attribute'; // eslint-disable-line import/extensions
+// @ts-ignore
 import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line import/extensions
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
@@ -13,6 +15,12 @@ import { resample, resampleInterleaved } from './resample.js';
 /** @import {ReadRastersOptions} from "./geotiff" */
 /** @import {ReadRGBOptions} from "./geotiff" */
 
+/**
+ * @param {Array<number>|TypedArray} array
+ * @param {number} start
+ * @param {number} end
+ * @returns {number}
+ */
 function sum(array, start, end) {
   let s = 0;
   for (let i = start; i < end; ++i) {
@@ -21,6 +29,12 @@ function sum(array, start, end) {
   return s;
 }
 
+/**
+ * @param {1|2|3} format
+ * @param {number} bitsPerSample
+ * @param {any} size
+ * @returns {TypedArray}
+ */
 function arrayForType(format, bitsPerSample, size) {
   switch (format) {
     case 1: // unsigned integer data
@@ -58,6 +72,11 @@ function arrayForType(format, bitsPerSample, size) {
   throw Error('Unsupported data format/bitsPerSample');
 }
 
+/**
+ * @param {1|2|3} format
+ * @param {number} bitsPerSample
+ * @returns {boolean}
+ */
 function needsNormalization(format, bitsPerSample) {
   if ((format === 1 || format === 2) && bitsPerSample <= 32 && bitsPerSample % 8 === 0) {
     return false;
@@ -67,6 +86,16 @@ function needsNormalization(format, bitsPerSample) {
   return true;
 }
 
+/**
+ * @param {ArrayBufferLike} inBuffer
+ * @param {1|2|3} format
+ * @param {1|2} planarConfiguration
+ * @param {number} samplesPerPixel
+ * @param {number} bitsPerSample
+ * @param {number} tileWidth
+ * @param {number} tileHeight
+ * @returns {ArrayBufferLike}
+ */
 function normalizeArray(inBuffer, format, planarConfiguration, samplesPerPixel, bitsPerSample, tileWidth, tileHeight) {
   // const inByteArray = new Uint8Array(inBuffer);
   const view = new DataView(inBuffer);
@@ -163,7 +192,8 @@ class GeoTIFFImage {
   constructor(fileDirectory, littleEndian, cache, source) {
     this.fileDirectory = fileDirectory;
     this.littleEndian = littleEndian;
-    this.tiles = cache ? {} : null;
+    /** @type {Array<Promise<ArrayBufferLike>>|null} */
+    this.tiles = cache ? [] : null;
     this.isTiled = !fileDirectory.hasTag('StripOffsets');
     const planarConfiguration = fileDirectory.getValue('PlanarConfiguration') ?? 1;
     if (planarConfiguration !== 1 && planarConfiguration !== 2) {
@@ -242,6 +272,10 @@ class GeoTIFFImage {
     return this.getTileWidth();
   }
 
+  /**
+   * @param {number} y
+   * @returns {number}
+   */
   getBlockHeight(y) {
     if (this.isTiled || (y + 1) * this.getTileHeight() <= this.getHeight()) {
       return this.getTileHeight();
@@ -265,6 +299,10 @@ class GeoTIFFImage {
     return bytes;
   }
 
+  /**
+   * @param {number} i
+   * @returns {number}
+   */
   getSampleByteSize(i) {
     const bitsPerSample = this.fileDirectory.getValue('BitsPerSample');
     if (i >= bitsPerSample.length) {
@@ -273,6 +311,10 @@ class GeoTIFFImage {
     return Math.ceil(bitsPerSample[i] / 8);
   }
 
+  /**
+   * @param {number} sampleIndex
+   * @returns {(this: DataView, byteOffset: number, littleEndian: boolean) => number}
+   */
   getReaderForSample(sampleIndex) {
     const format = this.fileDirectory.hasTag('SampleFormat')
       ? this.fileDirectory.getValue('SampleFormat')[sampleIndex] : 1;
@@ -325,6 +367,11 @@ class GeoTIFFImage {
     return this.fileDirectory.getValue('BitsPerSample')[sampleIndex];
   }
 
+  /**
+   * @param {number} sampleIndex
+   * @param {number|ArrayBuffer} size
+   * @returns {TypedArray}
+   */
   getArrayForSample(sampleIndex, size) {
     const format = this.getSampleFormat(sampleIndex);
     const bitsPerSample = this.getBitsPerSample(sampleIndex);
@@ -339,7 +386,7 @@ class GeoTIFFImage {
    * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
-   * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBuffer}>} the decoded strip or tile
+   * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBufferLike}>} the decoded strip or tile
    */
   async getTileOrStrip(x, y, sample, poolOrDecoder, signal) {
     const numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
@@ -358,11 +405,11 @@ class GeoTIFFImage {
     let offset;
     let byteCount;
     if (this.isTiled) {
-      offset = await this.fileDirectory.loadValueIndexed('TileOffsets', index);
-      byteCount = await this.fileDirectory.loadValueIndexed('TileByteCounts', index);
+      offset = Number(await this.fileDirectory.loadValueIndexed('TileOffsets', index));
+      byteCount = Number(await this.fileDirectory.loadValueIndexed('TileByteCounts', index));
     } else {
-      offset = await this.fileDirectory.loadValueIndexed('StripOffsets', index);
-      byteCount = await this.fileDirectory.loadValueIndexed('StripByteCounts', index);
+      offset = Number(await this.fileDirectory.loadValueIndexed('StripOffsets', index));
+      byteCount = Number(await this.fileDirectory.loadValueIndexed('StripByteCounts', index));
     }
 
     if (byteCount === 0) {
@@ -413,8 +460,8 @@ class GeoTIFFImage {
   /**
    * Internal read function.
    * @private
-   * @param {Array} imageWindow The image window in pixel coordinates
-   * @param {Array} samples The selected samples (0-based indices)
+   * @param {Array<number>} imageWindow The image window in pixel coordinates
+   * @param {Array<number>} samples The selected samples (0-based indices)
    * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
    * @param {boolean|undefined} interleave Whether or not to write in an interleaved manner
    * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
@@ -446,11 +493,17 @@ class GeoTIFFImage {
 
     let bytesPerPixel = this.getBytesPerPixel();
 
+    /** @type {Array<number>} */
     const srcSampleOffsets = [];
+    /** @type {Array<(this: ArrayBufferView, byteOffset: number, littleEndian: boolean) => number>} */
     const sampleReaders = [];
     for (let i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
-        srcSampleOffsets.push(sum(await this.fileDirectory.loadValue('BitsPerSample'), 0, samples[i]) / 8);
+        const bitsPerSample = await this.fileDirectory.loadValue('BitsPerSample');
+        if (typeof bitsPerSample !== 'object') {
+          throw new Error('Expected BitsPerSample to be an array or typed array.');
+        }
+        srcSampleOffsets.push(sum(bitsPerSample, 0, samples[i]) / 8);
       } else {
         srcSampleOffsets.push(0);
       }
@@ -505,7 +558,7 @@ class GeoTIFFImage {
                   windowCoordinate = (
                     (y + firstLine - imageWindow[1]) * windowWidth
                   ) + x + firstCol - imageWindow[0];
-                  valueArrays[si][windowCoordinate] = value;
+                  /** @type {TypedArray} */ (valueArrays[si])[windowCoordinate] = value;
                 }
               }
             }
@@ -761,7 +814,7 @@ class GeoTIFFImage {
         data = fromBlackIsZero(raster, max);
         break;
       case photometricInterpretations.Palette:
-        data = fromPalette(raster, await fileDirectory.loadValue('ColorMap'));
+        data = fromPalette(raster, /** @type {Uint16Array} */ (await fileDirectory.loadValue('ColorMap')));
         break;
       case photometricInterpretations.CMYK:
         data = fromCMYK(raster);
@@ -806,6 +859,9 @@ class GeoTIFFImage {
       return [];
     }
     const modelTiePoint = await this.fileDirectory.loadValue('ModelTiepoint');
+    if (typeof modelTiePoint !== 'object') {
+      throw new Error('Expected ModelTiepoint to be an array or typed array.');
+    }
 
     const tiePoints = [];
     for (let i = 0; i < modelTiePoint.length; i += 6) {
@@ -828,15 +884,17 @@ class GeoTIFFImage {
    * Otherwise only metadata specific to the provided sample will be returned.
    *
    * @param {number|null} [sample=null] The sample index.
-   * @returns {Promise<Object>}
+   * @returns {Promise<Record<string, any>|null>} The GDAL metadata items
    */
   async getGDALMetadata(sample = null) {
+    /** @type {Record<string, any>} */
     const metadata = {};
     if (!this.fileDirectory.hasTag('GDAL_METADATA')) {
       return null;
     }
     const string = await this.fileDirectory.loadValue('GDAL_METADATA');
 
+    /** @type {Array<any>} */
     let items = findTagsByName(string, 'Item');
 
     if (sample === null) {

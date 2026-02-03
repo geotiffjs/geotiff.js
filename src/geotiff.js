@@ -62,7 +62,7 @@ export { setLogger };
  * Use the {@link Pool.bindParameters} method to get a decoder worker for
  * a specific compression and its parameters.
  *
- * @property {(buffer: ArrayBuffer) => Promise<ArrayBuffer>} decode
+ * @property {(buffer: ArrayBufferLike) => Promise<ArrayBufferLike>} decode
  *   A function that takes a compressed buffer and returns a promise resolving to the decoded buffer.
  */
 
@@ -110,7 +110,7 @@ export { setLogger };
 
 /**
  * @typedef {Object} RemoteSourceOptions
- * @property {Object} [headers={}] Additional headers to add to each request
+ * @property {Record<string, string>} [headers={}] Additional headers to add to each request
  * @property {number} [maxRanges=0] Maximum number of ranges to request in a single HTTP request. 0 means no multi-range requests.
  * @property {boolean} [allowFullFile=false] Whether to allow full file responses when requesting ranges
  * @property {boolean} [forceXHR=false] When the Fetch API would be used, force using XMLHttpRequest instead.
@@ -133,7 +133,7 @@ export { setLogger };
  * @returns {TypedArray|Array<number>|string}
  */
 function getValues(dataSlice, fieldType, count, offset) {
-  /** @type {TypedArray|Array|null} */
+  /** @type {TypedArray|Array<number>|null} */
   let values = null;
   let readMethod = null;
   const fieldTypeLength = getFieldTypeSize(fieldType);
@@ -211,6 +211,9 @@ function getValues(dataSlice, fieldType, count, offset) {
  * in the file.
  */
 class GeoTIFFImageIndexError extends Error {
+  /**
+   * @param {number} index
+   */
   constructor(index) {
     super(`No image at index ${index}`);
     this.index = index;
@@ -374,10 +377,17 @@ class GeoTIFF extends GeoTIFFBase {
     this.bigTiff = bigTiff;
     this.firstIFDOffset = firstIFDOffset;
     this.cache = options.cache || false;
+    /** @type {Array<Promise<import('./imagefiledirectory.js').ImageFileDirectory> | undefined>} */
     this.ifdRequests = [];
+    /** @type {Record<string, any>|null} */
     this.ghostValues = null;
   }
 
+  /**
+   * @param {number} offset
+   * @param {number} [size]
+   * @returns {Promise<DataSlice>}
+   */
   async getSlice(offset, size) {
     const fallbackSize = this.bigTiff ? 4048 : 1024;
     return new DataSlice(
@@ -391,6 +401,10 @@ class GeoTIFF extends GeoTIFFBase {
     );
   }
 
+  /**
+   * @param {number} index
+   * @return {Promise<import('./imagefiledirectory.js').ImageFileDirectory>}
+   */
   async requestIFD(index) {
     // see if we already have that IFD index requested.
     if (this.ifdRequests[index]) {
@@ -418,7 +432,11 @@ class GeoTIFF extends GeoTIFFBase {
     // if the previous IFD was loaded, we can finally fetch the one we are interested in.
     // we need to wrap this in an IIFE, otherwise this.ifdRequests[index] would be delayed
     this.ifdRequests[index] = (async () => {
-      const previousIfd = await this.ifdRequests[index - 1];
+      const previousPromise = this.ifdRequests[index - 1];
+      if (!previousPromise) {
+        throw new Error('Previous IFD request missing');
+      }
+      const previousIfd = await previousPromise;
       if (previousIfd.nextIFDByteOffset === 0) {
         throw new GeoTIFFImageIndexError(index);
       }
@@ -467,11 +485,11 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Get the values of the COG ghost area as a parsed map.
    * See https://gdal.org/drivers/raster/cog.html#header-ghost-area for reference
-   * @returns {Promise<Object>} the parsed ghost area or null, if no such area was found
+   * @returns {Promise<Object<string, any>|null>} the parsed ghost area or null, if no such area was found
    */
   async getGhostValues() {
     const offset = this.bigTiff ? 16 : 8;
-    if (this.ghostValues) {
+    if (this.ghostValues !== null) {
       return this.ghostValues;
     }
     const detectionString = 'GDAL_STRUCTURAL_METADATA_SIZE=';
@@ -485,15 +503,16 @@ class GeoTIFF extends GeoTIFFBase {
         slice = await this.getSlice(offset, metadataSize);
       }
       const fullString = getValues(slice, fieldTypes.ASCII, metadataSize, offset);
-      /** @type {Object} */
-      this.ghostValues = {};
+      /** @type {Record<string, any>} */
+      const ghostValues = {};
       fullString
         .split('\n')
         .filter((line) => line.length > 0)
         .map((line) => line.split('='))
         .forEach(([key, value]) => {
-          this.ghostValues[key] = value;
+          ghostValues[key] = value;
         });
+      this.ghostValues = ghostValues;
     }
     return this.ghostValues;
   }
@@ -510,7 +529,7 @@ class GeoTIFF extends GeoTIFFBase {
     const headerData = (await source.fetch([{ offset: 0, length: 1024 }], signal))[0];
     const dataView = new DataView64(headerData);
 
-    const BOM = dataView.getUint16(0, 0);
+    const BOM = dataView.getUint16(0, false);
     let littleEndian;
     if (BOM === 0x4949) {
       littleEndian = true;
@@ -727,7 +746,8 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
 
 /**
  * Main creating function for GeoTIFF files.
- * @param {Array} values of pixel values
+ * @param {Array<number>|Array<Array<Array<number>>>|TypedArray} values The pixel values to write.
+ * Can be a flat array of all pixels or a 3-dimensional array of shape `[band][row][column]`.
  * @param {Object} metadata
  * @returns {ArrayBuffer}
  */

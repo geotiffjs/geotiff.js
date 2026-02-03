@@ -5,7 +5,7 @@ const registry = new Map();
  * @property {number} tileWidth
  * @property {number} tileHeight
  * @property {number} planarConfiguration
- * @property {number} bitsPerSample
+ * @property {number|number[]|import('../geotiff.js').TypedArray} bitsPerSample
  * @property {number} predictor
  */
 
@@ -16,15 +16,20 @@ const registry = new Map();
  */
 async function defaultDecoderParameterFn(fileDirectory) {
   const isTiled = !fileDirectory.hasTag('StripOffsets');
-  return {
-    tileWidth: isTiled ? await fileDirectory.loadValue('TileWidth') : await fileDirectory.loadValue('ImageWidth'),
-    tileHeight: isTiled ? await fileDirectory.loadValue('TileLength') : (
-      await fileDirectory.loadValue('RowsPerStrip') || await fileDirectory.loadValue('ImageLength')
-    ),
+  return /** @type {DecoderParameters} */ ({
+    tileWidth: isTiled
+      ? await fileDirectory.loadValue('TileWidth')
+      : await fileDirectory.loadValue('ImageWidth'),
+    tileHeight: isTiled
+      ? await fileDirectory.loadValue('TileLength')
+      : (
+        await fileDirectory.loadValue('RowsPerStrip')
+        || await fileDirectory.loadValue('ImageLength')
+      ),
     planarConfiguration: await fileDirectory.loadValue('PlanarConfiguration'),
     bitsPerSample: await fileDirectory.loadValue('BitsPerSample'),
     predictor: await fileDirectory.loadValue('Predictor') || 1,
-  };
+  });
 }
 
 /**
@@ -35,8 +40,8 @@ async function defaultDecoderParameterFn(fileDirectory) {
 /**
  * Register a decoder for a specific compression method or a range of compressions
  * @param {(NumberOrUndefined|(NumberOrUndefined[]))} cases ids of the compression methods to register for
- * @param {function():Promise} importFn the function to import the decoder
- * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise} decoderParameterFn
+ * @param {function():Promise<any>} importFn the function to import the decoder
+ * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise<any>} decoderParameterFn
  * @param {boolean} preferWorker_ Whether to prefer running the decoder in a worker
  */
 export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderParameterFn, preferWorker_ = true) {
@@ -111,6 +116,9 @@ const defaultDecoderDefinitions = [
   {
     cases: 7,
     importFn: () => import('./jpeg.js').then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),
@@ -137,6 +145,9 @@ const defaultDecoderDefinitions = [
         return m;
       })
       .then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),
@@ -158,6 +169,9 @@ const defaultDecoderDefinitions = [
   {
     cases: 50001,
     importFn: () => import('./webimage.js').then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),

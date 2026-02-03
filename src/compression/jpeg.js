@@ -54,6 +54,35 @@ const dctSqrt1d2 = 2896;// sqrt(2) / 2
 /** @typedef {{children: HuffmanNode, index: number}} Code */
 
 /**
+ * @typedef {Object} JpegComponent
+ * @property {number} h
+ * @property {number} v
+ * @property {number} [quantizationIdx]
+ * @property {Int32Array} [quantizationTable]
+ * @property {number} blocksPerLine
+ * @property {number} blocksPerColumn
+ * @property {Int32Array[][]} blocks
+ * @property {HuffmanNode} [huffmanTableDC]
+ * @property {HuffmanNode} [huffmanTableAC]
+ * @property {number} [pred]
+ */
+
+/**
+ * @typedef {Object} JpegFrame
+ * @property {boolean} extended
+ * @property {boolean} progressive
+ * @property {number} precision
+ * @property {number} scanLines
+ * @property {number} samplesPerLine
+ * @property {Object.<string, JpegComponent>} components
+ * @property {number[]} componentsOrder
+ * @property {number} maxH
+ * @property {number} maxV
+ * @property {number} mcusPerLine
+ * @property {number} mcusPerColumn
+ */
+
+/**
  * @param {Uint8Array<ArrayBuffer>} codeLengths
  * @param {Uint8Array<ArrayBuffer>} values
  * @returns {HuffmanNode}
@@ -104,11 +133,28 @@ function buildHuffmanTable(codeLengths, values) {
   return code[0].children;
 }
 
+/**
+ * @param {Uint8Array} data
+ * @param {number} initialOffset
+ * @param {JpegFrame} frame
+ * @param {JpegComponent[]} components
+ * @param {number} resetInterval
+ * @param {number} spectralStart
+ * @param {number} spectralEnd
+ * @param {number} successivePrev
+ * @param {number} successive
+ */
 function decodeScan(data, initialOffset,
   frame, components, resetInterval,
   spectralStart, spectralEnd,
   successivePrev, successive) {
   const { mcusPerLine, progressive } = frame;
+  if (components.length > 1 && (mcusPerLine === undefined || frame.mcusPerColumn === undefined)) {
+    throw new Error('Missing MCU dimensions');
+  }
+  if (components.length === 1 && (components[0].blocksPerLine === undefined || components[0].blocksPerColumn === undefined)) {
+    throw new Error('Missing block dimensions');
+  }
 
   const startOffset = initialOffset;
   let offset = initialOffset;
@@ -130,20 +176,26 @@ function decodeScan(data, initialOffset,
     bitsCount = 7;
     return bitsData >>> 7;
   }
+  /** @param {HuffmanNode|undefined} tree */
   function decodeHuffman(tree) {
+    if (!tree) {
+      throw new Error('Huffman table not found');
+    }
     let node = tree;
     let bit;
     while ((bit = readBit()) !== null) { // eslint-disable-line no-cond-assign
-      node = node[bit];
-      if (typeof node === 'number') {
-        return node;
+      const next = node[bit];
+      if (typeof next === 'number') {
+        return next;
       }
-      if (typeof node !== 'object') {
+      if (typeof next !== 'object') {
         throw new Error('invalid huffman sequence');
       }
+      node = next;
     }
     return null;
   }
+  /** @param {number} initialLength */
   function receive(initialLength) {
     let length = initialLength;
     let n = 0;
@@ -157,6 +209,7 @@ function decodeScan(data, initialOffset,
     }
     return n;
   }
+  /** @param {number} length */
   function receiveAndExtend(length) {
     const n = receive(length);
     if (n === undefined) {
@@ -167,9 +220,22 @@ function decodeScan(data, initialOffset,
     }
     return n + (-1 << length) + 1;
   }
+  /**
+   * @param {JpegComponent} component
+   * @param {Int32Array} zz
+   */
   function decodeBaseline(component, zz) {
     const t = decodeHuffman(component.huffmanTableDC);
+    if (t === null) {
+      throw new Error('Huffman error');
+    }
     const diff = t === 0 ? 0 : receiveAndExtend(t);
+    if (diff === undefined) {
+      throw new Error('Unexpected end of stream');
+    }
+    if (component.pred === undefined) {
+      component.pred = 0;
+    }
     component.pred += diff;
     zz[0] = component.pred;
     let k = 1;
@@ -188,25 +254,51 @@ function decodeScan(data, initialOffset,
       } else {
         k += r;
         const z = dctZigZag[k];
-        zz[z] = receiveAndExtend(s);
+        const val = receiveAndExtend(s);
+        if (val === undefined) {
+          throw new Error('Unexpected end of stream');
+        }
+        zz[z] = val;
         k++;
       }
     }
   }
+  /**
+   * @param {JpegComponent} component
+   * @param {Int32Array} zz
+   */
   function decodeDCFirst(component, zz) {
     const t = decodeHuffman(component.huffmanTableDC);
+    if (t === null) {
+      throw new Error('Huffman error');
+    }
     const value = receiveAndExtend(t);
     if (value === undefined) {
       throw new Error('Unexpected end of data in DC coefficient decoding');
     }
     const diff = t === 0 ? 0 : (value << successive);
+    if (component.pred === undefined) {
+      component.pred = 0;
+    }
     component.pred += diff;
     zz[0] = component.pred;
   }
+  /**
+   * @param {JpegComponent} component
+   * @param {Int32Array} zz
+   */
   function decodeDCSuccessive(component, zz) {
-    zz[0] |= readBit() << successive;
+    const bit = readBit();
+    if (bit === null) {
+      throw new Error('Unexpected end of data in DC coefficient decoding');
+    }
+    zz[0] |= bit << successive;
   }
   let eobrun = 0;
+  /**
+   * @param {JpegComponent} component
+   * @param {Int32Array} zz
+   */
   function decodeACFirst(component, zz) {
     if (eobrun > 0) {
       eobrun--;
@@ -244,7 +336,12 @@ function decodeScan(data, initialOffset,
     }
   }
   let successiveACState = 0;
+  /** @type {number} */
   let successiveACNextValue;
+  /**
+   * @param {JpegComponent} component
+   * @param {Int32Array} zz
+   */
   function decodeACSuccessive(component, zz) {
     let k = spectralStart;
     const e = spectralEnd;
@@ -276,7 +373,11 @@ function decodeScan(data, initialOffset,
             if (s !== 1) {
               throw new Error('invalid ACn encoding');
             }
-            successiveACNextValue = receiveAndExtend(s);
+            const nextVal = receiveAndExtend(s);
+            if (nextVal === undefined) {
+              throw new Error('Unexpected end of data in AC coefficient decoding');
+            }
+            successiveACNextValue = nextVal;
             successiveACState = r ? 2 : 3;
           }
           continue; // eslint-disable-line no-continue
@@ -284,7 +385,11 @@ function decodeScan(data, initialOffset,
         case 1: // skipping r zero items
         case 2:
           if (zz[z]) {
-            zz[z] += (readBit() << successive) * direction;
+            const bit = readBit();
+            if (bit === null) {
+              throw new Error('Unexpected end of data in AC coefficient decoding');
+            }
+            zz[z] += (bit << successive) * direction;
           } else {
             r--;
             if (r === 0) {
@@ -294,7 +399,11 @@ function decodeScan(data, initialOffset,
           break;
         case 3: // set value for a zero item
           if (zz[z]) {
-            zz[z] += (readBit() << successive) * direction;
+            const bit = readBit();
+            if (bit === null) {
+              throw new Error('Unexpected end of data in AC coefficient decoding');
+            }
+            zz[z] += (bit << successive) * direction;
           } else {
             zz[z] = successiveACNextValue << successive;
             successiveACState = 0;
@@ -302,7 +411,11 @@ function decodeScan(data, initialOffset,
           break;
         case 4: // eob
           if (zz[z]) {
-            zz[z] += (readBit() << successive) * direction;
+            const bit = readBit();
+            if (bit === null) {
+              throw new Error('Unexpected end of data in AC coefficient decoding');
+            }
+            zz[z] += (bit << successive) * direction;
           }
           break;
         default:
@@ -317,16 +430,34 @@ function decodeScan(data, initialOffset,
       }
     }
   }
+  /**
+   * @param {JpegComponent} component
+   * @param {function} decodeFunction
+   * @param {number} mcu
+   * @param {number} row
+   * @param {number} col
+   */
   function decodeMcu(component, decodeFunction, mcu, row, col) {
     const mcuRow = (mcu / mcusPerLine) | 0;
     const mcuCol = mcu % mcusPerLine;
     const blockRow = (mcuRow * component.v) + row;
     const blockCol = (mcuCol * component.h) + col;
+    if (!component.blocks) {
+      throw new Error('Missing blocks');
+    }
     decodeFunction(component, component.blocks[blockRow][blockCol]);
   }
+  /**
+   * @param {JpegComponent} component
+   * @param {function} decodeFunction
+   * @param {number} mcu
+   */
   function decodeBlock(component, decodeFunction, mcu) {
     const blockRow = (mcu / component.blocksPerLine) | 0;
     const blockCol = mcu % component.blocksPerLine;
+    if (!component.blocks) {
+      throw new Error('Missing blocks');
+    }
     decodeFunction(component, component.blocks[blockRow][blockCol]);
   }
 
@@ -408,9 +539,16 @@ function decodeScan(data, initialOffset,
   return offset - startOffset;
 }
 
+/**
+ * @param {JpegFrame} frame
+ * @param {JpegComponent} component
+ */
 function buildComponentData(frame, component) {
   const lines = [];
   const { blocksPerLine, blocksPerColumn } = component;
+  if (!blocksPerLine || !blocksPerColumn || !component.blocks) {
+    throw new Error('Missing component data');
+  }
   const samplesPerLine = blocksPerLine << 3;
   const R = new Int32Array(64);
   const r = new Uint8Array(64);
@@ -420,8 +558,16 @@ function buildComponentData(frame, component) {
   //   "Practical Fast 1-D DCT Algorithms with 11 Multiplications",
   //   IEEE Intl. Conf. on Acoustics, Speech & Signal Processing, 1989,
   //   988-991.
+  /**
+   * @param {Int32Array} zz
+   * @param {Uint8Array} dataOut
+   * @param {Int32Array} dataIn
+   */
   function quantizeAndInverse(zz, dataOut, dataIn) {
     const qt = component.quantizationTable;
+    if (!qt) {
+      throw new Error('No quantization table found');
+    }
     let v0;
     let v1;
     let v2;
@@ -616,9 +762,16 @@ class JpegStreamReader {
     this.jfif = null;
     this.adobe = null;
 
+    /** @type {number} */
+    this.resetInterval = 0;
+
+    /** @type {Int32Array[]} */
     this.quantizationTables = [];
+    /** @type {HuffmanNode[]} */
     this.huffmanTablesAC = [];
+    /** @type {HuffmanNode[]} */
     this.huffmanTablesDC = [];
+    /** @type {JpegFrame[]} */
     this.frames = [];
   }
 
@@ -626,6 +779,7 @@ class JpegStreamReader {
     this.frames = [];
   }
 
+  /** @param {Uint8Array} data */
   parse(data) {
     let offset = 0;
     // const { length } = data;
@@ -640,6 +794,7 @@ class JpegStreamReader {
       offset += array.length;
       return array;
     }
+    /** @param {JpegFrame} frame */
     function prepareComponents(frame) {
       let maxH = 0;
       let maxV = 0;
@@ -769,15 +924,21 @@ class JpegStreamReader {
         case 0xFFC1: // SOF1 (Start of Frame, Extended DCT)
         case 0xFFC2: { // SOF2 (Start of Frame, Progressive DCT)
           readUint16(); // skip data length
+          /** @type {JpegFrame} */
           const frame = {
             extended: (fileMarker === 0xFFC1),
             progressive: (fileMarker === 0xFFC2),
             precision: data[offset++],
             scanLines: readUint16(),
             samplesPerLine: readUint16(),
+            /** @type {Object.<string, JpegComponent>} */
             components: {},
-            /** @type {any[]} */
+            /** @type {number[]} */
             componentsOrder: [],
+            maxH: 0,
+            maxV: 0,
+            mcusPerLine: 0,
+            mcusPerColumn: 0,
           };
 
           const componentsCount = data[offset++];
@@ -794,6 +955,9 @@ class JpegStreamReader {
               h,
               v,
               quantizationIdx: qId,
+              blocksPerLine: 0,
+              blocksPerColumn: 0,
+              blocks: [],
             };
             offset += 3;
           }
@@ -891,12 +1055,18 @@ class JpegStreamReader {
     for (let i = 0; i < this.frames.length; i++) {
       const cp = this.frames[i].components;
       for (const j of Object.keys(cp)) {
-        cp[j].quantizationTable = this.quantizationTables[cp[j].quantizationIdx];
-        delete cp[j].quantizationIdx;
+        const qIdx = cp[j].quantizationIdx;
+        if (typeof qIdx === 'number') {
+          cp[j].quantizationTable = this.quantizationTables[qIdx];
+          delete cp[j].quantizationIdx;
+        }
       }
     }
 
     const frame = frames[0];
+    if (!frame.maxH || !frame.maxV) {
+      throw new Error('Invalid frame dimensions');
+    }
     const { components, componentsOrder } = frame;
     const outComponents = [];
     const width = frame.samplesPerLine;
@@ -927,6 +1097,9 @@ class JpegStreamReader {
 }
 
 export default class JpegDecoder extends BaseDecoder {
+  /**
+   * @param {import('./basedecoder.js').BaseDecoderParameters & { JPEGTables?: Uint8Array }} parameters
+   */
   constructor(parameters) {
     super(parameters);
     this.reader = new JpegStreamReader();
@@ -935,6 +1108,7 @@ export default class JpegDecoder extends BaseDecoder {
     }
   }
 
+  /** @param {ArrayBuffer} buffer */
   decodeBlock(buffer) {
     this.reader.resetFrames();
     this.reader.parse(new Uint8Array(buffer));

@@ -272,11 +272,13 @@ const tagSource = [
 
 /**
  * Maps tag names to their numeric values
+ * @type {Record<string, number>}
  */
 export const tags = {};
 
 /**
  * Maps tag numbers to their definitions
+ * @type {Record<number, { tag: number, name: string, type: string|number|undefined, isArray: boolean, eager: boolean }>}
  */
 export const tagDefinitions = {};
 
@@ -284,7 +286,7 @@ export const tagDefinitions = {};
  * Registers a new field tag
  * @param {number} tag the numeric tiff tag
  * @param {string} name the name of the tag that will be reported in the IFD
- * @param {string|number|undefined} type the tags data type
+ * @param {keyof fieldTypes|number|undefined} type the tags data type
  * @param {Boolean} isArray whether the tag is an array
  * @param {boolean} [eager=false] whether to eagerly fetch deferred fields.
  *                                 When false (default), tags are loaded lazily on-demand.
@@ -316,6 +318,10 @@ export function resolveTag(tagIdentifier) {
   return tags[tagIdentifier];
 }
 
+/**
+ * @param {number|string} tagIdentifier The field tag ID or name
+ * @returns {{ tag: number, name: string, type: string|number|undefined, isArray: boolean, eager: boolean }} the tag definition
+ */
 export function getTag(tagIdentifier) {
   return tagDefinitions[resolveTag(tagIdentifier)];
 }
@@ -461,8 +467,6 @@ export const geoKeyNames = Object.freeze({
  * @type {Record<GeoKeyName, number>}
  */
 export const geoKeys = /** @type {Record<GeoKeyName, number>} */ ({});
-for (const key in geoKeyNames) {
-  if (geoKeyNames.hasOwnProperty(key)) {
-    geoKeys[geoKeyNames[key]] = parseInt(key, 10);
-  }
+for (const [key, name] of Object.entries(geoKeyNames)) {
+  geoKeys[/** @type {GeoKeyName} */ (name)] = parseInt(key, 10);
 }

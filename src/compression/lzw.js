@@ -5,6 +5,12 @@ const CLEAR_CODE = 256; // clear code
 const EOI_CODE = 257; // end of information
 const MAX_BYTELENGTH = 12;
 
+/**
+ * @param {Uint8Array} array
+ * @param {number} position
+ * @param {number} length
+ * @returns {number}
+ */
 function getByte(array, position, length) {
   const d = position % 8;
   const a = Math.floor(position / 8);
@@ -33,6 +39,12 @@ function getByte(array, position, length) {
   return chunks;
 }
 
+/**
+ * @template T
+ * @param {Array<T>} dest
+ * @param {Array<T>} source
+ * @returns {Array<T>}
+ */
 function appendReversed(dest, source) {
   for (let i = source.length - 1; i >= 0; i--) {
     dest.push(source[i]);
@@ -40,6 +52,9 @@ function appendReversed(dest, source) {
   return dest;
 }
 
+/**
+ * @param {ArrayBuffer} input
+ */
 function decompress(input) {
   const dictionaryIndex = new Uint16Array(4093);
   const dictionaryChar = new Uint8Array(4093);
@@ -55,17 +70,23 @@ function decompress(input) {
     dictionaryLength = 258;
     byteLength = MIN_BITS;
   }
+  /** @param {Uint8Array} array */
   function getNext(array) {
     const byte = getByte(array, position, byteLength);
     position += byteLength;
     return byte;
   }
+  /**
+   * @param {number} i
+   * @param {number} c
+   */
   function addToDictionary(i, c) {
     dictionaryChar[dictionaryLength] = c;
     dictionaryIndex[dictionaryLength] = i;
     dictionaryLength++;
     return dictionaryLength - 1;
   }
+  /** @param {number} n */
   function getDictionaryReversed(n) {
     const rev = [];
     for (let i = n; i !== 4096; i = dictionaryIndex[i]) {
@@ -99,9 +120,14 @@ function decompress(input) {
     } else if (code < dictionaryLength) {
       const val = getDictionaryReversed(code);
       appendReversed(result, val);
-      addToDictionary(oldCode, val[val.length - 1]);
+      if (oldCode !== undefined) {
+        addToDictionary(oldCode, val[val.length - 1]);
+      }
       oldCode = code;
     } else {
+      if (oldCode === undefined) {
+        throw new Error(`Invalid LZW code: ${code} with no previous code`);
+      }
       const oldVal = getDictionaryReversed(oldCode);
       if (!oldVal) {
         throw new Error(`Bogus entry. Not in dictionary, ${oldCode} / ${dictionaryLength}, position: ${position}`);
@@ -125,6 +151,7 @@ function decompress(input) {
 }
 
 export default class LZWDecoder extends BaseDecoder {
+  /** @param {ArrayBuffer} buffer */
   decodeBlock(buffer) {
     return decompress(buffer).buffer;
   }

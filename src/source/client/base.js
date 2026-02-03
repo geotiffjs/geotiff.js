@@ -17,7 +17,7 @@ export class BaseResponse {
   /**
    * Returns the value of the specified header
    * @param {string} headerName the header name
-   * @returns {string|null} the header value
+   * @returns {string|undefined} the header value
    */
   getHeader(headerName) { // eslint-disable-line no-unused-vars
     throw new Error('not implemented');
@@ -32,6 +32,7 @@ export class BaseResponse {
 }
 
 export class BaseClient {
+  /** @param {string} url */
   constructor(url) {
     this.url = url;
   }

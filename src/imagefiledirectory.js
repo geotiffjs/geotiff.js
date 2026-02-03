@@ -105,6 +105,18 @@ function getDataSliceReader(dataSlice, fieldType) {
  */
 
 /**
+ * @overload
+ * @param {import('./geotiff.js').TypedArray|Array<number>|null} outValues - Optional pre-allocated output array
+ * @param {Function} readMethod - DataView read method (e.g., getUint16)
+ * @param {DataSlice} dataSlice - Source data slice
+ * @param {number} fieldType - TIFF field type constant
+ * @param {number} count - Number of values to read
+ * @param {number} offset - Byte offset to start reading
+ * @param {boolean} [isArray] - Whether to always return an array (vs single value)
+ * @returns {import('./geotiff.js').TypedArray|Array<number>|string|number} The decoded value(s)
+ */
+
+/**
  * Reads field values from a DataSlice.
  * @param {import('./geotiff.js').TypedArray|Array<number>|null} outValues - Optional pre-allocated output array
  * @param {Function} readMethod - DataView read method (e.g., getUint16)
@@ -266,9 +278,10 @@ class DeferredArray {
 export class ImageFileDirectory {
   /**
    * Create an ImageFileDirectory.
-   * @param {Map} actualizedFields the file directory, mapping tag names to values
-   * @param {Map} deferredFields the deferred fields, mapping tag names to async functions
-   * @param {Map} deferredArrays the deferred arrays, mapping tag names to DeferredArray objects
+   * @param {Map<string|number, any>} actualizedFields the file directory, mapping tag names to values
+   * @param {Map<string|number, Function>} deferredFields the deferred fields, mapping tag names to async functions
+   * @param {Map<string|number, DeferredArray>} deferredArrays the deferred arrays, mapping tag names to
+   * DeferredArray objects
    * @param {number} nextIFDByteOffset the byte offset to the next IFD
    */
   constructor(actualizedFields, deferredFields, deferredArrays, nextIFDByteOffset) {
@@ -315,7 +328,8 @@ export class ImageFileDirectory {
   /**
    * Retrieves the value for a given tag. If it is deferred, it will be loaded first.
    * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns the field value, or undefined if it does not exist
+   * @returns {Promise<import('./geotiff.js').TypedArray|Array<number>|string|number|undefined>}
+   *   the field value, or undefined if it does not exist
    */
   async loadValue(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);
@@ -325,8 +339,8 @@ export class ImageFileDirectory {
     if (this.deferredFieldsBeingResolved.has(tag)) {
       return this.deferredFieldsBeingResolved.get(tag);
     }
-    if (this.deferredFields.has(tag)) {
-      const loaderFn = this.deferredFields.get(tag);
+    const loaderFn = this.deferredFields.get(tag);
+    if (loaderFn) {
       this.deferredFields.delete(tag);
 
       // Set promise BEFORE starting async work to prevent race conditions
@@ -343,8 +357,9 @@ export class ImageFileDirectory {
       this.deferredFieldsBeingResolved.set(tag, valuePromise);
       return valuePromise;
     }
-    if (this.deferredArrays.has(tag)) {
-      const deferredArray = this.deferredArrays.get(tag);
+
+    const deferredArray = this.deferredArrays.get(tag);
+    if (deferredArray) {
       return deferredArray.loadAll();
     }
 
@@ -355,7 +370,7 @@ export class ImageFileDirectory {
    * Retrieves the value at a given index for a tag that is an array. If it is deferred, it will be loaded first.
    * @param {number|string} tagIdentifier The field tag ID or name
    * @param {number} index The index within the array
-   * @returns the field value at the given index, or undefined if it does not exist
+   * @returns {Promise<number|string|bigint|undefined>} the field value at the given index, or undefined if it does not exist
    */
   async loadValueIndexed(tagIdentifier, index) {
     const tag = resolveTag(tagIdentifier);
@@ -363,10 +378,13 @@ export class ImageFileDirectory {
       const value = this.actualizedFields.get(tag);
       return value[index];
     } else if (this.deferredArrays.has(tag)) {
-      const deferredArray = this.deferredArrays.get(tag);
+      const deferredArray = /** @type {DeferredArray} */ (this.deferredArrays.get(tag));
       return deferredArray.get(index);
     } else if (this.hasTag(tag)) {
-      return (await this.loadValue(tag))[index];
+      const value = await this.loadValue(tag);
+      if (value && typeof value !== 'number') {
+        return value[index];
+      }
     }
     return undefined;
   }
@@ -388,7 +406,7 @@ export class ImageFileDirectory {
     /** @type {Partial<Record<import('./globals.js').GeoKeyName, *>>} */
     const geoKeyDirectory = {};
     for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
-      const key = geoKeyNames[rawGeoKeyDirectory[i]];
+      const key = (/** @type {Record<number, import('./globals.js').GeoKeyName>} */ (geoKeyNames))[rawGeoKeyDirectory[i]];
       const location = rawGeoKeyDirectory[i + 1] || null;
       const count = rawGeoKeyDirectory[i + 2];
       const offset = rawGeoKeyDirectory[i + 3];
@@ -415,9 +433,10 @@ export class ImageFileDirectory {
   }
 
   toObject() {
+    /** @type {Record<string, any>} */
     const obj = {};
     for (const [tag, value] of this.actualizedFields.entries()) {
-      const tagDefinition = tagDefinitions[tag];
+      const tagDefinition = typeof tag === 'number' ? tagDefinitions[tag] : undefined;
       const tagName = tagDefinition ? tagDefinition.name : `Tag${tag}`;
       obj[tagName] = value;
     }
