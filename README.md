@@ -711,7 +711,7 @@ const metadata = {
 const arrayBuffer = await writeArrayBuffer(values, metadata);
 ```
 
-You can also write geotiffs with multiple strips by specifying the metadata for `StripByteCounts` and `RowsPerStrip`:
+To write geotiffs with multiple strips by specifying the metadata for `StripByteCounts` and `RowsPerStrip`:
 ```javascript
 const originalRed = [
     [255, 255, 255],
@@ -766,8 +766,8 @@ const height = 3;
 const width = 3;
 const samplesPerPixel = 3;
 
-// You must provide your own arrangeTiledDataInterleaved implementation
-const tiled = arrangeTiledDataInterleaved(interleaved, width, height, tileWidth, tileHeight, samplesPerPixel);
+// You must provide your own flattenAndPadTiledDataInterleaved implementation, bear in mind partial tiles must be padded with null bytes
+const tiled = flattenAndPadTiledDataInterleaved(interleaved, width, height, tileWidth, tileHeight, samplesPerPixel);
 const metadata = {
   height,
   width,
