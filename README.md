@@ -711,6 +711,73 @@ const metadata = {
 const arrayBuffer = await writeArrayBuffer(values, metadata);
 ```
 
+You can also write geotiffs with multiple strips by specifying the metadata for `StripByteCounts` and `RowsPerStrip`:
+```javascript
+const originalRed = [
+    [255, 255, 255],
+    [0, 0, 0],
+    [0, 0, 0],
+];
+const originalGreen = [
+  [0, 0, 0],
+  [255, 255, 255],
+  [0, 0, 0],
+];
+const originalBlue = [
+  [0, 0, 0],
+  [0, 0, 0],
+  [255, 255, 255],
+];
+const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+  value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+]));
+const values = new Uint8Array(interleaved);
+const metadata = {
+  height: 3,
+  width: 3,
+  RowsPerStrip: 1,
+  StripByteCounts: [9, 9, 9],
+};
+
+const newGeoTiffAsBinaryData = await writeArrayBuffer(values, metadata);
+```
+
+To create tiled geotiffs, specify the metadata for: `TileByteCounts`, `TileWidth`, `TileLength` and `SamplesPerPixel`:
+```javascript
+const originalRed = [
+    [255, 255, 255],
+    [1, 1, 1],
+    [1, 1, 1],
+];
+const originalGreen = [
+  [1, 1, 1],
+  [255, 255, 255],
+  [1, 1, 1],
+];
+const originalBlue = [
+  [1, 1, 1],
+  [1, 1, 1],
+  [255, 255, 255],
+];
+
+const tileHeight = 2;
+const tileWidth = 2;
+const height = 3;
+const width = 3;
+const samplesPerPixel = 3;
+
+// You must provide your own arrangeTiledDataInterleaved implementation
+const tiled = arrangeTiledDataInterleaved(interleaved, width, height, tileWidth, tileHeight, samplesPerPixel);
+const metadata = {
+  height,
+  width,
+  TileByteCounts: [12, 12, 12, 12],
+  TileWidth: tileWidth,
+  TileLength: tileHeight,
+  SamplesPerPixel: samplesPerPixel,
+};
+```
+
 ## What to do with the data?
 
 There is a nice HTML 5/WebGL based rendering library called

@@ -378,6 +378,15 @@ export function writeGeotiff(data, metadata) {
 
   // consult https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
 
+  if (isTiled) {
+    if (metadata.SamplesPerPixel === undefined) {
+      throw new Error('SamplesPerPixel must be specified when writing tiled images');
+    }
+    if (metadata.TileWidth === undefined || metadata.TileLength === undefined) {
+      throw new Error('Both TileWidth and TileLength must be specified when writing tiled images');
+    }
+  }
+
   if (!metadata.BitsPerSample) {
     let bitsPerSample = 8;
     if (ArrayBuffer.isView(flattenedValues)) {
