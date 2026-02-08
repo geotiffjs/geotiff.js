@@ -6,15 +6,14 @@ import { FetchClient } from './client/fetch.js';
 import { XHRClient } from './client/xhr.js';
 import { HttpClient } from './client/http.js';
 
+/** @import { RemoteSourceOptions, BlockedSourceOptions } from '../geotiff.js' */
+
 class RemoteSource extends BaseSource {
   /**
-   *
-   * @param {BaseClient} client
-   * @param {object} headers
-   * @param {numbers} maxRanges
-   * @param {boolean} allowFullFile
+   * @param {import("../geotiff").BaseClient} client
+   * @param {RemoteSourceOptions} options
    */
-  constructor(client, headers, maxRanges, allowFullFile) {
+  constructor(client, { headers, maxRanges = 0, allowFullFile } = {}) {
     super();
     this.client = client;
     this.headers = headers;
@@ -24,8 +23,9 @@ class RemoteSource extends BaseSource {
   }
 
   /**
-   *
-   * @param {Slice[]} slices
+   * @param {import('./basesource.js').Slice[]} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<*[]>}
    */
   async fetch(slices, signal) {
     // if we allow multi-ranges, split the incoming request into that many sub-requests
@@ -150,6 +150,11 @@ class RemoteSource extends BaseSource {
   }
 }
 
+/**
+ * @param {BaseSource} source
+ * @param {BlockedSourceOptions} blockedSourceOptions
+ * @returns {BaseSource}
+ */
 function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   if (blockSize === null) {
     return source;
@@ -157,33 +162,53 @@ function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
   return new BlockedSource(source, { blockSize, cacheSize });
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions & { credentials?: RequestCredentials}} [param1]
+ * @returns {BaseSource}
+ */
 export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new FetchClient(url, credentials);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new XHRClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new HttpClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {import("../geotiff").BaseClient} client
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
 /**
  *
  * @param {string} url
- * @param {object} options
+ * @param {RemoteSourceOptions} options
  */
 export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
   if (typeof fetch === 'function' && !forceXHR) {

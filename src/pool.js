@@ -66,7 +66,7 @@ class WorkerWrapper {
     });
 
     this.jobs.set(jobId, { resolve, reject });
-    this.worker.postMessage({ ...message, jobId }, transferables);
+    this.worker.postMessage({ ...message, jobId }, { transfer: transferables });
     return promise;
   }
 
@@ -129,21 +129,24 @@ class Pool {
   }
 
   bindParameters(compression, decoderParameters) {
-    return {
-      decode: async (buffer) => {
-        if (preferWorker(compression) && this.workerWrappers) {
-          // select the worker with the lowest jobCount
-          const workerWrapper = (await this.workerWrappers).reduce((a, b) => {
-            return a.getJobCount() < b.getJobCount() ? a : b;
-          });
-          const { decoded } = await workerWrapper.submitJob({ compression, decoderParameters, buffer }, [buffer]);
-          return decoded;
-        } else {
-          const decoder = await getDecoder(compression, decoderParameters);
-          return decoder.decode(buffer);
-        }
-      },
+    this.decode = async (buffer) => {
+      if (preferWorker(compression) && this.workerWrappers) {
+        // select the worker with the lowest jobCount
+        const workerWrapper = (await this.workerWrappers).reduce((a, b) => {
+          return a.getJobCount() < b.getJobCount() ? a : b;
+        });
+        const { decoded } = await workerWrapper.submitJob({ compression, decoderParameters, buffer }, [buffer]);
+        return decoded;
+      } else {
+        const decoder = await getDecoder(compression, decoderParameters);
+        return decoder.decode(buffer);
+      }
     };
+    return this;
+  }
+
+  async decode(_buffer) {
+    throw new Error('Pool not initialized. Call `pool.bindParameters()` first.');
   }
 
   async destroy() {

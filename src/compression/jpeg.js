@@ -50,8 +50,17 @@ const dctSin6 = 3784; // sin(6*pi/16)
 const dctSqrt2 = 5793; // sqrt(2)
 const dctSqrt1d2 = 2896;// sqrt(2) / 2
 
+/** @typedef {(number|HuffmanNode)[]} HuffmanNode */
+/** @typedef {{children: HuffmanNode, index: number}} Code */
+
+/**
+ * @param {Uint8Array<ArrayBuffer>} codeLengths
+ * @param {Uint8Array<ArrayBuffer>} values
+ * @returns {HuffmanNode}
+ */
 function buildHuffmanTable(codeLengths, values) {
   let k = 0;
+  /** @type {Array<Code>} */
   const code = [];
   let length = 16;
   while (length > 0 && !codeLengths[length - 1]) {
@@ -59,14 +68,22 @@ function buildHuffmanTable(codeLengths, values) {
   }
   code.push({ children: [], index: 0 });
 
+  /** @type {Code|undefined} */
   let p = code[0];
+  /** @type {Code|undefined} */
   let q;
   for (let i = 0; i < length; i++) {
     for (let j = 0; j < codeLengths[i]; j++) {
       p = code.pop();
+      if (!p) {
+        throw new Error('buildHuffmanTable: codeLength mismatch');
+      }
       p.children[p.index] = values[k];
       while (p.index > 0) {
         p = code.pop();
+        if (!p) {
+          throw new Error('buildHuffmanTable: codeLength mismatch');
+        }
       }
       p.index++;
       code.push(p);
@@ -142,6 +159,9 @@ function decodeScan(data, initialOffset,
   }
   function receiveAndExtend(length) {
     const n = receive(length);
+    if (n === undefined) {
+      return undefined;
+    }
     if (n >= 1 << (length - 1)) {
       return n;
     }
@@ -155,6 +175,9 @@ function decodeScan(data, initialOffset,
     let k = 1;
     while (k < 64) {
       const rs = decodeHuffman(component.huffmanTableAC);
+      if (rs === null) {
+        throw new Error('Unexpected end of data in AC coefficient decoding');
+      }
       const s = rs & 15;
       const r = rs >> 4;
       if (s === 0) {
@@ -172,7 +195,11 @@ function decodeScan(data, initialOffset,
   }
   function decodeDCFirst(component, zz) {
     const t = decodeHuffman(component.huffmanTableDC);
-    const diff = t === 0 ? 0 : (receiveAndExtend(t) << successive);
+    const value = receiveAndExtend(t);
+    if (value === undefined) {
+      throw new Error('Unexpected end of data in DC coefficient decoding');
+    }
+    const diff = t === 0 ? 0 : (value << successive);
     component.pred += diff;
     zz[0] = component.pred;
   }
@@ -189,18 +216,29 @@ function decodeScan(data, initialOffset,
     const e = spectralEnd;
     while (k <= e) {
       const rs = decodeHuffman(component.huffmanTableAC);
+      if (rs === null) {
+        throw new Error('Unexpected end of data in AC coefficient decoding');
+      }
       const s = rs & 15;
       const r = rs >> 4;
       if (s === 0) {
         if (r < 15) {
-          eobrun = receive(r) + (1 << r) - 1;
+          const value = receive(r);
+          if (value === undefined) {
+            throw new Error('Unexpected end of data in AC coefficient decoding');
+          }
+          eobrun = value + (1 << r) - 1;
           break;
         }
         k += 16;
       } else {
         k += r;
         const z = dctZigZag[k];
-        zz[z] = receiveAndExtend(s) * (1 << successive);
+        const value = receiveAndExtend(s);
+        if (value === undefined) {
+          throw new Error('Unexpected end of data in AC coefficient decoding');
+        }
+        zz[z] = value * (1 << successive);
         k++;
       }
     }
@@ -217,11 +255,18 @@ function decodeScan(data, initialOffset,
       switch (successiveACState) {
         case 0: { // initial state
           const rs = decodeHuffman(component.huffmanTableAC);
+          if (rs === null) {
+            throw new Error('Unexpected end of data in AC coefficient decoding');
+          }
           const s = rs & 15;
           r = rs >> 4;
           if (s === 0) {
             if (r < 15) {
-              eobrun = receive(r) + (1 << r);
+              const value = receive(r);
+              if (value === undefined) {
+                throw new Error('Unexpected end of data in AC coefficient decoding');
+              }
+              eobrun = value + (1 << r);
               successiveACState = 4;
             } else {
               r = 16;
@@ -574,7 +619,7 @@ class JpegStreamReader {
     this.quantizationTables = [];
     this.huffmanTablesAC = [];
     this.huffmanTablesDC = [];
-    this.resetFrames();
+    this.frames = [];
   }
 
   resetFrames() {
@@ -731,6 +776,7 @@ class JpegStreamReader {
             scanLines: readUint16(),
             samplesPerLine: readUint16(),
             components: {},
+            /** @type {any[]} */
             componentsOrder: [],
           };
 

@@ -11,8 +11,8 @@ const registry = new Map();
 
 /**
  * Default decoder parameter retrieval function
- * @param {import('../imagefiledirectory.js').ImageFileDirectory} fileDirectory
- * @returns {DecoderParameters}
+ * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+ * @returns {Promise<DecoderParameters>}
  */
 async function defaultDecoderParameterFn(fileDirectory) {
   const isTiled = !fileDirectory.hasTag('StripOffsets');
@@ -36,7 +36,7 @@ async function defaultDecoderParameterFn(fileDirectory) {
  * Register a decoder for a specific compression method or a range of compressions
  * @param {(NumberOrUndefined|(NumberOrUndefined[]))} cases ids of the compression methods to register for
  * @param {function():Promise} importFn the function to import the decoder
- * @param {function():Promise} decoderParameterFn
+ * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise} decoderParameterFn
  * @param {boolean} preferWorker_ Whether to prefer running the decoder in a worker
  */
 export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderParameterFn, preferWorker_ = true) {
@@ -78,7 +78,7 @@ export async function getDecoder(compression, decoderParameters) {
 
 /**
  * Whether to prefer running the decoder in a worker
- * @param {object} fileDirectory the file directory of the image
+ * @param {number|undefined} compression the compression method identifier
  * @returns {boolean}
  */
 export function preferWorker(compression) {

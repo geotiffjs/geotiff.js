@@ -8,31 +8,10 @@ import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fro
 import { getDecoder, getDecoderParameters } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
 
-/**
- * @typedef {Object} ReadRasterOptions
- * @property {Array<number>} [window=whole window] the subset to read data from in pixels.
- * @property {Array<number>} [bbox=whole image] the subset to read data from in
- *                                           geographical coordinates.
- * @property {Array<number>} [samples=all samples] the selection of samples to read from. Default is all samples.
- * @property {boolean} [interleave=false] whether the data shall be read
- *                                             in one single array or separate
- *                                             arrays.
- * @property {Pool} [pool=null] The optional decoder pool to use.
- * @property {number} [width] The desired width of the output. When the width is not the
- *                                 same as the images, resampling will be performed.
- * @property {number} [height] The desired height of the output. When the width is not the
- *                                  same as the images, resampling will be performed.
- * @property {string} [resampleMethod='nearest'] The desired resampling method.
- * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
- *                                       to be aborted
- * @property {number|number[]} [fillValue] The value to use for parts of the image
- *                                              outside of the images extent. When multiple
- *                                              samples are requested, an array of fill values
- *                                              can be passed.
- */
-
-/** @typedef {import("./geotiff.js").TypedArray} TypedArray */
-/** @typedef {import("./geotiff.js").ReadRasterResult} ReadRasterResult */
+/** @import {TypedArray} from "./geotiff" */
+/** @import {ReadRasterResult} from "./geotiff" */
+/** @import {ReadRastersOptions} from "./geotiff" */
+/** @import {ReadRGBOptions} from "./geotiff" */
 
 function sum(array, start, end) {
   let s = 0;
@@ -176,30 +155,29 @@ function normalizeArray(inBuffer, format, planarConfiguration, samplesPerPixel, 
 class GeoTIFFImage {
   /**
    * @constructor
-   * @param {import("./imagefiledirectory.js").ImageFileDirectory} fileDirectory The parsed file directory
-   * @param {DataView} dataView The DataView for the underlying file.
+   * @param {import("./imagefiledirectory").ImageFileDirectory} fileDirectory The parsed file directory
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
-   * @param {import('./source/basesource').BaseSource} source The datasource to read from
+   * @param {import('./source/basesource.js').BaseSource} source The datasource to read from
    */
-  constructor(fileDirectory, dataView, littleEndian, cache, source) {
+  constructor(fileDirectory, littleEndian, cache, source) {
     this.fileDirectory = fileDirectory;
-    this.dataView = dataView;
     this.littleEndian = littleEndian;
     this.tiles = cache ? {} : null;
     this.isTiled = !fileDirectory.hasTag('StripOffsets');
-    const planarConfiguration = fileDirectory.getValue('PlanarConfiguration');
-    this.planarConfiguration = (typeof planarConfiguration === 'undefined') ? 1 : planarConfiguration;
-    if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
+    const planarConfiguration = fileDirectory.getValue('PlanarConfiguration') ?? 1;
+    if (planarConfiguration !== 1 && planarConfiguration !== 2) {
       throw new Error('Invalid planar configuration.');
     }
+    /** @type {1 | 2} */
+    this.planarConfiguration = planarConfiguration;
 
     this.source = source;
   }
 
   /**
    * Returns the associated parsed file directory.
-   * @returns {import("./imagefiledirectory.js").ImageFileDirectory} the parsed file directory
+   * @returns {import("./imagefiledirectory").ImageFileDirectory} the parsed file directory
    */
   getFileDirectory() {
     return this.fileDirectory;
@@ -207,7 +185,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the associated parsed geo keys.
-   * @returns {Record<import('./globals.js').GeoKeyName, *>|null} the parsed geo keys
+   * @returns {Partial<Record<import('./globals.js').GeoKeyName, *>>|null} the parsed geo keys
    */
   getGeoKeys() {
     return this.fileDirectory.parseGeoKeyDirectory();
@@ -373,6 +351,9 @@ class GeoTIFFImage {
     } else if (this.planarConfiguration === 2) {
       index = (sample * numTilesPerRow * numTilesPerCol) + (y * numTilesPerRow) + x;
     }
+    if (index === undefined) {
+      throw new Error('Could not determine tile or strip index.');
+    }
 
     let offset;
     let byteCount;
@@ -435,11 +416,11 @@ class GeoTIFFImage {
    * @param {Array} imageWindow The image window in pixel coordinates
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
-   * @param {Boolean} interleave Whether or not to write in an interleaved manner
-   * @param {import("./geotiff").Pool|AbstractDecoder} poolOrDecoder the decoder or decoder pool
-   * @param {number} width the width of window to be read into
-   * @param {number} height the height of window to be read into
-   * @param {number} resampleMethod the resampling method to be used when interpolating
+   * @param {boolean|undefined} interleave Whether or not to write in an interleaved manner
+   * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {number} [width] the width of window to be read into
+   * @param {number} [height] the height of window to be read into
+   * @param {string} [resampleMethod] the resampling method to be used when interpolating
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise<ReadRasterResult>}
@@ -492,6 +473,9 @@ class GeoTIFFImage {
             bytesPerPixel = this.getSampleByteSize(sample);
             getPromise = this.getTileOrStrip(xTile, yTile, sample, poolOrDecoder, signal);
           }
+          if (!getPromise) {
+            throw new Error('Could not get tile or strip data.');
+          }
           const promise = getPromise.then((tile) => {
             const buffer = tile.data;
             const dataView = new DataView(buffer);
@@ -537,32 +521,60 @@ class GeoTIFFImage {
       let resampled;
       if (interleave) {
         resampled = resampleInterleaved(
-          valueArrays,
+          /** @type {TypedArray} */ (valueArrays),
           imageWindow[2] - imageWindow[0],
           imageWindow[3] - imageWindow[1],
-          width, height,
+          /** @type {number} */ (width), /** @type {number} */ (height),
           samples.length,
           resampleMethod,
         );
       } else {
         resampled = resample(
-          valueArrays,
+          /** @type {TypedArray[]} */ (valueArrays),
           imageWindow[2] - imageWindow[0],
           imageWindow[3] - imageWindow[1],
-          width, height,
+          /** @type {number} */ (width), /** @type {number} */ (height),
           resampleMethod,
         );
       }
-      resampled.width = width;
-      resampled.height = height;
-      return resampled;
+
+      const resampledWithDimensions = /** @type {ReadRasterResult} */ (resampled);
+      resampledWithDimensions.width = width ?? imageWindow[2] - imageWindow[0];
+      resampledWithDimensions.height = height ?? imageWindow[3] - imageWindow[1];
+      return resampledWithDimensions;
     }
 
-    valueArrays.width = width || imageWindow[2] - imageWindow[0];
-    valueArrays.height = height || imageWindow[3] - imageWindow[1];
+    const valueArraysWithDimensions = /** @type {ReadRasterResult} */ (valueArrays);
 
-    return valueArrays;
+    valueArraysWithDimensions.width = width || imageWindow[2] - imageWindow[0];
+    valueArraysWithDimensions.height = height || imageWindow[3] - imageWindow[1];
+
+    return valueArraysWithDimensions;
   }
+
+  /**
+   * @overload
+   * @param {ReadRastersOptions & {interleave: true}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the decoded arrays as a promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRastersOptions & {interleave: false}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRastersOptions & {interleave: boolean}} options optional parameters
+   * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRastersOptions} [options={}] optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
+   */
 
   /**
    * Reads raster data from the image. This function reads all selected samples
@@ -570,13 +582,15 @@ class GeoTIFFImage {
    * combined array when `interleave` is set. When provided, only a subset
    * of the raster is read for each sample.
    *
-   * @param {ReadRasterOptions} [options={}] optional parameters
+   * @param {ReadRastersOptions} [options={}] optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded arrays as a promise
    */
-  async readRasters({
-    window: wnd, samples = [], interleave, pool = null,
-    width, height, resampleMethod, fillValue, signal,
-  } = {}) {
+  async readRasters(options = {}) {
+    const {
+      window: wnd, samples = [], pool = null,
+      width, height, resampleMethod, fillValue, signal,
+    } = options;
+    const interleave = 'interleave' in options && options.interleave;
     const imageWindow = wnd || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -600,6 +614,7 @@ class GeoTIFFImage {
         }
       }
     }
+    /** @type {TypedArray|TypedArray[]} */
     let valueArrays;
     if (interleave) {
       const format = this.fileDirectory.hasTag('SampleFormat')
@@ -607,6 +622,9 @@ class GeoTIFFImage {
       const bitsPerSample = Math.max.apply(null, this.fileDirectory.getValue('BitsPerSample'));
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
+        if (Array.isArray(fillValue)) {
+          throw new Error('When reading interleaved data, fillValue must be a single number.');
+        }
         valueArrays.fill(fillValue);
       }
     } else {
@@ -635,30 +653,43 @@ class GeoTIFFImage {
   }
 
   /**
+   * @overload
+   * @param {ReadRGBOptions & {interleave: true}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptions & {interleave: false}} options optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptions & {interleave: boolean}} options optional parameters
+   * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
+   */
+
+  /**
+   * @overload
+   * @param {ReadRGBOptions} [options={}] optional parameters
+   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   */
+
+  /**
    * Reads raster data from the image as RGB.
    * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
    * When no other method is applicable, the first sample is used to produce a
    * grayscale image.
    * When provided, only a subset of the raster is read for each sample.
    *
-   * @param {Object} [options] optional parameters
-   * @param {Array<number>} [options.window] the subset to read data from in pixels.
-   * @param {boolean} [options.interleave=true] whether the data shall be read
-   *                                             in one single array or separate
-   *                                             arrays.
-   * @param {import("./geotiff").Pool} [options.pool=null] The optional decoder pool to use.
-   * @param {number} [options.width] The desired width of the output. When the width is no the
-   *                                 same as the images, resampling will be performed.
-   * @param {number} [options.height] The desired height of the output. When the width is no the
-   *                                  same as the images, resampling will be performed.
-   * @param {string} [options.resampleMethod='nearest'] The desired resampling method.
-   * @param {boolean} [options.enableAlpha=false] Enable reading alpha channel if present.
-   * @param {AbortSignal} [options.signal] An AbortSignal that may be signalled if the request is
-   *                                       to be aborted
+   * @param {ReadRGBOptions} [options] optional parameters
    * @returns {Promise<ReadRasterResult>} the RGB array as a Promise
    */
-  async readRGB({ window, interleave = true, pool = null, width, height,
-    resampleMethod, enableAlpha = false, signal } = {}) {
+  async readRGB(options = {}) {
+    const { window, pool = null, width, height,
+      resampleMethod, enableAlpha = false, signal } = options;
+    const interleave = ('interleave' in options && options.interleave) ?? false;
     const imageWindow = window || [0, 0, this.getWidth(), this.getHeight()];
 
     // check parameters
@@ -708,6 +739,7 @@ class GeoTIFFImage {
 
     const subOptions = {
       window: imageWindow,
+      /** @type {true} */
       interleave: true,
       samples,
       pool,
@@ -758,9 +790,11 @@ class GeoTIFFImage {
       data = [red, green, blue];
     }
 
-    data.width = raster.width;
-    data.height = raster.height;
-    return data;
+    const dataWithDimensions = /** @type {import("./geotiff").ReadRasterResult} */ (data);
+
+    dataWithDimensions.width = raster.width;
+    dataWithDimensions.height = raster.height;
+    return dataWithDimensions;
   }
 
   /**
@@ -793,7 +827,7 @@ class GeoTIFFImage {
    * If sample is passed to null, dataset-level metadata will be returned.
    * Otherwise only metadata specific to the provided sample will be returned.
    *
-   * @param {number} [sample=null] The sample index.
+   * @param {number|null} [sample=null] The sample index.
    * @returns {Promise<Object>}
    */
   async getGDALMetadata(sample = null) {
@@ -858,7 +892,7 @@ class GeoTIFFImage {
   /**
    * Returns the image resolution as a XYZ-vector. When the image has no affine
    * transformation, then an exception is thrown.
-   * @param {GeoTIFFImage} [referenceImage=null] A reference image to calculate the resolution from
+   * @param {GeoTIFFImage|null} [referenceImage=null] A reference image to calculate the resolution from
    *                                             in cases when the current image does not have the
    *                                             required tags on its own.
    * @returns {Array<number>} The resolution as a vector
@@ -907,7 +941,7 @@ class GeoTIFFImage {
    * @returns {Boolean} Whether the pixels are a point
    */
   pixelIsArea() {
-    return this.geoKeys.GTRasterTypeGeoKey === 1;
+    return this.getGeoKeys()?.GTRasterTypeGeoKey === 1;
   }
 
   /**

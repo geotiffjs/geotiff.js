@@ -9,7 +9,7 @@ worker.addEventListener('message', async (e) => {
   try {
     const decoder = await getDecoder(compression, decoderParameters);
     const decoded = await decoder.decode(buffer);
-    worker.postMessage({ decoded, ...extra }, [decoded]);
+    worker.postMessage({ decoded, ...extra }, { transfer: [decoded] });
   } catch (error) {
     worker.postMessage({ error: error.message, ...extra });
   }

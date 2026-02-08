@@ -5,6 +5,13 @@ export default class BaseDecoder {
     this.parameters = parameters;
   }
 
+  /**
+   * @abstract
+   */
+  decodeBlock(_buffer) {
+    throw new Error('decodeBlock not implemented');
+  }
+
   async decode(buffer) {
     const decoded = await this.decodeBlock(buffer);
 

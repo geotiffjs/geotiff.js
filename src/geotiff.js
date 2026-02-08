@@ -18,6 +18,7 @@ import * as globals from './globals.js';
 import * as rgb from './rgb.js';
 import { getDecoder, addDecoder } from './compression/index.js';
 import { setLogger } from './logging.js';
+/** @import { BaseSource } from './source/basesource.js' */
 
 export { globals };
 export { registerTag };
@@ -56,7 +57,74 @@ export { setLogger };
  * @typedef {TypedArrayWithDimensions | TypedArrayArrayWithDimensions} ReadRasterResult
  */
 
+/**
+ * @typedef {Object} ReadRastersOptions
+ * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
+ * @property {Array<number>} [samples] the selection of samples to read from. Default is all samples.
+ *     All samples if not specified.
+ * @property {Pool|null} [pool=null] The optional decoder pool to use.
+ * @property {number} [width] The desired width of the output. When the width is not the
+ *                                 same as the images, resampling will be performed.
+ * @property {number} [height] The desired height of the output. When the width is not the
+ *                                  same as the images, resampling will be performed.
+ * @property {string} [resampleMethod='nearest'] The desired resampling method.
+ * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                                       to be aborted
+ * @property {number|number[]} [fillValue] The value to use for parts of the image
+ *     outside of the images extent. When multiple samples are requested and `interleave` is
+ *     `false`, an array of fill values can be passed.
+ * @property {boolean|true|false} [interleave] whether the data shall be read
+ *     in one single array or separate arrays.
+ */
+
+/**
+ * @typedef {Object} ReadRGBOptions
+ * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
+ * @property {Pool|null} [pool=null] The optional decoder pool to use.
+ * @property {number} [width] The desired width of the output. When the width is no the
+ *                                 same as the images, resampling will be performed.
+ * @property {number} [height] The desired height of the output. When the width is no the
+ *                                  same as the images, resampling will be performed.
+ * @property {string} [resampleMethod='nearest'] The desired resampling method.
+ * @property {boolean} [enableAlpha=false] Enable reading alpha channel if present.
+ * @property {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
+ *                                       to be aborted
+ * @property {boolean|true|false} [interleave] whether the data shall be read
+ *     in one single array or separate arrays.
+ */
+
+/**
+ * @typedef {Object} BlockedSourceOptions
+ * @property {number|null} [blockSize=null] Block size for a BlockedSource.
+ * @property {number} [cacheSize=100] The number of blocks to cache.
+ */
+
+/**
+ * @typedef {Object} RemoteSourceOptions
+ * @property {Object} [headers={}] Additional headers to add to each request
+ * @property {number} [maxRanges=0] Maximum number of ranges to request in a single HTTP request. 0 means no multi-range requests.
+ * @property {boolean} [allowFullFile=false] Whether to allow full file responses when requesting ranges
+ * @property {boolean} [forceXHR=false] When the Fetch API would be used, force using XMLHttpRequest instead.
+ */
+
+/**
+ * @overload
+ * @param {DataSlice} dataSlice
+ * @param {0x0002} fieldType
+ * @param {number} count
+ * @param {number} offset
+ * @returns {string}
+ */
+
+/**
+ * @param {DataSlice} dataSlice
+ * @param {import('./globals.js').FieldType} fieldType
+ * @param {number} count
+ * @param {number} offset
+ * @returns {TypedArray|Array<number>|string}
+ */
 function getValues(dataSlice, fieldType, count, offset) {
+  /** @type {TypedArray|Array|null} */
   let values = null;
   let readMethod = null;
   const fieldTypeLength = getFieldTypeSize(fieldType);
@@ -99,7 +167,10 @@ function getValues(dataSlice, fieldType, count, offset) {
       values = new Float64Array(count); readMethod = dataSlice.readFloat64;
       break;
     default:
-      throw new RangeError(`Invalid field type: ${fieldType}`);
+      // will throw below
+  }
+  if (values === null || readMethod === null) {
+    throw new RangeError(`Invalid field type: ${fieldType}`);
   }
 
   // normal fields
@@ -121,7 +192,7 @@ function getValues(dataSlice, fieldType, count, offset) {
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return new TextDecoder('utf-8').decode(values);
+    return new TextDecoder('utf-8').decode(/** @type {Uint8Array} */ (values));
   }
   return values;
 }
@@ -139,6 +210,29 @@ class GeoTIFFImageIndexError extends Error {
 
 class GeoTIFFBase {
   /**
+   * @param {number} [_index=0] the index of the image to return.
+   * @returns {Promise<GeoTIFFImage>} the image at the given index
+   */
+  async getImage(_index = 0) {
+    throw new Error('Not implemented');
+  }
+
+  /**
+   * @returns {Promise<number>} the number of internal subfile images
+   */
+  async getImageCount() {
+    throw new Error('Not implemented');
+  }
+
+  /**
+   * @typedef {Object} ReadRastersWindowOptions
+   * @property {number} [resX] desired Y resolution (world units per pixel)
+   * @property {number} [resY] desired X resolution (world units per pixel)
+   * @property {Array<number>} [bbox] the subset to read data from in
+   *     geographical coordinates. Whole image if not specified.
+   */
+
+  /**
    * (experimental) Reads raster data from the best fitting image. This function uses
    * the image with the lowest resolution that is still a higher resolution than the
    * requested resolution.
@@ -147,7 +241,7 @@ class GeoTIFFBase {
    * Then, the [readRasters]{@link GeoTIFFImage#readRasters} method of the selected
    * image is called and the result returned.
    * @see GeoTIFFImage.readRasters
-   * @param {import('./geotiffimage').ReadRasterOptions} [options={}] optional parameters
+   * @param {ReadRastersOptions & ReadRastersWindowOptions} options optional parameters
    * @returns {Promise<ReadRasterResult>} the decoded array(s), with `height` and `width`, as a promise
    */
   async readRasters(options = {}) {
@@ -252,12 +346,11 @@ class GeoTIFFBase {
 
 /**
  * The abstraction for a whole GeoTIFF file.
- * @augments GeoTIFFBase
  */
 class GeoTIFF extends GeoTIFFBase {
   /**
    * @constructor
-   * @param {*} source The datasource to read from.
+   * @param {BaseSource} source The datasource to read from.
    * @param {boolean} littleEndian Whether the image uses little endian.
    * @param {boolean} bigTiff Whether the image uses bigTIFF conventions.
    * @param {number} firstIFDOffset The numeric byte-offset from the start of the image
@@ -334,7 +427,7 @@ class GeoTIFF extends GeoTIFFBase {
   async getImage(index = 0) {
     return new GeoTIFFImage(
       await this.requestIFD(index),
-      this.dataView, this.littleEndian, this.cache, this.source,
+      this.littleEndian, this.cache, this.source,
     );
   }
 
@@ -383,6 +476,7 @@ class GeoTIFF extends GeoTIFFBase {
         slice = await this.getSlice(offset, metadataSize);
       }
       const fullString = getValues(slice, fieldTypes.ASCII, metadataSize, offset);
+      /** @type {Object} */
       this.ghostValues = {};
       fullString
         .split('\n')
@@ -398,7 +492,7 @@ class GeoTIFF extends GeoTIFFBase {
   /**
    * Parse a (Geo)TIFF file from the given source.
    *
-   * @param {*} source The source of data to parse from.
+   * @param {BaseSource} source The source of data to parse from.
    * @param {GeoTIFFOptions} [options] Additional options.
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
@@ -489,7 +583,11 @@ class MultiGeoTIFF extends GeoTIFFBase {
    * @returns {Promise<GeoTIFFImage>} the image at the given index
    */
   async getImage(index = 0) {
+    // Initialize this.imageCounts if not yet done
     await this.getImageCount();
+    if (!this.imageCounts) {
+      throw new Error('Image counts not available');
+    }
     await this.parseFileDirectoriesPerFile();
     let visited = 0;
     let relativeIndex = 0;
@@ -499,7 +597,7 @@ class MultiGeoTIFF extends GeoTIFFBase {
         if (index === visited) {
           return new GeoTIFFImage(
             await imageFile.requestIFD(relativeIndex),
-            imageFile.dataView, imageFile.littleEndian, imageFile.cache, imageFile.source,
+            imageFile.littleEndian, imageFile.cache, imageFile.source,
           );
         }
         visited++;
@@ -533,27 +631,27 @@ export { MultiGeoTIFF };
 /**
  * Creates a new GeoTIFF from a remote URL.
  * @param {string} url The URL to access the image from
- * @param {object} [options] Additional options to pass to the source.
+ * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
  *                           See {@link makeRemoteSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
+  return GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal);
 }
 
 /**
  * Creates a new GeoTIFF from a custom {@link BaseClient}.
  * @param {BaseClient} client The client.
- * @param {object} [options] Additional options to pass to the source.
+ * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
  *                           See {@link makeRemoteSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromCustomClient(client, options = {}, signal) {
-  return GeoTIFF.fromSource(makeCustomSource(client, options), signal);
+  return GeoTIFF.fromSource(makeCustomSource(client, options), undefined, signal);
 }
 
 /**
@@ -565,7 +663,7 @@ export async function fromCustomClient(client, options = {}, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromArrayBuffer(arrayBuffer, signal) {
-  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), signal);
+  return GeoTIFF.fromSource(makeBufferSource(arrayBuffer), undefined, signal);
 }
 
 /**
@@ -581,7 +679,7 @@ export async function fromArrayBuffer(arrayBuffer, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromFile(path, signal) {
-  return GeoTIFF.fromSource(makeFileSource(path), signal);
+  return GeoTIFF.fromSource(makeFileSource(path), undefined, signal);
 }
 
 /**
@@ -595,14 +693,14 @@ export async function fromFile(path, signal) {
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromBlob(blob, signal) {
-  return GeoTIFF.fromSource(makeFileReaderSource(blob), signal);
+  return GeoTIFF.fromSource(makeFileReaderSource(blob), undefined, signal);
 }
 
 /**
  * Construct a MultiGeoTIFF from the given URLs.
  * @param {string} mainUrl The URL for the main file.
  * @param {string[]} overviewUrls An array of URLs for the overview images.
- * @param {Object} [options] Additional options to pass to the source.
+ * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
  *                           See [makeRemoteSource]{@link module:source.makeRemoteSource}
  *                           for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
@@ -610,9 +708,9 @@ export async function fromBlob(blob, signal) {
  * @returns {Promise<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), signal);
+  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), undefined, signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal)),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
@@ -620,8 +718,9 @@ export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal)
 
 /**
  * Main creating function for GeoTIFF files.
- * @param {(Array)} array of pixel values
- * @returns {metadata} metadata
+ * @param {Array} values of pixel values
+ * @param {Object} metadata
+ * @returns {ArrayBuffer}
  */
 export function writeArrayBuffer(values, metadata) {
   return writeGeotiff(values, metadata);
