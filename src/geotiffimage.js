@@ -8,7 +8,7 @@ import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fro
 import { getDecoder, getDecoderParameters } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
 
-/** @import {TypedArray} from "./geotiff" */
+/** @import {DecoderWorker, TypedArray} from "./geotiff" */
 /** @import {ReadRasterResult} from "./geotiff" */
 /** @import {ReadRastersOptions} from "./geotiff" */
 /** @import {ReadRGBOptions} from "./geotiff" */
@@ -336,7 +336,7 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBuffer}>} the decoded strip or tile
@@ -417,7 +417,7 @@ class GeoTIFFImage {
    * @param {Array} samples The selected samples (0-based indices)
    * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
    * @param {boolean|undefined} interleave Whether or not to write in an interleaved manner
-   * @param {import("./geotiff").Pool|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {number} [width] the width of window to be read into
    * @param {number} [height] the height of window to be read into
    * @param {string} [resampleMethod] the resampling method to be used when interpolating

@@ -58,6 +58,15 @@ export { setLogger };
  */
 
 /**
+ * @typedef {Object} DecoderWorker
+ * Use the {@link Pool.bindParameters} method to get a decoder worker for
+ * a specific compression and its parameters.
+ *
+ * @property {(buffer: ArrayBuffer) => Promise<ArrayBuffer>} decode
+ *   A function that takes a compressed buffer and returns a promise resolving to the decoded buffer.
+ */
+
+/**
  * @typedef {Object} ReadRastersOptions
  * @property {Array<number>} [window] the subset to read data from in pixels. Whole window if not specified.
  * @property {Array<number>} [samples] the selection of samples to read from. Default is all samples.
