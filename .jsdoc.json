@@ -1,6 +1,0 @@
-{
-    "plugins": ["plugins/markdown", "jsdoc-plugin-typescript", "jsdoc-plugin-intersection"],
-    "typescript": {
-        "moduleRoot": "src"
-    }
-}

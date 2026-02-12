@@ -8,7 +8,7 @@ import { AbortError } from '../../utils.js';
 class HttpResponse extends BaseResponse {
   /**
    * BaseResponse facade for node HTTP/HTTPS API Response
-   * @param {http.ServerResponse} response
+   * @param {import('http').IncomingMessage} response
    */
   constructor(response, dataPromise) {
     super();
@@ -17,11 +17,11 @@ class HttpResponse extends BaseResponse {
   }
 
   get status() {
-    return this.response.statusCode;
+    return /** @type {number} */ (this.response.statusCode);
   }
 
   getHeader(name) {
-    return this.response.headers[name];
+    return /** @type {string|null} */ (this.response.headers[name]);
   }
 
   async getData() {
@@ -74,7 +74,7 @@ export class HttpClient extends BaseClient {
     });
   }
 
-  async request({ headers, signal } = {}) {
+  async request({ headers = undefined, signal = undefined } = {}) {
     const response = await this.constructRequest(headers, signal);
     return response;
   }

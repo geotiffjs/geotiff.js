@@ -67,7 +67,8 @@ const tiff = await fromArrayBuffer(...);
 const image = await tiff.getImage(); // by default, the first image is read.
 
 // Construct the WGS-84 forward and inverse affine matrices:
-const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
+const s = image.fileDirectory.getValue('ModelPixelScale');
+const t = image.fileDirectory.getValue('ModelTiepoint');
 let [sx, sy, sz] = s;
 let [px, py, k, gx, gy, gz] = t;
 sy = -sy; // WGS-84 tiles have a "flipped" y component
@@ -110,6 +111,259 @@ For more advanced examples of `geotiff` in larger codebases, please have a look 
 * [Contour generation using d3-contour](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
 [![contour](https://user-images.githubusercontent.com/482265/112866402-0b219880-90ba-11eb-9dda-5f1d9ed9bafc.jpg)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
+
+## Migration Guide (v2 to v3)
+
+Version 3.0 introduces significant performance improvements through deferred tag reading, but includes breaking changes to some APIs. This guide will help you migrate your code.
+
+### Summary of Changes
+
+**For most users**: Minimal changes required. The high-level APIs (`getImage()`, `readRasters()`, etc.) remain compatible. You'll mainly need to:
+- Add `await` to `getTiePoints()` and `getGDALMetadata()`
+- Change `image.geoKeys` to `image.getGeoKeys()`
+
+**For advanced users**: If you directly access `fileDirectory` properties, you'll need to migrate to the new `ImageFileDirectory` methods.
+
+### Breaking Changes
+
+#### 1. GeoKeys Access
+
+**Before (v2)**:
+```javascript
+const image = await tiff.getImage();
+const geoKeys = image.geoKeys;
+```
+
+**After (v3)**:
+```javascript
+const image = await tiff.getImage();
+const geoKeys = image.getGeoKeys();
+```
+
+#### 2. getTiePoints() and getGDALMetadata() are now async
+
+**Before (v2)**:
+```javascript
+const tiePoints = image.getTiePoints();
+const metadata = image.getGDALMetadata();
+```
+
+**After (v3)**:
+```javascript
+const tiePoints = await image.getTiePoints();
+const metadata = await image.getGDALMetadata();
+```
+
+#### 3. Accessing fileDirectory properties
+
+The `fileDirectory` object has been replaced with an `ImageFileDirectory` class that supports deferred loading.
+
+**Before (v2)**:
+```javascript
+const image = await tiff.getImage();
+const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
+const width = image.fileDirectory.ImageWidth;
+const compression = image.fileDirectory.Compression;
+```
+
+**After (v3)** - Use `getValue()` for synchronous access:
+```javascript
+const image = await tiff.getImage();
+const s = image.fileDirectory.getValue('ModelPixelScale');
+const t = image.fileDirectory.getValue('ModelTiepoint');
+const width = image.fileDirectory.getValue('ImageWidth');
+const compression = image.fileDirectory.getValue('Compression');
+```
+
+**Note**: `getValue()` throws an error if the tag is deferred. For tags that might be deferred (like large arrays), use `loadValue()`:
+
+```javascript
+const colorMap = await image.fileDirectory.loadValue('ColorMap');
+```
+
+#### 4. Checking if tags exist
+
+**Before (v2)**:
+```javascript
+if (image.fileDirectory.ModelTiepoint) {
+  // ...
+}
+```
+
+**After (v3)**:
+```javascript
+if (image.fileDirectory.hasTag('ModelTiepoint')) {
+  // ...
+}
+```
+
+#### 5. Accessing array elements
+
+For large arrays (like `TileOffsets`, `StripOffsets`), individual elements can now be loaded on-demand:
+
+**Before (v2)**:
+```javascript
+const offset = image.fileDirectory.TileOffsets[5];
+```
+
+**After (v3)**:
+```javascript
+const offset = await image.fileDirectory.loadValueIndexed('TileOffsets', 5);
+```
+
+#### 6. Pool API changes
+
+If you're using the `Pool` class directly (most users don't):
+
+**Before (v2)**:
+```javascript
+const pool = new GeoTIFF.Pool();
+const decoded = await pool.decode(fileDirectory, buffer);
+```
+
+**After (v3)**:
+```javascript
+const pool = new GeoTIFF.Pool();
+const compression = fileDirectory.getValue('Compression');
+const params = await getDecoderParameters(compression, fileDirectory);
+const boundPool = pool.bindParameters(compression, params);
+const decoded = await boundPool.decode(buffer);
+```
+
+**Note**: When using `readRasters({ pool })`, this is handled automatically.
+
+#### 7. Custom Decoders
+
+If you've implemented custom decoders:
+
+**Before (v2)**:
+```javascript
+class MyDecoder extends BaseDecoder {
+  async decode(fileDirectory, buffer) {
+    // decode using fileDirectory properties
+  }
+}
+```
+
+**After (v3)**:
+```javascript
+class MyDecoder extends BaseDecoder {
+  constructor(parameters) {
+    super(parameters);
+    // parameters extracted once during construction
+  }
+
+  async decode(buffer) {
+    // decode using this.parameters
+  }
+}
+
+// Register with parameter extraction function
+addDecoder(
+  12345, // compression ID
+  () => import('./mydecoder.js').then(m => m.default),
+  async (fileDirectory) => {
+    return {
+      ...await defaultDecoderParameterFn(fileDirectory),
+      myCustomParam: await fileDirectory.loadValue('MyCustomTag')
+    };
+  }
+);
+```
+
+### Migration Examples
+
+#### Example 1: Reading with ModelTiepoint/ModelPixelScale
+
+**Before (v2)**:
+```javascript
+const tiff = await fromUrl(url);
+const image = await tiff.getImage();
+const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory;
+const [sx, sy, sz] = s;
+const [px, py, k, gx, gy, gz] = t;
+```
+
+**After (v3)**:
+```javascript
+const tiff = await fromUrl(url);
+const image = await tiff.getImage();
+const s = image.fileDirectory.getValue('ModelPixelScale');
+const t = image.fileDirectory.getValue('ModelTiepoint');
+const [sx, sy, sz] = s;
+const [px, py, k, gx, gy, gz] = t;
+```
+
+#### Example 2: Working with ColorMap (potentially deferred)
+
+**Before (v2)**:
+```javascript
+const image = await tiff.getImage();
+const colorMap = image.fileDirectory.ColorMap;
+```
+
+**After (v3)**:
+```javascript
+const image = await tiff.getImage();
+const colorMap = await image.fileDirectory.loadValue('ColorMap');
+```
+
+#### Example 3: Checking PhotometricInterpretation
+
+**Before (v2)**:
+```javascript
+const pi = image.fileDirectory.PhotometricInterpretation;
+if (pi === photometricInterpretations.RGB) {
+  // ...
+}
+```
+
+**After (v3)**:
+```javascript
+const pi = image.fileDirectory.getValue('PhotometricInterpretation');
+if (pi === photometricInterpretations.RGB) {
+  // ...
+}
+```
+
+### What Hasn't Changed
+
+These APIs remain fully backwards compatible:
+
+```javascript
+// GeoTIFF class
+const tiff = await fromUrl(url);
+const tiff = await fromArrayBuffer(buffer);
+const tiff = await fromBlob(blob);
+const imageCount = await tiff.getImageCount();
+const image = await tiff.getImage(index);
+
+// GeoTIFFImage class
+const width = image.getWidth();
+const height = image.getHeight();
+const samplesPerPixel = image.getSamplesPerPixel();
+const tileWidth = image.getTileWidth();
+const tileHeight = image.getTileHeight();
+const origin = image.getOrigin();
+const resolution = image.getResolution();
+const bbox = image.getBoundingBox();
+
+// Reading raster data
+const data = await image.readRasters({ window, samples, interleave, pool });
+const rgb = await image.readRGB({ window });
+
+// Writing GeoTIFFs
+const arrayBuffer = await writeArrayBuffer(values, metadata);
+```
+
+### Performance Benefits
+
+The new deferred loading system provides significant performance improvements:
+
+- **Faster initial parsing**: Large arrays (like tile offsets) are not loaded upfront
+- **Reduced memory usage**: Only load the data you actually need
+- **On-demand array access**: Access individual array elements without loading the entire array
+- **Backward compatible caching**: Frequently accessed tags are eagerly loaded by default
 
 ## Setup
 

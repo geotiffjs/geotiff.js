@@ -1,8 +1,11 @@
 {
   "name": "geotiff",
-  "version": "2.1.4-beta.1",
+  "version": "3.0.2",
   "description": "GeoTIFF image decoding in JavaScript",
-  "repository": "https://github.com/geotiffjs/geotiff.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geotiffjs/geotiff.js.git"
+  },
   "keywords": [
     "TIFF",
     "GeoTIFF",
@@ -21,58 +24,7 @@
       "browser": "./dist-browser/geotiff.js"
     }
   },
-  "typesVersions": {
-    "*": {
-      "globals": [
-        "dist-module/globals.d.ts"
-      ],
-      "rgb": [
-        "dist-module/rgb.d.ts"
-      ],
-      "BaseDecoder": [
-        "dist-module/compression/BaseDecoder.d.ts"
-      ],
-      "getDecoder": [
-        "dist-module/compression/index.d.ts"
-      ],
-      "addDecoder": [
-        "dist-module/compression/index.d.ts"
-      ],
-      "setLogger": [
-        "dist-module/logging.d.ts"
-      ],
-      "GeoTIFF": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "MultiGeoTIFF": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromUrl": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromArrayBuffer": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromFile": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromBlob": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromUrls": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "writeArrayBuffer": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "Pool": [
-        "dist-module/pool.d.ts"
-      ],
-      "GeoTIFFImage": [
-        "dist-module/geotiffimage.d.ts"
-      ]
-    }
-  },
+  "types": "dist-module/geotiff.d.ts",
   "files": [
     "dist-module",
     "dist-node",
@@ -89,7 +41,7 @@
     "quick-lru": "^6.1.1",
     "web-worker": "^1.5.0",
     "xml-utils": "^1.10.2",
-    "zstddec": "^0.2.0-alpha.3"
+    "zstddec": "^0.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
@@ -109,9 +61,6 @@
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^7.0.1",
-    "jsdoc": "^3.6.4",
-    "jsdoc-plugin-intersection": "^1.0.4",
-    "jsdoc-plugin-typescript": "^2.0.6",
     "jshint-stylish": "^2.2.1",
     "mocha": "^7.1.0",
     "node-abort-controller": "^1.1.0",
@@ -123,7 +72,9 @@
     "serve": "^13.0.2",
     "serve-static": "^1.14.1",
     "shx": "^0.3.3",
-    "typescript": "^4.5.5"
+    "typedoc": "^0.28.16",
+    "typedoc-theme-fresh": "^0.2.3",
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "prebuild": "npm run build:clean",
@@ -138,12 +89,12 @@
     "predev": "npm run build",
     "dev": "run-p watch:module watch:browser dev:serve",
     "dev:serve": "serve --listen 8090",
-    "docs": "rm -rf docs/; jsdoc -c .jsdoc.json -r src README.md -d docs",
+    "docs": "rm -rf docs/; typedoc",
     "prelint": "npm run build:module",
     "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint && tsc --noEmit",
     "test": "mocha --full-trace test/*.spec.js"
   },
   "author": "Fabian Schindler",
