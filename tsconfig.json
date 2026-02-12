@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "outDir": "dist-module",
+    "target": "ES2020",
     "lib": ["ES2020", "DOM", "ES2021.WeakRef"],
     "module": "ES2020",
     "allowJs": true,
@@ -8,16 +9,17 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "emitDeclarationOnly": true,
     "importHelpers": false,
     "noImplicitAny": true,
-    "strict": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "esModuleInterop": false,
     "inlineSources": false,
-    "downlevelIteration": true
+    "downlevelIteration": true,
   },
   "include": [
     "./src/**/*.js",

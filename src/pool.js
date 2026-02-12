@@ -52,7 +52,7 @@ class WorkerWrapper {
 
   /**
    * Submit a job to the worker
-   * @param {Object<string, any>} message the message to send to the worker. A "jobId" property will be added to this object.
+   * @param {Record<string, unknown>} message the message to send to the worker. A "jobId" property will be added to this object.
    * @param {Array<Transferable>} [transferables] an optional array of transferable objects to transfer to the worker.
    * @returns {Promise<{decoded: ArrayBuffer}>} a promise that gets resolved/rejected when a message with the same jobId is
    * received from the worker.

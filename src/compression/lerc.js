@@ -1,6 +1,5 @@
-// @ts-ignore
 import { inflate } from 'pako';
-// @ts-ignore
+// @ts-expect-error
 import Lerc from 'lerc';
 import { ZSTDDecoder } from 'zstddec';
 import BaseDecoder from './basedecoder.js';
@@ -13,10 +12,13 @@ import { LercParameters, LercAddCompression } from '../globals.js';
 export const zstd = new ZSTDDecoder();
 
 export default class LercDecoder extends BaseDecoder {
-  /** @param {ArrayBuffer} buffer */
+  /**
+   * @param {ArrayBufferLike} buffer
+   * @returns {ArrayBufferLike}
+   */
   decodeBlock(buffer) {
     const params = /** @type {LercDecoderParameters} */(this.parameters);
-    const addCompression = params.LercParameters[LercParameters.AddCompression];
+    const addCompression = params.LercParameters?.[LercParameters.AddCompression];
 
     /** @type {ArrayBufferLike} */
     let decoded = buffer;

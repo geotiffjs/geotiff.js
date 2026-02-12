@@ -192,7 +192,7 @@ export class BlockedSource extends BaseSource {
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
             } catch (err) {
-              if (err.name === 'AbortError') {
+              if (err instanceof AbortError && err.name === 'AbortError') {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;

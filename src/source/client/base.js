@@ -16,10 +16,10 @@ export class BaseResponse {
 
   /**
    * Returns the value of the specified header
-   * @param {string} headerName the header name
+   * @param {string} _headerName the header name
    * @returns {string|undefined} the header value
    */
-  getHeader(headerName) { // eslint-disable-line no-unused-vars
+  getHeader(_headerName) { // eslint-disable-line no-unused-vars
     throw new Error('not implemented');
   }
 
@@ -39,10 +39,10 @@ export class BaseClient {
 
   /**
    * Send a request with the options
-   * @param {RequestInit} [options={}]
+   * @param {RequestInit} [_options={}]
    * @returns {Promise<BaseResponse>}
    */
-  async request({ headers, signal } = {}) { // eslint-disable-line no-unused-vars
+  async request(_options) { // eslint-disable-line no-unused-vars
     throw new Error('request is not implemented');
   }
 }

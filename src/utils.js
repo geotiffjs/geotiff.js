@@ -1,13 +1,17 @@
 /**
- * @param {Record<string, any>} target
- * @param {Record<string, any>} source
+ * @template {Record<string, unknown>} T
+ * @template {Record<string, unknown>} S
+ * @param {T} target
+ * @param {S} source
+ * @returns {S & T}
  */
 export function assign(target, source) {
   for (const key in source) {
     if (source.hasOwnProperty(key)) {
-      target[key] = source[key];
+      /** @type {Record<string, unknown>} */ (target)[key] = source[key];
     }
   }
+  return /** @type {S & T} */ (target);
 }
 
 /**
@@ -43,8 +47,9 @@ export function endsWith(string, expectedEnding) {
 }
 
 /**
- * @param {ArrayLike<any>} iterable
- * @param {(value: any, index: number) => void} func
+ * @template T
+ * @param {ArrayLike<T>} iterable
+ * @param {(value: T, index: number) => void} func
  */
 export function forEach(iterable, func) {
   const { length } = iterable;
@@ -82,9 +87,10 @@ export function range(n) {
 }
 
 /**
+ * @template T
  * @param {number} numTimes
- * @param {(index: number) => any} func
- * @returns {Array<any>}
+ * @param {(index: number) => T} func
+ * @returns {Array<T>}
  */
 export function times(numTimes, func) {
   const results = [];
@@ -109,12 +115,12 @@ export function toArray(iterable) {
 }
 
 /**
- * @param {any} input
- * @returns {any}
+ * @param {unknown} input
+ * @returns {unknown}
  */
 export function toArrayRecursively(input) {
-  if (input.length) {
-    return toArray(input).map(toArrayRecursively);
+  if (typeof input === 'object' && input !== null && 'length' in input) {
+    return toArray(/** @type {ArrayLike<unknown>} */ (input)).map(toArrayRecursively);
   }
   return input;
 }
@@ -204,6 +210,8 @@ export class AbortError extends Error {
     }
 
     this.name = 'AbortError';
+    /** @type {AbortSignal|undefined} */
+    this.signal = undefined;
   }
 }
 
@@ -223,8 +231,8 @@ export class CustomAggregateError extends Error {
 export const AggregateError = CustomAggregateError;
 
 /**
- * @param {any} input
- * @returns {boolean}
+ * @param {unknown} input
+ * @returns {input is Float64Array | Float32Array}
  */
 export function isTypedFloatArray(input) {
   if (ArrayBuffer.isView(input)) {
@@ -237,8 +245,8 @@ export function isTypedFloatArray(input) {
 }
 
 /**
- * @param {any} input
- * @returns {boolean}
+ * @param {unknown} input
+ * @returns {input is Int8Array | Int16Array | Int32Array}
  */
 export function isTypedIntArray(input) {
   if (ArrayBuffer.isView(input)) {
@@ -251,8 +259,8 @@ export function isTypedIntArray(input) {
 }
 
 /**
- * @param {any} input
- * @returns {boolean}
+ * @param {unknown} input
+ * @returns {input is Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray}
  */
 export function isTypedUintArray(input) {
   if (ArrayBuffer.isView(input)) {

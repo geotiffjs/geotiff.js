@@ -1,8 +1,8 @@
 /** @module geotiffimage */
 import { getFloat16 } from '@petamoriken/float16';
-// @ts-ignore
+// @ts-expect-error
 import getAttribute from 'xml-utils/get-attribute'; // eslint-disable-line import/extensions
-// @ts-ignore
+// @ts-expect-error
 import findTagsByName from 'xml-utils/find-tags-by-name'; // eslint-disable-line import/extensions
 
 import { photometricInterpretations, ExtraSamplesValues } from './globals.js';
@@ -32,42 +32,53 @@ function sum(array, start, end) {
 /**
  * @param {1|2|3} format
  * @param {number} bitsPerSample
- * @param {any} size
+ * @param {number|ArrayBufferLike} sizeOrData
  * @returns {TypedArray}
  */
-function arrayForType(format, bitsPerSample, size) {
+function arrayForType(format, bitsPerSample, sizeOrData) {
+  let TypedArrayConstructor;
   switch (format) {
     case 1: // unsigned integer data
       if (bitsPerSample <= 8) {
-        return new Uint8Array(size);
+        TypedArrayConstructor = Uint8Array;
       } else if (bitsPerSample <= 16) {
-        return new Uint16Array(size);
+        TypedArrayConstructor = Uint16Array;
       } else if (bitsPerSample <= 32) {
-        return new Uint32Array(size);
+        TypedArrayConstructor = Uint32Array;
       }
       break;
     case 2: // twos complement signed integer data
       if (bitsPerSample === 8) {
-        return new Int8Array(size);
+        TypedArrayConstructor = Int8Array;
       } else if (bitsPerSample === 16) {
-        return new Int16Array(size);
+        TypedArrayConstructor = Int16Array;
       } else if (bitsPerSample === 32) {
-        return new Int32Array(size);
+        TypedArrayConstructor = Int32Array;
       }
       break;
     case 3: // floating point data
       switch (bitsPerSample) {
         case 16:
         case 32:
-          return new Float32Array(size);
+          TypedArrayConstructor = Float32Array;
+          break;
         case 64:
-          return new Float64Array(size);
+          TypedArrayConstructor = Float64Array;
+          break;
         default:
           break;
       }
       break;
     default:
       break;
+  }
+
+  if (TypedArrayConstructor) {
+    if (typeof sizeOrData === 'number') {
+      return new TypedArrayConstructor(sizeOrData);
+    } else if (sizeOrData instanceof ArrayBuffer) {
+      return new TypedArrayConstructor(sizeOrData);
+    }
   }
   throw Error('Unsupported data format/bitsPerSample');
 }
@@ -226,7 +237,7 @@ class GeoTIFFImage {
    * @returns {Number} the width of the image
    */
   getWidth() {
-    return this.fileDirectory.getValue('ImageWidth');
+    return this.fileDirectory.getValue('ImageWidth') || 0;
   }
 
   /**
@@ -234,7 +245,7 @@ class GeoTIFFImage {
    * @returns {Number} the height of the image
    */
   getHeight() {
-    return this.fileDirectory.getValue('ImageLength');
+    return this.fileDirectory.getValue('ImageLength') || 0;
   }
 
   /**
@@ -242,8 +253,7 @@ class GeoTIFFImage {
    * @returns {Number} the number of samples per pixel
    */
   getSamplesPerPixel() {
-    return this.fileDirectory.hasTag('SamplesPerPixel')
-      ? this.fileDirectory.getValue('SamplesPerPixel') : 1;
+    return this.fileDirectory.getValue('SamplesPerPixel') || 1;
   }
 
   /**
@@ -251,7 +261,7 @@ class GeoTIFFImage {
    * @returns {Number} the width of each tile
    */
   getTileWidth() {
-    return this.isTiled ? this.fileDirectory.getValue('TileWidth') : this.getWidth();
+    return this.isTiled ? (this.fileDirectory.getValue('TileWidth') || 0) : this.getWidth();
   }
 
   /**
@@ -260,10 +270,11 @@ class GeoTIFFImage {
    */
   getTileHeight() {
     if (this.isTiled) {
-      return this.fileDirectory.getValue('TileLength');
+      return this.fileDirectory.getValue('TileLength') || 0;
     }
-    if (this.fileDirectory.hasTag('RowsPerStrip')) {
-      return Math.min(this.fileDirectory.getValue('RowsPerStrip'), this.getHeight());
+    const rowsPerStrip = this.fileDirectory.getValue('RowsPerStrip');
+    if (rowsPerStrip) {
+      return Math.min(rowsPerStrip, this.getHeight());
     }
     return this.getHeight();
   }
@@ -293,7 +304,8 @@ class GeoTIFFImage {
     let bytes = 0;
 
     // this is a short list, so we assume this is already loaded
-    for (let i = 0; i < this.fileDirectory.getValue('BitsPerSample').length; ++i) {
+    const bitsPerSample = this.fileDirectory.getValue('BitsPerSample') || [];
+    for (let i = 0; i < bitsPerSample.length; ++i) {
       bytes += this.getSampleByteSize(i);
     }
     return bytes;
@@ -304,7 +316,7 @@ class GeoTIFFImage {
    * @returns {number}
    */
   getSampleByteSize(i) {
-    const bitsPerSample = this.fileDirectory.getValue('BitsPerSample');
+    const bitsPerSample = this.fileDirectory.getValue('BitsPerSample') || [];
     if (i >= bitsPerSample.length) {
       throw new RangeError(`Sample index ${i} is out of range.`);
     }
@@ -316,9 +328,10 @@ class GeoTIFFImage {
    * @returns {(this: DataView, byteOffset: number, littleEndian: boolean) => number}
    */
   getReaderForSample(sampleIndex) {
-    const format = this.fileDirectory.hasTag('SampleFormat')
-      ? this.fileDirectory.getValue('SampleFormat')[sampleIndex] : 1;
-    const bitsPerSample = this.fileDirectory.getValue('BitsPerSample')[sampleIndex];
+    const sampleFormat = this.fileDirectory.getValue('SampleFormat');
+    const format = sampleFormat
+      ? sampleFormat[sampleIndex] : 1;
+    const bitsPerSample = (this.fileDirectory.getValue('BitsPerSample') || [])[sampleIndex];
     switch (format) {
       case 1: // unsigned integer data
         if (bitsPerSample <= 8) {
@@ -359,23 +372,24 @@ class GeoTIFFImage {
   }
 
   getSampleFormat(sampleIndex = 0) {
-    return this.fileDirectory.hasTag('SampleFormat')
-      ? this.fileDirectory.getValue('SampleFormat')[sampleIndex] : 1;
+    const sampleFormat = this.fileDirectory.getValue('SampleFormat');
+    return sampleFormat ? sampleFormat[sampleIndex] : 1;
   }
 
   getBitsPerSample(sampleIndex = 0) {
-    return this.fileDirectory.getValue('BitsPerSample')[sampleIndex];
+    const bitsPerSample = this.fileDirectory.getValue('BitsPerSample');
+    return bitsPerSample ? bitsPerSample[sampleIndex] : 0;
   }
 
   /**
    * @param {number} sampleIndex
-   * @param {number|ArrayBuffer} size
+   * @param {number|ArrayBufferLike} sizeOrData
    * @returns {TypedArray}
    */
-  getArrayForSample(sampleIndex, size) {
-    const format = this.getSampleFormat(sampleIndex);
+  getArrayForSample(sampleIndex, sizeOrData) {
+    const format = /** @type {1|2|3} */ (this.getSampleFormat(sampleIndex));
     const bitsPerSample = this.getBitsPerSample(sampleIndex);
-    return arrayForType(format, bitsPerSample, size);
+    return arrayForType(format, bitsPerSample, sizeOrData);
   }
 
   /**
@@ -428,7 +442,7 @@ class GeoTIFFImage {
     // resolve each request by potentially applying array normalization
       request = (async () => {
         let data = await poolOrDecoder.decode(slice);
-        const sampleFormat = this.getSampleFormat();
+        const sampleFormat = /** @type {1|2|3} */ (this.getSampleFormat());
         const bitsPerSample = this.getBitsPerSample();
         if (needsNormalization(sampleFormat, bitsPerSample)) {
           data = normalizeArray(
@@ -495,7 +509,7 @@ class GeoTIFFImage {
 
     /** @type {Array<number>} */
     const srcSampleOffsets = [];
-    /** @type {Array<(this: ArrayBufferView, byteOffset: number, littleEndian: boolean) => number>} */
+    /** @type {Array<(this: DataView, byteOffset: number, littleEndian: boolean) => number>} */
     const sampleReaders = [];
     for (let i = 0; i < samples.length; ++i) {
       if (this.planarConfiguration === 1) {
@@ -670,9 +684,14 @@ class GeoTIFFImage {
     /** @type {TypedArray|TypedArray[]} */
     let valueArrays;
     if (interleave) {
-      const format = this.fileDirectory.hasTag('SampleFormat')
-        ? Math.max.apply(null, this.fileDirectory.getValue('SampleFormat')) : 1;
-      const bitsPerSample = Math.max.apply(null, this.fileDirectory.getValue('BitsPerSample'));
+      const { fileDirectory } = this;
+      const format = fileDirectory.hasTag('SampleFormat')
+        ? Math.max.apply(null, Array.from(fileDirectory.getValue('SampleFormat'))) : 1;
+      if (format !== 1 && format !== 2 && format !== 3) {
+        throw new Error('Unsupported sample format for interleaved data. Must be 1, 2, or 3.');
+      }
+      const bitsPerSample = fileDirectory.hasTag('BitsPerSample')
+        ? Math.max.apply(null, Array.from(fileDirectory.getValue('BitsPerSample'))) : 8;
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
         if (Array.isArray(fillValue)) {
@@ -754,9 +773,11 @@ class GeoTIFFImage {
 
     if (pi === photometricInterpretations.RGB) {
       let s = [0, 1, 2];
-      if ((!(this.fileDirectory.getValue('ExtraSamples') === ExtraSamplesValues.Unspecified)) && enableAlpha) {
+      const extraSamples = this.fileDirectory.getValue('ExtraSamples');
+      if (extraSamples && extraSamples[0] !== ExtraSamplesValues.Unspecified && enableAlpha) {
         s = [];
-        for (let i = 0; i < this.fileDirectory.getValue('BitsPerSample').length; i += 1) {
+        const bitsPerSample = this.fileDirectory.getValue('BitsPerSample') || [];
+        for (let i = 0; i < bitsPerSample.length; i += 1) {
           s.push(i);
         }
       }
@@ -852,7 +873,7 @@ class GeoTIFFImage {
 
   /**
    * Returns an array of tiepoints.
-   * @returns {Promise<Object[]>}
+   * @returns {Promise<Array<{i: number, j: number, k: number, x: number, y: number, z: number}>>} the tiepoints
    */
   async getTiePoints() {
     if (!this.fileDirectory.hasTag('ModelTiepoint')) {
@@ -894,7 +915,7 @@ class GeoTIFFImage {
     }
     const string = await this.fileDirectory.loadValue('GDAL_METADATA');
 
-    /** @type {Array<any>} */
+    /** @type {Array<{inner: unknown}>} */
     let items = findTagsByName(string, 'Item');
 
     if (sample === null) {
@@ -915,10 +936,10 @@ class GeoTIFFImage {
    * @returns {number|null}
    */
   getGDALNoData() {
-    if (!this.fileDirectory.hasTag('GDAL_NODATA')) {
+    const string = this.fileDirectory.getValue('GDAL_NODATA');
+    if (!string) {
       return null;
     }
-    const string = this.fileDirectory.getValue('GDAL_NODATA');
     return Number(string.substring(0, string.length - 1));
   }
 
@@ -1014,9 +1035,9 @@ class GeoTIFFImage {
     const height = this.getHeight();
     const width = this.getWidth();
 
-    if (this.fileDirectory.hasTag('ModelTransformation') && !tilegrid) {
-      // eslint-disable-next-line no-unused-vars
-      const [a, b, c, d, e, f, g, h] = this.fileDirectory.getValue('ModelTransformation');
+    const modelTransformation = this.fileDirectory.getValue('ModelTransformation');
+    if (modelTransformation && !tilegrid) {
+      const [a, b,, d, e, f,, h] = modelTransformation;
 
       const corners = [
         [0, 0],

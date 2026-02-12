@@ -42,7 +42,7 @@ function decodeRowFloatingPoint(row, stride, bytesPerSample) {
 }
 
 /**
- * @param {ArrayBuffer} block
+ * @param {ArrayBufferLike} block
  * @param {number} predictor
  * @param {number} width
  * @param {number} height

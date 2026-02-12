@@ -36,16 +36,16 @@ function openAsync(path, flags, mode = undefined) {
 }
 
 /**
- * @param {number} _fd
- * @param {Uint8Array} _buffer
- * @param {number} _offset
- * @param {number} _length
- * @param {number} _position
+ * @param {number} fd
+ * @param {Uint8Array} buffer
+ * @param {number} offset
+ * @param {number} length
+ * @param {number} position
  * @returns {Promise<{bytesRead: number, buffer: Uint8Array}>}
  */
-function readAsync(_fd, _buffer, _offset, _length, _position) {
+function readAsync(fd, buffer, offset, length, position) {
   return new Promise((resolve, reject) => {
-    fs.read(_fd, _buffer, _offset, _length, _position, (err, bytesRead, outBuffer) => {
+    fs.read(fd, buffer, offset, length, position, (err, bytesRead, outBuffer) => {
       if (err) {
         reject(err);
       } else {

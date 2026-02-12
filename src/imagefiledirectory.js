@@ -278,7 +278,8 @@ class DeferredArray {
 export class ImageFileDirectory {
   /**
    * Create an ImageFileDirectory.
-   * @param {Map<string|number, any>} actualizedFields the file directory, mapping tag names to values
+   * @param {Map<string|number, number|string|Array<number|string>>} actualizedFields the file directory,
+   * mapping tag names to values
    * @param {Map<string|number, Function>} deferredFields the deferred fields, mapping tag names to async functions
    * @param {Map<string|number, DeferredArray>} deferredArrays the deferred arrays, mapping tag names to
    * DeferredArray objects
@@ -293,8 +294,10 @@ export class ImageFileDirectory {
   }
 
   /**
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns {boolean} whether the field exists (actualized or deferred)
+   * @template {import('./globals.js').TagName} [T=any]
+   * @param {T|number} tagIdentifier The field tag ID or name
+   * @returns {this is { getValue(t: T): NonNullable<import('./globals.js').TagValue<T>> }
+   *   & import('./imagefiledirectory').ImageFileDirectory} whether the field exists (actualized or deferred)
    */
   hasTag(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);
@@ -303,8 +306,10 @@ export class ImageFileDirectory {
 
   /**
    * Synchronously retrieves the value for a given tag. If it is deferred, an error is thrown.
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns the field value, or undefined if it does not exist
+   * @template {import('./globals.js').TagName} [T=any]
+   * @param {T|number} tagIdentifier The field tag ID or name
+   * @returns {T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : any} the field value,
+   * or undefined if it does not exist
    * @throws {Error} If the tag is deferred and requires asynchronous loading
    */
   getValue(tagIdentifier) {
@@ -319,25 +324,26 @@ export class ImageFileDirectory {
     }
 
     if (!this.actualizedFields.has(tag)) {
-      return undefined;
+      return /** @type {any} */ (undefined);
     }
 
-    return this.actualizedFields.get(tag);
+    return /** @type {any} */ (this.actualizedFields.get(tag));
   }
 
   /**
    * Retrieves the value for a given tag. If it is deferred, it will be loaded first.
-   * @param {number|string} tagIdentifier The field tag ID or name
-   * @returns {Promise<import('./geotiff.js').TypedArray|Array<number>|string|number|undefined>}
+   * @template {import('./globals.js').TagName} [T=any]
+   * @param {T|number} tagIdentifier The field tag ID or name
+   * @returns {Promise<T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : any>}
    *   the field value, or undefined if it does not exist
    */
   async loadValue(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);
     if (this.actualizedFields.has(tag)) {
-      return this.actualizedFields.get(tag);
+      return /** @type {any} */ (this.actualizedFields.get(tag));
     }
     if (this.deferredFieldsBeingResolved.has(tag)) {
-      return this.deferredFieldsBeingResolved.get(tag);
+      return /** @type {any} */ (this.deferredFieldsBeingResolved.get(tag));
     }
     const loaderFn = this.deferredFields.get(tag);
     if (loaderFn) {
@@ -355,15 +361,15 @@ export class ImageFileDirectory {
       })();
 
       this.deferredFieldsBeingResolved.set(tag, valuePromise);
-      return valuePromise;
+      return /** @type {any} */ (valuePromise);
     }
 
     const deferredArray = this.deferredArrays.get(tag);
     if (deferredArray) {
-      return deferredArray.loadAll();
+      return /** @type {any} */ (deferredArray.loadAll());
     }
 
-    return undefined;
+    return /** @type {any} */ (undefined);
   }
 
   /**
@@ -376,7 +382,7 @@ export class ImageFileDirectory {
     const tag = resolveTag(tagIdentifier);
     if (this.actualizedFields.has(tag)) {
       const value = this.actualizedFields.get(tag);
-      return value[index];
+      return /** @type {any} */ (value)[index];
     } else if (this.deferredArrays.has(tag)) {
       const deferredArray = /** @type {DeferredArray} */ (this.deferredArrays.get(tag));
       return deferredArray.get(index);
@@ -433,7 +439,7 @@ export class ImageFileDirectory {
   }
 
   toObject() {
-    /** @type {Record<string, any>} */
+    /** @type {Record<string, unknown>} */
     const obj = {};
     for (const [tag, value] of this.actualizedFields.entries()) {
       const tagDefinition = typeof tag === 'number' ? tagDefinitions[tag] : undefined;

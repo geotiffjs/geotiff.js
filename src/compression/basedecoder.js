@@ -21,7 +21,7 @@ export default class BaseDecoder {
   /**
    * @abstract
    * @param {ArrayBufferLike} _buffer
-   * @returns {Promise<ArrayBuffer>|ArrayBuffer}
+   * @returns {Promise<ArrayBufferLike>|ArrayBufferLike}
    */
   decodeBlock(_buffer) {
     throw new Error('decodeBlock not implemented');

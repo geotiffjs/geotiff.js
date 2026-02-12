@@ -2,13 +2,15 @@ const CRLFCRLF = '\r\n\r\n';
 
 /**
  * Shim for 'Object.fromEntries'
- * @param {Array<[string, any]>} items
+ * @template T
+ * @param {Array<[string, T]>} items
+ * @return {Record<string, T>}
  */
 function itemsToObject(items) {
   if (typeof Object.fromEntries !== 'undefined') {
     return Object.fromEntries(items);
   }
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, T>} */
   const obj = {};
   for (const [key, value] of items) {
     obj[key.toLowerCase()] = value;

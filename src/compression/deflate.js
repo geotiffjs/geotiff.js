@@ -1,4 +1,3 @@
-// @ts-ignore
 import { inflate } from 'pako';
 import BaseDecoder from './basedecoder.js';
 

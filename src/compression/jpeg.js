@@ -284,10 +284,10 @@ function decodeScan(data, initialOffset,
     zz[0] = component.pred;
   }
   /**
-   * @param {JpegComponent} component
+   * @param {JpegComponent} _
    * @param {Int32Array} zz
    */
-  function decodeDCSuccessive(component, zz) {
+  function decodeDCSuccessive(_, zz) {
     const bit = readBit();
     if (bit === null) {
       throw new Error('Unexpected end of data in DC coefficient decoding');
@@ -540,10 +540,9 @@ function decodeScan(data, initialOffset,
 }
 
 /**
- * @param {JpegFrame} frame
  * @param {JpegComponent} component
  */
-function buildComponentData(frame, component) {
+function buildComponentData(component) {
   const lines = [];
   const { blocksPerLine, blocksPerColumn } = component;
   if (!blocksPerLine || !blocksPerColumn || !component.blocks) {
@@ -1075,7 +1074,7 @@ class JpegStreamReader {
     for (let i = 0; i < componentsOrder.length; i++) {
       const component = components[componentsOrder[i]];
       outComponents.push({
-        lines: buildComponentData(frame, component),
+        lines: buildComponentData(component),
         scaleX: component.h / frame.maxH,
         scaleY: component.v / frame.maxV,
       });

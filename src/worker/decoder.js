@@ -11,6 +11,10 @@ worker.addEventListener('message', async (e) => {
     const decoded = await decoder.decode(buffer);
     worker.postMessage({ decoded, ...extra }, { transfer: [decoded] });
   } catch (error) {
-    worker.postMessage({ error: error.message, ...extra });
+    if (error instanceof Error) {
+      worker.postMessage({ error: error.message, ...extra });
+    } else {
+      worker.postMessage({ error: String(error), ...extra });
+    }
   }
 });
