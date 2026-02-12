@@ -8,8 +8,11 @@ import { tags, fieldTagTypes, fieldTypes, geoKeyNames } from './globals.js';
 import { assign, endsWith, forEach, invert, times, typeMap,
   isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
+/** @type {Record<string, number>} */
 const tagName2Code = tags;
 const geoKeyName2Code = invert(geoKeyNames);
+
+/** @type {Record<string, number>} */
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
