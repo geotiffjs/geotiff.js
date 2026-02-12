@@ -26,7 +26,7 @@ export { rgb };
 export { default as BaseDecoder } from './compression/basedecoder.js';
 export { getDecoder, addDecoder };
 export { setLogger };
-export { ImageFileDirectory } from "./imagefiledirectory.js"
+export { ImageFileDirectory } from './imagefiledirectory.js';
 
 /**
  * @typedef {Uint8Array | Int8Array | Uint16Array | Int16Array | Uint32Array | Int32Array | Float32Array | Float64Array}
