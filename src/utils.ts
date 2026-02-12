@@ -139,7 +139,7 @@ export function parseContentRange(headerValue: string): null | {
 /*
  * Promisified wrapper around 'setTimeout' to allow 'await'
  */
-export async function wait(milliseconds: number): Promise<void> {
+export async function wait(milliseconds?: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
