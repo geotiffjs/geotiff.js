@@ -308,7 +308,8 @@ export class ImageFileDirectory {
    * Synchronously retrieves the value for a given tag. If it is deferred, an error is thrown.
    * @template {import('./globals.js').TagName} [T=any]
    * @param {T|number} tagIdentifier The field tag ID or name
-   * @returns {T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : any} the field value,
+   * @returns {T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : unknown}
+   * the field value,
    * or undefined if it does not exist
    * @throws {Error} If the tag is deferred and requires asynchronous loading
    */

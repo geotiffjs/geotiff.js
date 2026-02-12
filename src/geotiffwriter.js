@@ -42,7 +42,7 @@ const numBytesInIfd = 1000;
  * @property {Uint32Array} ui32
  * @property {Int32Array} i32
  * @property {Int16Array} i16
- * @property {(buff: Uint8Array, p: number, n: number) => void} [writeDouble]
+ * @property {(buff: Uint8Array, p: number, n: number) => void} writeDouble
  */
 
 const ui8 = new Uint8Array(8);
@@ -161,7 +161,7 @@ const _binBE = {
 };
 
 /**
- * @param {Record<string, any>} bin
+ * @param {BinBE} bin
  * @param {Uint8Array} data
  * @param {number} _offset
  * @param {Record<keyof fieldTagTypes, any>} ifd
@@ -299,7 +299,7 @@ const encodeIfds = (ifds) => {
  * @param {Array<number>|import('./geotiff.js').TypedArray} values
  * @param {number} width
  * @param {number} height
- * @param {Record<string|number, any>} metadata
+ * @param {GeotiffWriterMetadata} metadata
  * @returns {ArrayBuffer}
  */
 const encodeImage = (values, width, height, metadata) => {
@@ -323,7 +323,7 @@ const encodeImage = (values, width, height, metadata) => {
   if (metadata) {
     for (const i in metadata) {
       if (metadata.hasOwnProperty(i)) {
-        ifd[i] = metadata[i];
+        ifd[i] = metadata[/** @type {keyof GeotiffWriterMetadata} */ (i)];
       }
     }
   }

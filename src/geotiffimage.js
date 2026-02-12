@@ -905,10 +905,10 @@ class GeoTIFFImage {
    * Otherwise only metadata specific to the provided sample will be returned.
    *
    * @param {number|null} [sample=null] The sample index.
-   * @returns {Promise<Record<string, any>|null>} The GDAL metadata items
+   * @returns {Promise<Record<string, unknown>|null>} The GDAL metadata items
    */
   async getGDALMetadata(sample = null) {
-    /** @type {Record<string, any>} */
+    /** @type {Record<string, unknown>} */
     const metadata = {};
     if (!this.fileDirectory.hasTag('GDAL_METADATA')) {
       return null;
