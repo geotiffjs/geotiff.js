@@ -51,7 +51,7 @@ export { setLogger };
  */
 
 /**
- * @typedef {Object} GeotiffWriterMetadataStruct
+ * @typedef {Object} GeotiffWriterMetadata
  * @property {number | number[]} [ImageWidth]
  * @property {number | number[]} [ImageLength]
  * @property {number} [width]
@@ -86,10 +86,6 @@ export { setLogger };
  * @property {string} [GTCitationGeoKey]
  * @property {number | number[]} [GTModelTypeGeoKey]
  * @property {number | number[]} [GTRasterTypeGeoKey]
- */
-
-/**
- * @typedef {GeotiffWriterMetadataStruct & Partial<Record<import('./globals.js').GeoKeyName, any>>} GeotiffWriterMetadata
  */
 
 /**

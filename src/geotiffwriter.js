@@ -400,13 +400,13 @@ const convertToTids = (input) => {
 /**
  * @template T
  * @param {T} input
- * @returns {Array<T>}
+ * @returns {T extends any[] ? T : T[]}
  */
 const toArray = (input) => {
   if (Array.isArray(input)) {
-    return input;
+    return /** @type {T extends any[] ? T : T[]} */ (input);
   }
-  return [input];
+  return /** @type {T extends any[] ? T : T[]} */ ([input]);
 };
 
 /** @type {Partial<GeotiffWriterMetadata>} */
@@ -570,7 +570,7 @@ export function writeGeotiff(data, metadata) {
     geoKeys.forEach((geoKey) => {
       const KeyID = name2code[geoKey];
       const tagType = fieldTagTypes[KeyID];
-      const val = finalMetadata[/** @type {import('./globals.js').GeoKeyName} */ (geoKey)];
+      const val = finalMetadata[/** @type {keyof import('./geotiff.js').GeotiffWriterMetadata} */ (geoKey)];
       if (val === undefined) {
         return;
       }
@@ -603,10 +603,10 @@ export function writeGeotiff(data, metadata) {
           TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
           valueOffset = currentDoubleIndex;
           Count = arr.length;
-          arr.forEach((v) => {
+          for (const v of arr) {
             geoDoubleParams.push(Number(v));
             currentDoubleIndex++;
-          });
+          }
         } else {
           return;
         }
@@ -633,7 +633,7 @@ export function writeGeotiff(data, metadata) {
   // cleanup original GeoKeys metadata, because stored in GeoKeyDirectory tag
   for (const geoKey of geoKeys) {
     if (finalMetadata.hasOwnProperty(geoKey)) {
-      delete finalMetadata[/** @type {import('./globals.js').GeoKeyName} */ (geoKey)];
+      delete finalMetadata[/** @type {keyof import('./geotiff.js').GeotiffWriterMetadata} */ (geoKey)];
     }
   }
 
@@ -656,7 +656,7 @@ export function writeGeotiff(data, metadata) {
     'RowsPerStrip',
   ]).forEach((name) => {
     if (finalMetadata[name]) {
-      finalMetadata[name] = /** @type {Array<number|string>} */ (toArray(finalMetadata[name]));
+      finalMetadata[name] = toArray(finalMetadata[name]);
     }
   });
 
