@@ -185,6 +185,8 @@ describe('writeTypedArrays', () => {
 
       const valueArray = toArrayRecursively(newValues);
       expect(valueArray).to.be.deep.equal(Array.from(interleavedValues));
+    // It's usually not necessary, but doubling the timeout just in case CI decides to take 300% longer
+    // see https://github.com/geotiffjs/geotiff.js/pull/509#discussion_r2761241544
     }).timeout(4000);
   }
 });
