@@ -25,13 +25,13 @@ class RemoteSource extends BaseSource {
   /**
    * @param {import('./basesource.js').Slice[]} slices
    * @param {AbortSignal} [signal]
-   * @returns {Promise<*[]>}
+   * @returns {Promise<ArrayBufferLike[]>}
    */
   async fetch(slices, signal) {
     // if we allow multi-ranges, split the incoming request into that many sub-requests
     // and join them afterwards
     if (this.maxRanges >= slices.length) {
-      return this.fetchSlices(slices, signal);
+      return this.fetchSlices(slices, signal).then((results) => results.map((r) => r.data));
     } else if (this.maxRanges > 0 && slices.length > 1) {
       // TODO: split into multiple multi-range requests
 
@@ -46,16 +46,21 @@ class RemoteSource extends BaseSource {
 
     // otherwise make a single request for each slice
     return Promise.all(
-      slices.map((slice) => this.fetchSlice(slice, signal)),
+      slices.map(async (slice) => (await this.fetchSlice(slice, signal)).data),
     );
   }
 
+  /**
+   * @param {Array<import('./basesource.js').Slice>} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<Array<import('./basesource.js').SliceWithData>>}
+   */
   async fetchSlices(slices, signal) {
     const response = await this.client.request({
       headers: {
         ...this.headers,
         Range: `bytes=${slices
-          .map(({ offset, length }) => `${offset}-${offset + length}`)
+          .map(({ offset, length }) => `${offset}-${offset + length - 1}`)
           .join(',')
         }`,
       },
@@ -76,6 +81,7 @@ class RemoteSource extends BaseSource {
 
       const { start, end, total } = parseContentRange(response.getHeader('content-range'));
       this._fileSize = total || null;
+      /** @type {import('./basesource.js').SliceWithData[]} */
       const first = [{
         data,
         offset: start,
@@ -106,12 +112,17 @@ class RemoteSource extends BaseSource {
     }
   }
 
+  /**
+   * @param {import('./basesource.js').Slice} slice
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<import('./basesource.js').SliceWithData>}
+   */
   async fetchSlice(slice, signal) {
     const { offset, length } = slice;
     const response = await this.client.request({
       headers: {
         ...this.headers,
-        Range: `bytes=${offset}-${offset + length}`,
+        Range: `bytes=${offset}-${offset + length - 1}`,
       },
       signal,
     });
@@ -156,7 +167,7 @@ class RemoteSource extends BaseSource {
  * @returns {BaseSource}
  */
 function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
-  if (blockSize === null) {
+  if (blockSize === undefined) {
     return source;
   }
   return new BlockedSource(source, { blockSize, cacheSize });

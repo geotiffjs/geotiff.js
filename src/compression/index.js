@@ -1,42 +1,43 @@
-const registry = new Map();
+/** @import BaseDecoder, {BaseDecoderParameters} from "./basedecoder.js" */
 
 /**
- * @typedef {Object} DecoderParameters
- * @property {number} tileWidth
- * @property {number} tileHeight
- * @property {number} planarConfiguration
- * @property {number} bitsPerSample
- * @property {number} predictor
+ * @typedef {Object} RegistryEntry
+ * @property {function():Promise<typeof BaseDecoder>} importFn
+ * @property {function(import("../imagefiledirectory").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
+ * @property {boolean} preferWorker
  */
+
+/** @type {Map<number | undefined, RegistryEntry>} */
+const registry = new Map();
 
 /**
  * Default decoder parameter retrieval function
  * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
- * @returns {Promise<DecoderParameters>}
+ * @returns {Promise<BaseDecoderParameters>}
  */
 async function defaultDecoderParameterFn(fileDirectory) {
   const isTiled = !fileDirectory.hasTag('StripOffsets');
-  return {
-    tileWidth: isTiled ? await fileDirectory.loadValue('TileWidth') : await fileDirectory.loadValue('ImageWidth'),
-    tileHeight: isTiled ? await fileDirectory.loadValue('TileLength') : (
-      await fileDirectory.loadValue('RowsPerStrip') || await fileDirectory.loadValue('ImageLength')
-    ),
+  return /** @type {BaseDecoderParameters} */ ({
+    tileWidth: isTiled
+      ? await fileDirectory.loadValue('TileWidth')
+      : await fileDirectory.loadValue('ImageWidth'),
+    tileHeight: isTiled
+      ? await fileDirectory.loadValue('TileLength')
+      : (
+        await fileDirectory.loadValue('RowsPerStrip')
+        || await fileDirectory.loadValue('ImageLength')
+      ),
     planarConfiguration: await fileDirectory.loadValue('PlanarConfiguration'),
     bitsPerSample: await fileDirectory.loadValue('BitsPerSample'),
     predictor: await fileDirectory.loadValue('Predictor') || 1,
-  };
+  });
 }
 
 /**
- * Either a number or undefined.
- * @typedef {(number|undefined)} NumberOrUndefined
- */
-
-/**
  * Register a decoder for a specific compression method or a range of compressions
- * @param {(NumberOrUndefined|(NumberOrUndefined[]))} cases ids of the compression methods to register for
- * @param {function():Promise} importFn the function to import the decoder
- * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise} decoderParameterFn
+ * @param {(number|undefined|(number|undefined)[])} cases ids of the compression methods to register for
+ * @param {function():Promise<typeof BaseDecoder>} importFn the function to import the decoder
+ * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
  * @param {boolean} preferWorker_ Whether to prefer running the decoder in a worker
  */
 export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderParameterFn, preferWorker_ = true) {
@@ -50,28 +51,28 @@ export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderP
 
 /**
  * Get the required decoder parameters for a specific compression method
- * @param {NumberOrUndefined} compression
+ * @param {number|undefined} compression
  * @param {import('../imagefiledirectory.js').ImageFileDirectory} fileDirectory
  */
 export async function getDecoderParameters(compression, fileDirectory) {
   if (!registry.has(compression)) {
     throw new Error(`Unknown compression method identifier: ${compression}`);
   }
-  const { decoderParameterFn } = registry.get(compression);
+  const { decoderParameterFn } = /** @type {RegistryEntry} */ (registry.get(compression));
   return decoderParameterFn(fileDirectory);
 }
 
 /**
  * Get a decoder for a specific compression and parameters
  * @param {number} compression the compression method identifier
- * @param {DecoderParameters} decoderParameters the parameters for the decoder
+ * @param {BaseDecoderParameters} decoderParameters the parameters for the decoder
  * @returns {Promise<import('./basedecoder.js').default>}
  */
 export async function getDecoder(compression, decoderParameters) {
   if (!registry.has(compression)) {
     throw new Error(`Unknown compression method identifier: ${compression}`);
   }
-  const { importFn } = registry.get(compression);
+  const { importFn } = /** @type {RegistryEntry} */ (registry.get(compression));
   const Decoder = await importFn();
   return new Decoder(decoderParameters);
 }
@@ -85,7 +86,7 @@ export function preferWorker(compression) {
   if (!registry.has(compression)) {
     throw new Error(`Unknown compression method identifier: ${compression}`);
   }
-  return registry.get(compression).preferWorker;
+  return /** @type {RegistryEntry} */ (registry.get(compression)).preferWorker;
 }
 
 const defaultDecoderDefinitions = [
@@ -111,6 +112,9 @@ const defaultDecoderDefinitions = [
   {
     cases: 7,
     importFn: () => import('./jpeg.js').then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),
@@ -137,6 +141,9 @@ const defaultDecoderDefinitions = [
         return m;
       })
       .then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),
@@ -158,10 +165,13 @@ const defaultDecoderDefinitions = [
   {
     cases: 50001,
     importFn: () => import('./webimage.js').then((m) => m.default),
+    /**
+     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     */
     decoderParameterFn: async (fileDirectory) => {
       return {
         ...await defaultDecoderParameterFn(fileDirectory),
-        samplesPerPixel: await fileDirectory.loadValue('SamplesPerPixel') || 4,
+        samplesPerPixel: Number(await fileDirectory.loadValue('SamplesPerPixel')) || 4,
       };
     },
     preferWorker: false,

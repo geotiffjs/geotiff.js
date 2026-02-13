@@ -1352,7 +1352,7 @@ describe('BlockedSource Test', () => {
 
   it('Fetches all data in a single block', async () => {
     const blockedSource = new BlockedSource(null, { blockSize: 2 });
-    blockedSource.source = { fileSize: null, fetch: async () => [{ data: new Uint8Array(2).buffer, offset: 0 }] };
+    blockedSource.source = { fileSize: null, fetchSlice: async () => ({ data: new Uint8Array(2).buffer, offset: 0 }) };
     const data = await blockedSource.fetch([{ offset: 0, length: 2 }]);
     expect(data[0].byteLength).to.equal(2);
   });
@@ -1362,9 +1362,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 0, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1, 2]);
   });
@@ -1374,9 +1373,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 2, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([3, 4]);
   });
@@ -1386,9 +1384,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 0, length: 1 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1]);
   });
@@ -1398,9 +1395,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 3, length: 1 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([4]);
   });
@@ -1410,9 +1406,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 1, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
   });
@@ -1422,9 +1417,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4, 5, 6]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 1, length: 2 }, { offset: 3, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
     expect(Array.from(new Uint8Array(result[1]))).to.deep.equal([4, 5]);
