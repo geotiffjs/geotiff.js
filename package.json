@@ -1,6 +1,6 @@
 {
   "name": "geotiff",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "GeoTIFF image decoding in JavaScript",
   "repository": {
     "type": "git",
@@ -24,58 +24,7 @@
       "browser": "./dist-browser/geotiff.js"
     }
   },
-  "typesVersions": {
-    "*": {
-      "globals": [
-        "dist-module/globals.d.ts"
-      ],
-      "rgb": [
-        "dist-module/rgb.d.ts"
-      ],
-      "BaseDecoder": [
-        "dist-module/compression/BaseDecoder.d.ts"
-      ],
-      "getDecoder": [
-        "dist-module/compression/index.d.ts"
-      ],
-      "addDecoder": [
-        "dist-module/compression/index.d.ts"
-      ],
-      "setLogger": [
-        "dist-module/logging.d.ts"
-      ],
-      "GeoTIFF": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "MultiGeoTIFF": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromUrl": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromArrayBuffer": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromFile": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromBlob": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "fromUrls": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "writeArrayBuffer": [
-        "dist-module/geotiff.d.ts"
-      ],
-      "Pool": [
-        "dist-module/pool.d.ts"
-      ],
-      "GeoTIFFImage": [
-        "dist-module/geotiffimage.d.ts"
-      ]
-    }
-  },
+  "types": "dist-module/geotiff.d.ts",
   "files": [
     "dist-module",
     "dist-node",
@@ -85,7 +34,7 @@
     "node": ">=10.19"
   },
   "dependencies": {
-    "@petamoriken/float16": "^3.4.7",
+    "@petamoriken/float16": "^3.9.3",
     "lerc": "^3.0.0",
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
@@ -102,6 +51,8 @@
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
+    "@types/node": "^25.2.0",
+    "@types/pako": "^2.0.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^8.0.1",
     "chokidar-cli": "^3.0.0",
@@ -131,7 +82,7 @@
     "prebuild": "npm run build:clean",
     "build": "npm run build:module && run-p build:browser build:node",
     "build:clean": "shx rm -rf dist-node/ dist-browser/ dist-module/",
-    "build:module": "tsc --project tsconfig.dev.json && rollup -c rollup.worker.config.js",
+    "build:module": "tsc && rollup -c rollup.worker.config.js",
     "build:browser": "rollup -c rollup.config.js",
     "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
     "build:types": "tsc --outdir dist-module/",
@@ -145,7 +96,7 @@
     "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "npm run build",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint && tsc --noEmit",
     "test": "mocha --full-trace test/*.spec.js"
   },
   "author": "Fabian Schindler",

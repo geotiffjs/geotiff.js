@@ -4,7 +4,8 @@ import BaseDecoder from './basedecoder.js';
 export const zstd = new ZSTDDecoder();
 
 export default class ZstdDecoder extends BaseDecoder {
+  /** @param {ArrayBuffer} buffer */
   decodeBlock(buffer) {
-    return zstd.decode(new Uint8Array(buffer)).buffer;
+    return /** @type {ArrayBuffer} */ (zstd.decode(new Uint8Array(buffer)).buffer);
   }
 }

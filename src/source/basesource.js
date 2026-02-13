@@ -1,32 +1,35 @@
 /**
- * @typedef Slice
+ * @typedef {Object} Slice
  * @property {number} offset
  * @property {number} length
  */
 
+/** @typedef {Slice & {data: ArrayBufferLike}} SliceWithData */
+
 export class BaseSource {
   /**
-   *
-   * @param {Slice[]} slices
-   * @returns {ArrayBuffer[]}
+   * @param {Array<Slice>} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<ArrayBufferLike[]>}
    */
-  async fetch(slices, signal = undefined) {
+  async fetch(slices, signal) {
     return Promise.all(
-      slices.map((slice) => this.fetchSlice(slice, signal)),
+      slices.map(async (slice) => (await this.fetchSlice(slice, signal)).data),
     );
   }
 
   /**
-   *
    * @param {Slice} slice
-   * @returns {ArrayBuffer}
+   * @param {AbortSignal} [_signal]
+   * @returns {Promise<SliceWithData>}
    */
-  async fetchSlice(slice) {
+  async fetchSlice(slice, _signal) {
     throw new Error(`fetching of slice ${slice} not possible, not implemented`);
   }
 
   /**
    * Returns the filesize if already determined and null otherwise
+   * @returns {number|null}
    */
   get fileSize() {
     return null;

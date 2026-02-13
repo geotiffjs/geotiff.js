@@ -1,12 +1,16 @@
 const CRLFCRLF = '\r\n\r\n';
 
-/*
+/**
  * Shim for 'Object.fromEntries'
+ * @template T
+ * @param {Array<[string, T]>} items
+ * @return {Record<string, T>}
  */
 function itemsToObject(items) {
   if (typeof Object.fromEntries !== 'undefined') {
     return Object.fromEntries(items);
   }
+  /** @type {Record<string, T>} */
   const obj = {};
   for (const [key, value] of items) {
     obj[key.toLowerCase()] = value;
@@ -16,14 +20,15 @@ function itemsToObject(items) {
 
 /**
  * Parse HTTP headers from a given string.
- * @param {String} text the text to parse the headers from
- * @returns {Object} the parsed headers with lowercase keys
+ * @param {string} text the text to parse the headers from
+ * @returns {Record<string, string>} the parsed headers with lowercase keys
  */
 function parseHeaders(text) {
+  /** @type {Array<[string, string]>} */
   const items = text
     .split('\r\n')
     .map((line) => {
-      const kv = line.split(':').map((str) => str.trim());
+      const kv = /** @type {[string, string]} */ (line.split(':').map((str) => str.trim()));
       kv[0] = kv[0].toLowerCase();
       return kv;
     });
@@ -33,30 +38,31 @@ function parseHeaders(text) {
 
 /**
  * Parse a 'Content-Type' header value to the content-type and parameters
- * @param {String} rawContentType the raw string to parse from
- * @returns {Object} the parsed content type with the fields: type and params
+ * @param {string|undefined} rawContentType the raw string to parse from
+ * @returns {{type: string|null, params: Record<string, string>}}
+ *     the parsed content type with the fields: type and params
  */
 export function parseContentType(rawContentType) {
+  if (!rawContentType) {
+    return { type: null, params: {} };
+  }
   const [type, ...rawParams] = rawContentType.split(';').map((s) => s.trim());
-  const paramsItems = rawParams.map((param) => param.split('='));
+  const paramsItems = /** @type {Array<[string, string]>} */ (rawParams.map((param) => param.split('=')));
   return { type, params: itemsToObject(paramsItems) };
 }
 
 /**
  * Parse a 'Content-Range' header value to its start, end, and total parts
- * @param {String} rawContentRange the raw string to parse from
- * @returns {Object} the parsed parts
+ * @param {string|undefined} rawContentRange the raw string to parse from
+ * @returns {{start: number, end: number, total: number}} the parsed parts
  */
 export function parseContentRange(rawContentRange) {
-  let start;
-  let end;
-  let total;
+  let start = NaN;
+  let end = NaN;
+  let total = NaN;
 
   if (rawContentRange) {
-    [, start, end, total] = rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/);
-    start = parseInt(start, 10);
-    end = parseInt(end, 10);
-    total = parseInt(total, 10);
+    [, start, end, total] = (rawContentRange.match(/bytes (\d+)-(\d+)\/(\d+)/) || []).map(Number);
   }
 
   return { start, end, total };
@@ -70,11 +76,12 @@ export function parseContentRange(rawContentRange) {
  * - offset: the offset of the byterange within its originating file
  * - length: the length of the byterange
  * @param {ArrayBuffer} responseArrayBuffer the response to be parsed and split
- * @param {String} boundary the boundary string used to split the sections
- * @returns {Object[]} the parsed byteranges
+ * @param {string} boundary the boundary string used to split the sections
+ * @returns {Array<{headers: Record<string, string>, data: ArrayBuffer, offset: number, length: number, fileSize: number}>}
+ *     the parsed byteranges
  */
 export function parseByteRanges(responseArrayBuffer, boundary) {
-  let offset = null;
+  let offset = -1;
   const decoder = new TextDecoder('ascii');
   const out = [];
 
@@ -92,7 +99,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
     }
   }
 
-  if (offset === null) {
+  if (offset === -1) {
     throw new Error('Could not find initial boundary');
   }
 
@@ -129,7 +136,7 @@ export function parseByteRanges(responseArrayBuffer, boundary) {
 
     // calculate the length of the slice and the next offset
     const startOfData = offset + startBoundary.length + endOfHeaders + CRLFCRLF.length;
-    const length = parseInt(end, 10) + 1 - parseInt(start, 10);
+    const length = end + 1 - start;
     out.push({
       headers,
       data: responseArrayBuffer.slice(startOfData, startOfData + length),

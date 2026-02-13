@@ -1,4 +1,10 @@
 export default class DataSlice {
+  /**
+   * @param {ArrayBufferLike} arrayBuffer
+   * @param {number} sliceOffset
+   * @param {boolean} littleEndian
+   * @param {boolean} bigTiff
+   */
   constructor(arrayBuffer, sliceOffset, littleEndian, bigTiff) {
     this._dataView = new DataView(arrayBuffer);
     this._sliceOffset = sliceOffset;
@@ -26,58 +32,95 @@ export default class DataSlice {
     return this._dataView.buffer;
   }
 
+  /**
+   * @param {number} offset
+   * @param {number} length
+   * @returns {boolean}
+   */
   covers(offset, length) {
     return this.sliceOffset <= offset && this.sliceTop >= offset + length;
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readUint8(offset) {
-    return this._dataView.getUint8(
-      offset - this._sliceOffset, this._littleEndian,
-    );
+    return this._dataView.getUint8(offset - this._sliceOffset);
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readInt8(offset) {
-    return this._dataView.getInt8(
-      offset - this._sliceOffset, this._littleEndian,
-    );
+    return this._dataView.getInt8(offset - this._sliceOffset);
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readUint16(offset) {
     return this._dataView.getUint16(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readInt16(offset) {
     return this._dataView.getInt16(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readUint32(offset) {
     return this._dataView.getUint32(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readInt32(offset) {
     return this._dataView.getInt32(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readFloat32(offset) {
     return this._dataView.getFloat32(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readFloat64(offset) {
     return this._dataView.getFloat64(
       offset - this._sliceOffset, this._littleEndian,
     );
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readUint64(offset) {
     const left = this.readUint32(offset);
     const right = this.readUint32(offset + 4);
@@ -103,7 +146,11 @@ export default class DataSlice {
     return combined;
   }
 
-  // adapted from https://stackoverflow.com/a/55338384/8060591
+  /**
+   * Adapted from https://stackoverflow.com/a/55338384/8060591
+   * @param {number} offset
+   * @returns {number}
+   */
   readInt64(offset) {
     let value = 0;
     const isNegative = (this._dataView.getUint8(offset + (this._littleEndian ? 7 : 0)) & 0x80)
@@ -131,6 +178,10 @@ export default class DataSlice {
     return value;
   }
 
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
   readOffset(offset) {
     if (this._bigTiff) {
       return this.readUint64(offset);

@@ -1,25 +1,32 @@
+/** @import {TypedArray} from './geotiff.js' */
+
 export const fieldTypes = {
-  BYTE: 0x0001,
-  ASCII: 0x0002,
-  SHORT: 0x0003,
-  LONG: 0x0004,
-  RATIONAL: 0x0005,
-  SBYTE: 0x0006,
-  UNDEFINED: 0x0007,
-  SSHORT: 0x0008,
-  SLONG: 0x0009,
-  SRATIONAL: 0x000a,
-  FLOAT: 0x000b,
-  DOUBLE: 0x000c,
+  BYTE: /** @type {1} */ (0x0001),
+  ASCII: /** @type {2} */ (0x0002),
+  SHORT: /** @type {3} */ (0x0003),
+  LONG: /** @type {4} */ (0x0004),
+  RATIONAL: /** @type {5} */ (0x0005),
+  SBYTE: /** @type {6} */ (0x0006),
+  UNDEFINED: /** @type {7} */ (0x0007),
+  SSHORT: /** @type {8} */ (0x0008),
+  SLONG: /** @type {9} */ (0x0009),
+  SRATIONAL: /** @type {10} */ (0x000a),
+  FLOAT: /** @type {11} */ (0x000b),
+  DOUBLE: /** @type {12} */ (0x000c),
   // IFD offset, suggested by https://owl.phy.queensu.ca/~phil/exiftool/standards.html
-  IFD: 0x000d,
+  IFD: /** @type {13} */ (0x000d),
   // introduced by BigTIFF
-  LONG8: 0x0010,
-  SLONG8: 0x0011,
-  IFD8: 0x0012,
+  LONG8: /** @type {16} */ (0x0010),
+  SLONG8: /** @type {17} */ (0x0011),
+  IFD8: /** @type {18} */ (0x0012),
 };
 
-export const fieldTypeSizes = {
+/** @typedef {keyof fieldTypes} FieldTypeName */
+
+/** @typedef {fieldTypes[keyof typeof fieldTypes]} FieldType */
+
+/** @typedef {Record<FieldTypeName, number>} FieldTypeSizes */
+export const fieldTypeSizes = /** @type {const} */ ({
   [fieldTypes.BYTE]: 1,
   [fieldTypes.ASCII]: 1,
   [fieldTypes.SBYTE]: 1,
@@ -36,11 +43,13 @@ export const fieldTypeSizes = {
   [fieldTypes.LONG8]: 8,
   [fieldTypes.SLONG8]: 8,
   [fieldTypes.IFD8]: 8,
-};
+});
+
+/** @typedef {fieldTypeSizes[keyof typeof fieldTypeSizes]} FieldTypeSize */
 
 /**
  * Get the byte size for a given field type.
- * @param {number} fieldType The TIFF field type constant
+ * @param {FieldType} fieldType The TIFF field type constant
  * @returns {number} The size in bytes
  * @throws {RangeError} If the field type is invalid
  */
@@ -52,224 +61,189 @@ export function getFieldTypeSize(fieldType) {
   return size;
 }
 
-const tagSource = [
-  { tag: 254, name: 'NewSubfileType', fieldTypes: fieldTypes.LONG },
-  { tag: 255, name: 'SubfileType', type: fieldTypes.SHORT },
-  { tag: 256, name: 'ImageWidth', type: fieldTypes.SHORT },
-  { tag: 257, name: 'ImageLength', type: fieldTypes.SHORT },
-  {
-    tag: 258,
-    name: 'BitsPerSample',
-    type: fieldTypes.SHORT,
-    isArray: true,
-    eager: true,
-  },
-  { tag: 259, name: 'Compression', type: fieldTypes.SHORT },
-  { tag: 262, name: 'PhotometricInterpretation', type: fieldTypes.SHORT },
-  { tag: 263, name: 'Threshholding', type: fieldTypes.SHORT },
-  { tag: 264, name: 'CellWidth', type: fieldTypes.SHORT },
-  { tag: 265, name: 'CellLength', type: fieldTypes.SHORT },
-  { tag: 266, name: 'FillOrder', type: fieldTypes.SHORT },
-  { tag: 269, name: 'DocumentName', type: fieldTypes.ASCII },
-  { tag: 270, name: 'ImageDescription', type: fieldTypes.ASCII },
-  { tag: 271, name: 'Make', type: fieldTypes.ASCII },
-  { tag: 272, name: 'Model', type: fieldTypes.ASCII },
-  { tag: 273, name: 'StripOffsets', type: fieldTypes.SHORT, isArray: true },
-  { tag: 274, name: 'Orientation', type: fieldTypes.SHORT },
-  { tag: 277, name: 'SamplesPerPixel', type: fieldTypes.SHORT },
-  { tag: 278, name: 'RowsPerStrip', type: fieldTypes.SHORT },
-  { tag: 279, name: 'StripByteCounts', type: fieldTypes.LONG, isArray: true },
-  { tag: 280, name: 'MinSampleValue', type: fieldTypes.SHORT, isArray: true },
-  { tag: 281, name: 'MaxSampleValue', type: fieldTypes.SHORT, isArray: true },
-  { tag: 282, name: 'XResolution', type: fieldTypes.RATIONAL },
-  { tag: 283, name: 'YResolution', type: fieldTypes.RATIONAL },
-  { tag: 284, name: 'PlanarConfiguration', fieldTypes: fieldTypes.SHORT },
-  { tag: 285, name: 'PageName', type: fieldTypes.ASCII },
-  { tag: 286, name: 'XPosition', type: fieldTypes.RATIONAL },
-  { tag: 287, name: 'YPosition', type: fieldTypes.RATIONAL },
-  { tag: 288, name: 'FreeOffsets', type: fieldTypes.LONG },
-  { tag: 289, name: 'FreeByteCounts', type: fieldTypes.LONG },
-  { tag: 290, name: 'GrayResponseUnit', type: fieldTypes.SHORT },
-  {
-    tag: 291,
-    name: 'GrayResponseCurve',
-    type: fieldTypes.SHORT,
-    isArray: true,
-  },
-  { tag: 292, name: 'T4Options', type: fieldTypes.LONG },
-  { tag: 293, name: 'T6Options', type: fieldTypes.LONG },
-  { tag: 296, name: 'ResolutionUnit', type: fieldTypes.SHORT },
-  { tag: 297, name: 'PageNumber', type: fieldTypes.SHORT, isArray: true },
-  { tag: 301, name: 'TransferFunction', type: fieldTypes.SHORT, isArray: true },
-  { tag: 305, name: 'Software', type: fieldTypes.ASCII },
-  { tag: 306, name: 'DateTime', type: fieldTypes.ASCII },
-  { tag: 315, name: 'Artist', type: fieldTypes.ASCII },
-  { tag: 316, name: 'HostComputer', type: fieldTypes.ASCII },
-  { tag: 317, name: 'Predictor', type: fieldTypes.SHORT },
-  { tag: 318, name: 'WhitePoint', type: fieldTypes.RATIONAL, isArray: true },
-  {
-    tag: 319,
-    name: 'PrimaryChromaticities',
-    type: fieldTypes.RATIONAL,
-    isArray: true,
-  },
-  { tag: 320, name: 'ColorMap', type: fieldTypes.SHORT, isArray: true },
-  { tag: 321, name: 'HalftoneHints', type: fieldTypes.SHORT, isArray: true },
-  { tag: 322, name: 'TileWidth', type: fieldTypes.SHORT },
-  { tag: 323, name: 'TileLength', type: fieldTypes.SHORT },
-  { tag: 324, name: 'TileOffsets', type: fieldTypes.LONG, isArray: true },
-  { tag: 325, name: 'TileByteCounts', type: fieldTypes.SHORT, isArray: true },
-  { tag: 332, name: 'InkSet', type: fieldTypes.SHORT },
-  { tag: 333, name: 'InkNames', type: fieldTypes.ASCII },
-  { tag: 334, name: 'NumberOfInks', type: fieldTypes.SHORT },
-  { tag: 336, name: 'DotRange', type: fieldTypes.BYTE, isArray: true },
-  { tag: 337, name: 'TargetPrinter', type: fieldTypes.ASCII },
-  { tag: 338, name: 'ExtraSamples', type: fieldTypes.BYTE, isArray: true },
-  {
-    tag: 339,
-    name: 'SampleFormat',
-    type: fieldTypes.SHORT,
-    isArray: true,
-    eager: true,
-  },
-  { tag: 340, name: 'SMinSampleValue', type: fieldTypes.Any, isArray: true },
-  { tag: 341, name: 'SMaxSampleValue', type: fieldTypes.Any, isArray: true },
-  { tag: 342, name: 'TransferRange', type: fieldTypes.SHORT, isArray: true },
-  { tag: 512, name: 'JPEGProc', type: fieldTypes.SHORT },
-  { tag: 513, name: 'JPEGInterchangeFormat', type: fieldTypes.LONG },
-  { tag: 514, name: 'JPEGInterchangeFormatLngth', type: fieldTypes.LONG },
-  { tag: 515, name: 'JPEGRestartInterval', type: fieldTypes.SHORT },
-  {
-    tag: 517,
-    name: 'JPEGLosslessPredictors',
-    type: fieldTypes.SHORT,
-    isArray: true,
-  },
-  {
-    tag: 518,
-    name: 'JPEGPointTransforms',
-    type: fieldTypes.SHORT,
-    isArray: true,
-  },
-  { tag: 519, name: 'JPEGQTables', type: fieldTypes.LONG, isArray: true },
-  { tag: 520, name: 'JPEGDCTables', type: fieldTypes.LONG, isArray: true },
-  { tag: 521, name: 'JPEGACTables', type: fieldTypes.LONG, isArray: true },
-  {
-    tag: 529,
-    name: 'YCbCrCoefficients',
-    type: fieldTypes.RATIONAL,
-    isArray: true,
-  },
-  { tag: 530, name: 'YCbCrSubSampling', type: fieldTypes.SHORT, isArray: true },
-  { tag: 531, name: 'YCbCrPositioning', type: fieldTypes.SHORT },
-  {
-    tag: 532,
-    name: 'ReferenceBlackWhite',
-    type: fieldTypes.LONG,
-    isArray: true,
-  },
-  { tag: 33432, name: 'Copyright', type: fieldTypes.ASCII },
+/**
+ * @typedef {Object} TagDictionaryEntry
+ * @property {number} tag
+ * @property {string} [name]
+ * @property {number} [type]
+ * @property {boolean} [isArray]
+ * @property {boolean} [eager]
+ */
 
-  // TIFF Extended
-  { tag: 326, name: 'BadFaxLines' },
-  { tag: 327, name: 'CleanFaxData' },
-  { tag: 343, name: 'ClipPath' },
-  { tag: 328, name: 'ConsecutiveBadFaxLines' },
-  { tag: 433, name: 'Decode' },
-  { tag: 434, name: 'DefaultImageColor' },
-  { tag: 346, name: 'Indexed' },
-  { tag: 347, name: 'JPEGTables', isArray: true, eager: true },
-  { tag: 559, name: 'StripRowCounts', isArray: true },
-  { tag: 330, name: 'SubIFDs', isArray: true },
-  { tag: 344, name: 'XClipPathUnits' },
-  { tag: 345, name: 'YClipPathUnits' },
+export const tagDictionary = /** @type {const} */ ({
+  NewSubfileType: { tag: 254, type: fieldTypes.LONG },
+  SubfileType: { tag: 255, type: fieldTypes.SHORT },
+  ImageWidth: { tag: 256, type: fieldTypes.SHORT },
+  ImageLength: { tag: 257, type: fieldTypes.SHORT },
+  BitsPerSample: { tag: 258, type: fieldTypes.SHORT, isArray: true, eager: true },
+  Compression: { tag: 259, type: fieldTypes.SHORT },
+  PhotometricInterpretation: { tag: 262, type: fieldTypes.SHORT },
+  Threshholding: { tag: 263, type: fieldTypes.SHORT },
+  CellWidth: { tag: 264, type: fieldTypes.SHORT },
+  CellLength: { tag: 265, type: fieldTypes.SHORT },
+  FillOrder: { tag: 266, type: fieldTypes.SHORT },
+  DocumentName: { tag: 269, type: fieldTypes.ASCII },
+  ImageDescription: { tag: 270, type: fieldTypes.ASCII },
+  Make: { tag: 271, type: fieldTypes.ASCII },
+  Model: { tag: 272, type: fieldTypes.ASCII },
+  StripOffsets: { tag: 273, type: fieldTypes.SHORT, isArray: true },
+  Orientation: { tag: 274, type: fieldTypes.SHORT },
+  SamplesPerPixel: { tag: 277, type: fieldTypes.SHORT },
+  RowsPerStrip: { tag: 278, type: fieldTypes.SHORT },
+  StripByteCounts: { tag: 279, type: fieldTypes.LONG, isArray: true },
+  MinSampleValue: { tag: 280, type: fieldTypes.SHORT, isArray: true },
+  MaxSampleValue: { tag: 281, type: fieldTypes.SHORT, isArray: true },
+  XResolution: { tag: 282, type: fieldTypes.RATIONAL },
+  YResolution: { tag: 283, type: fieldTypes.RATIONAL },
+  PlanarConfiguration: { tag: 284, type: fieldTypes.SHORT },
+  PageName: { tag: 285, type: fieldTypes.ASCII },
+  XPosition: { tag: 286, type: fieldTypes.RATIONAL },
+  YPosition: { tag: 287, type: fieldTypes.RATIONAL },
+  FreeOffsets: { tag: 288, type: fieldTypes.LONG },
+  FreeByteCounts: { tag: 289, type: fieldTypes.LONG },
+  GrayResponseUnit: { tag: 290, type: fieldTypes.SHORT },
+  GrayResponseCurve: { tag: 291, type: fieldTypes.SHORT, isArray: true },
+  T4Options: { tag: 292, type: fieldTypes.LONG },
+  T6Options: { tag: 293, type: fieldTypes.LONG },
+  ResolutionUnit: { tag: 296, type: fieldTypes.SHORT },
+  PageNumber: { tag: 297, type: fieldTypes.SHORT, isArray: true },
+  TransferFunction: { tag: 301, type: fieldTypes.SHORT, isArray: true },
+  Software: { tag: 305, type: fieldTypes.ASCII },
+  DateTime: { tag: 306, type: fieldTypes.ASCII },
+  Artist: { tag: 315, type: fieldTypes.ASCII },
+  HostComputer: { tag: 316, type: fieldTypes.ASCII },
+  Predictor: { tag: 317, type: fieldTypes.SHORT },
+  WhitePoint: { tag: 318, type: fieldTypes.RATIONAL, isArray: true },
+  PrimaryChromaticities: { tag: 319, type: fieldTypes.RATIONAL, isArray: true },
+  ColorMap: { tag: 320, type: fieldTypes.SHORT, isArray: true },
+  HalftoneHints: { tag: 321, type: fieldTypes.SHORT, isArray: true },
+  TileWidth: { tag: 322, type: fieldTypes.SHORT },
+  TileLength: { tag: 323, type: fieldTypes.SHORT },
+  TileOffsets: { tag: 324, type: fieldTypes.LONG, isArray: true },
+  TileByteCounts: { tag: 325, type: fieldTypes.SHORT, isArray: true },
+  InkSet: { tag: 332, type: fieldTypes.SHORT },
+  InkNames: { tag: 333, type: fieldTypes.ASCII },
+  NumberOfInks: { tag: 334, type: fieldTypes.SHORT },
+  DotRange: { tag: 336, type: fieldTypes.BYTE, isArray: true },
+  TargetPrinter: { tag: 337, type: fieldTypes.ASCII },
+  ExtraSamples: { tag: 338, type: fieldTypes.BYTE, isArray: true },
+  SampleFormat: { tag: 339, type: fieldTypes.SHORT, isArray: true, eager: true },
+  SMinSampleValue: { tag: 340, isArray: true },
+  SMaxSampleValue: { tag: 341, isArray: true },
+  TransferRange: { tag: 342, type: fieldTypes.SHORT, isArray: true },
+  JPEGProc: { tag: 512, type: fieldTypes.SHORT },
+  JPEGInterchangeFormat: { tag: 513, type: fieldTypes.LONG },
+  JPEGInterchangeFormatLngth: { tag: 514, type: fieldTypes.LONG },
+  JPEGRestartInterval: { tag: 515, type: fieldTypes.SHORT },
+  JPEGLosslessPredictors: { tag: 517, type: fieldTypes.SHORT, isArray: true },
+  JPEGPointTransforms: { tag: 518, type: fieldTypes.SHORT, isArray: true },
+  JPEGQTables: { tag: 519, type: fieldTypes.LONG, isArray: true },
+  JPEGDCTables: { tag: 520, type: fieldTypes.LONG, isArray: true },
+  JPEGACTables: { tag: 521, type: fieldTypes.LONG, isArray: true },
+  YCbCrCoefficients: { tag: 529, type: fieldTypes.RATIONAL, isArray: true },
+  YCbCrSubSampling: { tag: 530, type: fieldTypes.SHORT, isArray: true },
+  YCbCrPositioning: { tag: 531, type: fieldTypes.SHORT },
+  ReferenceBlackWhite: { tag: 532, type: fieldTypes.LONG, isArray: true },
+  Copyright: { tag: 33432, type: fieldTypes.ASCII },
+  BadFaxLines: { tag: 326 },
+  CleanFaxData: { tag: 327 },
+  ClipPath: { tag: 343 },
+  ConsecutiveBadFaxLines: { tag: 328 },
+  Decode: { tag: 433 },
+  DefaultImageColor: { tag: 434 },
+  Indexed: { tag: 346 },
+  JPEGTables: { tag: 347, isArray: true, eager: true },
+  StripRowCounts: { tag: 559, isArray: true },
+  SubIFDs: { tag: 330, isArray: true },
+  XClipPathUnits: { tag: 344 },
+  YClipPathUnits: { tag: 345 },
+  ApertureValue: { tag: 37378 },
+  ColorSpace: { tag: 40961 },
+  DateTimeDigitized: { tag: 36868 },
+  DateTimeOriginal: { tag: 36867 },
+  ExifIFD: { tag: 34665, name: 'Exif IFD', type: fieldTypes.LONG },
+  ExifVersion: { tag: 36864 },
+  ExposureTime: { tag: 33434 },
+  FileSource: { tag: 41728 },
+  Flash: { tag: 37385 },
+  FlashpixVersion: { tag: 40960 },
+  FNumber: { tag: 33437 },
+  ImageUniqueID: { tag: 42016 },
+  LightSource: { tag: 37384 },
+  MakerNote: { tag: 37500 },
+  ShutterSpeedValue: { tag: 37377 },
+  UserComment: { tag: 37510 },
+  IPTC: { tag: 33723 },
+  CZ_LSMINFO: { tag: 34412 },
+  ICCProfile: { tag: 34675, name: 'ICC Profile' },
+  XMP: { tag: 700 },
+  GDAL_METADATA: { tag: 42112 },
+  GDAL_NODATA: { tag: 42113, type: fieldTypes.ASCII },
+  Photoshop: { tag: 34377 },
+  ModelPixelScale: { tag: 33550, type: fieldTypes.DOUBLE, isArray: true, eager: true },
+  ModelTiepoint: { tag: 33922, type: fieldTypes.DOUBLE, isArray: true, eager: true },
+  ModelTransformation: { tag: 34264, type: fieldTypes.DOUBLE, isArray: true, eager: true },
+  GeoKeyDirectory: { tag: 34735, type: fieldTypes.SHORT, isArray: true, eager: true },
+  GeoDoubleParams: { tag: 34736, type: fieldTypes.DOUBLE, isArray: true, eager: true },
+  GeoAsciiParams: { tag: 34737, type: fieldTypes.ASCII, eager: true },
+  LercParameters: { tag: 50674, eager: true },
+});
 
-  // EXIF
-  { tag: 37378, name: 'ApertureValue' },
-  { tag: 40961, name: 'ColorSpace' },
-  { tag: 36868, name: 'DateTimeDigitized' },
-  { tag: 36867, name: 'DateTimeOriginal' },
-  { tag: 34665, name: 'Exif IFD', type: fieldTypes.LONG },
-  { tag: 36864, name: 'ExifVersion' },
-  { tag: 33434, name: 'ExposureTime' },
-  { tag: 41728, name: 'FileSource' },
-  { tag: 37385, name: 'Flash' },
-  { tag: 40960, name: 'FlashpixVersion' },
-  { tag: 33437, name: 'FNumber' },
-  { tag: 42016, name: 'ImageUniqueID' },
-  { tag: 37384, name: 'LightSource' },
-  { tag: 37500, name: 'MakerNote' },
-  { tag: 37377, name: 'ShutterSpeedValue' },
-  { tag: 37510, name: 'UserComment' },
+/** @typedef {keyof typeof tagDictionary} TagName */
+/** @typedef {typeof tagDictionary[keyof typeof tagDictionary]['tag']} Tag */
+/** @typedef {Extract<typeof tagDictionary[keyof typeof tagDictionary], {type: any}>['type']} TagType */
 
-  // IPTC
-  { tag: 33723, name: 'IPTC' },
+/**
+ * @template {number} T
+ * @typedef {T extends 2 ? string : number} GeoTiffPrimitive
+ */
 
-  // Laser Scanning Microscopy
-  { tag: 34412, name: 'CZ_LSMINFO' },
+/**
+ * @template {TagName} T
+ * @typedef {typeof tagDictionary[T]} TagDef
+ */
 
-  // ICC
-  { tag: 34675, name: 'ICC Profile' },
+/**
+ * @typedef {{
+ *   1: number;
+ *   2: string;
+ *   3: number;
+ *   4: number;
+ *   5: number;
+ *   6: number;
+ *   7: ArrayBuffer;
+ *   8: number;
+ *   9: number;
+ *   10: number;
+ *   11: number;
+ *   12: number;
+ *   16: number;
+ *   17: number;
+ *   18: number;
+ * }} FieldTypeMap
+ */
 
-  // XMP
-  { tag: 700, name: 'XMP' },
-
-  // GDAL
-  { tag: 42112, name: 'GDAL_METADATA' },
-  { tag: 42113, name: 'GDAL_NODATA', type: fieldTypes.ASCII },
-
-  // Photoshop
-  { tag: 34377, name: 'Photoshop' },
-
-  // GeoTiff
-  {
-    tag: 33550,
-    name: 'ModelPixelScale',
-    type: fieldTypes.DOUBLE,
-    isArray: true,
-    eager: true,
-  },
-  {
-    tag: 33922,
-    name: 'ModelTiepoint',
-    type: fieldTypes.DOUBLE,
-    isArray: true,
-    eager: true,
-  },
-  {
-    tag: 34264,
-    name: 'ModelTransformation',
-    type: fieldTypes.DOUBLE,
-    isArray: true,
-    eager: true,
-  },
-  {
-    tag: 34735,
-    name: 'GeoKeyDirectory',
-    type: fieldTypes.SHORT,
-    isArray: true,
-    eager: true,
-  },
-  {
-    tag: 34736,
-    name: 'GeoDoubleParams',
-    type: fieldTypes.DOUBLE,
-    isArray: true,
-    eager: true,
-  },
-  { tag: 34737, name: 'GeoAsciiParams', type: fieldTypes.ASCII, eager: true },
-
-  // LERC
-  { tag: 50674, name: 'LercParameters', eager: true },
-];
+/**
+ * @template {TagName} T
+ * @typedef {TagDef<T> extends { isArray: true }
+ *   ? (TagDef<T> extends { type: typeof fieldTypes.DOUBLE } ? number[] :
+ *      TagDef<T> extends { type: typeof fieldTypes.ASCII } ? string[] :
+ *      TagDef<T> extends { type: typeof fieldTypes.BYTE | typeof fieldTypes.SBYTE | typeof fieldTypes.UNDEFINED }
+ *        ? Uint8Array | Int8Array :
+ *      (number[] | TypedArray))
+ *   : (TagDef<T> extends { type: keyof FieldTypeMap } ? FieldTypeMap[TagDef<T>['type']] : any)} TagValue
+ */
 
 /**
  * Maps tag names to their numeric values
+ * @type {Record<string, number>}
  */
+/** @type {Record<string, number>} */
 export const tags = {};
 
 /**
  * Maps tag numbers to their definitions
+ * @type {Record<number, { tag: number, name: string, type: string|number|undefined, isArray: boolean, eager: boolean }>}
  */
 export const tagDefinitions = {};
 
@@ -277,7 +251,7 @@ export const tagDefinitions = {};
  * Registers a new field tag
  * @param {number} tag the numeric tiff tag
  * @param {string} name the name of the tag that will be reported in the IFD
- * @param {string|number} type the tags data type
+ * @param {keyof fieldTypes|number|undefined} type the tags data type
  * @param {Boolean} isArray whether the tag is an array
  * @param {boolean} [eager=false] whether to eagerly fetch deferred fields.
  *                                 When false (default), tags are loaded lazily on-demand.
@@ -286,7 +260,7 @@ export const tagDefinitions = {};
 export function registerTag(
   tag,
   name,
-  type = undefined,
+  type,
   isArray = false,
   eager = false,
 ) {
@@ -294,8 +268,9 @@ export function registerTag(
   tagDefinitions[tag] = { tag, name, type: typeof type === 'string' ? fieldTypes[type] : type, isArray, eager };
 }
 
-for (const entry of tagSource) {
-  registerTag(entry.tag, entry.name, entry.type, entry.isArray, entry.eager);
+for (const [key, value] of Object.entries(tagDictionary)) {
+  const entry = /** @type {TagDictionaryEntry} */ (value);
+  registerTag(entry.tag, entry.name || key, entry.type, entry.isArray, entry.eager);
 }
 
 /**
@@ -309,6 +284,10 @@ export function resolveTag(tagIdentifier) {
   return tags[tagIdentifier];
 }
 
+/**
+ * @param {number|string} tagIdentifier The field tag ID or name
+ * @returns {{ tag: number, name: string, type: string|number|undefined, isArray: boolean, eager: boolean }} the tag definition
+ */
 export function getTag(tagIdentifier) {
   return tagDefinitions[resolveTag(tagIdentifier)];
 }
@@ -398,7 +377,7 @@ export const LercAddCompression = {
   Zstandard: 2,
 };
 
-export const geoKeyNames = Object.freeze({
+export const geoKeyNames = /** @type {const} */ ({
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
   1026: 'GTCitationGeoKey',
@@ -453,9 +432,7 @@ export const geoKeyNames = Object.freeze({
 /**
  * @type {Record<GeoKeyName, number>}
  */
-export const geoKeys = {};
-for (const key in geoKeyNames) {
-  if (geoKeyNames.hasOwnProperty(key)) {
-    geoKeys[geoKeyNames[key]] = parseInt(key, 10);
-  }
+export const geoKeys = /** @type {Record<GeoKeyName, number>} */ ({});
+for (const [key, name] of Object.entries(geoKeyNames)) {
+  geoKeys[/** @type {GeoKeyName} */ (name)] = parseInt(key, 10);
 }

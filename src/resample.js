@@ -2,18 +2,24 @@
  * @module resample
  */
 
+/**
+ * @param {import("./geotiff").TypedArray} array
+ * @param {number} width
+ * @param {number} height
+ * @param {number} [samplesPerPixel=1]
+ */
 function copyNewSize(array, width, height, samplesPerPixel = 1) {
   return new (Object.getPrototypeOf(array).constructor)(width * height * samplesPerPixel);
 }
 
 /**
  * Resample the input arrays using nearest neighbor value selection.
- * @param {TypedArray[]} valueArrays The input arrays to resample
+ * @param {import("./geotiff").TypedArray[]} valueArrays The input arrays to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
  * @param {number} outHeight The desired height of the output rasters
- * @returns {TypedArray[]} The resampled rasters
+ * @returns {import("./geotiff").TypedArray[]} The resampled rasters
  */
 export function resampleNearest(valueArrays, inWidth, inHeight, outWidth, outHeight) {
   const relX = inWidth / outWidth;
@@ -34,18 +40,23 @@ export function resampleNearest(valueArrays, inWidth, inHeight, outWidth, outHei
 
 // simple linear interpolation, code from:
 // https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
+/**
+ * @param {number} v0
+ * @param {number} v1
+ * @param {number} t
+ */
 function lerp(v0, v1, t) {
   return ((1 - t) * v0) + (t * v1);
 }
 
 /**
  * Resample the input arrays using bilinear interpolation.
- * @param {TypedArray[]} valueArrays The input arrays to resample
+ * @param {import("./geotiff").TypedArray[]} valueArrays The input arrays to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
  * @param {number} outHeight The desired height of the output rasters
- * @returns {TypedArray[]} The resampled rasters
+ * @returns {import("./geotiff").TypedArray[]} The resampled rasters
  */
 export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHeight) {
   const relX = inWidth / outWidth;
@@ -85,13 +96,13 @@ export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHe
 
 /**
  * Resample the input arrays using the selected resampling method.
- * @param {TypedArray[]} valueArrays The input arrays to resample
+ * @param {import("./geotiff").TypedArray[]} valueArrays The input arrays to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
  * @param {number} outHeight The desired height of the output rasters
  * @param {string} [method = 'nearest'] The desired resampling method
- * @returns {TypedArray[]} The resampled rasters
+ * @returns {import("./geotiff").TypedArray[]} The resampled rasters
  */
 export function resample(valueArrays, inWidth, inHeight, outWidth, outHeight, method = 'nearest') {
   switch (method.toLowerCase()) {
@@ -107,14 +118,14 @@ export function resample(valueArrays, inWidth, inHeight, outWidth, outHeight, me
 
 /**
  * Resample the pixel interleaved input array using nearest neighbor value selection.
- * @param {TypedArray} valueArrays The input arrays to resample
+ * @param {import("./geotiff").TypedArray} valueArray The input array to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
  * @param {number} outHeight The desired height of the output rasters
  * @param {number} samples The number of samples per pixel for pixel
  *                         interleaved data
- * @returns {TypedArray} The resampled raster
+ * @returns {import("./geotiff").TypedArray} The resampled raster
  */
 export function resampleNearestInterleaved(
   valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
@@ -137,14 +148,14 @@ export function resampleNearestInterleaved(
 
 /**
  * Resample the pixel interleaved input array using bilinear interpolation.
- * @param {TypedArray} valueArrays The input arrays to resample
+ * @param {import("./geotiff").TypedArray} valueArray The input array to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
  * @param {number} outHeight The desired height of the output rasters
  * @param {number} samples The number of samples per pixel for pixel
  *                         interleaved data
- * @returns {TypedArray} The resampled raster
+ * @returns {import("./geotiff").TypedArray} The resampled raster
  */
 export function resampleBilinearInterleaved(
   valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
@@ -184,7 +195,7 @@ export function resampleBilinearInterleaved(
 
 /**
  * Resample the pixel interleaved input array using the selected resampling method.
- * @param {TypedArray} valueArray The input array to resample
+ * @param {import("./geotiff").TypedArray} valueArray The input array to resample
  * @param {number} inWidth The width of the input rasters
  * @param {number} inHeight The height of the input rasters
  * @param {number} outWidth The desired width of the output rasters
@@ -192,7 +203,7 @@ export function resampleBilinearInterleaved(
  * @param {number} samples The number of samples per pixel for pixel
  *                                 interleaved data
  * @param {string} [method = 'nearest'] The desired resampling method
- * @returns {TypedArray} The resampled rasters
+ * @returns {import("./geotiff").TypedArray} The resampled rasters
  */
 export function resampleInterleaved(valueArray, inWidth, inHeight, outWidth, outHeight, samples, method = 'nearest') {
   switch (method.toLowerCase()) {

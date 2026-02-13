@@ -7,6 +7,9 @@ import BaseDecoder from './basedecoder.js';
  * formats like WebP when supported.
  */
 export default class WebImageDecoder extends BaseDecoder {
+  /**
+   * @param {import('./basedecoder.js').BaseDecoderParameters} parameters
+   */
   constructor(parameters) {
     super(parameters);
     if (typeof createImageBitmap === 'undefined') {
@@ -16,6 +19,7 @@ export default class WebImageDecoder extends BaseDecoder {
     }
   }
 
+  /** @param {ArrayBuffer} buffer */
   async decodeBlock(buffer) {
     const blob = new Blob([buffer]);
     const imageBitmap = await createImageBitmap(blob);
@@ -31,7 +35,7 @@ export default class WebImageDecoder extends BaseDecoder {
 
     // Draw the image onto the canvas to extract the pixel data.
     // Note: createImageBitmap always returns RGBA data.
-    const ctx = canvas.getContext('2d');
+    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
     ctx.drawImage(imageBitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, imageBitmap.width, imageBitmap.height).data;
 

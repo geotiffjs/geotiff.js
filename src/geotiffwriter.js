@@ -8,8 +8,13 @@ import { tags, fieldTagTypes, fieldTypes, geoKeyNames } from './globals.js';
 import { assign, endsWith, forEach, invert, times, typeMap,
   isTypedUintArray, isTypedIntArray, isTypedFloatArray } from './utils.js';
 
+/** @import {GeotiffWriterMetadata} from './geotiff.js' */
+
+/** @typedef {(buff: Uint8Array, p: number) => number} Read */
+
 const tagName2Code = tags;
 const geoKeyName2Code = invert(geoKeyNames);
+/** @type {Record<number|string, keyof fieldTagTypes>} */
 const name2code = {};
 assign(name2code, tagName2Code);
 assign(name2code, geoKeyName2Code);
@@ -18,7 +23,33 @@ const typeName2byte = fieldTypes;
 // config variables
 const numBytesInIfd = 1000;
 
+/**
+ * @typedef {Object} BinBE
+ * @property {(data: Uint8Array, o: number) => number} nextZero
+ * @property {Read} readUshort
+ * @property {Read} readShort
+ * @property {Read} readInt
+ * @property {Read} readUint
+ * @property {(buff: Uint8Array, p: number, l: Array<number>) => string} readASCII
+ * @property {Read} readFloat
+ * @property {Read} readDouble
+ * @property {(buff: Uint8Array, p: number, n: number) => void} writeUshort
+ * @property {(buff: Uint8Array, p: number, n: number) => void} writeUint
+ * @property {(buff: Uint8Array, p: number, s: string) => void} writeASCII
+ * @property {Uint8Array} ui8
+ * @property {Float64Array} fl64
+ * @property {Float32Array} fl32
+ * @property {Uint32Array} ui32
+ * @property {Int32Array} i32
+ * @property {Int16Array} i16
+ * @property {(buff: Uint8Array, p: number, n: number) => void} writeDouble
+ */
+
+const ui8 = new Uint8Array(8);
+
+/** @type {BinBE} */
 const _binBE = {
+  /** @type {Read} */
   nextZero: (data, o) => {
     let oincr = o;
     while (data[oincr] !== 0) {
@@ -26,15 +57,18 @@ const _binBE = {
     }
     return oincr;
   },
+  /** @type {Read} */
   readUshort: (buff, p) => {
     return (buff[p] << 8) | buff[p + 1];
   },
+  /** @type {Read} */
   readShort: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 1];
     a[1] = buff[p + 0];
     return _binBE.i16[0];
   },
+  /** @type {Read} */
   readInt: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 3];
@@ -43,6 +77,7 @@ const _binBE = {
     a[3] = buff[p + 0];
     return _binBE.i32[0];
   },
+  /** @type {Read} */
   readUint: (buff, p) => {
     const a = _binBE.ui8;
     a[0] = buff[p + 3];
@@ -51,9 +86,16 @@ const _binBE = {
     a[3] = buff[p + 0];
     return _binBE.ui32[0];
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {Array<number>} l
+   * @returns {string}
+   */
   readASCII: (buff, p, l) => {
     return l.map((i) => String.fromCharCode(buff[p + i])).join('');
   },
+  /** @type {Read} */
   readFloat: (buff, p) => {
     const a = _binBE.ui8;
     times(4, (i) => {
@@ -61,6 +103,7 @@ const _binBE = {
     });
     return _binBE.fl32[0];
   },
+  /** @type {Read} */
   readDouble: (buff, p) => {
     const a = _binBE.ui8;
     times(8, (i) => {
@@ -68,39 +111,68 @@ const _binBE = {
     });
     return _binBE.fl64[0];
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {number} n
+   */
   writeUshort: (buff, p, n) => {
     buff[p] = (n >> 8) & 255;
     buff[p + 1] = n & 255;
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {number} n
+   */
   writeUint: (buff, p, n) => {
     buff[p] = (n >> 24) & 255;
     buff[p + 1] = (n >> 16) & 255;
     buff[p + 2] = (n >> 8) & 255;
     buff[p + 3] = (n >> 0) & 255;
   },
+  /**
+   * @param {Uint8Array} buff
+   * @param {number} p
+   * @param {string} s
+   */
   writeASCII: (buff, p, s) => {
     times(s.length, (i) => {
       buff[p + i] = s.charCodeAt(i);
     });
   },
-  ui8: new Uint8Array(8),
+  ui8,
+  fl64: new Float64Array(ui8.buffer),
+  fl32: new Float32Array(ui8.buffer),
+  ui32: new Uint32Array(ui8.buffer),
+  i32: new Int32Array(ui8.buffer),
+  i16: new Int16Array(ui8.buffer),
+  /**
+    * @param {Uint8Array} buff
+    * @param {number} p
+    * @param {number} n
+    */
+  writeDouble: (buff, p, n) => {
+    _binBE.fl64[0] = n;
+    times(8, (i) => {
+      buff[p + i] = _binBE.ui8[7 - i];
+    });
+  },
 };
 
-_binBE.fl64 = new Float64Array(_binBE.ui8.buffer);
-
-_binBE.writeDouble = (buff, p, n) => {
-  _binBE.fl64[0] = n;
-  times(8, (i) => {
-    buff[p + i] = _binBE.ui8[7 - i];
-  });
-};
-
+/**
+ * @param {BinBE} bin
+ * @param {Uint8Array} data
+ * @param {number} _offset
+ * @param {Record<keyof fieldTagTypes, any>} ifd
+ * @returns {[number, number]}
+ */
 const _writeIFD = (bin, data, _offset, ifd) => {
   let offset = _offset;
 
-  const keys = Object.keys(ifd).filter((key) => {
+  const keys = /** @type {Array<keyof fieldTagTypes>} */ (Object.keys(ifd).filter((key) => {
     return key !== undefined && key !== null && key !== 'undefined';
-  });
+  }).map(Number));
 
   bin.writeUshort(data, offset, keys.length);
   offset += 2;
@@ -108,18 +180,11 @@ const _writeIFD = (bin, data, _offset, ifd) => {
   let eoff = offset + (12 * keys.length) + 4;
 
   for (const key of keys) {
-    let tag = null;
-    if (typeof key === 'number') {
-      tag = key;
-    } else if (typeof key === 'string') {
-      tag = parseInt(key, 10);
-    }
-
-    const typeName = fieldTagTypes[tag];
+    const typeName = /** @type {keyof typeName2byte} */ (fieldTagTypes[key]);
     const typeNum = typeName2byte[typeName];
 
     if (typeName == null || typeName === undefined || typeof typeName === 'undefined') {
-      throw new Error(`unknown type of tag: ${tag}`);
+      throw new Error(`unknown type of tag: ${key}`);
     }
 
     let val = ifd[key];
@@ -137,7 +202,7 @@ const _writeIFD = (bin, data, _offset, ifd) => {
 
     const num = val.length;
 
-    bin.writeUshort(data, offset, tag);
+    bin.writeUshort(data, offset, key);
     offset += 2;
 
     bin.writeUshort(data, offset, typeNum);
@@ -186,6 +251,10 @@ const _writeIFD = (bin, data, _offset, ifd) => {
   return [offset, eoff];
 };
 
+/**
+ * @param {Array<Record<keyof fieldTagTypes, unknown>>} ifds
+ * @returns {ArrayBuffer}
+ */
 const encodeIfds = (ifds) => {
   const data = new Uint8Array(numBytesInIfd);
   let offset = 4;
@@ -226,6 +295,13 @@ const encodeIfds = (ifds) => {
   return result.buffer;
 };
 
+/**
+ * @param {Array<number>|import('./geotiff.js').TypedArray} values
+ * @param {number} width
+ * @param {number} height
+ * @param {GeotiffWriterMetadata} metadata
+ * @returns {ArrayBuffer}
+ */
 const encodeImage = (values, width, height, metadata) => {
   if (height === undefined || height === null) {
     throw new Error(`you passed into encodeImage a width of type ${height}`);
@@ -235,6 +311,7 @@ const encodeImage = (values, width, height, metadata) => {
     throw new Error(`you passed into encodeImage a width of type ${width}`);
   }
 
+  /** @type {Record<number|string, Array<number|string>|number|string|undefined>} */
   const ifd = {
     256: [width], // ImageWidth
     257: [height], // ImageLength
@@ -246,14 +323,14 @@ const encodeImage = (values, width, height, metadata) => {
   if (metadata) {
     for (const i in metadata) {
       if (metadata.hasOwnProperty(i)) {
-        ifd[i] = metadata[i];
+        ifd[i] = metadata[/** @type {keyof GeotiffWriterMetadata} */ (i)];
       }
     }
   }
 
   const prfx = new Uint8Array(encodeIfds([ifd]));
 
-  const dataType = values.constructor.name;
+  const dataType = /** @type {keyof typeMap} */ (values.constructor.name);
   const TypedArray = typeMap[dataType];
 
   // default for Float64
@@ -300,7 +377,13 @@ const encodeImage = (values, width, height, metadata) => {
   return data.buffer;
 };
 
+/**
+ * @template T
+ * @param {Record<number|string, T>} input
+ * @returns {Record<number|string, T>}
+ */
 const convertToTids = (input) => {
+  /** @type {Record<number|string, T>} */
   const result = {};
   for (const key in input) {
     if (key !== 'StripOffsets') {
@@ -313,41 +396,66 @@ const convertToTids = (input) => {
   return result;
 };
 
+/**
+ * @template T
+ * @param {T} input
+ * @returns {T extends any[] ? T : T[]}
+ */
 const toArray = (input) => {
   if (Array.isArray(input)) {
-    return input;
+    return /** @type {T extends any[] ? T : T[]} */ (input);
   }
-  return [input];
+  return /** @type {T extends any[] ? T : T[]} */ ([input]);
 };
 
-const metadataDefaults = [
-  ['Compression', 1], // no compression
-  ['PlanarConfiguration', 1],
-  ['ExtraSamples', 0],
-];
+/** @type {Partial<GeotiffWriterMetadata>} */
+const metadataDefaults = {
+  Compression: 1, // no compression
+  PlanarConfiguration: 1,
+  ExtraSamples: 0,
+};
 
+/**
+ * @param {Array<number>|Array<Array<Array<number>>>|import('./geotiff.js').TypedArray} data
+ * @param {GeotiffWriterMetadata} metadata
+ * @returns {ArrayBuffer}
+ */
 export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
 
+  /** @type {number} */
   let height;
+  /** @type {number} */
   let numBands;
+  /** @type {number} */
   let width;
+  /** @type {Array<number>} */
   let flattenedValues;
 
   if (isFlattened) {
-    height = metadata.height || metadata.ImageLength;
-    width = metadata.width || metadata.ImageWidth;
-    numBands = data.length / (height * width);
-    flattenedValues = data;
+    const arrayFlat = /** @type {Array<number>} */ (data);
+    const metaHeight = metadata.height || metadata.ImageLength;
+    if (metaHeight === undefined || typeof metaHeight !== 'number') {
+      throw new Error('height is required to be a number in metadata if data is a flat array');
+    }
+    height = metaHeight;
+    const metaWidth = metadata.width || metadata.ImageWidth;
+    if (metaWidth === undefined || typeof metaWidth !== 'number') {
+      throw new Error('width is required to be a number in metadata if data is a flat array');
+    }
+    width = metaWidth;
+    numBands = arrayFlat.length / (height * width);
+    flattenedValues = arrayFlat;
   } else {
-    numBands = data.length;
-    height = data[0].length;
-    width = data[0][0].length;
+    const array3d = /** @type {Array<Array<Array<number>>>} */ (data);
+    numBands = array3d.length;
+    height = array3d[0].length;
+    width = array3d[0][0].length;
     flattenedValues = [];
     times(height, (rowIndex) => {
       times(width, (columnIndex) => {
         times(numBands, (bandIndex) => {
-          flattenedValues.push(data[bandIndex][rowIndex][columnIndex]);
+          flattenedValues.push(array3d[bandIndex][rowIndex][columnIndex]);
         });
       });
     });
@@ -363,49 +471,55 @@ export function writeGeotiff(data, metadata) {
   if (!metadata.BitsPerSample) {
     let bitsPerSample = 8;
     if (ArrayBuffer.isView(flattenedValues)) {
-      bitsPerSample = 8 * flattenedValues.BYTES_PER_ELEMENT;
+      bitsPerSample = 8 * Object.getPrototypeOf(flattenedValues).BYTES_PER_ELEMENT;
     }
     metadata.BitsPerSample = times(numBands, () => bitsPerSample);
   }
 
-  metadataDefaults.forEach((tag) => {
-    const key = tag[0];
-    if (!metadata[key]) {
-      const value = tag[1];
-      metadata[key] = value;
-    }
-  });
+  const finalMetadata = metadata;
+  if (!('Compression' in finalMetadata)) {
+    finalMetadata.Compression = metadataDefaults.Compression;
+  }
+  if (!('PlanarConfiguration' in finalMetadata)) {
+    finalMetadata.PlanarConfiguration = metadataDefaults.PlanarConfiguration;
+  }
+  if (!('ExtraSamples' in finalMetadata)) {
+    finalMetadata.ExtraSamples = metadataDefaults.ExtraSamples;
+  }
 
   // The color space of the image data.
   // 1=black is zero and 2=RGB.
-  if (!metadata.PhotometricInterpretation) {
-    metadata.PhotometricInterpretation = metadata.BitsPerSample.length === 3 ? 2 : 1;
+  if (!finalMetadata.PhotometricInterpretation) {
+    if (!Array.isArray(finalMetadata.BitsPerSample)) {
+      throw new Error('BitsPerSample must be an array when PhotometricInterpretation is not provided');
+    }
+    finalMetadata.PhotometricInterpretation = finalMetadata.BitsPerSample.length === 3 ? 2 : 1;
   }
 
   // The number of components per pixel.
-  if (!metadata.SamplesPerPixel) {
-    metadata.SamplesPerPixel = [numBands];
+  if (!finalMetadata.SamplesPerPixel) {
+    finalMetadata.SamplesPerPixel = [numBands];
   }
 
-  if (!metadata.StripByteCounts) {
+  if (!finalMetadata.StripByteCounts) {
     // we are only writing one strip
 
     // default for Float64
     let elementSize = 8;
 
     if (ArrayBuffer.isView(flattenedValues)) {
-      elementSize = flattenedValues.BYTES_PER_ELEMENT;
+      elementSize = Object.getPrototypeOf(flattenedValues).BYTES_PER_ELEMENT;
     }
 
-    metadata.StripByteCounts = [numBands * elementSize * height * width];
+    finalMetadata.StripByteCounts = [numBands * elementSize * height * width];
   }
 
-  if (!metadata.ModelPixelScale && !metadata.ModelTransformation) {
+  if (!finalMetadata.ModelPixelScale && !finalMetadata.ModelTransformation) {
     // assumes raster takes up exactly the whole globe
-    metadata.ModelPixelScale = [360 / width, 180 / height, 0];
+    finalMetadata.ModelPixelScale = [360 / width, 180 / height, 0];
   }
 
-  if (!metadata.SampleFormat) {
+  if (!finalMetadata.SampleFormat) {
     let sampleFormat = 1;
     if (isTypedFloatArray(flattenedValues)) {
       sampleFormat = 3;
@@ -416,53 +530,63 @@ export function writeGeotiff(data, metadata) {
     if (isTypedUintArray(flattenedValues)) {
       sampleFormat = 1;
     }
-    metadata.SampleFormat = times(numBands, () => sampleFormat);
+    finalMetadata.SampleFormat = times(numBands, () => sampleFormat);
   }
 
   // if didn't pass in projection information, assume the popular 4326 "geographic projection"
-  if (!metadata.hasOwnProperty('GeographicTypeGeoKey') && !metadata.hasOwnProperty('ProjectedCSTypeGeoKey')) {
-    metadata.GeographicTypeGeoKey = 4326;
-    if (!metadata.ModelTransformation) {
-      metadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
+  if (!finalMetadata.hasOwnProperty('GeographicTypeGeoKey') && !finalMetadata.hasOwnProperty('ProjectedCSTypeGeoKey')) {
+    finalMetadata.GeographicTypeGeoKey = 4326;
+    if (!finalMetadata.ModelTransformation) {
+      finalMetadata.ModelTiepoint = [0, 0, 0, -180, 90, 0]; // raster fits whole globe
     }
-    metadata.GeogCitationGeoKey = 'WGS 84';
-    metadata.GTModelTypeGeoKey = 2;
+    finalMetadata.GeogCitationGeoKey = 'WGS 84';
+    finalMetadata.GTModelTypeGeoKey = 2;
   }
 
-  const geoKeys = Object.keys(metadata)
+  const geoKeys = Object.keys(finalMetadata)
     .filter((key) => endsWith(key, 'GeoKey'))
     .sort((a, b) => name2code[a] - name2code[b]);
 
   // If not provided, build GeoKeyDirectory as well as GeoAsciiParamsTag and GeoDoubleParamsTag
   // if GeoAsciiParams/GeoDoubleParams were passed in, we assume offsets are already correct
   // Spec http://geotiff.maptools.org/spec/geotiff2.4.html
-  if (!metadata.GeoKeyDirectory) {
+  if (!finalMetadata.GeoKeyDirectory) {
     // Only build ASCII / DOUBLE params if not provided
-    let geoAsciiParams = metadata.GeoAsciiParams || '';
+    let geoAsciiParams = finalMetadata.GeoAsciiParams || '';
+    if (typeof geoAsciiParams !== 'string') {
+      throw new Error('GeoAsciiParams must be a string if provided');
+    }
     let currentAsciiOffset = geoAsciiParams.length;
-    const geoDoubleParams = metadata.GeoDoubleParams || [];
+    const geoDoubleParams = finalMetadata.GeoDoubleParams || [];
+    if (!Array.isArray(geoDoubleParams)) {
+      throw new Error('GeoDoubleParams must be an array if provided');
+    }
     let currentDoubleIndex = geoDoubleParams.length;
 
     // Since geoKeys already sorted and filtered, do a single pass to append to corresponding directory for SHORT/ASCII/DOUBLE
     const GeoKeyDirectory = [1, 1, 0, 0];
     let validKeys = 0;
     geoKeys.forEach((geoKey) => {
-      const KeyID = Number(name2code[geoKey]);
+      const KeyID = name2code[geoKey];
       const tagType = fieldTagTypes[KeyID];
-      const val = metadata[geoKey];
+      const val = finalMetadata[/** @type {keyof import('./geotiff.js').GeotiffWriterMetadata} */ (geoKey)];
       if (val === undefined) {
         return;
       }
 
       let Count;
       let TIFFTagLocation;
+      /** @type {number} */
       let valueOffset;
       if (tagType === 'SHORT') {
         Count = 1;
         TIFFTagLocation = 0;
+        if (typeof val !== 'number') {
+          throw new Error(`GeoKey ${geoKey} with type SHORT must have a number value`);
+        }
         valueOffset = val;
       } else if (tagType === 'ASCII') {
-        if (!metadata.GeoAsciiParams) {
+        if (!finalMetadata.GeoAsciiParams) {
           const valStr = `${val.toString()}\u0000`;
           TIFFTagLocation = Number(name2code.GeoAsciiParams); // 34737
           valueOffset = currentAsciiOffset;
@@ -473,15 +597,15 @@ export function writeGeotiff(data, metadata) {
           return;
         }
       } else if (tagType === 'DOUBLE') {
-        if (!metadata.GeoDoubleParams) {
+        if (!finalMetadata.GeoDoubleParams) {
           const arr = toArray(val);
           TIFFTagLocation = Number(name2code.GeoDoubleParams); // 34736
           valueOffset = currentDoubleIndex;
           Count = arr.length;
-          arr.forEach((v) => {
+          for (const v of arr) {
             geoDoubleParams.push(Number(v));
             currentDoubleIndex++;
-          });
+          }
         } else {
           return;
         }
@@ -496,23 +620,23 @@ export function writeGeotiff(data, metadata) {
 
     // Write GeoKeyDirectory, GeoAsciiParams, GeoDoubleParams
     GeoKeyDirectory[3] = validKeys;
-    metadata.GeoKeyDirectory = GeoKeyDirectory;
-    if (!metadata.GeoAsciiParams && geoAsciiParams.length > 0) {
-      metadata.GeoAsciiParams = geoAsciiParams;
+    finalMetadata.GeoKeyDirectory = GeoKeyDirectory;
+    if (!finalMetadata.GeoAsciiParams && geoAsciiParams.length > 0) {
+      finalMetadata.GeoAsciiParams = geoAsciiParams;
     }
-    if (!metadata.GeoDoubleParams && geoDoubleParams.length > 0) {
-      metadata.GeoDoubleParams = geoDoubleParams;
+    if (!finalMetadata.GeoDoubleParams && geoDoubleParams.length > 0) {
+      finalMetadata.GeoDoubleParams = geoDoubleParams;
     }
   }
 
   // cleanup original GeoKeys metadata, because stored in GeoKeyDirectory tag
   for (const geoKey of geoKeys) {
-    if (metadata.hasOwnProperty(geoKey)) {
-      delete metadata[geoKey];
+    if (finalMetadata.hasOwnProperty(geoKey)) {
+      delete finalMetadata[/** @type {keyof import('./geotiff.js').GeotiffWriterMetadata} */ (geoKey)];
     }
   }
 
-  [
+  /** @type {const} */ ([
     'Compression',
     'ExtraSamples',
     'GeographicTypeGeoKey',
@@ -529,13 +653,13 @@ export function writeGeotiff(data, metadata) {
     'XPosition',
     'YPosition',
     'RowsPerStrip',
-  ].forEach((name) => {
-    if (metadata[name]) {
-      metadata[name] = toArray(metadata[name]);
+  ]).forEach((name) => {
+    if (finalMetadata[name]) {
+      finalMetadata[name] = toArray(finalMetadata[name]);
     }
   });
 
-  const encodedMetadata = convertToTids(metadata);
+  const encodedMetadata = convertToTids(finalMetadata);
 
   const outputImage = encodeImage(flattenedValues, width, height, encodedMetadata);
 
