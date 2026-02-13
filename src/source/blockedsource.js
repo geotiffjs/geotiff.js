@@ -170,7 +170,7 @@ export class BlockedSource extends BaseSource {
       const groups = this.groupBlocks(this.blockIdsToFetch);
 
       // start requesting slices of data
-      const groupRequests = this.source.fetch(groups, signal);
+      const groupRequests = groups.map(async (group) => ({ ...group, ...(await this.source.fetchSlice(group, signal)) }));
 
       for (let groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
         const group = groups[groupIndex];
@@ -179,7 +179,7 @@ export class BlockedSource extends BaseSource {
           // make an async IIFE for each block
           this.blockRequests.set(blockId, (async () => {
             try {
-              const response = (await groupRequests)[groupIndex];
+              const response = (await Promise.all(groupRequests))[groupIndex];
               const blockOffset = blockId * this.blockSize;
               const o = blockOffset - response.offset;
               const t = Math.min(o + this.blockSize, response.data.byteLength);
@@ -187,12 +187,12 @@ export class BlockedSource extends BaseSource {
               const block = new Block(
                 blockOffset,
                 data.byteLength,
-                data,
+                /** @type {ArrayBuffer} */ (data),
               );
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
             } catch (err) {
-              if (err.name === 'AbortError') {
+              if (err instanceof AbortError && err.name === 'AbortError') {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
@@ -213,7 +213,7 @@ export class BlockedSource extends BaseSource {
 
   /**
    *
-   * @param {Set} blockIds
+   * @param {Set<number>} blockIds
    * @returns {BlockGroup[]}
    */
   groupBlocks(blockIds) {
@@ -221,6 +221,7 @@ export class BlockedSource extends BaseSource {
     if (sortedBlockIds.length === 0) {
       return [];
     }
+    /** @type {number[]} */
     let current = [];
     let lastBlockId = null;
     const groups = [];

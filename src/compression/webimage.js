@@ -7,6 +7,9 @@ import BaseDecoder from './basedecoder.js';
  * formats like WebP when supported.
  */
 export default class WebImageDecoder extends BaseDecoder {
+  /**
+   * @param {import('./basedecoder.js').BaseDecoderParameters} parameters
+   */
   constructor(parameters) {
     super(parameters);
     if (typeof createImageBitmap === 'undefined') {
@@ -16,6 +19,7 @@ export default class WebImageDecoder extends BaseDecoder {
     }
   }
 
+  /** @param {ArrayBuffer} buffer */
   async decodeBlock(buffer) {
     const blob = new Blob([buffer]);
     const imageBitmap = await createImageBitmap(blob);

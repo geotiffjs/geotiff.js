@@ -1,3 +1,7 @@
+/**
+ * @param {Uint8Array|Uint16Array|Uint32Array} row
+ * @param {number} stride
+ */
 function decodeRowAcc(row, stride) {
   let length = row.length - stride;
   let offset = 0;
@@ -11,6 +15,11 @@ function decodeRowAcc(row, stride) {
   } while (length > 0);
 }
 
+/**
+ * @param {Uint8Array} row
+ * @param {number} stride
+ * @param {number} bytesPerSample
+ */
 function decodeRowFloatingPoint(row, stride, bytesPerSample) {
   let index = 0;
   let count = row.length;
@@ -32,6 +41,15 @@ function decodeRowFloatingPoint(row, stride, bytesPerSample) {
   }
 }
 
+/**
+ * @param {ArrayBufferLike} block
+ * @param {number} predictor
+ * @param {number} width
+ * @param {number} height
+ * @param {number[]} bitsPerSample
+ * @param {number} planarConfiguration
+ * @returns
+ */
 export function applyPredictor(block, predictor, width, height, bitsPerSample,
   planarConfiguration) {
   if (!predictor || predictor === 1) {

@@ -2,6 +2,12 @@
  * @module resample
  */
 
+/**
+ * @param {import("./geotiff").TypedArray} array
+ * @param {number} width
+ * @param {number} height
+ * @param {number} [samplesPerPixel=1]
+ */
 function copyNewSize(array, width, height, samplesPerPixel = 1) {
   return new (Object.getPrototypeOf(array).constructor)(width * height * samplesPerPixel);
 }
@@ -34,6 +40,11 @@ export function resampleNearest(valueArrays, inWidth, inHeight, outWidth, outHei
 
 // simple linear interpolation, code from:
 // https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
+/**
+ * @param {number} v0
+ * @param {number} v1
+ * @param {number} t
+ */
 function lerp(v0, v1, t) {
   return ((1 - t) * v0) + (t * v1);
 }

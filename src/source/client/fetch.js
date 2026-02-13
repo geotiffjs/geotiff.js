@@ -16,10 +16,10 @@ class FetchResponse extends BaseResponse {
 
   /**
    * @param {string} name
-   * @returns {string|null}
+   * @returns {string|undefined}
    */
   getHeader(name) {
-    return this.response.headers.get(name);
+    return this.response.headers.get(name) || undefined;
   }
 
   async getData() {
@@ -32,6 +32,10 @@ class FetchResponse extends BaseResponse {
 }
 
 export class FetchClient extends BaseClient {
+  /**
+   * @param {string} url
+   * @param {RequestCredentials} [credentials]
+   */
   constructor(url, credentials) {
     super(url);
     this.credentials = credentials;
