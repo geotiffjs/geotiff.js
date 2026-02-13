@@ -238,7 +238,6 @@ export const tagDictionary = /** @type {const} */ ({
  * Maps tag names to their numeric values
  * @type {Record<string, number>}
  */
-/** @type {Record<string, number>} */
 export const tags = {};
 
 /**
