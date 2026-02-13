@@ -85,7 +85,7 @@ class RemoteSource extends BaseSource {
       const first = [{
         data,
         offset: start,
-        length: end - start,
+        length: end + 1 - start,
       }];
 
       if (slices.length > 1) {
