@@ -124,6 +124,9 @@ function getMockMetaData(height, width) {
 
 describe('writeTypedArrays', () => {
   const dataLength = 512 * 512 * 4;
+  // configured in src/geotiffwriter.js
+  // TODO: maybe export this from there? or make it configurable/accessible?
+  const numBytesInIfd = 1000;
 
   const variousDataTypeExamples = [
     generateTestDataArray(0, 255, dataLength, true),
@@ -148,6 +151,10 @@ describe('writeTypedArrays', () => {
       };
 
       const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+      // geotiff binary size should match bitsPerSample * samplesPerPixel * numPixels + overhead
+      // non-Typed Array defaults to Float64Array (8 bytes per element)
+      const expectedSizeInBytes = ((originalValues.BYTES_PER_ELEMENT || 8) * dataLength) + numBytesInIfd;
+      expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
       const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
       const image = await newGeoTiff.getImage();
       const newValues = await image.readRasters();
@@ -155,6 +162,32 @@ describe('writeTypedArrays', () => {
       const originalValueArray = Array.from(originalValues);
       expect(valueArray).to.be.deep.equal(originalValueArray);
     });
+
+    it(`should write ${dataType} with multiple samples`, async () => {
+      const interleavedValues = new originalValues.constructor(originalValues.length * 2);
+      for (let i = 0; i < originalValues.length; ++i) {
+        interleavedValues[i * 2] = originalValues[i];
+        interleavedValues[(i * 2) + 1] = originalValues[i];
+      }
+      const metadata = {
+        height,
+        width,
+        SamplesPerPixel: 2,
+      };
+      const newGeoTiffAsBinaryData = await writeArrayBuffer(interleavedValues, metadata);
+
+      const expectedSizeInBytes = ((interleavedValues.BYTES_PER_ELEMENT || 8) * interleavedValues.length) + numBytesInIfd;
+      expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
+
+      const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+      const image = await newGeoTiff.getImage();
+      const newValues = await image.readRasters({ interleave: true });
+
+      const valueArray = toArrayRecursively(newValues);
+      expect(valueArray).to.be.deep.equal(Array.from(interleavedValues));
+    // It's usually not necessary, but doubling the timeout just in case CI decides to take 300% longer
+    // see https://github.com/geotiffjs/geotiff.js/pull/509#discussion_r2761241544
+    }).timeout(4000);
   }
 });
 
