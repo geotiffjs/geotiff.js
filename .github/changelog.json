@@ -10,15 +10,17 @@
     },
     {
       "title": "## Fixes",
-      "labels": ["fix", "bugfix"]
+      "labels": ["fix", "bugfix"],
+      "exclude_labels": ["dependencies", "ci", "build"]
     },
     {
       "title": "## Documentation",
-      "labels": ["documentation", "docs"]
+      "labels": ["documentation", "docs"],
+      "exclude_labels": ["feature", "enhancement", "fix", "bugfix"]
     },
     {
       "title": "## Infrastructure",
-      "labels": ["dependencies", "maintenance", "ci"]
+      "labels": ["dependencies", "maintenance", "ci", "build"]
     },
     {
       "title": "## Uncategorized",

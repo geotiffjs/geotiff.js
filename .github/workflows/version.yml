@@ -8,7 +8,7 @@
 # releasing to npm and GitHub releases.
 #
 # With pre* versions (prerelease, prepatch, etc.), the tag will be created with
-# --preid beta. Currently, they are released normally, to --tag latest on npm.
+# --preid beta. Currently, they are released with `--tag beta` to npmjs.
 
 name: Push new version
 
