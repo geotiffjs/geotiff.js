@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: Checkout branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         # see https://github.com/orgs/community/discussions/25617#discussioncomment-3248494
         token: ${{ secrets.VERSION_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
         # used by `git push` at the end
     - uses: actions/setup-node@v4
       with:
-        node-version: 22.x
+        node-version: 24
     - name: Configure git user
       # this step is necessary for `npm version` to succeed
       run: |

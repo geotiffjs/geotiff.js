@@ -17,7 +17,7 @@ jobs:
       pull-requests: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
@@ -34,7 +34,7 @@ jobs:
           tag: ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
       - name: Create release notes
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v5
+        uses: mikepenz/release-changelog-builder-action@v6
         with:
           configuration: '.github/changelog.json'
           ignorePreReleases: ${{ ! contains(github.ref_name, '-') }}
