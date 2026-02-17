@@ -26,6 +26,7 @@
   },
   "types": "dist-module/geotiff.d.ts",
   "files": [
+    "src",
     "dist-module",
     "dist-node",
     "dist-browser"
