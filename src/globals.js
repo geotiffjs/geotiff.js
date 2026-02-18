@@ -71,13 +71,13 @@ export function getFieldTypeSize(fieldType) {
  */
 
 export const tagDictionary = /** @type {const} */ ({
-  NewSubfileType: { tag: 254, type: fieldTypes.LONG },
-  SubfileType: { tag: 255, type: fieldTypes.SHORT },
-  ImageWidth: { tag: 256, type: fieldTypes.SHORT },
-  ImageLength: { tag: 257, type: fieldTypes.SHORT },
+  NewSubfileType: { tag: 254, type: fieldTypes.LONG, eager: true },
+  SubfileType: { tag: 255, type: fieldTypes.SHORT, eager: true },
+  ImageWidth: { tag: 256, type: fieldTypes.SHORT, eager: true },
+  ImageLength: { tag: 257, type: fieldTypes.SHORT, eager: true },
   BitsPerSample: { tag: 258, type: fieldTypes.SHORT, isArray: true, eager: true },
-  Compression: { tag: 259, type: fieldTypes.SHORT },
-  PhotometricInterpretation: { tag: 262, type: fieldTypes.SHORT },
+  Compression: { tag: 259, type: fieldTypes.SHORT, eager: true },
+  PhotometricInterpretation: { tag: 262, type: fieldTypes.SHORT, eager: true },
   Threshholding: { tag: 263, type: fieldTypes.SHORT },
   CellWidth: { tag: 264, type: fieldTypes.SHORT },
   CellLength: { tag: 265, type: fieldTypes.SHORT },
@@ -95,7 +95,7 @@ export const tagDictionary = /** @type {const} */ ({
   MaxSampleValue: { tag: 281, type: fieldTypes.SHORT, isArray: true },
   XResolution: { tag: 282, type: fieldTypes.RATIONAL },
   YResolution: { tag: 283, type: fieldTypes.RATIONAL },
-  PlanarConfiguration: { tag: 284, type: fieldTypes.SHORT },
+  PlanarConfiguration: { tag: 284, type: fieldTypes.SHORT, eager: true },
   PageName: { tag: 285, type: fieldTypes.ASCII },
   XPosition: { tag: 286, type: fieldTypes.RATIONAL },
   YPosition: { tag: 287, type: fieldTypes.RATIONAL },
@@ -117,8 +117,8 @@ export const tagDictionary = /** @type {const} */ ({
   PrimaryChromaticities: { tag: 319, type: fieldTypes.RATIONAL, isArray: true },
   ColorMap: { tag: 320, type: fieldTypes.SHORT, isArray: true },
   HalftoneHints: { tag: 321, type: fieldTypes.SHORT, isArray: true },
-  TileWidth: { tag: 322, type: fieldTypes.SHORT },
-  TileLength: { tag: 323, type: fieldTypes.SHORT },
+  TileWidth: { tag: 322, type: fieldTypes.SHORT, eager: true },
+  TileLength: { tag: 323, type: fieldTypes.SHORT, eager: true },
   TileOffsets: { tag: 324, type: fieldTypes.LONG, isArray: true },
   TileByteCounts: { tag: 325, type: fieldTypes.SHORT, isArray: true },
   InkSet: { tag: 332, type: fieldTypes.SHORT },
@@ -126,7 +126,7 @@ export const tagDictionary = /** @type {const} */ ({
   NumberOfInks: { tag: 334, type: fieldTypes.SHORT },
   DotRange: { tag: 336, type: fieldTypes.BYTE, isArray: true },
   TargetPrinter: { tag: 337, type: fieldTypes.ASCII },
-  ExtraSamples: { tag: 338, type: fieldTypes.BYTE, isArray: true },
+  ExtraSamples: { tag: 338, type: fieldTypes.BYTE, isArray: true, eager: true },
   SampleFormat: { tag: 339, type: fieldTypes.SHORT, isArray: true, eager: true },
   SMinSampleValue: { tag: 340, isArray: true },
   SMaxSampleValue: { tag: 341, isArray: true },
@@ -191,6 +191,15 @@ export const tagDictionary = /** @type {const} */ ({
 
 /** @typedef {keyof typeof tagDictionary} TagName */
 /** @typedef {typeof tagDictionary[keyof typeof tagDictionary]['tag']} Tag */
+/**
+ * @typedef {Extract<keyof typeof tagDictionary,
+ *   { [K in keyof typeof tagDictionary]: (typeof tagDictionary)[K] extends { eager: true }
+ *   ? K : never }[keyof typeof tagDictionary]>} EagerTagName
+ */
+/**
+ * @typedef {Extract<Tag, { [K in keyof typeof tagDictionary]: (typeof tagDictionary)[K] extends { eager: true }
+ *   ? (typeof tagDictionary)[K]['tag'] : never }[keyof typeof tagDictionary]>} EagerTag
+ */
 /** @typedef {Extract<typeof tagDictionary[keyof typeof tagDictionary], {type: any}>['type']} TagType */
 
 /**

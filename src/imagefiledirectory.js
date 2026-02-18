@@ -306,9 +306,9 @@ export class ImageFileDirectory {
 
   /**
    * Synchronously retrieves the value for a given tag. If it is deferred, an error is thrown.
-   * @template {import('./globals.js').TagName} [T=any]
-   * @param {T|number} tagIdentifier The field tag ID or name
-   * @returns {T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : unknown}
+   * @template {import('./globals.js').EagerTagName | import('./globals.js').EagerTag} [T=any]
+   * @param {T} tagIdentifier The field tag ID or name
+   * @returns {T extends import('./globals.js').TagName ? (import('./globals.js').TagValue<T> | undefined) : any}
    * the field value,
    * or undefined if it does not exist
    * @throws {Error} If the tag is deferred and requires asynchronous loading
@@ -414,7 +414,7 @@ export class ImageFileDirectory {
     const geoKeyDirectory = {};
     for (let i = 4; i <= rawGeoKeyDirectory[3] * 4; i += 4) {
       const key = (/** @type {Record<number, import('./globals.js').GeoKeyName>} */ (geoKeyNames))[rawGeoKeyDirectory[i]];
-      const location = rawGeoKeyDirectory[i + 1] || null;
+      const location = /** @type {import('./globals.js').EagerTag} */ (rawGeoKeyDirectory[i + 1]) || null;
       const count = rawGeoKeyDirectory[i + 2];
       const offset = rawGeoKeyDirectory[i + 3];
 
