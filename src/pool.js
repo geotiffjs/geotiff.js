@@ -15,6 +15,7 @@ class WorkerWrapper {
    * @param {Worker} worker the worker to wrap
    */
   constructor(worker) {
+    /** @type {Worker} */
     this.worker = worker;
     this.worker.addEventListener('message', (e) => this._onWorkerMessage(e));
     this.jobIdCounter = 0;
@@ -57,7 +58,7 @@ class WorkerWrapper {
    * @returns {Promise<{decoded: ArrayBuffer}>} a promise that gets resolved/rejected when a message with the same jobId is
    * received from the worker.
    */
-  submitJob(message, transferables = undefined) {
+  submitJob(message, transferables) {
     const jobId = this.newJobId();
     let resolve;
     let reject;
@@ -68,7 +69,11 @@ class WorkerWrapper {
     });
 
     this.jobs.set(jobId, { resolve, reject });
-    this.worker.postMessage({ ...message, jobId }, { transfer: transferables });
+    if (transferables) {
+      this.worker.postMessage({ ...message, jobId }, transferables);
+    } else {
+      this.worker.postMessage({ ...message, jobId });
+    }
     return promise;
   }
 
