@@ -253,7 +253,7 @@ class GeoTIFFImage {
    * @returns {Number} the number of samples per pixel
    */
   getSamplesPerPixel() {
-    return this.fileDirectory.getValue('SamplesPerPixel') || 1;
+    return this.fileDirectory.hasTag('SamplesPerPixel') ? this.fileDirectory.getValue('SamplesPerPixel') : 1;
   }
 
   /**
@@ -272,7 +272,7 @@ class GeoTIFFImage {
     if (this.isTiled) {
       return this.fileDirectory.getValue('TileLength') || 0;
     }
-    const rowsPerStrip = this.fileDirectory.getValue('RowsPerStrip');
+    const rowsPerStrip = this.fileDirectory.hasTag('RowsPerStrip') && this.fileDirectory.getValue('RowsPerStrip');
     if (rowsPerStrip) {
       return Math.min(rowsPerStrip, this.getHeight());
     }
@@ -936,7 +936,7 @@ class GeoTIFFImage {
    * @returns {number|null}
    */
   getGDALNoData() {
-    const string = this.fileDirectory.getValue('GDAL_NODATA');
+    const string = this.fileDirectory.hasTag('GDAL_NODATA') && this.fileDirectory.getValue('GDAL_NODATA');
     if (!string) {
       return null;
     }
