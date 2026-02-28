@@ -277,6 +277,9 @@ const encodeIfds = (ifds) => {
 
   ifds.forEach((ifd, i) => {
     const noffs = _writeIFD(bin, data, ifdo, ifd);
+    if (noffs[1] > numBytesInIfd) {
+      throw new Error('Writing of IFDs with more than 1000 bytes is not supported');
+    }
     ifdo = noffs[1];
     if (i < ifds.length - 1) {
       bin.writeUint(data, noffs[0], ifdo);
@@ -299,7 +302,7 @@ const encodeIfds = (ifds) => {
  * @param {Array<number>|import('./geotiff.js').TypedArray} values
  * @param {number} width
  * @param {number} height
- * @param {GeotiffWriterMetadata} metadata
+ * @param {Record<string | number, string | number | number[]>} metadata
  * @returns {ArrayBuffer}
  */
 const encodeImage = (values, width, height, metadata) => {
@@ -318,6 +321,10 @@ const encodeImage = (values, width, height, metadata) => {
     305: 'geotiff.js', // no array for ASCII(Z)
   };
 
+  /**
+   * @param {Array<number>} counts
+   * @returns
+   */
   function countsToOffsets(counts) {
     let total = 0;
     return counts.map((count) => {
@@ -327,8 +334,8 @@ const encodeImage = (values, width, height, metadata) => {
     });
   }
 
-  const stripByteCounts = metadata[279];
-  const tileByteCounts = metadata[325];
+  const stripByteCounts = /** @type {Array<number>} */ (metadata[279]);
+  const tileByteCounts = /** @type {Array<number> | undefined} */ (metadata[325]);
   if (tileByteCounts) {
     ifd[324] = countsToOffsets(tileByteCounts); // TileOffsets
   } else {
@@ -461,11 +468,11 @@ export function writeGeotiff(data, metadata) {
       throw new Error('width is required to be a number in metadata if data is a flat array');
     }
     width = metaWidth;
-    numBands = metadata.SamplesPerPixel ? metadata.SamplesPerPixel : data.length / (height * width);
+    numBands = metadata.SamplesPerPixel ? /** @type {number} */ (metadata.SamplesPerPixel) : data.length / (height * width);
     flattenedValues = arrayFlat;
   } else {
     const array3d = /** @type {Array<Array<Array<number>>>} */ (data);
-    numBands = metadata.SamplesPerPixel ? metadata.SamplesPerPixel : array3d.length;
+    numBands = metadata.SamplesPerPixel ? /** @type {number} */ (metadata.SamplesPerPixel) : array3d.length;
     height = array3d[0].length;
     width = array3d[0][0].length;
     flattenedValues = [];
@@ -528,7 +535,7 @@ export function writeGeotiff(data, metadata) {
   }
 
   if (!finalMetadata.StripByteCounts && !isTiled) {
-    // we are only writing one strip  
+    // we are only writing one strip
     // default for Float64
     let elementSize = 8;
 
@@ -679,14 +686,15 @@ export function writeGeotiff(data, metadata) {
     'YPosition',
     'TileWidth',
     'TileLength',
-  ].forEach((name) => {
+  ]).forEach((name) => {
     if (finalMetadata[name]) {
       finalMetadata[name] = toArray(finalMetadata[name]);
     }
   });
 
   if (isTiled === true) {
-    metadata.TileByteCounts = toArray(metadata.TileByteCounts);
+    const tileByteCounts = /** @type {Array<number>} */ (metadata.TileByteCounts);
+    metadata.TileByteCounts = toArray(tileByteCounts);
   } else {
     const name = 'RowsPerStrip';
     if (metadata[name]) {

@@ -1713,6 +1713,51 @@ describe('writeTests', () => {
     expect(fileDirectory.getValue('RowsPerStrip')).to.equal(undefined); // Make sure we don't confuse file readers
     expect(fileDirectory.getValue('StripByteCounts')).to.equal(undefined);
   });
+
+  it('should throw an error if trying to write an IFD with > 1000 bytes', async () => {
+    const originalRed = [
+      [255, 255, 255],
+      [1, 1, 1],
+      [1, 1, 1],
+    ];
+    const originalGreen = [
+      [1, 1, 1],
+      [255, 255, 255],
+      [1, 1, 1],
+    ];
+    const originalBlue = [
+      [1, 1, 1],
+      [1, 1, 1],
+      [255, 255, 255],
+    ];
+
+    const tileHeight = 2;
+    const tileWidth = 2;
+    const height = 3;
+    const width = 3;
+
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+
+    const tiled = arrangeTiledDataInterleaved(interleaved, width, height, tileWidth, tileHeight, 3);
+    const metadata = {
+      height,
+      width,
+      TileByteCounts: new Array(1000).fill(1),
+      TileWidth: tileWidth,
+      TileLength: tileHeight,
+      SamplesPerPixel: 3,
+    };
+    let error;
+    try {
+      await writeArrayBuffer(tiled, metadata);
+    } catch (err) {
+      error = err;
+    }
+    expect(error).to.be.an('Error');
+    expect(error.message).to.include('Writing of IFDs with more than 1000 bytes is not supported');
+  });
 });
 
 describe('BlockedSource Test', () => {
