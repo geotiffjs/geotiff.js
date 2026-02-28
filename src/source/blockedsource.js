@@ -7,9 +7,9 @@ class Block {
    *
    * @param {number} offset
    * @param {number} length
-   * @param {ArrayBuffer} [data]
+   * @param {ArrayBuffer} data
    */
-  constructor(offset, length, data = null) {
+  constructor(offset, length, data) {
     this.offset = offset;
     this.length = length;
     this.data = data;
@@ -74,8 +74,9 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   *
    * @param {import("./basesource").Slice[]} slices
+   * @param {AbortSignal} [signal]
+   * @return {Promise<ArrayBuffer[]>}
    */
   async fetch(slices, signal) {
     const blockRequests = [];
@@ -131,7 +132,7 @@ export class BlockedSource extends BaseSource {
     abortedBlockIds.forEach((id) => this.blockIdsToFetch.add(id));
     // start the retry of some blocks if required
     if (abortedBlockIds.length > 0 && signal && !signal.aborted) {
-      this.fetchBlocks(null);
+      this.fetchBlocks();
       for (const blockId of abortedBlockIds) {
         const block = this.blockRequests.get(blockId);
         if (!block) {
@@ -161,8 +162,7 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   *
-   * @param {AbortSignal} signal
+   * @param {AbortSignal} [signal]
    */
   fetchBlocks(signal) {
     // check if we still need to
@@ -170,7 +170,7 @@ export class BlockedSource extends BaseSource {
       const groups = this.groupBlocks(this.blockIdsToFetch);
 
       // start requesting slices of data
-      const groupRequests = this.source.fetch(groups, signal);
+      const groupRequests = groups.map(async (group) => ({ ...group, ...(await this.source.fetchSlice(group, signal)) }));
 
       for (let groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
         const group = groups[groupIndex];
@@ -179,7 +179,7 @@ export class BlockedSource extends BaseSource {
           // make an async IIFE for each block
           this.blockRequests.set(blockId, (async () => {
             try {
-              const response = (await groupRequests)[groupIndex];
+              const response = (await Promise.all(groupRequests))[groupIndex];
               const blockOffset = blockId * this.blockSize;
               const o = blockOffset - response.offset;
               const t = Math.min(o + this.blockSize, response.data.byteLength);
@@ -187,13 +187,12 @@ export class BlockedSource extends BaseSource {
               const block = new Block(
                 blockOffset,
                 data.byteLength,
-                data,
-                blockId,
+                /** @type {ArrayBuffer} */ (data),
               );
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
             } catch (err) {
-              if (err.name === 'AbortError') {
+              if (err instanceof AbortError && err.name === 'AbortError') {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
                 err.signal = signal;
@@ -214,7 +213,7 @@ export class BlockedSource extends BaseSource {
 
   /**
    *
-   * @param {Set} blockIds
+   * @param {Set<number>} blockIds
    * @returns {BlockGroup[]}
    */
   groupBlocks(blockIds) {
@@ -222,6 +221,7 @@ export class BlockedSource extends BaseSource {
     if (sortedBlockIds.length === 0) {
       return [];
     }
+    /** @type {number[]} */
     let current = [];
     let lastBlockId = null;
     const groups = [];
@@ -251,9 +251,9 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   *
    * @param {import("./basesource").Slice[]} slices
-   * @param {Map} blocks
+   * @param {Map<number, Block>} blocks
+   * @returns {ArrayBuffer[]}
    */
   readSliceData(slices, blocks) {
     return slices.map((slice) => {
@@ -268,6 +268,9 @@ export class BlockedSource extends BaseSource {
 
       for (let blockId = blockIdLow; blockId <= blockIdHigh; ++blockId) {
         const block = blocks.get(blockId);
+        if (!block) {
+          continue;
+        }
         const delta = block.offset - slice.offset;
         const topDelta = block.top - top;
         let blockInnerOffset = 0;

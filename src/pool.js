@@ -15,6 +15,7 @@ class WorkerWrapper {
    * @param {Worker} worker the worker to wrap
    */
   constructor(worker) {
+    /** @type {Worker} */
     this.worker = worker;
     this.worker.addEventListener('message', (e) => this._onWorkerMessage(e));
     this.jobIdCounter = 0;
@@ -37,6 +38,7 @@ class WorkerWrapper {
     return this.jobs.size;
   }
 
+  /** @param {MessageEvent} e */
   _onWorkerMessage(e) {
     const { jobId, error, ...result } = e.data;
     const job = this.jobs.get(jobId);
@@ -51,11 +53,12 @@ class WorkerWrapper {
 
   /**
    * Submit a job to the worker
-   * @param {Object} message the message to send to the worker. A "jobId" property will be added to this object.
-   * @param {Object[]} [transferables] an optional array of transferable objects to transfer to the worker.
-   * @returns {Promise} a promise that gets resolved/rejected when a message with the same jobId is received from the worker.
+   * @param {Record<string, unknown>} message the message to send to the worker. A "jobId" property will be added to this object.
+   * @param {Array<Transferable>} [transferables] an optional array of transferable objects to transfer to the worker.
+   * @returns {Promise<{decoded: ArrayBuffer}>} a promise that gets resolved/rejected when a message with the same jobId is
+   * received from the worker.
    */
-  submitJob(message, transferables = undefined) {
+  submitJob(message, transferables) {
     const jobId = this.newJobId();
     let resolve;
     let reject;
@@ -66,7 +69,11 @@ class WorkerWrapper {
     });
 
     this.jobs.set(jobId, { resolve, reject });
-    this.worker.postMessage({ ...message, jobId }, transferables);
+    if (transferables) {
+      this.worker.postMessage({ ...message, jobId }, transferables);
+    } else {
+      this.worker.postMessage({ ...message, jobId });
+    }
     return promise;
   }
 
@@ -128,6 +135,11 @@ class Pool {
     }
   }
 
+  /**
+   * @param {number} compression
+   * @param {import('./compression/basedecoder.js').BaseDecoderParameters} decoderParameters
+   * @returns {import('./geotiff.js').DecoderWorker}
+   */
   bindParameters(compression, decoderParameters) {
     return {
       decode: async (buffer) => {

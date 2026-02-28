@@ -1,6 +1,7 @@
 import BaseDecoder from './basedecoder.js';
 
 export default class PackbitsDecoder extends BaseDecoder {
+  /** @param {ArrayBuffer} buffer */
   decodeBlock(buffer) {
     const dataView = new DataView(buffer);
     const out = [];

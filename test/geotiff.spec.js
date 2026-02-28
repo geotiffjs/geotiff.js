@@ -124,6 +124,9 @@ function getMockMetaData(height, width) {
 
 describe('writeTypedArrays', () => {
   const dataLength = 512 * 512 * 4;
+  // configured in src/geotiffwriter.js
+  // TODO: maybe export this from there? or make it configurable/accessible?
+  const numBytesInIfd = 1000;
 
   const variousDataTypeExamples = [
     generateTestDataArray(0, 255, dataLength, true),
@@ -148,6 +151,10 @@ describe('writeTypedArrays', () => {
       };
 
       const newGeoTiffAsBinaryData = await writeArrayBuffer(originalValues, metadata);
+      // geotiff binary size should match bitsPerSample * samplesPerPixel * numPixels + overhead
+      // non-Typed Array defaults to Float64Array (8 bytes per element)
+      const expectedSizeInBytes = ((originalValues.BYTES_PER_ELEMENT || 8) * dataLength) + numBytesInIfd;
+      expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
       const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
       const image = await newGeoTiff.getImage();
       const newValues = await image.readRasters();
@@ -155,6 +162,32 @@ describe('writeTypedArrays', () => {
       const originalValueArray = Array.from(originalValues);
       expect(valueArray).to.be.deep.equal(originalValueArray);
     });
+
+    it(`should write ${dataType} with multiple samples`, async () => {
+      const interleavedValues = new originalValues.constructor(originalValues.length * 2);
+      for (let i = 0; i < originalValues.length; ++i) {
+        interleavedValues[i * 2] = originalValues[i];
+        interleavedValues[(i * 2) + 1] = originalValues[i];
+      }
+      const metadata = {
+        height,
+        width,
+        SamplesPerPixel: 2,
+      };
+      const newGeoTiffAsBinaryData = await writeArrayBuffer(interleavedValues, metadata);
+
+      const expectedSizeInBytes = ((interleavedValues.BYTES_PER_ELEMENT || 8) * interleavedValues.length) + numBytesInIfd;
+      expect(newGeoTiffAsBinaryData.byteLength).to.be.equal(expectedSizeInBytes);
+
+      const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+      const image = await newGeoTiff.getImage();
+      const newValues = await image.readRasters({ interleave: true });
+
+      const valueArray = toArrayRecursively(newValues);
+      expect(valueArray).to.be.deep.equal(Array.from(interleavedValues));
+    // It's usually not necessary, but doubling the timeout just in case CI decides to take 300% longer
+    // see https://github.com/geotiffjs/geotiff.js/pull/509#discussion_r2761241544
+    }).timeout(4000);
   }
 });
 
@@ -1710,7 +1743,7 @@ describe('BlockedSource Test', () => {
 
   it('Fetches all data in a single block', async () => {
     const blockedSource = new BlockedSource(null, { blockSize: 2 });
-    blockedSource.source = { fileSize: null, fetch: async () => [{ data: new Uint8Array(2).buffer, offset: 0 }] };
+    blockedSource.source = { fileSize: null, fetchSlice: async () => ({ data: new Uint8Array(2).buffer, offset: 0 }) };
     const data = await blockedSource.fetch([{ offset: 0, length: 2 }]);
     expect(data[0].byteLength).to.equal(2);
   });
@@ -1720,9 +1753,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 0, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1, 2]);
   });
@@ -1732,9 +1764,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 2, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([3, 4]);
   });
@@ -1744,9 +1775,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 0, length: 1 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([1]);
   });
@@ -1756,9 +1786,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 3, length: 1 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([4]);
   });
@@ -1768,9 +1797,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 1, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
   });
@@ -1780,9 +1808,8 @@ describe('BlockedSource Test', () => {
     const data = new Uint8Array([1, 2, 3, 4, 5, 6]).buffer;
     blockedSource.source = {
       fileSize: null,
-      fetch: async () => [
-        { data, offset: 0 },
-      ] };
+      fetchSlice: async () => ({ data, offset: 0 }),
+    };
     const result = await blockedSource.fetch([{ offset: 1, length: 2 }, { offset: 3, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
     expect(Array.from(new Uint8Array(result[1]))).to.deep.equal([4, 5]);

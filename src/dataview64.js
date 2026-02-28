@@ -1,6 +1,9 @@
 import { getFloat16 } from '@petamoriken/float16';
 
 export default class DataView64 {
+  /**
+   * @param {ArrayBufferLike} arrayBuffer
+   */
   constructor(arrayBuffer) {
     this._dataView = new DataView(arrayBuffer);
   }
@@ -9,6 +12,11 @@ export default class DataView64 {
     return this._dataView.buffer;
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getUint64(offset, littleEndian) {
     const left = this.getUint32(offset, littleEndian);
     const right = this.getUint32(offset + 4, littleEndian);
@@ -34,7 +42,12 @@ export default class DataView64 {
     return combined;
   }
 
-  // adapted from https://stackoverflow.com/a/55338384/8060591
+  /**
+   * Adapted from https://stackoverflow.com/a/55338384/8060591
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getInt64(offset, littleEndian) {
     let value = 0;
     const isNegative = (this._dataView.getUint8(offset + (littleEndian ? 7 : 0)) & 0x80) > 0;
@@ -59,38 +72,81 @@ export default class DataView64 {
     return value;
   }
 
-  getUint8(offset, littleEndian) {
-    return this._dataView.getUint8(offset, littleEndian);
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
+  getUint8(offset) {
+    return this._dataView.getUint8(offset);
   }
 
-  getInt8(offset, littleEndian) {
-    return this._dataView.getInt8(offset, littleEndian);
+  /**
+   * @param {number} offset
+   * @returns {number}
+   */
+  getInt8(offset) {
+    return this._dataView.getInt8(offset);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getUint16(offset, littleEndian) {
     return this._dataView.getUint16(offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getInt16(offset, littleEndian) {
     return this._dataView.getInt16(offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getUint32(offset, littleEndian) {
     return this._dataView.getUint32(offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getInt32(offset, littleEndian) {
     return this._dataView.getInt32(offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getFloat16(offset, littleEndian) {
     return getFloat16(this._dataView, offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getFloat32(offset, littleEndian) {
     return this._dataView.getFloat32(offset, littleEndian);
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} littleEndian
+   * @returns {number}
+   */
   getFloat64(offset, littleEndian) {
     return this._dataView.getFloat64(offset, littleEndian);
   }

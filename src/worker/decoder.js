@@ -2,7 +2,7 @@
 /* eslint-disable import/no-mutable-exports */
 import { getDecoder } from '../compression/index.js';
 
-const worker = globalThis;
+const worker = /** @type {Worker} */ (/** @type {unknown} */ (globalThis));
 
 worker.addEventListener('message', async (e) => {
   const { compression, decoderParameters, buffer, ...extra } = e.data;
@@ -11,6 +11,10 @@ worker.addEventListener('message', async (e) => {
     const decoded = await decoder.decode(buffer);
     worker.postMessage({ decoded, ...extra }, [decoded]);
   } catch (error) {
-    worker.postMessage({ error: error.message, ...extra });
+    if (error instanceof Error) {
+      worker.postMessage({ error: error.message, ...extra });
+    } else {
+      worker.postMessage({ error: String(error), ...extra });
+    }
   }
 });

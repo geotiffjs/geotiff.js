@@ -6,15 +6,14 @@ import { FetchClient } from './client/fetch.js';
 import { XHRClient } from './client/xhr.js';
 import { HttpClient } from './client/http.js';
 
+/** @import { RemoteSourceOptions, BlockedSourceOptions } from '../geotiff.js' */
+
 class RemoteSource extends BaseSource {
   /**
-   *
-   * @param {BaseClient} client
-   * @param {object} headers
-   * @param {numbers} maxRanges
-   * @param {boolean} allowFullFile
+   * @param {import("../geotiff").BaseClient} client
+   * @param {RemoteSourceOptions} options
    */
-  constructor(client, headers, maxRanges, allowFullFile) {
+  constructor(client, { headers, maxRanges = 0, allowFullFile } = {}) {
     super();
     this.client = client;
     this.headers = headers;
@@ -24,14 +23,15 @@ class RemoteSource extends BaseSource {
   }
 
   /**
-   *
-   * @param {Slice[]} slices
+   * @param {import('./basesource.js').Slice[]} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<ArrayBufferLike[]>}
    */
   async fetch(slices, signal) {
     // if we allow multi-ranges, split the incoming request into that many sub-requests
     // and join them afterwards
     if (this.maxRanges >= slices.length) {
-      return this.fetchSlices(slices, signal);
+      return this.fetchSlices(slices, signal).then((results) => results.map((r) => r.data));
     } else if (this.maxRanges > 0 && slices.length > 1) {
       // TODO: split into multiple multi-range requests
 
@@ -46,16 +46,21 @@ class RemoteSource extends BaseSource {
 
     // otherwise make a single request for each slice
     return Promise.all(
-      slices.map((slice) => this.fetchSlice(slice, signal)),
+      slices.map(async (slice) => (await this.fetchSlice(slice, signal)).data),
     );
   }
 
+  /**
+   * @param {Array<import('./basesource.js').Slice>} slices
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<Array<import('./basesource.js').SliceWithData>>}
+   */
   async fetchSlices(slices, signal) {
     const response = await this.client.request({
       headers: {
         ...this.headers,
         Range: `bytes=${slices
-          .map(({ offset, length }) => `${offset}-${offset + length}`)
+          .map(({ offset, length }) => `${offset}-${offset + length - 1}`)
           .join(',')
         }`,
       },
@@ -76,10 +81,11 @@ class RemoteSource extends BaseSource {
 
       const { start, end, total } = parseContentRange(response.getHeader('content-range'));
       this._fileSize = total || null;
+      /** @type {import('./basesource.js').SliceWithData[]} */
       const first = [{
         data,
         offset: start,
-        length: end - start,
+        length: end + 1 - start,
       }];
 
       if (slices.length > 1) {
@@ -106,12 +112,17 @@ class RemoteSource extends BaseSource {
     }
   }
 
+  /**
+   * @param {import('./basesource.js').Slice} slice
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<import('./basesource.js').SliceWithData>}
+   */
   async fetchSlice(slice, signal) {
     const { offset, length } = slice;
     const response = await this.client.request({
       headers: {
         ...this.headers,
-        Range: `bytes=${offset}-${offset + length}`,
+        Range: `bytes=${offset}-${offset + length - 1}`,
       },
       signal,
     });
@@ -150,40 +161,65 @@ class RemoteSource extends BaseSource {
   }
 }
 
+/**
+ * @param {BaseSource} source
+ * @param {BlockedSourceOptions} blockedSourceOptions
+ * @returns {BaseSource}
+ */
 function maybeWrapInBlockedSource(source, { blockSize, cacheSize }) {
-  if (blockSize === null) {
+  if (blockSize === undefined) {
     return source;
   }
   return new BlockedSource(source, { blockSize, cacheSize });
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions & { credentials?: RequestCredentials}} [param1]
+ * @returns {BaseSource}
+ */
 export function makeFetchSource(url, { headers = {}, credentials, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new FetchClient(url, credentials);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new XHRClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {string} url
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const client = new HttpClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
+/**
+ * @param {import("../geotiff").BaseClient} client
+ * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
+ * @returns {BaseSource}
+ */
 export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
+  const source = new RemoteSource(client, { headers, maxRanges, allowFullFile });
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
 /**
  *
  * @param {string} url
- * @param {object} options
+ * @param {RemoteSourceOptions} options
  */
 export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
   if (typeof fetch === 'function' && !forceXHR) {

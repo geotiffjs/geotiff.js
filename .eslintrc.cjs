@@ -17,6 +17,7 @@ module.exports = {
     FinalizationRegistry: true,
   },
   rules: {
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'no-underscore-dangle': 0,
     'class-methods-use-this': 0,
     'no-plusplus': 0,
@@ -38,6 +39,7 @@ module.exports = {
       'WithStatement',
     ],
     'no-console': 0,
+    'no-continue': 0,
     'no-bitwise': 0,
     'max-classes-per-file': 0,
     'max-len': ['error', { code: 130 }],

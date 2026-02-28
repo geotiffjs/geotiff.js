@@ -1,16 +1,20 @@
-export function assign(target, source) {
+export function assign<
+  T extends Record<string, unknown>,
+  S extends Record<string, unknown>,
+>(target: T, source: S): T & S {
   for (const key in source) {
     if (source.hasOwnProperty(key)) {
-      target[key] = source[key];
+      (target as Record<string, unknown>)[key] = source[key];
     }
   }
+  return target as T & S;
 }
 
-export function chunk(iterable, length) {
-  const results = [];
+export function chunk<T>(iterable: ArrayLike<T>, length: number): T[][] {
+  const results: T[][] = [];
   const lengthOfIterable = iterable.length;
   for (let i = 0; i < lengthOfIterable; i += length) {
-    const chunked = [];
+    const chunked: T[] = [];
     for (let ci = i; ci < i + length; ci++) {
       chunked.push(iterable[ci]);
     }
@@ -19,7 +23,7 @@ export function chunk(iterable, length) {
   return results;
 }
 
-export function endsWith(string, expectedEnding) {
+export function endsWith(string: string, expectedEnding: string): boolean {
   if (string.length < expectedEnding.length) {
     return false;
   }
@@ -27,15 +31,20 @@ export function endsWith(string, expectedEnding) {
   return actualEnding === expectedEnding;
 }
 
-export function forEach(iterable, func) {
+export function forEach<T>(
+  iterable: ArrayLike<T>,
+  func: (item: T, index: number) => void,
+): void {
   const { length } = iterable;
   for (let i = 0; i < length; i++) {
     func(iterable[i], i);
   }
 }
 
-export function invert(oldObj) {
-  const newObj = {};
+export function invert<K extends string | number, V extends string | number>(
+  oldObj: Record<K, V>,
+): Record<V, K> {
+  const newObj = {} as Record<V, K>;
   for (const key in oldObj) {
     if (oldObj.hasOwnProperty(key)) {
       const value = oldObj[key];
@@ -45,24 +54,24 @@ export function invert(oldObj) {
   return newObj;
 }
 
-export function range(n) {
-  const results = [];
+export function range(n: number): number[] {
+  const results: number[] = [];
   for (let i = 0; i < n; i++) {
     results.push(i);
   }
   return results;
 }
 
-export function times(numTimes, func) {
-  const results = [];
+export function times<T>(numTimes: number, func: (index: number) => T): T[] {
+  const results: T[] = [];
   for (let i = 0; i < numTimes; i++) {
     results.push(func(i));
   }
   return results;
 }
 
-export function toArray(iterable) {
-  const results = [];
+export function toArray<T>(iterable: ArrayLike<T>): T[] {
+  const results: T[] = [];
   const { length } = iterable;
   for (let i = 0; i < length; i++) {
     results.push(iterable[i]);
@@ -70,15 +79,27 @@ export function toArray(iterable) {
   return results;
 }
 
-export function toArrayRecursively(input) {
-  if (input.length) {
+export function toArrayRecursively(input: unknown): unknown {
+  if (isArrayLike(input)) {
     return toArray(input).map(toArrayRecursively);
   }
   return input;
 }
 
-// copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js
-export function parseContentRange(headerValue) {
+function isArrayLike(v: unknown): v is ArrayLike<unknown> {
+  return Boolean(
+    typeof v === 'object' && v !== null && 'length' in v,
+    // v && typeof v === 'object' && 'length' in v && typeof (v as { length: unknown }).length === 'number',
+  );
+}
+
+/** Copied from https://github.com/academia-de-codigo/parse-content-range-header/blob/master/index.js */
+export function parseContentRange(headerValue: string): null | {
+  unit: string | null;
+  first: number | null;
+  last: number | null;
+  length: number | null;
+} {
   if (!headerValue) {
     return null;
   }
@@ -87,7 +108,8 @@ export function parseContentRange(headerValue) {
     throw new Error('invalid argument');
   }
 
-  const parseInt = (number) => Number.parseInt(number, 10);
+  const parseInt: (number: string) => number = (number) =>
+    Number.parseInt(number, 10);
 
   // Check for presence of unit
   let matches = headerValue.match(/^(\w*) /);
@@ -118,14 +140,16 @@ export function parseContentRange(headerValue) {
   return null;
 }
 
-/*
+/**
  * Promisified wrapper around 'setTimeout' to allow 'await'
+ * @param {number} [milliseconds]
+ * @returns {Promise<void>}
  */
-export async function wait(milliseconds) {
+export async function wait(milliseconds?: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-export function zip(a, b) {
+export function zip<T, U>(a: Iterable<T>, b: Iterable<U>): [T, U][] {
   const A = Array.isArray(a) ? a : Array.from(a);
   const B = Array.isArray(b) ? b : Array.from(b);
   return A.map((k, i) => [k, B[i]]);
@@ -133,9 +157,10 @@ export function zip(a, b) {
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 export class AbortError extends Error {
-  constructor(params) {
+  signal?: AbortSignal;
+  constructor(...args: any[]) {
     // Pass remaining arguments (including vendor specific ones) to parent constructor
-    super(params);
+    super(...args);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
@@ -143,11 +168,14 @@ export class AbortError extends Error {
     }
 
     this.name = 'AbortError';
+    this.signal = undefined;
   }
 }
 
 export class CustomAggregateError extends Error {
-  constructor(errors, message) {
+  errors: Error[];
+
+  constructor(errors: Error[], message: string) {
     super(message);
     this.errors = errors;
     this.message = message;
@@ -157,7 +185,9 @@ export class CustomAggregateError extends Error {
 
 export const AggregateError = CustomAggregateError;
 
-export function isTypedFloatArray(input) {
+export function isTypedFloatArray(
+  input: unknown,
+): input is Float32Array | Float64Array {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
     if (ctr === Float32Array || ctr === Float64Array) {
@@ -167,7 +197,9 @@ export function isTypedFloatArray(input) {
   return false;
 }
 
-export function isTypedIntArray(input) {
+export function isTypedIntArray(
+  input: unknown,
+): input is Int8Array | Int16Array | Int32Array {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
     if (ctr === Int8Array || ctr === Int16Array || ctr === Int32Array) {
@@ -177,10 +209,17 @@ export function isTypedIntArray(input) {
   return false;
 }
 
-export function isTypedUintArray(input) {
+export function isTypedUintArray(
+  input: unknown,
+): input is Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray {
   if (ArrayBuffer.isView(input)) {
     const ctr = input.constructor;
-    if (ctr === Uint8Array || ctr === Uint16Array || ctr === Uint32Array || ctr === Uint8ClampedArray) {
+    if (
+      ctr === Uint8Array ||
+      ctr === Uint16Array ||
+      ctr === Uint32Array ||
+      ctr === Uint8ClampedArray
+    ) {
       return true;
     }
   }

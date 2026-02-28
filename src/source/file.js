@@ -1,6 +1,10 @@
 import fs from 'fs';
 import { BaseSource } from './basesource.js';
 
+/**
+ * @param {number} fd
+ * @returns {Promise<void>}
+ */
 function closeAsync(fd) {
   return new Promise((resolve, reject) => {
     fs.close(fd, (err) => {
@@ -13,6 +17,12 @@ function closeAsync(fd) {
   });
 }
 
+/**
+ * @param {string} path
+ * @param {string} flags
+ * @param {number|undefined} mode
+ * @returns {Promise<number>}
+ */
 function openAsync(path, flags, mode = undefined) {
   return new Promise((resolve, reject) => {
     fs.open(path, flags, mode, (err, fd) => {
@@ -25,36 +35,56 @@ function openAsync(path, flags, mode = undefined) {
   });
 }
 
-function readAsync(...args) {
+/**
+ * @param {number} fd
+ * @param {Uint8Array} buffer
+ * @param {number} offset
+ * @param {number} length
+ * @param {number} position
+ * @returns {Promise<{bytesRead: number, buffer: Uint8Array}>}
+ */
+function readAsync(fd, buffer, offset, length, position) {
   return new Promise((resolve, reject) => {
-    fs.read(...args, (err, bytesRead, buffer) => {
+    fs.read(fd, buffer, offset, length, position, (err, bytesRead, outBuffer) => {
       if (err) {
         reject(err);
       } else {
-        resolve({ bytesRead, buffer });
+        resolve({ bytesRead, buffer: outBuffer });
       }
     });
   });
 }
 
 class FileSource extends BaseSource {
+  /**
+   * @param {string} path
+   */
   constructor(path) {
     super();
     this.path = path;
     this.openRequest = openAsync(path, 'r');
   }
 
-  async fetchSlice(slice) {
+  /**
+   * @param {import('./basesource.js').Slice} slice
+   * @param {AbortSignal} [_signal] not implemented
+   * @returns {Promise<import('./basesource.js').SliceWithData>}
+   */
+  async fetchSlice(slice, _signal) {
     // TODO: use `signal`
     const fd = await this.openRequest;
     const { buffer } = await readAsync(
       fd,
-      Buffer.alloc(slice.length),
+      new Uint8Array(slice.length),
       0,
       slice.length,
       slice.offset,
     );
-    return buffer.buffer;
+    return {
+      data: buffer.buffer,
+      offset: slice.offset,
+      length: slice.length,
+    };
   }
 
   async close() {
@@ -63,6 +93,7 @@ class FileSource extends BaseSource {
   }
 }
 
+/** @param {string} path */
 export function makeFileSource(path) {
   return new FileSource(path);
 }
