@@ -294,10 +294,8 @@ export class ImageFileDirectory {
   }
 
   /**
-   * @template {import('./globals.js').TagName} [T=any]
-   * @param {T|number} tagIdentifier The field tag ID or name
-   * @returns {this is { getValue(t: T): NonNullable<import('./globals.js').TagValue<T>> }
-   *   & import('./imagefiledirectory').ImageFileDirectory} whether the field exists (actualized or deferred)
+   * @param {import('./globals.js').TagName|number} tagIdentifier The field tag ID or name
+   * @returns {boolean} whether the field exists (actualized or deferred)
    */
   hasTag(tagIdentifier) {
     const tag = resolveTag(tagIdentifier);

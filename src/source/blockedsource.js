@@ -74,7 +74,7 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   * @param {import("./basesource").Slice[]} slices
+   * @param {import("./basesource.js").Slice[]} slices
    * @param {AbortSignal} [signal]
    * @return {Promise<ArrayBuffer[]>}
    */
@@ -251,7 +251,7 @@ export class BlockedSource extends BaseSource {
   }
 
   /**
-   * @param {import("./basesource").Slice[]} slices
+   * @param {import("./basesource.js").Slice[]} slices
    * @param {Map<number, Block>} blocks
    * @returns {ArrayBuffer[]}
    */
