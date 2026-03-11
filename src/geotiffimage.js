@@ -10,10 +10,10 @@ import { fromWhiteIsZero, fromBlackIsZero, fromPalette, fromCMYK, fromYCbCr, fro
 import { getDecoder, getDecoderParameters } from './compression/index.js';
 import { resample, resampleInterleaved } from './resample.js';
 
-/** @import {DecoderWorker, TypedArray} from "./geotiff" */
-/** @import {ReadRasterResult} from "./geotiff" */
-/** @import {ReadRastersOptions} from "./geotiff" */
-/** @import {ReadRGBOptions} from "./geotiff" */
+/** @import {DecoderWorker, TypedArray} from "./geotiff.js" */
+/** @import {ReadRasterResult} from "./geotiff.js" */
+/** @import {ReadRastersOptions} from "./geotiff.js" */
+/** @import {ReadRGBOptions} from "./geotiff.js" */
 
 /**
  * @param {Array<number>|TypedArray} array
@@ -195,7 +195,7 @@ function normalizeArray(inBuffer, format, planarConfiguration, samplesPerPixel, 
 class GeoTIFFImage {
   /**
    * @constructor
-   * @param {import("./imagefiledirectory").ImageFileDirectory} fileDirectory The parsed file directory
+   * @param {import("./imagefiledirectory.js").ImageFileDirectory} fileDirectory The parsed file directory
    * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
    * @param {Boolean} cache Whether or not decoded tiles shall be cached
    * @param {import('./source/basesource.js').BaseSource} source The datasource to read from
@@ -218,7 +218,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the associated parsed file directory.
-   * @returns {import("./imagefiledirectory").ImageFileDirectory} the parsed file directory
+   * @returns {import("./imagefiledirectory.js").ImageFileDirectory} the parsed file directory
    */
   getFileDirectory() {
     return this.fileDirectory;
@@ -250,15 +250,15 @@ class GeoTIFFImage {
 
   /**
    * Returns the number of samples per pixel.
-   * @returns {Number} the number of samples per pixel
+   * @returns {number} the number of samples per pixel
    */
   getSamplesPerPixel() {
-    return this.fileDirectory.hasTag('SamplesPerPixel') ? this.fileDirectory.getValue('SamplesPerPixel') : 1;
+    return this.fileDirectory.getValue('SamplesPerPixel') ?? 1;
   }
 
   /**
    * Returns the width of each tile.
-   * @returns {Number} the width of each tile
+   * @returns {number} the width of each tile
    */
   getTileWidth() {
     return this.isTiled ? (this.fileDirectory.getValue('TileWidth') || 0) : this.getWidth();
@@ -266,7 +266,7 @@ class GeoTIFFImage {
 
   /**
    * Returns the height of each tile.
-   * @returns {Number} the height of each tile
+   * @returns {number} the height of each tile
    */
   getTileHeight() {
     if (this.isTiled) {
@@ -397,7 +397,7 @@ class GeoTIFFImage {
    * @param {Number} x the strip or tile x-offset
    * @param {Number} y the tile y-offset (0 for stripped images)
    * @param {Number} sample the sample to get for separated samples
-   * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {DecoderWorker|import("./geotiff.js").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
    *                               to be aborted
    * @returns {Promise.<{x: number, y: number, sample: number, data: ArrayBufferLike}>} the decoded strip or tile
@@ -478,7 +478,7 @@ class GeoTIFFImage {
    * @param {Array<number>} samples The selected samples (0-based indices)
    * @param {TypedArray|TypedArray[]} valueArrays The array(s) to write into
    * @param {boolean|undefined} interleave Whether or not to write in an interleaved manner
-   * @param {DecoderWorker|import("./geotiff").BaseDecoder} poolOrDecoder the decoder or decoder pool
+   * @param {DecoderWorker|import("./geotiff.js").BaseDecoder} poolOrDecoder the decoder or decoder pool
    * @param {number} [width] the width of window to be read into
    * @param {number} [height] the height of window to be read into
    * @param {string} [resampleMethod] the resampling method to be used when interpolating
@@ -622,13 +622,13 @@ class GeoTIFFImage {
   /**
    * @overload
    * @param {ReadRastersOptions & {interleave: true}} options optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the decoded arrays as a promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
    * @overload
    * @param {ReadRastersOptions & {interleave: false}} options optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
@@ -640,7 +640,7 @@ class GeoTIFFImage {
   /**
    * @overload
    * @param {ReadRastersOptions} [options={}] optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayArrayWithDimensions>} the decoded arrays as a promise
    */
 
   /**
@@ -685,13 +685,15 @@ class GeoTIFFImage {
     let valueArrays;
     if (interleave) {
       const { fileDirectory } = this;
-      const format = fileDirectory.hasTag('SampleFormat')
-        ? Math.max.apply(null, Array.from(fileDirectory.getValue('SampleFormat'))) : 1;
+      const sampleFormat = fileDirectory.getValue('SampleFormat');
+      const format = sampleFormat
+        ? Math.max.apply(null, Array.from(sampleFormat)) : 1;
       if (format !== 1 && format !== 2 && format !== 3) {
         throw new Error('Unsupported sample format for interleaved data. Must be 1, 2, or 3.');
       }
-      const bitsPerSample = fileDirectory.hasTag('BitsPerSample')
-        ? Math.max.apply(null, Array.from(fileDirectory.getValue('BitsPerSample'))) : 8;
+      const bitsPerSample_ = fileDirectory.getValue('BitsPerSample');
+      const bitsPerSample = bitsPerSample_
+        ? Math.max.apply(null, Array.from(bitsPerSample_)) : 8;
       valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
       if (fillValue) {
         if (Array.isArray(fillValue)) {
@@ -727,13 +729,13 @@ class GeoTIFFImage {
   /**
    * @overload
    * @param {ReadRGBOptions & {interleave: true}} options optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayWithDimensions>} the RGB array as a Promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayWithDimensions>} the RGB array as a Promise
    */
 
   /**
    * @overload
    * @param {ReadRGBOptions & {interleave: false}} options optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayArrayWithDimensions>} the RGB array as a Promise
    */
 
   /**
@@ -745,7 +747,7 @@ class GeoTIFFImage {
   /**
    * @overload
    * @param {ReadRGBOptions} [options={}] optional parameters
-   * @returns {Promise<import("./geotiff").TypedArrayArrayWithDimensions>} the RGB array as a Promise
+   * @returns {Promise<import("./geotiff.js").TypedArrayArrayWithDimensions>} the RGB array as a Promise
    */
 
   /**
@@ -864,7 +866,7 @@ class GeoTIFFImage {
       data = [red, green, blue];
     }
 
-    const dataWithDimensions = /** @type {import("./geotiff").ReadRasterResult} */ (data);
+    const dataWithDimensions = /** @type {import("./geotiff.js").ReadRasterResult} */ (data);
 
     dataWithDimensions.width = raster.width;
     dataWithDimensions.height = raster.height;

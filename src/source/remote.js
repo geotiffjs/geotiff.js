@@ -10,7 +10,7 @@ import { HttpClient } from './client/http.js';
 
 class RemoteSource extends BaseSource {
   /**
-   * @param {import("../geotiff").BaseClient} client
+   * @param {import("../geotiff.js").BaseClient} client
    * @param {RemoteSourceOptions} options
    */
   constructor(client, { headers, maxRanges = 0, allowFullFile } = {}) {
@@ -207,7 +207,7 @@ export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile
 }
 
 /**
- * @param {import("../geotiff").BaseClient} client
+ * @param {import("../geotiff.js").BaseClient} client
  * @param {RemoteSourceOptions & BlockedSourceOptions} [param1]
  * @returns {BaseSource}
  */

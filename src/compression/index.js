@@ -3,7 +3,7 @@
 /**
  * @typedef {Object} RegistryEntry
  * @property {function():Promise<typeof BaseDecoder>} importFn
- * @property {function(import("../imagefiledirectory").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
+ * @property {function(import("../imagefiledirectory.js").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
  * @property {boolean} preferWorker
  */
 
@@ -12,7 +12,7 @@ const registry = new Map();
 
 /**
  * Default decoder parameter retrieval function
- * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+ * @param {import("../imagefiledirectory.js").ImageFileDirectory} fileDirectory
  * @returns {Promise<BaseDecoderParameters>}
  */
 async function defaultDecoderParameterFn(fileDirectory) {
@@ -37,7 +37,7 @@ async function defaultDecoderParameterFn(fileDirectory) {
  * Register a decoder for a specific compression method or a range of compressions
  * @param {(number|undefined|(number|undefined)[])} cases ids of the compression methods to register for
  * @param {function():Promise<typeof BaseDecoder>} importFn the function to import the decoder
- * @param {function(import("../imagefiledirectory").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
+ * @param {function(import("../imagefiledirectory.js").ImageFileDirectory):Promise<BaseDecoderParameters>} decoderParameterFn
  * @param {boolean} preferWorker_ Whether to prefer running the decoder in a worker
  */
 export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderParameterFn, preferWorker_ = true) {
@@ -113,7 +113,7 @@ const defaultDecoderDefinitions = [
     cases: 7,
     importFn: () => import('./jpeg.js').then((m) => m.default),
     /**
-     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     * @param {import("../imagefiledirectory.js").ImageFileDirectory} fileDirectory
      */
     decoderParameterFn: async (fileDirectory) => {
       return {
@@ -142,7 +142,7 @@ const defaultDecoderDefinitions = [
       })
       .then((m) => m.default),
     /**
-     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     * @param {import("../imagefiledirectory.js").ImageFileDirectory} fileDirectory
      */
     decoderParameterFn: async (fileDirectory) => {
       return {
@@ -166,7 +166,7 @@ const defaultDecoderDefinitions = [
     cases: 50001,
     importFn: () => import('./webimage.js').then((m) => m.default),
     /**
-     * @param {import("../imagefiledirectory").ImageFileDirectory} fileDirectory
+     * @param {import("../imagefiledirectory.js").ImageFileDirectory} fileDirectory
      */
     decoderParameterFn: async (fileDirectory) => {
       return {
