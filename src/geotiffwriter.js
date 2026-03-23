@@ -277,6 +277,9 @@ const encodeIfds = (ifds) => {
 
   ifds.forEach((ifd, i) => {
     const noffs = _writeIFD(bin, data, ifdo, ifd);
+    if (noffs[1] > numBytesInIfd) {
+      throw new Error('Writing of IFDs with more than 1000 bytes is not supported');
+    }
     ifdo = noffs[1];
     if (i < ifds.length - 1) {
       bin.writeUint(data, noffs[0], ifdo);
@@ -299,7 +302,7 @@ const encodeIfds = (ifds) => {
  * @param {Array<number>|import('./geotiff.js').TypedArray} values
  * @param {number} width
  * @param {number} height
- * @param {GeotiffWriterMetadata} metadata
+ * @param {Record<string | number, string | number | number[]>} metadata
  * @returns {ArrayBuffer}
  */
 const encodeImage = (values, width, height, metadata) => {
@@ -315,10 +318,30 @@ const encodeImage = (values, width, height, metadata) => {
   const ifd = {
     256: [width], // ImageWidth
     257: [height], // ImageLength
-    273: [numBytesInIfd], // strips offset
-    278: [height], // RowsPerStrip
     305: 'geotiff.js', // no array for ASCII(Z)
   };
+
+  /**
+   * @param {Array<number>} counts
+   * @returns
+   */
+  function countsToOffsets(counts) {
+    let total = 0;
+    return counts.map((count) => {
+      const value = numBytesInIfd + total;
+      total += count;
+      return value;
+    });
+  }
+
+  const stripByteCounts = /** @type {Array<number>} */ (metadata[279]);
+  const tileByteCounts = /** @type {Array<number> | undefined} */ (metadata[325]);
+  if (tileByteCounts) {
+    ifd[324] = countsToOffsets(tileByteCounts); // TileOffsets
+  } else {
+    ifd[273] = countsToOffsets(stripByteCounts); // StripOffsets;
+    ifd[278] = [height]; // RowsPerStrip, gets overwritten later if set in metadata.
+  }
 
   if (metadata) {
     for (const i in metadata) {
@@ -422,6 +445,7 @@ const metadataDefaults = {
  */
 export function writeGeotiff(data, metadata) {
   const isFlattened = typeof data[0] === 'number';
+  const isTiled = metadata.TileByteCounts !== undefined;
 
   /** @type {number} */
   let height;
@@ -444,11 +468,11 @@ export function writeGeotiff(data, metadata) {
       throw new Error('width is required to be a number in metadata if data is a flat array');
     }
     width = metaWidth;
-    numBands = arrayFlat.length / (height * width);
+    numBands = metadata.SamplesPerPixel ? /** @type {number} */ (metadata.SamplesPerPixel) : data.length / (height * width);
     flattenedValues = arrayFlat;
   } else {
     const array3d = /** @type {Array<Array<Array<number>>>} */ (data);
-    numBands = array3d.length;
+    numBands = metadata.SamplesPerPixel ? /** @type {number} */ (metadata.SamplesPerPixel) : array3d.length;
     height = array3d[0].length;
     width = array3d[0][0].length;
     flattenedValues = [];
@@ -467,6 +491,15 @@ export function writeGeotiff(data, metadata) {
   delete metadata.width;
 
   // consult https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
+
+  if (isTiled) {
+    if (metadata.SamplesPerPixel === undefined) {
+      throw new Error('SamplesPerPixel must be specified when writing tiled images');
+    }
+    if (metadata.TileWidth === undefined || metadata.TileLength === undefined) {
+      throw new Error('Both TileWidth and TileLength must be specified when writing tiled images');
+    }
+  }
 
   if (!metadata.BitsPerSample) {
     let bitsPerSample = 8;
@@ -501,9 +534,8 @@ export function writeGeotiff(data, metadata) {
     finalMetadata.SamplesPerPixel = [numBands];
   }
 
-  if (!finalMetadata.StripByteCounts) {
+  if (!finalMetadata.StripByteCounts && !isTiled) {
     // we are only writing one strip
-
     // default for Float64
     let elementSize = 8;
 
@@ -652,14 +684,25 @@ export function writeGeotiff(data, metadata) {
     'SamplesPerPixel',
     'XPosition',
     'YPosition',
-    'RowsPerStrip',
+    'TileWidth',
+    'TileLength',
   ]).forEach((name) => {
     if (finalMetadata[name]) {
       finalMetadata[name] = toArray(finalMetadata[name]);
     }
   });
 
-  const encodedMetadata = convertToTids(finalMetadata);
+  if (isTiled === true) {
+    const tileByteCounts = /** @type {Array<number>} */ (metadata.TileByteCounts);
+    metadata.TileByteCounts = toArray(tileByteCounts);
+  } else {
+    const name = 'RowsPerStrip';
+    if (metadata[name]) {
+      metadata[name] = toArray(metadata[name]);
+    }
+  }
+
+  const encodedMetadata = convertToTids(metadata);
 
   const outputImage = encodeImage(flattenedValues, width, height, encodedMetadata);
 
