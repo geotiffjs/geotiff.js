@@ -41,9 +41,9 @@ export class BlockedSource extends BaseSource {
   /**
    *
    * @param {BaseSource} source The underlying source that shall be blocked and cached
-   * @param {object} options
-   * @param {number} [options.blockSize]
-   * @param {number} [options.cacheSize]
+   * @param {Object} options
+   * @param {number} [options.blockSize=65536] Block size.
+   * @param {number} [options.cacheSize=100] The number of blocks to cache.
    */
   constructor(source, { blockSize = 65536, cacheSize = 100 } = {}) {
     super();

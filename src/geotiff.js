@@ -142,17 +142,13 @@ export { ImageFileDirectory } from './imagefiledirectory.js';
  */
 
 /**
- * @typedef {Object} BlockedSourceOptions
- * @property {number} [blockSize] Block size for a BlockedSource.
- * @property {number} [cacheSize=100] The number of blocks to cache.
- */
-
-/**
- * @typedef {Object} RemoteSourceOptions
+ * @typedef {Object} SourceOptions
  * @property {Record<string, string>} [headers={}] Additional headers to add to each request
  * @property {number} [maxRanges=0] Maximum number of ranges to request in a single HTTP request. 0 means no multi-range requests.
  * @property {boolean} [allowFullFile=false] Whether to allow full file responses when requesting ranges
  * @property {boolean} [forceXHR=false] When the Fetch API would be used, force using XMLHttpRequest instead.
+ * @property {number} [blockSize=65536] Block size for a BlockedSource. Set to `null` to disable blocking and caching.
+ * @property {number} [cacheSize=100] The number of blocks to cache.
  */
 
 /**
@@ -698,27 +694,29 @@ export { MultiGeoTIFF };
 /**
  * Creates a new GeoTIFF from a remote URL.
  * @param {string} url The URL to access the image from
- * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
+ * @param {SourceOptions} [options] Additional options to pass to the source.
  *                           See {@link makeRemoteSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal);
+  const remoteOptions = { blockSize: 65536, ...options };
+  return GeoTIFF.fromSource(makeRemoteSource(url, remoteOptions), undefined, signal);
 }
 
 /**
  * Creates a new GeoTIFF from a custom {@link BaseClient}.
  * @param {BaseClient} client The client.
- * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
- *                           See {@link makeRemoteSource} for details.
+ * @param {SourceOptions} [options] Additional options to pass to the source.
+ *                           See {@link makeCustomSource} for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
  *                               to be aborted
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromCustomClient(client, options = {}, signal) {
-  return GeoTIFF.fromSource(makeCustomSource(client, options), undefined, signal);
+  const customOptions = { blockSize: 65536, ...options };
+  return GeoTIFF.fromSource(makeCustomSource(client, customOptions), undefined, signal);
 }
 
 /**
@@ -767,7 +765,7 @@ export async function fromBlob(blob, signal) {
  * Construct a MultiGeoTIFF from the given URLs.
  * @param {string} mainUrl The URL for the main file.
  * @param {string[]} overviewUrls An array of URLs for the overview images.
- * @param {RemoteSourceOptions} [options] Additional options to pass to the source.
+ * @param {SourceOptions} [options] Additional options to pass to the source.
  *                           See [makeRemoteSource]{@link module:source.makeRemoteSource}
  *                           for details.
  * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
@@ -775,9 +773,10 @@ export async function fromBlob(blob, signal) {
  * @returns {Promise<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), undefined, signal);
+  const remoteOptions = { blockSize: 65536, ...options };
+  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, remoteOptions), undefined, signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options), undefined, signal)),
+    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, remoteOptions), undefined, signal)),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);
