@@ -1647,6 +1647,81 @@ describe('writeTests', () => {
     expect(fileDirectory.getValue('StripByteCounts')).to.equal(undefined);
   });
 
+  it('should read non-padded tiled INTERLEAVED rgb data tile size 3', async () => {
+    const originalRed = [
+      [1, 1, 1, 1],
+      [10, 10, 10, 10],
+      [100, 100, 100, 100],
+      [100, 100, 100, 100],
+    ];
+    const originalGreen = [
+      [2, 2, 2, 2],
+      [20, 20, 20, 20],
+      [200, 200, 200, 200],
+      [200, 200, 200, 200],
+    ];
+    const originalBlue = [
+      [3, 3, 3, 3],
+      [30, 30, 30, 30],
+      [255, 255, 255, 255],
+      [255, 255, 255, 255],
+    ];
+
+    const tileHeight = 3;
+    const tileWidth = 3;
+    const height = 4;
+    const width = 4;
+
+    const interleaved = originalRed.flatMap((row, rowIdx) => row.flatMap((value, colIdx) => [
+      value, originalGreen[rowIdx][colIdx], originalBlue[rowIdx][colIdx],
+    ]));
+
+    const tiled = arrangeTiledDataInterleaved(interleaved, width, height, tileWidth, tileHeight, 3, false);
+    const metadata = {
+      height,
+      width,
+      TileByteCounts: [27, 9, 9, 3],
+      TileWidth: tileWidth,
+      TileLength: tileHeight,
+      SamplesPerPixel: 3,
+    };
+
+    const newGeoTiffAsBinaryData = await writeArrayBuffer(tiled, metadata);
+    const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
+    const image = await newGeoTiff.getImage();
+    const newValues = await image.readRasters();
+    const red = chunk(newValues[0], 3);
+    const green = chunk(newValues[1], 3);
+    const blue = chunk(newValues[2], 3);
+    expect(normalize(red)).to.equal(normalize(originalRed));
+    expect(normalize(green)).to.equal(normalize(originalGreen));
+    expect(normalize(blue)).to.equal(normalize(originalBlue));
+
+    const geoKeys = image.getGeoKeys();
+    expect(geoKeys).to.be.an('object');
+    expect(geoKeys.GTModelTypeGeoKey).to.equal(2);
+    expect(geoKeys.GeographicTypeGeoKey).to.equal(4326);
+    expect(geoKeys.GeogCitationGeoKey).to.equal('WGS 84');
+
+    const { fileDirectory } = image;
+    expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
+    expect(fileDirectory.getValue('Compression')).to.equal(1);
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
+    expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
+    expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
+    expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
+    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1012,1018,1024]');
+    expect(toArray(fileDirectory.getValue('TileByteCounts')).toString()).to.equal('12,6,6,3');
+    expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
+    expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
+    expect(fileDirectory.getValue('RowsPerStrip')).to.equal(undefined); // Make sure we don't confuse file readers
+    expect(fileDirectory.getValue('StripByteCounts')).to.equal(undefined);
+  });
+
+
   it('Should write tiled data with double data type', async () => {
     const originalRed = [
       [255.5, 255.5, 255.5],
@@ -1838,6 +1913,13 @@ describe('writeTests', () => {
     expect(error).to.be.an('Error');
     expect(error.message).to.include('Writing of IFDs with more than 1000 bytes is not supported');
   });
+
+
+  it("Read the unpadded test jpg tiff", async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('test.tiff'));
+    const image = await tiff.getImage(0);
+    await image.readRGB({ interleave: true });
+  })
 });
 
 describe('BlockedSource Test', () => {
