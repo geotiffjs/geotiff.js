@@ -556,11 +556,13 @@ class GeoTIFFImage {
             let xTilePadPixels = 0;// missing tile padding X
             let yTilePadPixels = 0;// missing tile padding Y
 
+            let xOverhang = 0;
+            let yOverhang = 0;
             const expectedTileByteCount = bytesPerPixel * this.getBlockWidth() * this.getTileHeight();
             // This is AFTER the normalization step, so this is fair to assume.
             if (this.isTiled === true && expectedTileByteCount > dataView.byteLength) {
-              const xOverhang = (this.getWidth() % this.getBlockWidth());
-              const yOverhang = (this.getHeight() % this.getTileHeight());
+              xOverhang = (this.getWidth() % this.getBlockWidth());
+              yOverhang = (this.getHeight() % this.getTileHeight());
 
               const nXTileSteps = (this.getWidth() / this.getBlockWidth()) - 1;
               const nYTileSteps = (this.getHeight() / this.getTileHeight()) - 1;
@@ -575,10 +577,13 @@ class GeoTIFFImage {
               xTilePadPixels = isEdgeX ? xOverhang * bytesPerPixel : 0;
               yTilePadPixels = isEdgeY ? yOverhang * bytesPerPixel : 0;
               // Check if adding the bytes would make up for lack of padding.
+              let pad = (xTilePadPixels * this.getTileHeight()) + (yTilePadPixels * this.getTileWidth());
+              // Subtract corner overlap when both x and y padding exist
+              if (isEdgeX && isEdgeY) {
+                pad -= xOverhang * yOverhang * bytesPerPixel;
+              }
 
-              if (
-                expectedTileByteCount
-                !== dataView.byteLength + (xTilePadPixels * this.getTileHeight()) + (yTilePadPixels * this.getTileWidth())) {
+              if (expectedTileByteCount !== dataView.byteLength + pad) {
                 throw new Error('Block did not contain the expected number of bytes');
               }
             }
