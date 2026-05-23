@@ -597,7 +597,7 @@ class GeoTIFFImage {
 
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
-                const pixelOffset = (y * actualRowWidth + x) * bytesPerPixel;
+                const pixelOffset = ((y * actualRowWidth) + x) * bytesPerPixel;
                 const value = reader.call(
                   dataView, pixelOffset + srcSampleOffsets[si], littleEndian,
                 );

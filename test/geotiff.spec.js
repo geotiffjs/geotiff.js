@@ -1721,7 +1721,6 @@ describe('writeTests', () => {
     expect(fileDirectory.getValue('StripByteCounts')).to.equal(undefined);
   });
 
-
   it('Should write tiled data with double data type', async () => {
     const originalRed = [
       [255.5, 255.5, 255.5],
@@ -1914,12 +1913,11 @@ describe('writeTests', () => {
     expect(error.message).to.include('Writing of IFDs with more than 1000 bytes is not supported');
   });
 
-
-  it("Read the unpadded test jpg tiff", async () => {
+  it('Read the unpadded test jpg tiff', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('test.tiff'));
     const image = await tiff.getImage(0);
     await image.readRGB({ interleave: true });
-  })
+  });
 });
 
 describe('BlockedSource Test', () => {
