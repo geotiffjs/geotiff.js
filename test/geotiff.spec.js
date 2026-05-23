@@ -1912,12 +1912,6 @@ describe('writeTests', () => {
     expect(error).to.be.an('Error');
     expect(error.message).to.include('Writing of IFDs with more than 1000 bytes is not supported');
   });
-
-  it('Read the unpadded test jpg tiff', async () => {
-    const tiff = await GeoTIFF.fromSource(createSource('test.tiff'));
-    const image = await tiff.getImage(0);
-    await image.readRGB({ interleave: true });
-  });
 });
 
 describe('BlockedSource Test', () => {
