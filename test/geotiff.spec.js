@@ -1690,9 +1690,9 @@ describe('writeTests', () => {
     const newGeoTiff = await fromArrayBuffer(newGeoTiffAsBinaryData);
     const image = await newGeoTiff.getImage();
     const newValues = await image.readRasters();
-    const red = chunk(newValues[0], 3);
-    const green = chunk(newValues[1], 3);
-    const blue = chunk(newValues[2], 3);
+    const red = chunk(newValues[0], 4);
+    const green = chunk(newValues[1], 4);
+    const blue = chunk(newValues[2], 4);
     expect(normalize(red)).to.equal(normalize(originalRed));
     expect(normalize(green)).to.equal(normalize(originalGreen));
     expect(normalize(blue)).to.equal(normalize(originalBlue));
@@ -1707,14 +1707,14 @@ describe('writeTests', () => {
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
     expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
-    expect(fileDirectory.getValue('ImageLength')).to.equal(3);
-    expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
+    expect(fileDirectory.getValue('ImageLength')).to.equal(4);
+    expect(fileDirectory.getValue('ImageWidth')).to.equal(4);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
     expect(normalize(fileDirectory.getValue('ModelTiepoint'))).to.equal(normalize(metadata.ModelTiepoint));
     expect(fileDirectory.getValue('PhotometricInterpretation')).to.equal(2);
     expect(fileDirectory.getValue('PlanarConfiguration')).to.equal(1);
-    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1012,1018,1024]');
-    expect(toArray(fileDirectory.getValue('TileByteCounts')).toString()).to.equal('12,6,6,3');
+    expect(normalize(fileDirectory.getValue('TileOffsets'))).to.equal('[1000,1027,1036,1045]');
+    expect(toArray(fileDirectory.getValue('TileByteCounts')).toString()).to.equal('27,9,9,3');
     expect(normalize(fileDirectory.getValue('SampleFormat'))).to.equal(normalize([1, 1, 1]));
     expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(3);
     expect(fileDirectory.getValue('RowsPerStrip')).to.equal(undefined); // Make sure we don't confuse file readers
