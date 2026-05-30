@@ -2,6 +2,7 @@ set -e
 wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/MER_FRS_1P_reduced/ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_uint16_reduced_compressed.tif -O initial.tiff
 wget https://github.com/EOxServer/autotest/raw/f8d9f4bde6686abbda09c711d4bf5239f5378aa9/autotest/data/meris/mosaic_MER_FRS_1P_RGB_reduced/mosaic_ENVISAT-MER_FRS_1PNPDE20060816_090929_000001972050_00222_23322_0058_RGB_reduced.tif -O rgb.tiff
 wget https://raw.githubusercontent.com/hubmapconsortium/portal-containers/master/containers/ome-tiff-offsets/test-input/multi-channel.ome.tif -O multi-channel.ome.tif
+wget https://github.com/user-attachments/files/27615024/2026-01-01-00_00_2026-01-01-23_59_Sentinel-2_Quarterly_Mosaics_True_Color_Cloudless.tiff -O sentinel2-quarterly-mosaic-big-endian.tiff
 
 gdal_translate -of GTiff initial.tiff stripped.tiff
 gdal_translate -of GTiff -co TILED=YES -co BLOCKXSIZE=32 -co BLOCKYSIZE=32 stripped.tiff tiled.tiff

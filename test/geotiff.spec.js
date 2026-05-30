@@ -310,6 +310,26 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should read the big-endian Sentinel-2 mosaic regression fixture', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('sentinel2-quarterly-mosaic-big-endian.tiff'));
+    const image = await tiff.getImage();
+
+    expect(image.getWidth()).to.equal(1130);
+    expect(image.getHeight()).to.equal(1250);
+    expect(image.getSamplesPerPixel()).to.equal(3);
+    expect(image.fileDirectory.deferredArrays.has(279)).to.be.true; // StripByteCounts
+
+    const stripByteCounts = await image.fileDirectory.loadValue('StripByteCounts');
+    expect(stripByteCounts).to.be.an.instanceof(Uint32Array);
+    expect(stripByteCounts).to.have.lengthOf(157);
+    expect(Array.from(stripByteCounts.slice(0, 3))).to.deep.equal([23020, 22769, 22699]);
+
+    const rasters = await image.readRasters({ window: [100, 100, 101, 101] });
+    expect(rasters).to.have.lengthOf(3);
+    expect(rasters[0]).to.be.an.instanceof(Uint8Array);
+    expect(rasters.map((raster) => raster[0])).to.deep.equal([84, 78, 53]);
+  });
+
   it('should work with NASAs LZW compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('nasa_raster.tiff'));
     const image = await tiff.getImage();
