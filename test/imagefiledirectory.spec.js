@@ -23,15 +23,15 @@ async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian,
   const view = new DataView(dataBuffer);
 
   // Write minimal IFD header for non-BigTIFF
-  view.setUint16(0, 1, true); // 1 entry
+  view.setUint16(0, 1, littleEndian); // 1 entry
 
   // Write a field entry that references external data (> 4 bytes)
-  view.setUint16(2, testTag, true); // tag
-  view.setUint16(4, fieldType, true); // field type
-  view.setUint32(6, length, true); // count
-  view.setUint32(10, arrayOffset, true); // offset to data (must be external)
+  view.setUint16(2, testTag, littleEndian); // tag
+  view.setUint16(4, fieldType, littleEndian); // field type
+  view.setUint32(6, length, littleEndian); // count
+  view.setUint32(10, arrayOffset, littleEndian); // offset to data (must be external)
 
-  view.setUint32(14, 0, true); // next IFD offset
+  view.setUint32(14, 0, littleEndian); // next IFD offset
 
   const mockSource = {
     fetch: async (ranges) => {
@@ -98,6 +98,25 @@ describe('DeferredArray (tested through IFD)', () => {
     expect(values).to.be.an.instanceof(Uint32Array);
     expect(values).to.have.lengthOf(5);
     expect(Array.from(values)).to.deep.equal([0, 10, 20, 30, 40]);
+  });
+
+  it('should preserve big-endian byte order for deferred arrays', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+
+    for (let i = 0; i < 5; i++) {
+      view.setUint32(offset + (i * 4), (i + 1) * 1000, false);
+    }
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, offset, false, fieldTypes.LONG, 5);
+
+    const indexedValue = await ifd.loadValueIndexed(tag, 2);
+    expect(indexedValue).to.equal(3000);
+
+    const values = await ifd.loadValue(tag);
+    expect(values).to.be.an.instanceof(Uint32Array);
+    expect(Array.from(values)).to.deep.equal([1000, 2000, 3000, 4000, 5000]);
   });
 
   it('should handle concurrent indexed access correctly', async () => {
