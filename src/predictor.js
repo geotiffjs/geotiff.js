@@ -15,6 +15,26 @@ function decodeRowAcc(row, stride) {
   } while (length > 0);
 }
 
+const HOST_LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+
+/**
+ * Reverse the bytes of each sample in place so a block stored in one byte
+ * order can be processed through host-endian typed-array views.
+ * @param {ArrayBufferLike} block
+ * @param {number} bytesPerSample
+ */
+function swapByteOrder(block, bytesPerSample) {
+  const bytes = new Uint8Array(block);
+  const length = bytes.length - (bytes.length % bytesPerSample);
+  for (let i = 0; i < length; i += bytesPerSample) {
+    for (let j = 0, k = bytesPerSample - 1; j < k; ++j, --k) {
+      const tmp = bytes[i + j];
+      bytes[i + j] = bytes[i + k];
+      bytes[i + k] = tmp;
+    }
+  }
+}
+
 /**
  * @param {Uint8Array} row
  * @param {number} stride
@@ -48,10 +68,11 @@ function decodeRowFloatingPoint(row, stride, bytesPerSample) {
  * @param {number} height
  * @param {number[]} bitsPerSample
  * @param {number} planarConfiguration
+ * @param {boolean} [littleEndian] the byte order of the file
  * @returns
  */
 export function applyPredictor(block, predictor, width, height, bitsPerSample,
-  planarConfiguration) {
+  planarConfiguration, littleEndian) {
   if (!predictor || predictor === 1) {
     return block;
   }
@@ -67,6 +88,16 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample,
 
   const bytesPerSample = bitsPerSample[0] / 8;
   const stride = planarConfiguration === 2 ? 1 : bitsPerSample.length;
+
+  // Predictor 2 accumulates through host-endian typed-array views, so for a
+  // file stored in the other byte order the multi-byte samples must be
+  // swapped to host order first and back afterwards, keeping the block in
+  // file byte order for the downstream sample reads.
+  const swap = predictor === 2 && bytesPerSample > 1
+    && littleEndian !== undefined && littleEndian !== HOST_LITTLE_ENDIAN;
+  if (swap) {
+    swapByteOrder(block, bytesPerSample);
+  }
 
   for (let i = 0; i < height; ++i) {
     // Last strip will be truncated if height % stripHeight != 0
@@ -101,6 +132,10 @@ export function applyPredictor(block, predictor, width, height, bitsPerSample,
       );
       decodeRowFloatingPoint(row, stride, bytesPerSample);
     }
+  }
+
+  if (swap) {
+    swapByteOrder(block, bytesPerSample);
   }
   return block;
 }
