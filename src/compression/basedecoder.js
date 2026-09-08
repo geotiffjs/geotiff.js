@@ -8,6 +8,7 @@ import { applyPredictor } from '../predictor.js';
  * @property {number|number[]|import('../geotiff.js').TypedArray} bitsPerSample
  * @property {number} planarConfiguration
  * @property {number} [samplesPerPixel]
+ * @property {boolean} [littleEndian] byte order of the file; defaults to little endian
  */
 
 export default class BaseDecoder {
@@ -35,14 +36,14 @@ export default class BaseDecoder {
     const decoded = await this.decodeBlock(buffer);
 
     const {
-      tileWidth, tileHeight, predictor, bitsPerSample, planarConfiguration,
+      tileWidth, tileHeight, predictor, bitsPerSample, planarConfiguration, littleEndian,
     } = this.parameters;
     if (predictor !== 1) {
       const isBitsPerSampleArray = Array.isArray(bitsPerSample) || ArrayBuffer.isView(bitsPerSample);
       const adaptedBitsPerSample = isBitsPerSampleArray ? Array.from(bitsPerSample) : [bitsPerSample];
       return applyPredictor(
         decoded, predictor, tileWidth, tileHeight, adaptedBitsPerSample,
-        planarConfiguration,
+        planarConfiguration, littleEndian,
       );
     }
     return decoded;

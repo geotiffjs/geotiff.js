@@ -53,13 +53,14 @@ export function addDecoder(cases, importFn, decoderParameterFn = defaultDecoderP
  * Get the required decoder parameters for a specific compression method
  * @param {number|undefined} compression
  * @param {import('../imagefiledirectory.js').ImageFileDirectory} fileDirectory
+ * @param {boolean} [littleEndian=true] byte order of the file
  */
-export async function getDecoderParameters(compression, fileDirectory) {
+export async function getDecoderParameters(compression, fileDirectory, littleEndian = true) {
   if (!registry.has(compression)) {
     throw new Error(`Unknown compression method identifier: ${compression}`);
   }
   const { decoderParameterFn } = /** @type {RegistryEntry} */ (registry.get(compression));
-  return decoderParameterFn(fileDirectory);
+  return { ...await decoderParameterFn(fileDirectory), littleEndian };
 }
 
 /**
