@@ -56,8 +56,8 @@ function appendReversed(dest, source) {
  * @param {ArrayBuffer} input
  */
 function decompress(input) {
-  const dictionaryIndex = new Uint16Array(4093);
-  const dictionaryChar = new Uint8Array(4093);
+  const dictionaryIndex = new Uint16Array(4096);
+  const dictionaryChar = new Uint8Array(4096);
   for (let i = 0; i <= 257; i++) {
     dictionaryIndex[i] = 4096;
     dictionaryChar[i] = i;
