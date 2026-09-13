@@ -716,6 +716,7 @@ class GeoTIFFImage {
 
     const compression = this.fileDirectory.getValue('Compression') || 1;
     const decoderParameters = await getDecoderParameters(compression, this.fileDirectory);
+    decoderParameters.littleEndian = this.littleEndian;
     const poolOrDecoder = pool
       ? pool.bindParameters(compression, decoderParameters)
       : await getDecoder(compression, decoderParameters);
