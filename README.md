@@ -630,7 +630,7 @@ const rgb = await image.readRGB({
 When dealing with images that have internal (or even external, see the next section)
 overviews, `GeoTIFF` objects provide a separate `readRasters` method. This method
 works very similar to the method on the `GeoTIFFImage` objects with the same name.
-By default, it uses the larges image available (highest resolution), but when either
+By default, it uses the largest image available (highest resolution), but when either
 `width`, `height`, `resX`, or `resY` are specified, then the best fitting image will
 be used for reading.
 
