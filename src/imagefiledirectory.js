@@ -173,13 +173,15 @@ class DeferredArray {
    * @param {import("./source/basesource.js").BaseSource} source - Data source for fetching
    * @param {number} arrayOffset - Byte offset where the array data starts
    * @param {boolean} littleEndian - Endianness of the data
+   * @param {boolean} bigTiff - Whether the TIFF uses BigTIFF conventions
    * @param {import('./globals.js').FieldType} fieldType - TIFF field type constant
    * @param {number} length - Number of elements in the array
    */
-  constructor(source, arrayOffset, littleEndian, fieldType, length) {
+  constructor(source, arrayOffset, littleEndian, bigTiff, fieldType, length) {
     this.source = source;
     this.arrayOffset = arrayOffset;
     this.littleEndian = littleEndian;
+    this.bigTiff = bigTiff;
     this.fieldType = fieldType;
     this.length = length;
     this.data = getArrayForSamples(fieldType, length);
@@ -203,8 +205,8 @@ class DeferredArray {
         const dataSlice = new DataSlice(
           data[0],
           this.arrayOffset,
-          true,
-          false, // we can ignore bigTiff here
+          this.littleEndian,
+          this.bigTiff,
         );
         const result = getValues(
           this.data,
@@ -256,8 +258,8 @@ class DeferredArray {
           const dataSlice = new DataSlice(
             data[0],
             this.arrayOffset + (index * this.itemSize),
-            true,
-            false, // we can ignore bigTiff here
+            this.littleEndian,
+            this.bigTiff,
           );
           const readMethod = getDataSliceReader(dataSlice, this.fieldType);
           const value = readMethod.call(dataSlice, offset);
@@ -587,6 +589,7 @@ export class ImageFileDirectoryParser {
             this.source,
             actualOffset,
             this.littleEndian,
+            this.bigTiff,
             fieldType,
             typeCount,
           );
