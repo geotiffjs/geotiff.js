@@ -59,8 +59,8 @@ function lerp(v0, v1, t) {
  * @returns {import("./geotiff.js").TypedArray[]} The resampled rasters
  */
 export function resampleBilinear(valueArrays, inWidth, inHeight, outWidth, outHeight) {
-  const relX = inWidth / outWidth;
-  const relY = inHeight / outHeight;
+  const relX = outWidth > 1 ? (inWidth - 1) / (outWidth - 1) : 0;
+  const relY = outHeight > 1 ? (inHeight - 1) / (outHeight - 1) : 0;
 
   return valueArrays.map((array) => {
     const newArray = copyNewSize(array, outWidth, outHeight);
@@ -159,8 +159,8 @@ export function resampleNearestInterleaved(
  */
 export function resampleBilinearInterleaved(
   valueArray, inWidth, inHeight, outWidth, outHeight, samples) {
-  const relX = inWidth / outWidth;
-  const relY = inHeight / outHeight;
+  const relX = outWidth > 1 ? (inWidth - 1) / (outWidth - 1) : 0;
+  const relY = outHeight > 1 ? (inHeight - 1) / (outHeight - 1) : 0;
   const newArray = copyNewSize(valueArray, outWidth, outHeight, samples);
   for (let y = 0; y < outHeight; ++y) {
     const rawY = relY * y;
