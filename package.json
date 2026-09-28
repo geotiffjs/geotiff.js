@@ -96,7 +96,7 @@
     "prelint": "npm run build:module",
     "lint": "eslint src test .eslintrc.cjs",
     "lint:fix": "npm run lint -- --fix",
-    "prepare": "npm run build",
+    "prepack": "npm run build",
     "pretest": "npm run lint && tsc --noEmit",
     "test": "mocha --full-trace test/*.spec.js"
   },

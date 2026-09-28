@@ -11,38 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      # required for softprops/action-gh-release
-      contents: write
-      # required for mikepenz/release-changelog-builder-action
-      pull-requests: read
+      id-token: write     # required for OIDC
+      contents: write     # required for softprops/action-gh-release
+      pull-requests: read # required for mikepenz/release-changelog-builder-action
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'npm'
-      - run: npm ci --ignore-scripts
-        # npm run prepare runs the build step for publish and pack
-      - run: npm rebuild && npm run prepare
-      - run: npm run docs
-      - uses: JS-DevTools/npm-publish@v4
-        id: publish
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          tag: ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
+      - run: npm ci
+      - run: npm run docs # TODO: why do we do this here? is this for type checking?
+      - name: Build & publish
+        # "prepack" script runs the build step
+        run: npm publish --tag "${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}"
       - name: Create release notes
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v5
+        uses: mikepenz/release-changelog-builder-action@v6
         with:
           configuration: '.github/changelog.json'
           ignorePreReleases: ${{ ! contains(github.ref_name, '-') }}
       - name: Create tarball
+        # don't need to rebuild, prepack already happened above
         run: npm pack --ignore-scripts
+      - name: Trim tag name
+        run: echo "trimmed_tag=$(echo ${{github.ref_name}} | cut -c 2-)" >> $GITHUB_ENV
       - name: Create release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref_name }}
@@ -50,7 +47,7 @@ jobs:
             ${{ steps.build_changelog.outputs.changelog }}
 
             **${{ contains(github.ref_name, '-') && 'Prerelease' || 'Full' }} changelog:** ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.build_changelog.outputs.fromTag }}...${{ steps.build_changelog.outputs.toTag }}
-            **NPM release:** https://npmjs.com/package/${{ steps.publish.outputs.name }}/v/${{ steps.publish.outputs.version }}
+            **NPM release:** https://npmjs.com/package/geotiff/v/${{ env.trimmed_tag }}
           draft: true
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
