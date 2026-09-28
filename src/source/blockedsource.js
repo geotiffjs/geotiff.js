@@ -131,7 +131,7 @@ export class BlockedSource extends BaseSource {
       .filter((id) => this.abortedBlockIds.has(id) || !this.blockCache.has(id));
     abortedBlockIds.forEach((id) => this.blockIdsToFetch.add(id));
     // start the retry of some blocks if required
-    if (abortedBlockIds.length > 0 && signal && !signal.aborted) {
+    if (abortedBlockIds.length > 0 && !(signal && signal.aborted)) {
       this.fetchBlocks();
       for (const blockId of abortedBlockIds) {
         const block = this.blockRequests.get(blockId);
@@ -192,10 +192,11 @@ export class BlockedSource extends BaseSource {
               this.blockCache.set(blockId, block);
               this.abortedBlockIds.delete(blockId);
             } catch (err) {
-              if (err instanceof AbortError && err.name === 'AbortError') {
+              // Clients such as fetch() reject with a DOMException, not this library's AbortError.
+              if (err instanceof Error && err.name === 'AbortError') {
                 // store the signal here, we need it to determine later if an
                 // error was caused by this signal
-                err.signal = signal;
+                /** @type {AbortError} */ (err).signal = signal;
                 this.blockCache.delete(blockId);
                 this.abortedBlockIds.add(blockId);
               } else {

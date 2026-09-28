@@ -1781,6 +1781,29 @@ describe('writeTests', () => {
 });
 
 describe('BlockedSource Test', () => {
+  it('Refetches a shared block for a read without a signal when another read is aborted', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const data = new Uint8Array([1, 2, 3, 4]).buffer;
+    blockedSource.source = {
+      fileSize: null,
+      fetchSlice: (slice, signal) => (signal
+        ? new Promise((_, reject) => signal.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted.', 'AbortError'));
+        }))
+        : Promise.resolve({ data, offset: 0 })),
+    };
+    const abortController = new AbortController();
+    const aborted = blockedSource.fetch([{ offset: 0, length: 2 }], abortController.signal);
+    const live = blockedSource.fetch([{ offset: 0, length: 2 }]);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    abortController.abort();
+    const [abortedResult, liveResult] = await Promise.allSettled([aborted, live]);
+    expect(abortedResult.status).to.equal('rejected');
+    expect(abortedResult.reason.name).to.equal('AbortError');
+    expect(liveResult.status).to.equal('fulfilled');
+    expect(Array.from(new Uint8Array(liveResult.value[0]))).to.deep.equal([1, 2]);
+  });
+
   it('Groups only contiguous blocks as one group', () => {
     const blockedSource = new BlockedSource(null, { blockSize: 2 });
     const groups = blockedSource.groupBlocks([2, 0, 1, 3]);
