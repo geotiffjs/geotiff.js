@@ -10,7 +10,7 @@ let testTagCounter = 60000;
  * Helper to create an IFD with a DeferredArray for testing.
  * Returns both the IFD and the tag number.
  */
-async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian, fieldType, length) {
+async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian, fieldType, length, bigTiff = false) {
   // Register a custom tag that will be treated as an array
   const { registerTag } = await import('../src/globals.js');
   const testTag = testTagCounter++;
@@ -22,19 +22,40 @@ async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian,
   // Write the IFD structure directly into the dataBuffer at offset 0
   const view = new DataView(dataBuffer);
 
-  // Write minimal IFD header for non-BigTIFF
-  view.setUint16(0, 1, littleEndian); // 1 entry
+  if (bigTiff) {
+    // Write minimal IFD header for BigTIFF
+    view.setBigUint64(0, 1n, littleEndian); // 1 entry
 
-  // Write a field entry that references external data (> 4 bytes)
-  view.setUint16(2, testTag, littleEndian); // tag
-  view.setUint16(4, fieldType, littleEndian); // field type
-  view.setUint32(6, length, littleEndian); // count
-  view.setUint32(10, arrayOffset, littleEndian); // offset to data (must be external)
+    // Write a field entry that references external data (> 8 bytes)
+    view.setUint16(8, testTag, littleEndian); // tag
+    view.setUint16(10, fieldType, littleEndian); // field type
+    const setUint64 = (byteOffset, value) => {
+      const low = value % (2 ** 32);
+      const high = Math.floor(value / (2 ** 32));
+      view.setUint32(byteOffset + (littleEndian ? 0 : 4), low, littleEndian);
+      view.setUint32(byteOffset + (littleEndian ? 4 : 0), high, littleEndian);
+    };
+    setUint64(12, length); // count
+    setUint64(20, arrayOffset); // offset to data (must be external)
 
-  view.setUint32(14, 0, littleEndian); // next IFD offset
+    view.setBigUint64(28, 0n, littleEndian); // next IFD offset
+  } else {
+    // Write minimal IFD header for non-BigTIFF
+    view.setUint16(0, 1, littleEndian); // 1 entry
 
+    // Write a field entry that references external data (> 4 bytes)
+    view.setUint16(2, testTag, littleEndian); // tag
+    view.setUint16(4, fieldType, littleEndian); // field type
+    view.setUint32(6, length, littleEndian); // count
+    view.setUint32(10, arrayOffset, littleEndian); // offset to data (must be external)
+
+    view.setUint32(14, 0, littleEndian); // next IFD offset
+  }
+
+  const fetchedRanges = [];
   const mockSource = {
     fetch: async (ranges) => {
+      fetchedRanges.push(...ranges);
       const results = [];
       for (const range of ranges) {
         // Return the actual data from the provided buffer
@@ -45,10 +66,11 @@ async function createIFDWithDeferredArray(dataBuffer, arrayOffset, littleEndian,
     },
   };
 
-  const parser = new ImageFileDirectoryParser(mockSource, littleEndian, false, false);
+  const parser = new ImageFileDirectoryParser(mockSource, littleEndian, bigTiff, false);
   const ifd = await parser.parseFileDirectoryAt(0);
+  fetchedRanges.length = 0;
 
-  return { ifd, tag: testTag };
+  return { ifd, tag: testTag, fetchedRanges };
 }
 
 describe('DeferredArray (tested through IFD)', () => {
@@ -248,6 +270,76 @@ describe('DeferredArray (tested through IFD)', () => {
 
     expect(v1).to.equal(33);
     expect(v2).to.equal(55);
+  });
+
+  it('should fetch only the requested values for indexed access', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const view = new DataView(buffer);
+    const offset = 2000;
+    for (let i = 0; i < 10; i++) {
+      view.setUint32(offset + (i * 4), i * 3, true);
+    }
+
+    const { ifd, tag, fetchedRanges } = await createIFDWithDeferredArray(
+      buffer,
+      offset,
+      true,
+      fieldTypes.LONG,
+      10,
+    );
+
+    expect(await ifd.loadValueIndexed(tag, 4)).to.equal(12);
+    expect(await ifd.loadValueIndexed(tag, 4)).to.equal(12);
+    expect(await ifd.loadValueIndexed(tag, 7)).to.equal(21);
+    expect(fetchedRanges).to.deep.equal([
+      { offset: offset + 16, length: 4 },
+      { offset: offset + 28, length: 4 },
+    ]);
+
+    // loadValue fetches the whole array once, later indexed access reads from it
+    const allValues = await ifd.loadValue(tag);
+    expect(Array.from(allValues)).to.deep.equal([0, 3, 6, 9, 12, 15, 18, 21, 24, 27]);
+    expect(await ifd.loadValueIndexed(tag, 9)).to.equal(27);
+    expect(fetchedRanges).to.have.lengthOf(3);
+    expect(fetchedRanges[2]).to.deep.equal({ offset, length: 40 });
+  });
+
+  it('should throw a RangeError for out of bounds indexed access', async () => {
+    const buffer = new ArrayBuffer(3000);
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, 2000, true, fieldTypes.LONG, 10);
+
+    for (const index of [-1, 10]) {
+      let error = null;
+      try {
+        await ifd.loadValueIndexed(tag, index);
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an.instanceof(RangeError);
+    }
+  });
+
+  it('should not allocate storage proportional to the array length', async () => {
+    // LONG8 values are backed by a plain Array, which cannot have more than
+    // 2^32 - 1 elements; the DeferredArray must still be created and serve
+    // individual values
+    const buffer = new ArrayBuffer(5000);
+    const view = new DataView(buffer);
+    const offset = 4500;
+    view.setBigUint64(offset + 16, 1234n, true);
+    const length = 5e9;
+
+    const { ifd, tag } = await createIFDWithDeferredArray(
+      buffer,
+      offset,
+      true,
+      fieldTypes.LONG8,
+      length,
+      true,
+    );
+
+    expect(ifd.deferredArrays.get(tag).length).to.equal(length);
+    expect(await ifd.loadValueIndexed(tag, 2)).to.equal(1234);
   });
 });
 
