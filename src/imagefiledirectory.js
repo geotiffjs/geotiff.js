@@ -164,8 +164,9 @@ function getValues(outValues = null, readMethod, dataSlice, fieldType, count, of
 
 /**
  * Lazily-loaded array for large TIFF field values that are fetched on-demand.
- * Supports loading individual indices or the entire array. Uses a bitmap to track
- * which values have been loaded to avoid redundant fetches.
+ * Supports loading individual indices or the entire array. Individually loaded
+ * values are kept in a sparse Map, so no storage proportional to the array length
+ * is allocated until the entire array is loaded.
  */
 class DeferredArray {
   /**
@@ -184,9 +185,11 @@ class DeferredArray {
     this.bigTiff = bigTiff;
     this.fieldType = fieldType;
     this.length = length;
-    this.data = getArrayForSamples(fieldType, length);
+    /** @type {import('./geotiff.js').TypedArray|Array<number>|null} */
+    this.data = null;
     this.itemSize = getFieldTypeSize(fieldType);
-    this.maskBitmap = new Uint8Array(Math.ceil(length / 8));
+    /** @type {Map<number, number|bigint>} */
+    this.values = new Map();
     this.fetchIndexPromises = new Map();
     this.fullFetchPromise = null;
   }
@@ -209,7 +212,7 @@ class DeferredArray {
           this.bigTiff,
         );
         const result = getValues(
-          this.data,
+          getArrayForSamples(this.fieldType, this.length),
           getDataSliceReader(dataSlice, this.fieldType),
           dataSlice,
           this.fieldType,
@@ -217,11 +220,11 @@ class DeferredArray {
           this.arrayOffset,
           true,
         );
+        this.data = /** @type {import('./geotiff.js').TypedArray|Array<number>} */ (result);
 
-        // Mark all items as loaded in the bitmap
-        this.maskBitmap.fill(0xFF);
-
-        // Clean up any pending individual fetch promises since all data is now loaded
+        // All values are now in the full array; drop the sparse cache and
+        // any pending individual fetch promises
+        this.values.clear();
         this.fetchIndexPromises.clear();
 
         return result;
@@ -239,41 +242,43 @@ class DeferredArray {
    * @throws {RangeError} If index is out of bounds
    */
   async get(index) {
-    if (index < 0 || index >= this.data.length) {
+    if (index < 0 || index >= this.length) {
       throw new RangeError(
-        `Index ${index} out of bounds for length ${this.data.length}`,
+        `Index ${index} out of bounds for length ${this.length}`,
       );
     }
 
-    const byteIndex = Math.floor(index / 8);
-    const bitMask = 1 << index % 8;
-    const offset = this.arrayOffset + (index * this.itemSize);
-
-    if ((this.maskBitmap[byteIndex] & bitMask) === 0) {
-      if (!this.fetchIndexPromises.has(index)) {
-        const fetchPromise = this.source.fetch([{
-          offset,
-          length: this.itemSize,
-        }]).then((data) => {
-          const dataSlice = new DataSlice(
-            data[0],
-            this.arrayOffset + (index * this.itemSize),
-            this.littleEndian,
-            this.bigTiff,
-          );
-          const readMethod = getDataSliceReader(dataSlice, this.fieldType);
-          const value = readMethod.call(dataSlice, offset);
-
-          this.data[index] = value;
-          this.maskBitmap[byteIndex] |= bitMask;
-          this.fetchIndexPromises.delete(index);
-          return value;
-        });
-        this.fetchIndexPromises.set(index, fetchPromise);
-      }
-      return this.fetchIndexPromises.get(index);
+    if (this.data) {
+      return this.data[index];
     }
-    return this.data[index];
+    if (this.values.has(index)) {
+      return /** @type {number|bigint} */ (this.values.get(index));
+    }
+
+    if (!this.fetchIndexPromises.has(index)) {
+      const offset = this.arrayOffset + (index * this.itemSize);
+      const fetchPromise = this.source.fetch([{
+        offset,
+        length: this.itemSize,
+      }]).then((data) => {
+        const dataSlice = new DataSlice(
+          data[0],
+          offset,
+          this.littleEndian,
+          this.bigTiff,
+        );
+        const readMethod = getDataSliceReader(dataSlice, this.fieldType);
+        const value = readMethod.call(dataSlice, offset);
+
+        if (!this.data) {
+          this.values.set(index, value);
+        }
+        this.fetchIndexPromises.delete(index);
+        return value;
+      });
+      this.fetchIndexPromises.set(index, fetchPromise);
+    }
+    return this.fetchIndexPromises.get(index);
   }
 }
 
