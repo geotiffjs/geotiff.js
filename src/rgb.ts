@@ -1,5 +1,9 @@
 import { TypedArrayWithDimensions } from './geotiff.js';
 
+/**
+ * @param raster the single-sample raster
+ * @param max the largest sample value (full scale), e.g. `2 ** BitsPerSample - 1`
+ */
 export function fromWhiteIsZero(
   raster: TypedArrayWithDimensions,
   max: number
@@ -8,7 +12,7 @@ export function fromWhiteIsZero(
   const rgbRaster = new Uint8Array(width * height * 3);
   let value: number;
   for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
-    value = 256 - (raster[i] / max) * 256;
+    value = 255 - Math.round((raster[i] / max) * 255);
     rgbRaster[j] = value;
     rgbRaster[j + 1] = value;
     rgbRaster[j + 2] = value;
@@ -16,6 +20,10 @@ export function fromWhiteIsZero(
   return rgbRaster;
 }
 
+/**
+ * @param raster the single-sample raster
+ * @param max the largest sample value (full scale), e.g. `2 ** BitsPerSample - 1`
+ */
 export function fromBlackIsZero(
   raster: TypedArrayWithDimensions,
   max: number
@@ -24,7 +32,7 @@ export function fromBlackIsZero(
   const rgbRaster = new Uint8Array(width * height * 3);
   let value: number;
   for (let i = 0, j = 0; i < raster.length; ++i, j += 3) {
-    value = (raster[i] / max) * 256;
+    value = Math.round((raster[i] / max) * 255);
     rgbRaster[j] = value;
     rgbRaster[j + 1] = value;
     rgbRaster[j + 2] = value;
