@@ -674,6 +674,84 @@ describe('RGB-tests', () => {
   });
 });
 
+describe('RGB-tests for grayscale images', () => {
+  // builds a single-strip, uncompressed, little-endian TIFF with one sample per pixel
+  function makeGrayscaleTiff(width, height, bitsPerSample, photometric, bytes) {
+    const entries = [
+      [256, 3, width], // ImageWidth
+      [257, 3, height], // ImageLength
+      [258, 3, bitsPerSample], // BitsPerSample
+      [259, 3, 1], // Compression: none
+      [262, 3, photometric], // PhotometricInterpretation
+      [273, 4, 0], // StripOffsets, set below
+      [277, 3, 1], // SamplesPerPixel
+      [278, 3, height], // RowsPerStrip
+      [279, 4, bytes.length], // StripByteCounts
+    ];
+    const dataOffset = 8 + 2 + (entries.length * 12) + 4;
+    entries[5][2] = dataOffset;
+    const buffer = new ArrayBuffer(dataOffset + bytes.length);
+    const view = new DataView(buffer);
+    view.setUint16(0, 0x4949, true);
+    view.setUint16(2, 42, true);
+    view.setUint32(4, 8, true);
+    view.setUint16(8, entries.length, true);
+    entries.forEach(([tag, type, value], i) => {
+      const offset = 10 + (i * 12);
+      view.setUint16(offset, tag, true);
+      view.setUint16(offset + 2, type, true);
+      view.setUint32(offset + 4, 1, true);
+      if (type === 3) {
+        view.setUint16(offset + 8, value, true);
+      } else {
+        view.setUint32(offset + 8, value, true);
+      }
+    });
+    new Uint8Array(buffer, dataOffset).set(bytes);
+    return buffer;
+  }
+
+  async function readRed(buffer) {
+    const tiff = await fromArrayBuffer(buffer);
+    const image = await tiff.getImage();
+    const [red, green, blue] = await image.readRGB({ interleave: false });
+    expect(Array.from(green)).to.deep.equal(Array.from(red));
+    expect(Array.from(blue)).to.deep.equal(Array.from(red));
+    return Array.from(red);
+  }
+
+  it('should map WhiteIsZero 8-bit samples to inverted gray values', async () => {
+    const red = await readRed(makeGrayscaleTiff(4, 1, 8, 0, [0, 1, 128, 255]));
+    expect(red).to.deep.equal([255, 254, 127, 0]);
+  });
+
+  it('should map WhiteIsZero 1-bit samples to white and black', async () => {
+    const red = await readRed(makeGrayscaleTiff(2, 1, 1, 0, [0x80]));
+    expect(red).to.deep.equal([0, 255]);
+  });
+
+  it('should map BlackIsZero 1-bit samples to black and white', async () => {
+    const red = await readRed(makeGrayscaleTiff(2, 1, 1, 1, [0x80]));
+    expect(red).to.deep.equal([255, 0]);
+  });
+
+  it('should scale BlackIsZero 4-bit samples to the full 0-255 range', async () => {
+    const red = await readRed(makeGrayscaleTiff(4, 1, 4, 1, [0x05, 0xaf]));
+    expect(red).to.deep.equal([0, 85, 170, 255]);
+  });
+
+  it('should keep BlackIsZero 8-bit samples unchanged', async () => {
+    const red = await readRed(makeGrayscaleTiff(4, 1, 8, 1, [0, 1, 128, 255]));
+    expect(red).to.deep.equal([0, 1, 128, 255]);
+  });
+
+  it('should scale BlackIsZero 16-bit samples to the full 0-255 range', async () => {
+    // little-endian 0, 32768, 65535
+    const red = await readRed(makeGrayscaleTiff(3, 1, 16, 1, [0x00, 0x00, 0x00, 0x80, 0xff, 0xff]));
+    expect(red).to.deep.equal([0, 128, 255]);
+  });
+});
+
 describe('Abort signal', () => {
   const source = 'multi-channel.ome.tif';
 

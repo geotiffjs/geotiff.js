@@ -827,7 +827,7 @@ class GeoTIFFImage {
     const { fileDirectory } = this;
     const raster = await this.readRasters(subOptions);
 
-    const max = 2 ** this.getBitsPerSample(0);
+    const max = (2 ** this.getBitsPerSample(0)) - 1;
     let data;
     switch (pi) {
       case photometricInterpretations.WhiteIsZero:
