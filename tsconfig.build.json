@@ -18,6 +18,12 @@
     "downlevelIteration": true
   },
   "include": [
-    "./dist-module/**/*.js"
+    "./dist-module/**/*.js",
+    "./dist-module/**/*.cjs"
+  ],
+  "exclude": [
+    "./dist-module/compression/lerc-browser.js",
+    "./dist-module/compression/lerc-wasm.js",
+    "./dist-module/worker/create.js"
   ]
 }

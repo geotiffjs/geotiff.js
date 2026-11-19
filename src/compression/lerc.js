@@ -1,8 +1,7 @@
 import { inflate } from 'pako';
-// @ts-expect-error
-import Lerc from 'lerc';
 import { ZSTDDecoder } from 'zstddec';
 import BaseDecoder from './basedecoder.js';
+import loadLerc from './lerc-node.cjs';
 import { LercParameters, LercAddCompression } from '../globals.js';
 
 /**
@@ -14,29 +13,34 @@ export const zstd = new ZSTDDecoder();
 export default class LercDecoder extends BaseDecoder {
   /**
    * @param {ArrayBufferLike} buffer
-   * @returns {ArrayBufferLike}
+   * @returns {Promise<ArrayBuffer>}
    */
-  decodeBlock(buffer) {
+  async decodeBlock(buffer) {
     const params = /** @type {LercDecoderParameters} */(this.parameters);
     const addCompression = params.LercParameters?.[LercParameters.AddCompression];
 
-    /** @type {ArrayBufferLike} */
-    let decoded = buffer;
+    let decoded = new Uint8Array(buffer);
     switch (addCompression) {
       case LercAddCompression.None:
         break;
       case LercAddCompression.Deflate:
-        decoded = inflate(new Uint8Array(decoded)).buffer;
+        decoded = inflate(decoded);
         break;
       case LercAddCompression.Zstandard:
-        decoded = zstd.decode(new Uint8Array(decoded)).buffer;
+        decoded = zstd.decode(decoded);
         break;
       default:
         throw new Error(`Unsupported LERC additional compression method identifier: ${addCompression}`);
     }
 
-    const lercResult = Lerc.decode(decoded, { returnPixelInterleavedDims: this.parameters.planarConfiguration === 1 });
-    const lercData = lercResult.pixels[0];
-    return lercData.buffer;
+    const decode = await loadLerc();
+    const { pixels: [pixels] } = decode(decoded, {
+      returnInterleaved: this.parameters.planarConfiguration === 1,
+    });
+    const { buffer: pixelBuffer, byteOffset, byteLength } = pixels;
+    // Lerc can return a view into a buffer shared by multiple bands.
+    return byteLength === pixelBuffer.byteLength
+      ? pixelBuffer
+      : pixelBuffer.slice(byteOffset, byteOffset + byteLength);
   }
 }

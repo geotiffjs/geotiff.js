@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@petamoriken/float16": "^3.9.3",
-    "lerc": "^3.0.0",
+    "lerc": "^4.3.0",
     "pako": "^2.0.4",
     "parse-headers": "^2.0.2",
     "quick-lru": "^6.1.1",
@@ -83,7 +83,7 @@
     "prebuild": "npm run build:clean",
     "build": "npm run build:module && run-p build:browser build:node",
     "build:clean": "shx rm -rf dist-node/ dist-browser/ dist-module/",
-    "build:module": "tsc && rollup -c rollup.worker.config.js",
+    "build:module": "tsc && node scripts/prepare-lerc.js && rollup -c rollup.worker.config.js",
     "build:browser": "rollup -c rollup.config.js",
     "build:node": "tsc --project tsconfig.build.json && shx echo \"{\\\"type\\\":\\\"commonjs\\\"}\" > dist-node/package.json",
     "build:types": "tsc --outdir dist-module/",
@@ -102,6 +102,10 @@
   },
   "author": "Fabian Schindler",
   "browser": {
+    "./dist-module/compression/lerc-node.cjs": "./dist-module/compression/lerc-browser.js",
+    "./dist-module/worker/create-node.cjs": "./dist-module/worker/create.js",
+    "./dist-node/compression/lerc-node.cjs": "./dist-module/compression/lerc-browser.js",
+    "./dist-node/worker/create-node.cjs": "./dist-module/worker/create.js",
     "fs": false,
     "http": false,
     "https": false,
