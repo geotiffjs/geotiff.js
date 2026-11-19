@@ -1,5 +1,5 @@
 import { getDecoder, preferWorker } from './compression/index.js';
-import create from './worker/create.js';
+import create from './worker/create-node.cjs';
 
 const defaultPoolSize = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 2) : 2;
 

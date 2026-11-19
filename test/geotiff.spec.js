@@ -341,6 +341,15 @@ describe('GeoTIFF', () => {
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
   });
 
+  it('should read the same LERC pixels with and without the worker pool', async () => {
+    const tiff = await GeoTIFF.fromSource(createSource('lerc.tiff'));
+    const image = await tiff.getImage();
+    const options = { window: [200, 200, 210, 210], interleave: true };
+    const expected = await image.readRasters(options);
+    const actual = await image.readRasters({ ...options, pool });
+    expect(actual).to.deep.equal(expected);
+  });
+
   it('should work on band interleaved LERC compressed tiffs', async () => {
     const tiff = await GeoTIFF.fromSource(createSource('lerc_interleave.tiff'));
     await performTiffTests(tiff, 539, 448, 15, Uint16Array);
