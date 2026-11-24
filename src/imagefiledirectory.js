@@ -153,7 +153,9 @@ function getValues(outValues = null, readMethod, dataSlice, fieldType, count, of
   }
 
   if (fieldType === fieldTypes.ASCII) {
-    return new TextDecoder('utf-8').decode(/** @type {Uint8Array} */ (values));
+    const text = new TextDecoder('utf-8').decode(/** @type {Uint8Array} */ (values));
+    // Keep separators between strings, but not the final TIFF terminator.
+    return text.endsWith('\0') ? text.slice(0, -1) : text;
   }
 
   if (count === 1 && !isArray && !isRational) {

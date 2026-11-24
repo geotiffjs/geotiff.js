@@ -1282,7 +1282,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1341,7 +1341,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1413,7 +1413,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(height);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(width);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1425,7 +1425,7 @@ describe('writeTests', () => {
     expect(fileDirectory.getValue('SamplesPerPixel')).to.equal(1);
     expect(normalize(fileDirectory.getValue('RowsPerStrip'))).to.equal(normalize(height));
     expect(normalize(fileDirectory.getValue('StripByteCounts'))).to.equal(normalize(metadata.StripByteCounts));
-    expect(fileDirectory.getValue('GDAL_NODATA')).to.equal('0\u0000');
+    expect(fileDirectory.getValue('GDAL_NODATA')).to.equal('0');
   });
 
   it('should write and read back GeoAsciiParams/GeoDoubleParams keys', async () => {
@@ -1502,7 +1502,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1572,7 +1572,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1643,7 +1643,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([64, 64, 64]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));
@@ -1718,7 +1718,7 @@ describe('writeTests', () => {
     const { fileDirectory } = image;
     expect(normalize(fileDirectory.getValue('BitsPerSample'))).to.equal(normalize([8, 8, 8]));
     expect(fileDirectory.getValue('Compression')).to.equal(1);
-    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84\u0000');
+    expect(fileDirectory.getValue('GeoAsciiParams')).to.equal('WGS 84');
     expect(fileDirectory.getValue('ImageLength')).to.equal(3);
     expect(fileDirectory.getValue('ImageWidth')).to.equal(3);
     expect(normalize(fileDirectory.getValue('ModelPixelScale'))).to.equal(normalize(metadata.ModelPixelScale));

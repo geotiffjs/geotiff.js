@@ -942,7 +942,7 @@ class GeoTIFFImage {
     if (!string) {
       return null;
     }
-    return Number(string.substring(0, string.length - 1));
+    return Number(string.endsWith('\0') ? string.slice(0, -1) : string);
   }
 
   /**
