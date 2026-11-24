@@ -13,7 +13,7 @@ import DataView64 from '../dist-module/dataview64.js';
 import { fromArrayBuffer, fromUrls, GeoTIFF, Pool, writeArrayBuffer } from '../dist-module/geotiff.js';
 import { BlockedSource } from '../dist-module/source/blockedsource.js';
 import { makeFileSource } from '../dist-module/source/file.js';
-import { makeFetchSource } from '../dist-module/source/remote.js';
+import { makeFetchSource, makeHttpSource } from '../dist-module/source/remote.js';
 import { chunk, range, toArray, toArrayRecursively } from '../dist-module/utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -1878,5 +1878,37 @@ describe('BlockedSource Test', () => {
     const result = await blockedSource.fetch([{ offset: 1, length: 2 }, { offset: 3, length: 2 }]);
     expect(Array.from(new Uint8Array(result[0]))).to.deep.equal([2, 3]);
     expect(Array.from(new Uint8Array(result[1]))).to.deep.equal([4, 5]);
+  });
+
+  it('Keeps the reason a block request failed', async () => {
+    const blockedSource = new BlockedSource(null, { blockSize: 2 });
+    const reason = new Error('Server responded with full file');
+    blockedSource.source = {
+      fileSize: null,
+      fetchSlice: async () => {
+        throw reason;
+      },
+    };
+    let error;
+    try {
+      await blockedSource.fetch([{ offset: 0, length: 4 }]);
+    } catch (err) {
+      error = err;
+    }
+    expect(error.name).to.equal('AggregateError');
+    expect(error.errors).to.deep.equal([reason]);
+    expect(error.message).to.equal('Request failed: Server responded with full file');
+  });
+
+  it('Names the HTTP status when a remote request fails', async () => {
+    const url = 'http://localhost:3000/data/does-not-exist.tiff';
+    const source = makeHttpSource(url, { blockSize: 1024 });
+    let error;
+    try {
+      await source.fetch([{ offset: 0, length: 1024 }]);
+    } catch (err) {
+      error = err;
+    }
+    expect(error.message).to.equal('Request failed: Error fetching data: HTTP 404');
   });
 });
