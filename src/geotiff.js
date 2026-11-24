@@ -632,10 +632,9 @@ class MultiGeoTIFF extends GeoTIFFBase {
   }
 
   async parseFileDirectoriesPerFile() {
-    const requests = [this.mainFile.parser.parseFileDirectoryAt(this.mainFile.firstIFDOffset)]
-      .concat(this.overviewFiles.map((file) => file.parser.parseFileDirectoryAt(file.firstIFDOffset)));
-
-    this.fileDirectoriesPerFile = await Promise.all(requests);
+    if (!this.fileDirectoriesPerFile) {
+      this.fileDirectoriesPerFile = await Promise.all(this.imageFiles.map((file) => file.requestIFD(0)));
+    }
     return this.fileDirectoriesPerFile;
   }
 

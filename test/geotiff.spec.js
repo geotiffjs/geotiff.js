@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 
 import DataSlice from '../dist-module/dataslice.js';
 import DataView64 from '../dist-module/dataview64.js';
-import { fromArrayBuffer, fromUrls, GeoTIFF, Pool, writeArrayBuffer } from '../dist-module/geotiff.js';
+import { fromArrayBuffer, fromUrls, GeoTIFF, MultiGeoTIFF, Pool, writeArrayBuffer } from '../dist-module/geotiff.js';
 import { BlockedSource } from '../dist-module/source/blockedsource.js';
 import { makeFileSource } from '../dist-module/source/file.js';
 import { makeFetchSource } from '../dist-module/source/remote.js';
@@ -192,6 +192,31 @@ describe('writeTypedArrays', () => {
 });
 
 describe('GeoTIFF - external overviews', () => {
+  it('reuses file directories when retrieving multiple overview images', async () => {
+    let reads = 0;
+    async function createFile(width) {
+      const file = await fromArrayBuffer(writeArrayBuffer(new Uint8Array(width), { width, height: 1 }));
+      const fetch = file.source.fetch.bind(file.source);
+      file.source.fetch = (...args) => {
+        ++reads;
+        return fetch(...args);
+      };
+      return file;
+    }
+
+    const main = await createFile(4);
+    const overview = await createFile(2);
+    const tiff = new MultiGeoTIFF(main, [overview]);
+    expect(await tiff.getImageCount()).to.equal(2);
+    const readsToCountImages = reads;
+    expect(readsToCountImages).to.be.greaterThan(0);
+
+    const images = await Promise.all([tiff.getImage(1), tiff.getImage(0)]);
+    expect(images.map((image) => image.getWidth())).to.deep.equal([2, 4]);
+    expect((await tiff.getImage(1)).getWidth()).to.equal(2);
+    expect(reads).to.equal(readsToCountImages);
+  });
+
   it('Can load', async () => {
     const tiff = await fromUrls(
       'http://localhost:3000/data/overviews_external.tiff',
