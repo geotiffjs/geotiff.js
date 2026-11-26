@@ -752,6 +752,27 @@ describe('RGB-tests for grayscale images', () => {
   });
 });
 
+describe('RGB-tests for CIELab images', () => {
+  it('should scale 8-bit L* from 0-255 to 0-100', async () => {
+    // neutral grays (a* = b* = 0) with L* = 0, 25, 50, 75 and 100
+    const lab = new Uint8Array([0, 0, 0, 64, 0, 0, 128, 0, 0, 192, 0, 0, 255, 0, 0]);
+    const buffer = await writeArrayBuffer(lab, {
+      width: 5, height: 1, SamplesPerPixel: 3, PhotometricInterpretation: 8,
+    });
+    const tiff = await fromArrayBuffer(buffer);
+    const image = await tiff.getImage();
+    const [red, green, blue] = await image.readRGB({ interleave: false });
+
+    // sRGB values from `magick lab.tif -colorspace sRGB txt:-`
+    const expected = [0, 60, 119, 185, 255];
+    for (const channel of [red, green, blue]) {
+      Array.from(channel).forEach((value, i) => {
+        expect(value).to.be.closeTo(expected[i], 1);
+      });
+    }
+  });
+});
+
 describe('Abort signal', () => {
   const source = 'multi-channel.ome.tif';
 

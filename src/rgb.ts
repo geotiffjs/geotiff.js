@@ -101,7 +101,7 @@ export function fromCIELab(cieLabRaster: TypedArrayWithDimensions): Uint8Array {
   const rgbRaster = new Uint8Array(width * height * 3);
 
   for (let i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
-    const L = cieLabRaster[i + 0];
+    const L = (cieLabRaster[i + 0] * 100) / 255; // 8-bit L* is stored as 0-255 for 0-100
     const a_ = (cieLabRaster[i + 1] << 24) >> 24; // conversion from uint8 to int8
     const b_ = (cieLabRaster[i + 2] << 24) >> 24; // same
 
