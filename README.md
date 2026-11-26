@@ -112,6 +112,13 @@ For more advanced examples of `geotiff` in larger codebases, please have a look 
 
 [![contour](https://user-images.githubusercontent.com/482265/112866402-0b219880-90ba-11eb-9dda-5f1d9ed9bafc.jpg)](https://bl.ocks.org/mbostock/83c0be21dba7602ee14982b020b12f51)
 
+## ASCII tag strings in v3.1
+
+ASCII values returned by `ImageFileDirectory` no longer include the final TIFF NUL
+terminator. They remain strings; internal NUL separators and GeoASCII `|`
+separators are preserved. Code that previously removed the last character should
+stop doing so.
+
 ## Migration Guide (v2 to v3)
 
 Version 3.0 introduces significant performance improvements through deferred tag reading, but includes breaking changes to some APIs. This guide will help you migrate your code.
