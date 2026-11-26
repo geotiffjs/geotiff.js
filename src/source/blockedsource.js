@@ -122,8 +122,10 @@ export class BlockedSource extends BaseSource {
     }
 
     // Actually await all pending requests that are needed for this `fetch`.
-    await Promise.allSettled(blockRequests);
-    await Promise.allSettled(missingRequests);
+    const results = [
+      ...await Promise.allSettled(blockRequests),
+      ...await Promise.allSettled(missingRequests),
+    ];
 
     // Perform retries if a block was interrupted by a previous signal
     const abortedBlockRequests = [];
@@ -140,7 +142,7 @@ export class BlockedSource extends BaseSource {
         }
         abortedBlockRequests.push(block);
       }
-      await Promise.allSettled(abortedBlockRequests);
+      results.push(...await Promise.allSettled(abortedBlockRequests));
     }
 
     // throw an  abort error
@@ -151,6 +153,11 @@ export class BlockedSource extends BaseSource {
     const blocks = allBlockIds.map((id) => this.blockCache.get(id) || this.evictedBlocks.get(id));
     const failedBlocks = blocks.filter((i) => !i);
     if (failedBlocks.length) {
+      // keep why the requests failed (blocks of one group share the same error)
+      const reasons = [...new Set(results.filter((r) => r.status === 'rejected').map((r) => r.reason))];
+      if (reasons.length) {
+        throw new AggregateError(reasons, `Request failed: ${reasons.map((r) => r && r.message).join(', ')}`);
+      }
       throw new AggregateError(failedBlocks, 'Request failed');
     }
 

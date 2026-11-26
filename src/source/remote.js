@@ -80,7 +80,7 @@ class RemoteSource extends BaseSource {
     });
 
     if (!response.ok) {
-      throw new Error('Error fetching data.');
+      throw new Error(`Error fetching data: HTTP ${response.status}`);
     } else if (response.status === 206) {
       const { type, params } = parseContentType(response.getHeader('content-type'));
       if (type === 'multipart/byteranges') {
@@ -141,7 +141,7 @@ class RemoteSource extends BaseSource {
 
     // check the response was okay and if the server actually understands range requests
     if (!response.ok) {
-      throw new Error('Error fetching data.');
+      throw new Error(`Error fetching data: HTTP ${response.status}`);
     } else if (response.status === 206) {
       const data = await response.getData();
 
