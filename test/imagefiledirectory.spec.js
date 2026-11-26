@@ -251,6 +251,55 @@ describe('DeferredArray (tested through IFD)', () => {
   });
 });
 
+describe('RATIONAL and SRATIONAL values', () => {
+  // GPSLatitude-like value: 71/1, 25/1, 47289959/1000000
+  const rationals = [71, 1, 25, 1, 47289959, 1000000];
+  const srationals = [-71, 1, 25, -2, -47289959, 1000000];
+
+  function writeRationals(view, offset, values, signed) {
+    values.forEach((value, i) => {
+      if (signed) {
+        view.setInt32(offset + (i * 4), value, true);
+      } else {
+        view.setUint32(offset + (i * 4), value, true);
+      }
+    });
+  }
+
+  it('should read every numerator/denominator pair of a RATIONAL array', async () => {
+    const buffer = new ArrayBuffer(3000);
+    writeRationals(new DataView(buffer), 100, rationals, false);
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, 100, true, fieldTypes.RATIONAL, 3);
+
+    const values = ifd.getValue(tag);
+    expect(values).to.be.an.instanceof(Uint32Array);
+    expect(Array.from(values)).to.deep.equal(rationals);
+  });
+
+  it('should read every numerator/denominator pair of an SRATIONAL array', async () => {
+    const buffer = new ArrayBuffer(3000);
+    writeRationals(new DataView(buffer), 100, srationals, true);
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, 100, true, fieldTypes.SRATIONAL, 3);
+
+    const values = ifd.getValue(tag);
+    expect(values).to.be.an.instanceof(Int32Array);
+    expect(Array.from(values)).to.deep.equal(srationals);
+  });
+
+  it('should read every numerator/denominator pair of a deferred RATIONAL array', async () => {
+    const buffer = new ArrayBuffer(3000);
+    writeRationals(new DataView(buffer), 2000, rationals, false);
+
+    const { ifd, tag } = await createIFDWithDeferredArray(buffer, 2000, true, fieldTypes.RATIONAL, 3);
+    expect(ifd.deferredArrays.has(tag)).to.be.true;
+
+    const values = await ifd.loadValue(tag);
+    expect(Array.from(values)).to.deep.equal(rationals);
+  });
+});
+
 describe('ImageFileDirectory', () => {
   describe('getValue()', () => {
     it('should return undefined for non-existent tags', () => {

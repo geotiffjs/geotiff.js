@@ -143,9 +143,10 @@ function getValues(outValues = null, readMethod, dataSlice, fieldType, count, of
     }
   } else {
     // RATIONAL or SRATIONAL
-    for (let i = 0; i < count; i += 2) {
-      values[i] = readMethod.call(dataSlice, offset + (i * fieldTypeLength));
-      values[i + 1] = readMethod.call(
+    // each value is a numerator/denominator pair stored as two 32-bit integers
+    for (let i = 0; i < count; ++i) {
+      values[i * 2] = readMethod.call(dataSlice, offset + (i * fieldTypeLength));
+      values[(i * 2) + 1] = readMethod.call(
         dataSlice,
         offset + ((i * fieldTypeLength) + 4),
       );
