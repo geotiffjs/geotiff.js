@@ -368,34 +368,40 @@ const encodeImage = (values, width, height, metadata) => {
     data[i] = prfx[i];
   });
 
-  forEach(values, (value, i) => {
-    if (!TypedArray) {
-      data[numBytesInIfd + i] = value;
-      return;
-    }
+  // One-byte unsigned samples need no endian conversion. Copy the supplied view
+  // directly, avoiding temporary buffers and views for every sample.
+  if (dataType === 'Uint8Array') {
+    data.set(values, numBytesInIfd);
+  } else {
+    forEach(values, (value, i) => {
+      if (!TypedArray) {
+        data[numBytesInIfd + i] = value;
+        return;
+      }
 
-    const buffer = new ArrayBuffer(elementSize);
-    const view = new DataView(buffer);
+      const buffer = new ArrayBuffer(elementSize);
+      const view = new DataView(buffer);
 
-    if (dataType === 'Float64Array') {
-      view.setFloat64(0, value, false);
-    } else if (dataType === 'Float32Array') {
-      view.setFloat32(0, value, false);
-    } else if (dataType === 'Uint32Array') {
-      view.setUint32(0, value, false);
-    } else if (dataType === 'Uint16Array') {
-      view.setUint16(0, value, false);
-    } else if (dataType === 'Uint8Array') {
-      view.setUint8(0, value);
-    }
+      if (dataType === 'Float64Array') {
+        view.setFloat64(0, value, false);
+      } else if (dataType === 'Float32Array') {
+        view.setFloat32(0, value, false);
+      } else if (dataType === 'Uint32Array') {
+        view.setUint32(0, value, false);
+      } else if (dataType === 'Uint16Array') {
+        view.setUint16(0, value, false);
+      } else if (dataType === 'Uint8Array') {
+        view.setUint8(0, value);
+      }
 
-    const typedArray = new Uint8Array(view.buffer);
-    const idx = numBytesInIfd + (i * elementSize);
+      const typedArray = new Uint8Array(view.buffer);
+      const idx = numBytesInIfd + (i * elementSize);
 
-    for (let j = 0; j < elementSize; j++) {
-      data[idx + j] = typedArray[j];
-    }
-  });
+      for (let j = 0; j < elementSize; j++) {
+        data[idx + j] = typedArray[j];
+      }
+    });
+  }
 
   return data.buffer;
 };
