@@ -553,12 +553,51 @@ class GeoTIFFImage {
             const lastCol = (tile.x + 1) * tileWidth;
             const reader = sampleReaders[si];
 
+            let xTilePadPixels = 0;// missing tile padding X
+            let yTilePadPixels = 0;// missing tile padding Y
+
+            let xOverhang = 0;
+            let yOverhang = 0;
+            let isEdgeX = false;
+            const expectedTileByteCount = bytesPerPixel * this.getBlockWidth() * this.getTileHeight();
+            // This is AFTER the normalization step, so this is fair to assume.
+            if (this.isTiled === true && expectedTileByteCount > dataView.byteLength) {
+              // How many pixels are actaully full of data?
+              xOverhang = (this.getWidth() % this.getBlockWidth());
+              yOverhang = (this.getHeight() % this.getTileHeight());
+
+              const nXTileSteps = (this.getWidth() / this.getBlockWidth()) - 1;
+              const nYTileSteps = (this.getHeight() / this.getTileHeight()) - 1;
+
+              isEdgeX = tile.x > nXTileSteps;
+              const isEdgeY = tile.y > nYTileSteps;
+
+              if (!isEdgeX && !isEdgeY) {
+                throw new Error('Block did not contain the expected number of bytes');
+              }
+
+              xTilePadPixels = isEdgeX ? (this.getBlockWidth() - xOverhang) * bytesPerPixel : 0;
+              yTilePadPixels = isEdgeY ? (this.getTileHeight() - yOverhang) * bytesPerPixel : 0;
+              // Check if adding the bytes would make up for lack of padding.
+              let pad = (xTilePadPixels * this.getTileHeight()) + (yTilePadPixels * this.getTileWidth());
+              // Subtract corner overlap when both x and y padding exist
+              if (isEdgeX && isEdgeY) {
+                pad -= (this.getBlockWidth() - xOverhang) * (this.getTileHeight() - yOverhang) * bytesPerPixel;
+              }
+
+              if (expectedTileByteCount !== dataView.byteLength + pad) {
+                throw new Error('Block did not contain the expected number of bytes');
+              }
+            }
+
             const ymax = Math.min(blockHeight, blockHeight - (lastLine - imageWindow[3]), imageHeight - firstLine);
             const xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]), imageWidth - firstCol);
 
+            const actualRowWidth = isEdgeX ? xOverhang : tileWidth;
+
             for (let y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
               for (let x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
-                const pixelOffset = ((y * tileWidth) + x) * bytesPerPixel;
+                const pixelOffset = ((y * actualRowWidth) + x) * bytesPerPixel;
                 const value = reader.call(
                   dataView, pixelOffset + srcSampleOffsets[si], littleEndian,
                 );
